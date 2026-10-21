@@ -216,15 +216,16 @@ const tokenName = (npc: MemoriamNpcView, names: Readonly<Record<string, string |
   names[npc.key] ?? (npc.isGeneric ? memoriamGenericLabel(npc.label, npc.years, remainingGeneric) : npc.label);
 
 /**
- * Surfaced NPCs are the open period. Remaining NPCs are everyone else, filtered by one year and one location.
+ * Surfaced NPCs are the open period. Remaining NPCs are everyone else, filtered by any selected year and any
+ * selected location. When both dimensions have selections, an NPC must match at least one from each.
  * Spawned generic keys drop out, the same way the Generic tab hides figurines already in the scene.
  */
 export const layoutMemoriamRoster = (
   npcs: readonly MemoriamNpcView[],
   options: {
     readonly periodKey?: string | undefined;
-    readonly year: MemoriamYear | null;
-    readonly location: string | null;
+    readonly years: ReadonlySet<MemoriamYear>;
+    readonly locations: ReadonlySet<string>;
     readonly spawnedGenerics: ReadonlySet<string>;
     readonly names: Readonly<Record<string, string | undefined>>;
   }
@@ -256,8 +257,8 @@ export const layoutMemoriamRoster = (
     }
   }
   const matches = (npc: MemoriamNpcView): boolean =>
-    (options.year === null || npc.years.includes(options.year))
-    && (options.location === null || npc.locations.includes(options.location));
+    (options.years.size === 0 || npc.years.some((year) => options.years.has(year)))
+    && (options.locations.size === 0 || npc.locations.some((location) => options.locations.has(location)));
   const remainingGenericBuckets = new Map<string, MemoriamNpcView[]>();
   const remainingUniqueByYear = new Map<MemoriamYear, MemoriamMember[]>(MEMORIAM_YEAR_GROUPS.map((group) => [group.year, []]));
   for (const npc of npcs) {
@@ -272,7 +273,7 @@ export const layoutMemoriamRoster = (
       remainingGenericBuckets.set(stem, [...(remainingGenericBuckets.get(stem) ?? []), npc]);
     } else {
       for (const year of npc.years) {
-        if (options.year !== null && year !== options.year) {
+        if (options.years.size > 0 && !options.years.has(year)) {
           continue;
         }
         remainingUniqueByYear.get(year)?.push({ characterKey: npc.key, name: tokenName(npc, options.names, false) });

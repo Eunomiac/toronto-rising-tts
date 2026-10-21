@@ -3,6 +3,7 @@ import { parseRollOptions } from "./bridge";
 import type { RollsSlice } from "../../worldState";
 import {
   bumpPool,
+  completedRollClearCommands,
   conditionList,
   dieFaceSrc,
   draftFromView,
@@ -18,6 +19,29 @@ import {
   toggleStructural,
   withLocalPools
 } from "./view";
+
+describe("completed roll transitions", () => {
+  it("clears completed PC cards and finished drawers, but leaves live rolls alone", () => {
+    const rolls = {
+      pcs: [
+        { color: "Pink", done: true },
+        { color: "Red", done: false }
+      ],
+      storyteller: {
+        slots: [
+          { index: 1, result: { text: "WIN" } },
+          { index: 2, result: { text: "HELD" } },
+          { index: 3 }
+        ],
+        live: { slot: 2 }
+      }
+    } as unknown as RollsSlice;
+    expect(completedRollClearCommands(rolls)).toEqual([
+      { op: "cancel", color: "Pink" },
+      { op: "slotCancel", slot: 1 }
+    ]);
+  });
+});
 
 describe("locally painted pools", () => {
   const rolls: RollsSlice = {

@@ -263,6 +263,12 @@ describe("draft seating", () => {
     const draft = applyToDraft(seated, { op: "seatNpc", characterKey: "mara", chair: 7 });
     expect(draft.sessionScene.seatSlots).toMatchObject({ NPC1: { characterKey: "mara", tableSlot: 7, isPresent: true }, NPC2: { slotEmpty: true } });
   });
+
+  it("unseats an NPC and frees their chair", () => {
+    const draft = applyToDraft(seated, { op: "unseatNpc", seat: "NPC1" });
+    expect(draft.sessionScene.seatSlots).toMatchObject({ NPC1: { slotEmpty: true } });
+    expect(draft.sessionScene.seatPresent).toMatchObject({ NPC1: false });
+  });
 });
 
 describe("draft Scatter layout", () => {

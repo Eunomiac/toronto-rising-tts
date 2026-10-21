@@ -30,6 +30,7 @@
                                           a seated NPC's seat takes their copy off the stage
     seatMove          seat, chair         move a seat holder (PC or NPC) to chair 1–9, swapping with whoever sits there
     seatNpc           characterKey, chair seat a named NPC (roster or stage) in an empty chair, lit; leaves the stage
+    unseatNpc         seat                clear a named NPC's chair and return them to the roster
     signalOff         color               put out a PC's signal fire (no-op when it is already out)
     location          districtKey?, siteKey   change the live location behind a blindfold
     skybox            key                 sky override (`none` = the site's own sky)
@@ -327,6 +328,12 @@ local function applyCommand(cmd)
       require("core.npc_trackers").ensure(cmd.characterKey)
     end
     return err
+  end
+  if op == "unseatNpc" then
+    if not U.isIn(cmd.seat, C.NPCSeats or {}) then
+      return "Unknown NPC seat: " .. tostring(cmd.seat)
+    end
+    return require("core.seat_moves").unseatNpc(cmd.seat)
   end
   if op == "npcTracker" then
     return require("core.npc_trackers").applyChange(cmd.key, cmd.which, cmd.mode, cmd.max)

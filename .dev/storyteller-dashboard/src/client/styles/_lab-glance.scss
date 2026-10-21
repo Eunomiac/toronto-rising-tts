@@ -961,10 +961,23 @@ $lab-live: #4caf6a;
     &-row {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 4px;
 
       &.years {
         flex-wrap: nowrap;
+
+        .lab-btn:not(.primary) {
+          border-color: #6f6040;
+          color: #d4c49a;
+          background: #272216;
+        }
+      }
+
+      &.locations .lab-btn:not(.primary) {
+        border-color: #465c70;
+        color: #afc5d7;
+        background: #18232d;
       }
     }
   }
@@ -1012,6 +1025,7 @@ $lab-live: #4caf6a;
 
 // A category header is also where groups are dropped.
 .lab-cat-head {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1020,11 +1034,20 @@ $lab-live: #4caf6a;
   font-weight: 800;
   color: #fff;
   background: color-mix(in srgb, var(--cat, #4a4a55) 22%, #16161b);
+  cursor: pointer;
+
+  button,
+  input,
+  select {
+    position: relative;
+    z-index: 1;
+  }
 
   &.unsorted {
     font-weight: 600;
     color: #a8a8b4;
     border-style: dashed;
+    cursor: default;
   }
 
   &.drop {
@@ -1190,6 +1213,7 @@ input.lab-cat-rename {
     width: auto;
     align-items: stretch;
     border-color: var(--group);
+    animation: roster-open-pulse 1.8s ease-in-out infinite;
     cursor: default;
 
     .lab-group-label {
@@ -1242,6 +1266,17 @@ input.lab-cat-rename {
     white-space: nowrap;
     text-overflow: ellipsis;
     color: #c8c8d0;
+  }
+}
+
+@keyframes roster-open-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 3px color-mix(in srgb, var(--group) 25%, transparent);
+  }
+
+  50% {
+    box-shadow: 0 0 13px 2px color-mix(in srgb, var(--group) 72%, transparent);
   }
 }
 
@@ -2720,6 +2755,8 @@ input.lab-cat-rename {
 // Token configuration window (right-click a roster token); width matches WIDTH in npcConfig.tsx.
 .lab-npc-config {
   width: 300px;
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
 
   &.memoriam {
     width: 360px;

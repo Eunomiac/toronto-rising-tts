@@ -22,6 +22,17 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 _Last populated: 2026-10-21 (new NPC Sheet schema, Superhuman tier, Dashboard badges and simplified TTS token art; Apps Script deployment, build checks and Cloud cleanup verified). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
 
+### Storyteller Dashboard pins from 2026-10-21
+
+#### NPC unseating, roll guidance and cleanup, and the Intermission theme — direct author request
+
+**How to verify:** Restart the Storyteller Dashboard, reload the Toronto Rising save, then Save & Play.
+
+1. Seat an NPC, then drag that seated NPC off the dashboard board. Their chair should become empty and the NPC should return to the roster; they should not merely become dark or remain attached to the chair.
+2. Start a Project Launch roll. Its open card should name the two configured traits and calculated Difficulty near the top. At a location with **Reroll All Dice with Willpower**, the card should warn about that rule while **Spend WP** is available, then tell the player that all eligible dice must be rerolled before confirming.
+3. Finish a player roll and a Storyteller roll, then change scene or phase. The completed cards should clear. A live unfinished roll should remain.
+4. Move from End into Intermission. The TR Loop should start at half of its normal volume. Save while in Intermission, reload that save as the start of a fresh session, and confirm the same track restores at its normal full volume.
+
 ### NPC Sheet stats, Superhuman and token badges
 
 #### NPC Sheet stats, Superhuman and token badges — direct author request

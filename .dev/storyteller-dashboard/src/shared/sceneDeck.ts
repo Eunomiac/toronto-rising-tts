@@ -29,6 +29,7 @@ export type RosterCategory = {
 export type RosterLayout = {
   readonly categories: readonly RosterCategory[];
   readonly assigned: Readonly<Record<string, string>>;
+  readonly groupLabels: Readonly<Record<string, string>>;
   readonly groupColors: Readonly<Record<string, string>>;
   readonly leaders: Readonly<Record<string, string>>;
 };
@@ -50,7 +51,7 @@ export type SceneDeckFile = Omit<SceneDeck, "roster">;
 
 export type SceneDeckPatch = Partial<SceneDeck>;
 
-export const EMPTY_ROSTER: RosterLayout = { categories: [], assigned: {}, groupColors: {}, leaders: {} };
+export const EMPTY_ROSTER: RosterLayout = { categories: [], assigned: {}, groupLabels: {}, groupColors: {}, leaders: {} };
 export const EMPTY_SCENE_DECK: SceneDeck = { deck: [], notes: {}, roster: EMPTY_ROSTER, previews: [], seeded: false };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -101,7 +102,13 @@ export const parseRosterLayout = (value: unknown): RosterLayout => {
         ? [{ id: row.id, name: row.name, color: row.color, open: row.open === true, ...(row.view === "generic" ? { view: "generic" as const } : {}) }]
         : [])
     : [];
-  return { categories, assigned: stringRecord(value.assigned), groupColors: stringRecord(value.groupColors), leaders: stringRecord(value.leaders) };
+  return {
+    categories,
+    assigned: stringRecord(value.assigned),
+    groupLabels: stringRecord(value.groupLabels),
+    groupColors: stringRecord(value.groupColors),
+    leaders: stringRecord(value.leaders)
+  };
 };
 
 const parsePreviews = (value: unknown): readonly LibraryScene[] =>

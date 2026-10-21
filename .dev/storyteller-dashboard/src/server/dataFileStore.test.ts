@@ -20,7 +20,7 @@ describe("data file store", () => {
 
   it("starts empty, replaces whole sections, and keeps the rest", async () => {
     const store = deckStore(path.join(dir, "data", "scene-deck.json"), null);
-    expect(await store.get()).toEqual({ deck: [], notes: {}, roster: { categories: [], assigned: {}, groupColors: {}, leaders: {} }, previews: [], seeded: false });
+    expect(await store.get()).toEqual({ deck: [], notes: {}, roster: { categories: [], assigned: {}, groupLabels: {}, groupColors: {}, leaders: {} }, previews: [], seeded: false });
     await store.patch({ deck: [{ key: "elysium", title: "Elysium" }] });
     const after = await store.patch({ seeded: true });
     expect(after.deck).toEqual([{ key: "elysium", title: "Elysium" }]);

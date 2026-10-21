@@ -816,19 +816,37 @@ const GROUP_EDITOR_WIDTH = 270;
  * back); the leader defaults to the chronicle sheet's boss and can be anyone in the group, or nobody. Generic
  * groups have no leader (no `onLeader`).
  */
-const GroupEditor = ({ group, at, color, own, leader, onColor, onLeader, onClose }: {
+const GroupEditor = ({ group, at, color, own, leader, onLabel, onColor, onLeader, onClose }: {
   group: NpcGroup;
   at: Point;
   color: string;
   own: boolean;
   leader: string | undefined;
+  onLabel: (next: string) => void;
   onColor: (next: string | null) => void;
   onLeader?: (characterKey: string) => void;
   onClose: () => void;
 }): ReactElement => (
   <Overlay onClose={onClose}>
     <div className="lab-modal lab-group-edit" style={{ left: Math.min(at.x, 1920 - GROUP_EDITOR_WIDTH - 8), top: at.y }}>
-      <span className="lab-modal-title">{group.label}</span>
+      <label className="lab-group-edit-row">
+        <span>Name</span>
+        <input
+          className="lab-input"
+          defaultValue={group.label}
+          onBlur={(event) => {
+            const next = event.currentTarget.value.trim();
+            if (next !== "" && next !== group.label) {
+              onLabel(next);
+            }
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.currentTarget.blur();
+            }
+          }}
+        />
+      </label>
       <label className="lab-group-edit-row">
         <span>Colour</span>
         <input type="color" className="lab-cat-color" value={color} onChange={(event) => onColor(event.target.value)} />
@@ -868,6 +886,11 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
   return (
     <div
       className={`lab-cat-head${over ? " drop" : ""}${category ? "" : " unsorted"}`}
+      onClick={onToggle ? (event) => {
+        if (!(event.target as HTMLElement).closest("button, input, select")) {
+          onToggle();
+        }
+      } : undefined}
       onDragOver={(event) => {
         if (event.dataTransfer.types.includes(GROUP_DRAG_TYPE)) {
           event.preventDefault();
@@ -884,7 +907,10 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
       }}
     >
       {onToggle && (
-        <button type="button" className="lab-cat-twirl" title={category?.open ? "Hide groups" : "Show groups"} onClick={onToggle}>
+        <button type="button" className="lab-cat-twirl" title={category?.open ? "Hide groups" : "Show groups"} onClick={(event) => {
+          event.stopPropagation();
+          onToggle();
+        }}>
           {category?.open ? "▾" : "▸"}
         </button>
       )}
@@ -966,8 +992,8 @@ export const MasonryRoster = (): ReactElement => {
   const [dragging, setDragging] = useState(false);
   const [query, setQuery] = useState("");
   const [view, setView] = usePersistentState<"main" | "generic" | "memoriam">("tr-dashboard:roster-tab", "main", ["main", "generic", "memoriam"]);
-  const [memYear, setMemYear] = useState<MemoriamYear | null>(null);
-  const [memLocation, setMemLocation] = useState<string | null>(null);
+  const [memYears, setMemYears] = useState<ReadonlySet<MemoriamYear>>(() => new Set());
+  const [memLocations, setMemLocations] = useState<ReadonlySet<string>>(() => new Set());
   const [preview, setPreview] = useState<{ characterKey: string; token: HTMLElement } | null>(null);
   const rosterRef = useRef<HTMLDivElement>(null);
   const previewFigurine = (characterKey: string | null, token?: HTMLElement): void =>
@@ -995,6 +1021,8 @@ export const MasonryRoster = (): ReactElement => {
     }
     setRosterLayout({ ...layout, groupColors });
   };
+  const setGroupLabel = (groupKey: string, label: string): void =>
+    setRosterLayout({ ...layout, groupLabels: { ...layout.groupLabels, [groupKey]: label } });
   const setGroupLeader = (groupKey: string, characterKey: string): void =>
     setRosterLayout({ ...layout, leaders: { ...layout.leaders, [groupKey]: characterKey } });
   const updateCategory = (id: string, change: Partial<RosterCategory>): void =>
@@ -1053,17 +1081,26 @@ export const MasonryRoster = (): ReactElement => {
     return names;
   }, [memoriamCatalog, overrides]);
   const memLayout = useMemo(
-    () => layoutMemoriamRoster(memoriamCatalog, { periodKey, year: memYear, location: memLocation, spawnedGenerics: spawned, names: memNames }),
-    [memoriamCatalog, periodKey, memYear, memLocation, spawned, memNames]
+    () => layoutMemoriamRoster(memoriamCatalog, { periodKey, years: memYears, locations: memLocations, spawnedGenerics: spawned, names: memNames }),
+    [memoriamCatalog, periodKey, memYears, memLocations, spawned, memNames]
   );
   const measureGroups = (list: readonly MemoriamGroup[]): NpcGroup[] =>
     list.map((group) => ({ ...group, labelWidth: groupLabelWidth(group.label) }));
-  const groups = view === "main" ? mainGroups : genGroups;
+  const relabelGroups = (list: readonly NpcGroup[]): readonly NpcGroup[] => list.map((group) => {
+    const label = layout.groupLabels[group.key] ?? group.label;
+    return label === group.label ? group : { ...group, label, labelWidth: groupLabelWidth(label) };
+  });
+  const groups = relabelGroups(view === "main" ? mainGroups : genGroups);
+  const memoriamKeys = new Set(memoriamCatalog.map((npc) => npc.key));
+  const memoriamInScene = inScene.filter((npc) => memoriamKeys.has(npc.characterKey));
+  const genericInScene = inScene.filter((npc) => !memoriamKeys.has(npc.characterKey));
   const keptInScene = new Set(inScene.flatMap((npc) => (npc.keptId ? [npc.keptId] : [])));
   const keptMembers: readonly KeptMember[] = Object.entries(npcStats ?? {})
     .flatMap(([key, stats]) => (key.startsWith("kept:") && stats.kept ? [{ id: key.slice("kept:".length), ...stats.kept }] : []))
     .filter((member) => !keptInScene.has(member.id))
     .sort((a, b) => a.name.localeCompare(b.name));
+  const memoriamKept = keptMembers.filter((member) => memoriamKeys.has(member.figurineKey));
+  const genericKept = keptMembers.filter((member) => !memoriamKeys.has(member.figurineKey));
   const addKept = (member: KeptMember): void => send({
     op: "genericAdd",
     keys: [member.figurineKey],
@@ -1204,6 +1241,15 @@ export const MasonryRoster = (): ReactElement => {
     });
   };
   const ownColor = (characterKey: string): string | undefined => overrides[characterKey]?.color;
+  const toggleFilter = <T,>(current: ReadonlySet<T>, value: T): ReadonlySet<T> => {
+    const next = new Set(current);
+    if (next.has(value)) {
+      next.delete(value);
+    } else {
+      next.add(value);
+    }
+    return next;
+  };
 
   const leaderFirst = (group: NpcGroup): readonly RosterMember[] => {
     const leader = groupLeader(layout, catalogs?.groupBosses, group.key);
@@ -1236,7 +1282,7 @@ export const MasonryRoster = (): ReactElement => {
   const masonry = (list: readonly NpcGroup[]): ReactElement => (
     <div className="lab-masonry">
       {list.map((group) => {
-        const color = group.color ?? groupColor(layout, group.key);
+        const color = groupColor(layout, group.key) ?? group.color;
         const style = { "--group": color ?? UNSORTED_GROUP_COLOR } as CSSProperties;
         const tinted = color ? " tinted" : "";
         const stackDrag = group.generic !== true;
@@ -1262,7 +1308,7 @@ export const MasonryRoster = (): ReactElement => {
             onClick={() => setOpen(group.key)}
             title={view === "main" ? group.members.map((npc) => npc.name).join(", ") : `${group.label} (${group.members.length})`}
           >
-            {group.color === undefined && <span className="lab-group-colors">
+            <span className="lab-group-colors">
               <button
                 type="button"
                 className={`lab-group-color${group.key in layout.groupColors ? " own" : ""}`}
@@ -1274,7 +1320,7 @@ export const MasonryRoster = (): ReactElement => {
               >
                 {group.key in layout.groupColors ? "" : "+"}
               </button>
-            </span>}
+            </span>
             <span className="lab-group-cluster">
               {leaderFirst(group).map((npc) => (
                 <Headshot key={npc.characterKey} className={tokenClass(group, npc)} characterKey={npc.characterKey}>
@@ -1357,7 +1403,14 @@ export const MasonryRoster = (): ReactElement => {
   const categories = layout.categories.filter((category) => (category.view === "generic") === (view === "generic"));
   const knownCategories = new Set(categories.map((category) => category.id));
   const unsorted = groups.filter((group) => !knownCategories.has(layout.assigned[group.key] ?? ""));
-  const editingGroup = editing ? groups.find((group) => group.key === editing.key) : undefined;
+  const memoriamGroups = relabelGroups(measureGroups([
+    ...memLayout.surfacedGenerics,
+    ...memLayout.remainingUniques,
+    ...memLayout.remainingGenerics
+  ]));
+  const editingGroup = editing
+    ? (view === "memoriam" ? memoriamGroups : groups).find((group) => group.key === editing.key)
+    : undefined;
 
   return (
     <div className="lab-mroster" ref={rosterRef}>
@@ -1399,14 +1452,14 @@ export const MasonryRoster = (): ReactElement => {
       {error && <p className="lab-note">{error}</p>}
       {view === "generic" && genericError && <p className="lab-note">{genericError}</p>}
       <div className="lab-mroster-body">
-        {view === "generic" && inScene.length > 0 && (
+        {view === "generic" && genericInScene.length > 0 && (
           <section className="lab-cat">
             <div className="lab-cat-head unsorted">
               <span className="lab-cat-name">In this scene</span>
-              <span className="lab-cat-count">{inScene.length}</span>
+              <span className="lab-cat-count">{genericInScene.length}</span>
             </div>
             <div className="lab-search-results">
-              {inScene.map((npc) => (
+              {genericInScene.map((npc) => (
                 <RosterToken
                   key={npc.characterKey}
                   characterKey={npc.characterKey}
@@ -1420,14 +1473,14 @@ export const MasonryRoster = (): ReactElement => {
             </div>
           </section>
         )}
-        {view === "generic" && !found && keptMembers.length > 0 && (
+        {view === "generic" && !found && genericKept.length > 0 && (
           <section className="lab-cat">
             <div className="lab-cat-head unsorted">
               <span className="lab-cat-name">Kept</span>
-              <span className="lab-cat-count">{keptMembers.length}</span>
+              <span className="lab-cat-count">{genericKept.length}</span>
             </div>
             <div className="lab-search-results">
-              {keptMembers.map((member) => (
+              {genericKept.map((member) => (
                 <KeptToken
                   key={member.id}
                   member={member}
@@ -1441,6 +1494,46 @@ export const MasonryRoster = (): ReactElement => {
         )}
         {view === "memoriam" && !found && (
           <>
+            {memoriamInScene.length > 0 && (
+              <section className="lab-cat">
+                <div className="lab-cat-head unsorted">
+                  <span className="lab-cat-name">In this scene</span>
+                  <span className="lab-cat-count">{memoriamInScene.length}</span>
+                </div>
+                <div className="lab-search-results">
+                  {memoriamInScene.map((npc) => (
+                    <RosterToken
+                      key={npc.characterKey}
+                      characterKey={npc.characterKey}
+                      name={npc.name}
+                      className="lab-group-head"
+                      color={ownColor(npc.characterKey)}
+                      tier={sceneTiers[npc.characterKey]}
+                      onConfigure={configure}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+            {memoriamKept.length > 0 && (
+              <section className="lab-cat">
+                <div className="lab-cat-head unsorted">
+                  <span className="lab-cat-name">Kept</span>
+                  <span className="lab-cat-count">{memoriamKept.length}</span>
+                </div>
+                <div className="lab-search-results">
+                  {memoriamKept.map((member) => (
+                    <KeptToken
+                      key={member.id}
+                      member={member}
+                      inUse={spawned.has(member.figurineKey)}
+                      onAdd={() => addKept(member)}
+                      onStats={() => setKeptStats(member)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
             {periodKey && (
               <section className="lab-cat">
                 <div className="lab-cat-head unsorted">
@@ -1478,21 +1571,21 @@ export const MasonryRoster = (): ReactElement => {
                   <button
                     key={year}
                     type="button"
-                    className={`lab-btn${memYear === year ? " primary" : ""}`}
-                    onClick={() => setMemYear((current) => (current === year ? null : year))}
+                    className={`lab-btn${memYears.has(year) ? " primary" : ""}`}
+                    onClick={() => setMemYears((current) => toggleFilter(current, year))}
                   >
                     {year}
                   </button>
                 ))}
               </div>
               {memLayout.locations.length > 0 && (
-                <div className="lab-mroster-filters-row">
+                <div className="lab-mroster-filters-row locations">
                   {memLayout.locations.map((location) => (
                     <button
                       key={location}
                       type="button"
-                      className={`lab-btn${memLocation === location ? " primary" : ""}`}
-                      onClick={() => setMemLocation((current) => (current === location ? null : location))}
+                      className={`lab-btn${memLocations.has(location) ? " primary" : ""}`}
+                      onClick={() => setMemLocations((current) => toggleFilter(current, location))}
                     >
                       {location}
                     </button>
@@ -1537,9 +1630,10 @@ export const MasonryRoster = (): ReactElement => {
         <GroupEditor
           group={editingGroup}
           at={editing.at}
-          color={groupColor(layout, editingGroup.key) ?? NEW_CATEGORY_COLOR}
+          color={groupColor(layout, editingGroup.key) ?? editingGroup.color ?? NEW_CATEGORY_COLOR}
           own={editingGroup.key in layout.groupColors}
           leader={groupLeader(layout, catalogs?.groupBosses, editingGroup.key)}
+          onLabel={(next) => setGroupLabel(editingGroup.key, next)}
           onColor={(next) => setGroupColor(editingGroup.key, next)}
           {...(view === "main" ? { onLeader: (characterKey: string) => setGroupLeader(editingGroup.key, characterKey) } : {})}
           onClose={() => setEditing(null)}

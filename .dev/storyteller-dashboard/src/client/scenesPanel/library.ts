@@ -311,6 +311,23 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
         { placements }
       );
     }
+    case "unseatNpc": {
+      const slots = draftSeatSlots(scene);
+      const row = slots[command.seat];
+      const characterKey = npcOf(row);
+      if (characterKey === undefined) {
+        return scene;
+      }
+      const placements: Record<string, unknown> = { ...draftPlacements(scene) };
+      delete placements[characterKey];
+      return withNpcWorld(
+        withSession(scene, {
+          seatSlots: { ...slots, [command.seat]: { slotEmpty: true } },
+          seatPresent: { ...draftSeatPresent(scene), [command.seat]: false }
+        }),
+        { placements }
+      );
+    }
     case "musicMood":
       return withNarrative(scene, { backgroundMusic: command.mood });
     case "locationMusic":

@@ -479,6 +479,8 @@ function Phases.beginIntermissionThemeHandoff(_ctx, opts)
     local ok, msg = Soundscape.playFeaturedMusic(key, {
         incomingFadeSeconds = fadeSec,
         outgoingFadeSeconds = fadeOutgoing and fadeSec or 0,
+        -- The just-finished session hands off gently. A fresh load in Intermission uses the normal volume.
+        volumeScale = 0.5,
     })
     if ok ~= true then
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))

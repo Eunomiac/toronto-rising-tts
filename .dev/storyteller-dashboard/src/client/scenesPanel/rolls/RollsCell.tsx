@@ -18,6 +18,7 @@ import { NpcConfigure, type ConfigureAt } from "./npcConfigure";
 import { rollCardKeys, NPC_FOLD, slotFold } from "./rollFolds";
 import {
   bumpPool,
+  completedRollClearCommands,
   conditionList,
   draftFromView,
   isRouseCheck,
@@ -37,7 +38,7 @@ import {
 /**
  * The Scenes tab's Rolls cell: every Storyteller roll control. Each PC roll and the live NPC roll is a compact
  * card: the roll type runs down its left edge (click it for the roll options), the name collapses the card to
- * one line (double-click a collapsed card to clear it), difficulty folds to "vs. N" once picked, the result text is itself
+ * one line (double-click a card to clear it), difficulty folds to "vs. N" once picked, the result text is itself
  * the override menu, and the actions stack down the right edge as icons that name themselves on hover. The
  * three Storyteller dice drawers sit between the PC rolls and the NPC roll. A card's background and glow tell
  * its phase. Dice still roll physically in TTS.
@@ -185,7 +186,7 @@ const ActionButton = ({ action }: { action: CardAction }): ReactElement => (
 /** A click on a collapsed card's name waits this long before unfolding, so a double-click clears it without a flicker. */
 const UNFOLD_DELAY_MS = 250;
 
-const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClear, clearLabel, onNpcDrop, dndKind, dndColor, onDndStart, children }: {
+const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, detail, advice, result, collapsed, onToggle, actions, onClear, clearLabel, onNpcDrop, dndKind, dndColor, onDndStart, children }: {
   className: string;
   style?: CSSProperties;
   title: string;
@@ -194,11 +195,13 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
   name: string;
   flags?: ReactNode;
   conditions: string;
+  detail?: string;
+  advice?: string;
   result: ReactNode;
   collapsed: boolean;
   onToggle: () => void;
   actions: readonly CardAction[];
-  /** Double-clicking the collapsed card does this. */
+  /** Double-clicking the card does this. */
   onClear: () => void;
   clearLabel: string;
   /** An NPC dropped on the card: roster / seat drags, or a stage token released over it (`NPC_ROLL_DROP_EVENT`). */
@@ -227,8 +230,6 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
     card.addEventListener(NPC_ROLL_DROP_EVENT, listener);
     return () => card.removeEventListener(NPC_ROLL_DROP_EVENT, listener);
   }, [onNpcDrop]);
-  // Whether the card was collapsed when a double-click began, before its first click could unfold or fold it.
-  const collapsedAtFirstClick = useRef(collapsed);
   useEffect(() => () => window.clearTimeout(unfoldTimer.current), []);
   const clickName = (event: MouseEvent<HTMLButtonElement>): void => {
     if (event.detail >= 2) {
@@ -267,14 +268,9 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
           }
         }
       } : {})}
-      onMouseDown={(event) => {
-        if (event.detail === 1) {
-          collapsedAtFirstClick.current = collapsed;
-        }
-      }}
       onDoubleClick={(event) => {
         // The roll options edge, the actions and the result override keep their own clicks.
-        if (collapsedAtFirstClick.current && !(event.target as Element).closest(".roll-edge, .roll-acts, .roll-result-pick")) {
+        if (!(event.target as Element).closest(".roll-edge, .roll-acts, .roll-result-pick")) {
           onClear();
         }
       }}
@@ -302,7 +298,9 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
             </span>
           )}
         </div>
+        {!collapsed && detail && <div className="roll-detail">{detail}</div>}
         {!collapsed && children}
+        {!collapsed && advice && <div className="roll-advice">{advice}</div>}
       </div>
       {shown.length > 0 && (
         <div className="roll-acts">
@@ -351,6 +349,9 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
       {...(overridable ? { onOverride: (resultClass: string) => send({ op: "override", color, resultClass }) } : {})}
     />
   );
+  const detail = roll.rollType === "launch" && roll.label
+    ? `${roll.label.replace(/^Roll\s+/i, "")} · Difficulty ${roll.difficulty ?? "—"}`
+    : undefined;
   const actions: CardAction[] = roll.done
     ? [{ key: "broadcast", icon: "broadcast", label: "Broadcast again", tone: "gold", keep: true, onClick: () => send({ op: "broadcast", color }) }]
     : [];
@@ -363,6 +364,8 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
       {...(roll.done ? {} : { onType: (event: MouseEvent<HTMLElement>) => onOptions(event, roll) })}
       name={roll.name}
       conditions={roll.conditions}
+      detail={detail}
+      advice={roll.advice}
       result={result}
       collapsed={collapsed}
       onToggle={onToggle}
@@ -840,12 +843,14 @@ const useLocalPools = (rolls: RollsSlice | undefined, pending: number): {
   return { shown: rolls && withLocalPools(rolls, local), paint };
 };
 
-export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
+export const RollsCell = ({ rolls: pushed, pending = 0, send, options, transitionKey }: {
   rolls: RollsSlice | undefined;
   /** Roll commands not yet answered by TTS. */
   pending?: number;
   send: RollsSend;
   options: OptionsAccess;
+  /** Phase/subphase/live-scene identity; changing it clears cards whose rolls are already complete. */
+  transitionKey: string;
 }): ReactElement => {
   const { shown: rolls, paint } = useLocalPools(pushed, pending);
   useRollChronicleSync(pushed);
@@ -855,6 +860,15 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const [configureAt, setConfigureAt] = useState<ConfigureAt | null>(null);
   const [highlights, setHighlights] = useState<Readonly<Record<string, DifficultyHighlight>>>({});
   const npcLive = useContext(NpcLiveContext);
+  const priorTransition = useRef(transitionKey);
+  useEffect(() => {
+    if (priorTransition.current !== transitionKey && pushed) {
+      for (const command of completedRollClearCommands(pushed)) {
+        send(command);
+      }
+    }
+    priorTransition.current = transitionKey;
+  }, [transitionKey, pushed, send]);
   const dropNpc = (roll: PcRoll, characterKey: string): void => {
     const block = npcLive?.blockFor(characterKey);
     setHighlights((current) => ({

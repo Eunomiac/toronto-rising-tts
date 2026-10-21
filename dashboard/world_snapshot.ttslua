@@ -402,6 +402,16 @@ end
 --- @return table
 local function pcRollRow(color, pid, roll, done)
   local RUI = require("core.roll_ui")
+  local advice = nil
+  local policy = type(roll.rollPolicy) == "table" and roll.rollPolicy or {}
+  local features = type(policy.features) == "table" and policy.features or {}
+  if not done and features.fullWPReroll == true then
+    if type(roll.willpower) == "table" and roll.willpower.wpRerollWave == true then
+      advice = "You must reroll all eligible dice before Confirming."
+    elseif roll.phase == C.RollPhase.POST_ROLL then
+      advice = "Reroll All Dice with Willpower: spending Willpower requires rerolling every eligible die."
+    end
+  end
   return {
     color = color,
     name = RUI.characterName(color),
@@ -410,6 +420,7 @@ local function pcRollRow(color, pid, roll, done)
     phase = roll.phase,
     initiator = roll.initiator,
     label = roll.label,
+    advice = advice,
     pool = poolCounts(roll.pool),
     difficulty = tonumber(roll.difficulty),
     conditions = pid ~= nil and RUI.formatEffectiveRollConditionLabels(pid, roll) or "",

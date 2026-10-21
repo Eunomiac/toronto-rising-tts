@@ -8,6 +8,7 @@ import { createSceneDeckStore } from "./sceneDeckStore";
 const LAYOUT = {
   categories: [{ id: "cat-1", name: "Court", color: "#aa0000", open: true }],
   assigned: { harpies: "cat-1" },
+  groupLabels: {},
   groupColors: {},
   leaders: {}
 };
@@ -37,7 +38,7 @@ describe("scene deck store", () => {
   });
 
   it("moves a roster left in scene-deck.json into npc-roster.json once", async () => {
-    await writeFile(path.join(dir, "npc-roster.json"), JSON.stringify({ ...ROSTER, layout: { categories: [], assigned: {}, groupColors: {}, leaders: {} } }));
+    await writeFile(path.join(dir, "npc-roster.json"), JSON.stringify({ ...ROSTER, layout: { categories: [], assigned: {}, groupLabels: {}, groupColors: {}, leaders: {} } }));
     await writeFile(path.join(dir, "scene-deck.json"), JSON.stringify({ deck: [{ key: "elysium", title: "Elysium" }], roster: LAYOUT, seeded: true }));
     const store = await createSceneDeckStore({ dataDir: dir, backupDir: null });
     const deck = await store.get();

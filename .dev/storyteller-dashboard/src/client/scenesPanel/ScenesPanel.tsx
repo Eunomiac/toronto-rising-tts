@@ -723,7 +723,13 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 </div>
               )}
             </div>
-            <RollsCell rolls={rolls} pending={rollCommands.pending} send={rollCommands.send} options={rollCommands.options} />
+            <RollsCell
+              rolls={rolls}
+              pending={rollCommands.pending}
+              send={rollCommands.send}
+              options={rollCommands.options}
+              transitionKey={`${phase?.phase ?? ""}:${phase?.subPhase ?? ""}:${scene?.liveKey ?? ""}`}
+            />
           </Box>
           {library.previewKey !== null && library.previews.length > 0 && (
             <Overlay onClose={library.closePreview}>

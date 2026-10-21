@@ -74,6 +74,7 @@ export type ScenesCommand =
   | { readonly op: "seatPresence"; readonly seat: string; readonly present: boolean }
   | { readonly op: "seatMove"; readonly seat: string; readonly chair: number }
   | { readonly op: "seatNpc"; readonly characterKey: string; readonly chair: number }
+  | { readonly op: "unseatNpc"; readonly seat: string }
   | { readonly op: "signalOff"; readonly color: string }
   | ({
     readonly op: "playScene";

@@ -4,7 +4,8 @@
     Chairs are `sessionScene.seatSlots[seat].tableSlot` (1–9 from the centre outward); a seat key (PC colour or
     NPC1–NPC4) holds at most one chair. `moveToChair` moves a seat holder to another chair, swapping with whoever
     sits there. `seatNpc` seats a roster or stage NPC in an empty chair, lit: their own seat key when they already
-    have one, else a free NPC seat key; they leave the stage. An NPC with no figurine yet waits for
+    have one, else a free NPC seat key; they leave the stage. `unseatNpc` clears that assignment and returns the
+    character to the roster. An NPC with no figurine yet waits for
     `NPCS.prewarmNpcs` (hidden spawn under the table, image loaded) before the move applies.
 
     Characters never change seat keys here (the NPC reconciler clears a seat whose occupant changes). Both write
@@ -236,6 +237,45 @@ function SeatMoves.seatNpc(characterKey, chair)
             error("[SeatMoves] Deferred seat move failed: " .. lateErr)
         end
     end, { forSeat = true })
+    return nil
+end
+
+--- Clear a named NPC's live chair assignment and return them to the roster. Any dark-seat stage copy is removed too.
+--- @param seatKey string NPC1–NPC4
+--- @return string|nil error
+function SeatMoves.unseatNpc(seatKey)
+    if not U.isIn(seatKey, C.NPCSeats or {}) then
+        return "Unknown NPC seat `" .. tostring(seatKey) .. "`."
+    end
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    local characterKey = type(occupied) == "table" and occupied[seatKey] or nil
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return "`" .. tostring(seatKey) .. "` has no NPC to unseat."
+    end
+    local refused = refuseSeatMove()
+    if refused then
+        return refused
+    end
+
+    local ss = seatSlotsCopy()
+    ss[seatKey] = { slotEmpty = true }
+    local present = S.getStateVal("sessionScene", "seatPresent")
+    present = type(present) == "table" and U.clone(present, true) or {}
+    present[seatKey] = false
+    occupied = U.clone(occupied, true)
+    occupied[seatKey] = false
+    S.setStateVal(ss, "sessionScene", "seatSlots")
+    S.setStateVal(present, "sessionScene", "seatPresent")
+    S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
+
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) == "table" and placements[characterKey] ~= nil then
+        placements = U.clone(placements, true)
+        placements[characterKey] = nil
+        S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+        require("core.hud_player").resetStageLookCycle()
+    end
+    relayout("dashboard_unseat_npc")
     return nil
 end
 

@@ -17,6 +17,18 @@ describe("applyDndAction", () => {
     expect(scenes).toHaveBeenCalledWith({ op: "seatPresence", seat: "Blue", present: false });
   });
 
+  it("unseats an NPC when it is dragged off the board", () => {
+    const scenes = vi.fn();
+    const result = applyDndAction(
+      "clearFromSeat",
+      { dragKind: "npcSeated", characterKey: "fatherDiaz", seatKey: "NPC2", chair: 6 },
+      { dropKind: "out" },
+      { scenes, rolls: vi.fn() }
+    );
+    expect(result.ok).toBe(true);
+    expect(scenes).toHaveBeenCalledExactlyOnceWith({ op: "unseatNpc", seat: "NPC2" });
+  });
+
   it("initiates a standard roll for a staged NPC", () => {
     const scenes = vi.fn();
     const rolls = vi.fn();

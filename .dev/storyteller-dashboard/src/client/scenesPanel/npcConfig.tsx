@@ -12,7 +12,7 @@ import { openHeadshotEditor } from "../headshots/headshotEditor";
 import { saveMemoriamFields } from "../memoriamCatalog";
 import { saveNpcOverride, useNpcOverrides } from "../npcOverrides";
 import { NpcStatsModal } from "./npcStatsModal";
-import { Overlay } from "./sketch";
+import { CANVAS_H, CANVAS_W, Overlay } from "./sketch";
 
 /** World Y of a seated figurine (`SEAT_FIGURE.defaultY` in lib/seat_role_offsets.ttslua). */
 const DEFAULT_SEATED_Y = -52.89;
@@ -95,6 +95,10 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   const [unkeepArmed, setUnkeepArmed] = useState(false);
   const label = name.trim() || target.defaultName;
   const stats = keptId ? { key: keptStatsKey(keptId), label, tiered: false } : target.stats;
+  const modalWidth = target.memoriam ? MEMORIAM_WIDTH : WIDTH;
+  const modalLeft = Math.max(8, Math.min(target.at.x, CANVAS_W - modalWidth - 8));
+  const modalTop = Math.max(8, Math.min(target.at.y, CANVAS_H - 8));
+  const opensUp = target.at.y > CANVAS_H / 2;
   const toggleKeep = (): void => {
     const keeping = inScene?.keeping;
     if (!keeping || busy) {
@@ -181,7 +185,10 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
 
   return (
     <Overlay onClose={close}>
-      <div className={`lab-modal lab-group-edit lab-npc-config${target.memoriam ? " memoriam" : ""}`} style={{ left: Math.min(target.at.x, 1920 - (target.memoriam ? MEMORIAM_WIDTH : WIDTH) - 8), top: target.at.y }}>
+      <div
+        className={`lab-modal lab-group-edit lab-npc-config${target.memoriam ? " memoriam" : ""}`}
+        style={{ left: modalLeft, top: modalTop, transform: opensUp ? "translateY(-100%)" : "none" }}
+      >
         <div className="lab-npc-config-head">
           <span className="lab-modal-title">{label}</span>
           <button type="button" className="lab-btn" title="Stat blocks for rolls and trackers" onClick={() => setStatsOpen(true)}>

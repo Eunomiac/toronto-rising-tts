@@ -156,15 +156,11 @@ export const applyDndAction = (
     }
 
     case "clearFromSeat": {
-      // Unseat NPC: clear by lighting path is seatNpc reverse — use seatPresence false then stage remove not applicable.
-      // Named NPCs leave via seatMove to nowhere is not supported; dashboard uses clear through stage remove of seated?
-      // Contracts: Clear from Seat for NPC — send seatPresence false is narrative; true clear needs seatNpc empty.
-      // Existing bridge: no explicit unseat. Use seatPresence false for narrative; roster return uses stage remove.
       const seat = seatKeyOf(payload);
       if (!seat) {
         return { ok: false, reason: "Missing seat." };
       }
-      ctx.scenes({ op: "seatPresence", seat, present: false });
+      ctx.scenes({ op: "unseatNpc", seat });
       return { ok: true, did: action };
     }
 
@@ -277,12 +273,11 @@ export const applyDndAction = (
       if (!key) {
         return { ok: false, reason: "Missing NPC." };
       }
-      if (payload.dragKind === "npcStaged" || payload.dragKind === "npcSeated") {
+      if (payload.dragKind === "npcStaged") {
         ctx.scenes({ op: "stage", changes: { [key]: { remove: true } } });
       }
       if (payload.dragKind === "npcSeated") {
-        // Narrative unseat: darken then remove is incomplete without unseat op — seatPresence false.
-        ctx.scenes({ op: "seatPresence", seat: payload.seatKey, present: false });
+        ctx.scenes({ op: "unseatNpc", seat: payload.seatKey });
       }
       return { ok: true, did: action };
     }

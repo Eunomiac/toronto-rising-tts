@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import type { NpcTier } from "../../shared/npcStats";
 import { TIER_LABELS, tierBadgeSrc } from "../npcTierBadges";
-import { Overlay } from "./sketch";
+import { CANVAS_H, CANVAS_W, Overlay } from "./sketch";
 
 const PICKER_WIDTH = 330;
 
@@ -12,9 +12,13 @@ export const TierPicker = ({ at, title, tiers, onPick, onClose }: {
   tiers: readonly NpcTier[];
   onPick: (tier: NpcTier) => void;
   onClose: () => void;
-}): ReactElement => (
+}): ReactElement => {
+  const width = Math.min(CANVAS_W - 16, Math.max(PICKER_WIDTH, tiers.length * 84 + 30));
+  const left = Math.max(8, Math.min(at.x, CANVAS_W - width - 8));
+  const top = Math.max(8, Math.min(at.y, CANVAS_H - 140));
+  return (
   <Overlay onClose={onClose}>
-    <div className="lab-modal npc-tier-picker" style={{ left: Math.min(at.x, 1920 - PICKER_WIDTH - 8), top: at.y }}>
+    <div className="lab-modal npc-tier-picker" style={{ left, top, width }}>
       <span className="lab-modal-title">{title}: which tier?</span>
       <div className="npc-tier-picker-row">
         {tiers.map((tier) => (
@@ -26,4 +30,5 @@ export const TierPicker = ({ at, title, tiers, onPick, onClose }: {
       </div>
     </div>
   </Overlay>
-);
+  );
+};

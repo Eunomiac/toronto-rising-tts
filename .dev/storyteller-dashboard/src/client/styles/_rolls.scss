@@ -299,6 +299,25 @@ $phase-held: #ff8a5c;
   }
 }
 
+.roll-detail,
+.roll-advice {
+  padding: 2px 4px;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.roll-detail {
+  border-left: 2px solid #6a89a8;
+  color: #c2d3e4;
+  background: rgb(52 77 102 / 25%);
+}
+
+.roll-advice {
+  border-left: 2px solid #d19a3a;
+  color: #f0c86f;
+  background: rgb(104 67 20 / 32%);
+}
+
 .roll-result {
   font-family: "Bebas Neue", sans-serif;
   font-size: 18px;

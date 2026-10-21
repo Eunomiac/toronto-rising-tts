@@ -1,5 +1,5 @@
 import type { PoolKind, RollPool, RollsSlice } from "../../worldState.js";
-import type { RollOptionsApply } from "./commands.js";
+import type { RollOptionsApply, RollsCommand } from "./commands.js";
 import type { RollOptionsView } from "./bridge.js";
 
 /** Short roll type names for rows, rings and the options pop-up (`C.RollType` keys). */
@@ -58,6 +58,14 @@ export const ROLL_PHASE_LABEL: Readonly<Record<string, string>> = {
 };
 
 export const rollPhaseLabel = (phase: string | undefined): string => (phase ? ROLL_PHASE_LABEL[phase] ?? phase : "");
+
+/** Commands that dismiss only completed cards when the scene or phase identity changes. */
+export const completedRollClearCommands = (rolls: RollsSlice): readonly RollsCommand[] => [
+  ...rolls.pcs.filter((roll) => roll.done).map((roll): RollsCommand => ({ op: "cancel", color: roll.color })),
+  ...rolls.storyteller.slots
+    .filter((slot) => slot.result !== undefined && rolls.storyteller.live?.slot !== slot.index)
+    .map((slot): RollsCommand => ({ op: "slotCancel", slot: slot.index }))
+];
 
 /** Result classes the Storyteller may override to (`C.ResultClass`), best first. */
 export const RESULT_CLASSES: readonly { readonly key: string; readonly label: string }[] = [

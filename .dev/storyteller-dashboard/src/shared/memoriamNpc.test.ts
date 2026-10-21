@@ -96,8 +96,17 @@ describe("Memoriam roster layout", () => {
     periods: ["fomorach8"]
   }));
   const npcs = [servant, servantTwin, servant1800, adrian, bertrice];
-  const layout = (periodKey?: string, year: "Modern" | "1900s" | "1800s" | "1700s" | null = null, location: string | null = null) =>
-    layoutMemoriamRoster(npcs, { periodKey, year, location, spawnedGenerics: new Set(), names: {} });
+  const layout = (
+    periodKey?: string,
+    years: readonly ("Modern" | "1900s" | "1800s" | "1700s")[] = [],
+    locations: readonly string[] = []
+  ) => layoutMemoriamRoster(npcs, {
+    periodKey,
+    years: new Set(years),
+    locations: new Set(locations),
+    spawnedGenerics: new Set(),
+    names: {}
+  });
 
   it("surfaces the open period, uniques loose and generics by stem", () => {
     const result = layout("aishe2");
@@ -114,16 +123,27 @@ describe("Memoriam roster layout", () => {
   });
 
   it("filters the remaining list by year and location together", () => {
-    const result = layout(undefined, "1800s", "Western");
+    const result = layout(undefined, ["1800s"], ["Western"]);
     expect(result.remainingUniques.flatMap((group) => group.members.map((member) => member.characterKey))).toEqual(["mem_bertrice1800"]);
     expect(result.remainingGenerics).toEqual([]);
     expect(result.locations).toEqual(["New Orleans", "Ottoman", "Toronto", "Western"]);
   });
 
   it("shows a multi-year NPC only in the selected year group", () => {
-    const result = layout(undefined, "Modern", null);
+    const result = layout(undefined, ["Modern"]);
     expect(result.remainingUniques.map((group) => group.label)).toEqual(["Memoriam Present"]);
     expect(result.remainingUniques[0]?.members.map((member) => member.characterKey)).toEqual(["mem_adrian"]);
+  });
+
+  it("matches any selected year and location, while still requiring both dimensions", () => {
+    const result = layout(undefined, ["Modern", "1800s"], ["Toronto", "Western"]);
+    expect(result.remainingUniques.flatMap((group) => group.members.map((member) => member.characterKey))).toEqual([
+      "mem_adrian",
+      "mem_bertrice1800"
+    ]);
+    expect(result.remainingGenerics.flatMap((group) => group.members.map((member) => member.characterKey))).toEqual([
+      "mem_alamutHouseStaff1800_01"
+    ]);
   });
 
   it("puts a Modern generic's year in front only when another year is listed", () => {

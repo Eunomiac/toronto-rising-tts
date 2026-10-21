@@ -1320,11 +1320,13 @@ function playFeaturedTrack(feature, playlist, trackIndex, options)
     if opts.incomingFadeSeconds ~= nil then
         incomingFadeSeconds = tonumber(opts.incomingFadeSeconds) or 0
     end
+    local naturalVolume = savedTrackVolume(feature) or tonumber(feature.volume) or 0.65
+    local volumeScale = tonumber(opts.volumeScale) or 1
     local okPlay, message, newChannel = playPairedEmitterEntry(feature, {
         channelA = "featuredA",
         channelB = "featuredB",
         oldChannel = oldChannel,
-        volume = savedTrackVolume(feature) or tonumber(feature.volume) or 0.65,
+        volume = clamp01(naturalVolume * volumeScale),
         fadeSeconds = crossFadeSeconds,
         incomingFadeSeconds = incomingFadeSeconds,
         canSilenceOld = function(channelKey)
@@ -2331,9 +2333,10 @@ end
 
 --- Plays a featured music effect on the dedicated featured lane.
 -- @param featureKey string
--- @param opts table|nil `{ incomingFadeSeconds?: number, outgoingFadeSeconds?: number, keepBackgroundPaused?: boolean }`
+-- @param opts table|nil `{ incomingFadeSeconds?: number, outgoingFadeSeconds?: number, keepBackgroundPaused?: boolean, volumeScale?: number }`
 --   `incomingFadeSeconds` — TOR-366 Intermission fade-in from silence
 --   `outgoingFadeSeconds` — fade Main/location out over this many seconds (default catalog fades)
+--   `volumeScale` — transient multiplier for this play only; it does not replace the track's saved volume
 -- @return boolean
 -- @return string
 function Soundscape.playFeaturedMusic(featureKey, opts)

@@ -199,6 +199,8 @@ export type PcRoll = {
   readonly phase?: string;
   readonly initiator?: string;
   readonly label?: string;
+  /** Step-specific consequence of an active condition, when the Storyteller needs to act on it now. */
+  readonly advice?: string;
   readonly pool: RollPool;
   readonly difficulty?: number;
   /** Effective roll conditions, comma-separated. */
