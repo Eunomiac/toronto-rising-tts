@@ -96,9 +96,9 @@ locally; live TTS verification is outstanding. This session has no Linear connec
 
 **How to verify:** Save & Play. Open Memoriam on the Storyteller Dashboard for a character who has periods, such as Lucien. The period bar, years, locations, and panel names should still be there. The popup still does not list that period's NPCs. The new figurine files are not in Steam yet; they upload on the next full build with TTS closed.
 
-### Later Downtime session title
+### ✅ Later Downtime session title
 
-#### TOR-744 — Session title on the location line during Downtime
+#### ✅ TOR-744 — Session title on the location line during Downtime
 
 **How to verify:** Save & Play. You need a session title set (the one that already shows in gold during Prologue, such as THE DEVILS YOU KNOW).
 
@@ -116,9 +116,9 @@ locally; live TTS verification is outstanding. This session has no Linear connec
 2. Start a **Frenzy** roll. The pool should be those same undamaged Willpower dice, plus one third of their Humanity rounded down (for example Willpower 4 with no damage and Humanity 5 → 4 + 1 = 5 dice).
 3. Start a **Discipline** roll, then open **Roll from the NPC's stats** and pick a pool such as Physical. That pool's dice should include their Blood Potency Discipline Bonus on top (and Hunger can take from the total as usual). A power pick should still get that bonus as well.
 
-### Dashboard owns the libraries; the table keeps the live scene
+### ✅ Dashboard owns the libraries; the table keeps the live scene
 
-#### TOR-739 — Dashboard owns saved scenes and Storyteller setup; TTS keeps the live table
+#### ✅ TOR-739 — Dashboard owns saved scenes and Storyteller setup; TTS keeps the live table
 
 **How to verify:** Restart the dashboard (`npm run dev` from `.dev/storyteller-dashboard`), then Save & Play. You do not need a full build.
 
@@ -128,9 +128,9 @@ locally; live TTS verification is outstanding. This session has no Linear connec
 4. Open the dashboard again and run a Storyteller roll. The dice should land and the broadcast should show. Reload the save. That finished roll should be in Recent rolls on the dashboard. The old in-game Storyteller roll panels should be gone.
 5. Open the Storyteller HUD. Scenes, Stats, and Projects should be gone. Phases should still be there. Change the clock or a character stat from the dashboard and confirm the table updates.
 
-### Staged NPC walks up for a Storyteller roll
+### ✅ Staged NPC walks up for a Storyteller roll
 
-#### TOR-738 — Staged NPC steps to the Storyteller dice tray
+#### ✅ TOR-738 — Staged NPC steps to the Storyteller dice tray
 
 **How to verify:** Save & Play. You do not need a full build. Be in a normal scene (not Scatter) with at least one NPC standing on the stage, not sitting in a chair.
 
@@ -139,9 +139,9 @@ locally; live TTS verification is outstanding. This session has no Linear connec
 3. Clear that roll so the tray and dice go away. The figurine should glide back to the spot, height, facing, and light they had before the roll.
 4. Roll for an NPC who is sitting at the table, and roll once in Scatter Mode. Those should look the same as they do today: the seated NPC stays in their chair, and Scatter does not pull anyone to the Center spot.
 
-### High — Debug Light button
+### ✅ High — Debug Light button
 
-#### TOR-736 — Restore Debug Light on the Storyteller debug panel
+#### ✅ TOR-736 — Restore Debug Light on the Storyteller debug panel
 
 **How to verify:** Save & Play so the Storyteller HUD XML reloads (a full build is not required for this one).
 
@@ -149,9 +149,9 @@ locally; live TTS verification is outstanding. This session has no Linear connec
 2. You should see **Debug Light** again, just above **Debug Camera**.
 3. Click it: a grid of in-world spotlights should appear. Click one to open the Cartesian / spherical sliders (the same tuner as before).
 
-### High — Downtime has no stage
+### ✅ High — Downtime has no stage
 
-#### TOR-735 — No stage during Downtime (stuck Mara / Mylène)
+#### ✅ TOR-735 — No stage during Downtime (stuck Mara / Mylène)
 
 **How to verify:** Save & Play so the new Lua loads. You do not need to restart the dashboard for this check.
 
@@ -171,11 +171,11 @@ locally; live TTS verification is outstanding. This session has no Linear connec
 3. Finish a PC roll, then drag that roll card onto the stage board. It should broadcast to the table.
 4. Optional: drag a staged NPC onto an empty chair — they should seat (lit), not leave a duplicate on the stage.
 
-### High — Cloud assets (local `assets/` → Steam Cloud)
+### ✅ High — Cloud assets (local `assets/` → Steam Cloud)
 
 These four rows share one build. Close TTS, run `npm run build:full` with Steam running, reload the save, then Save & Play. Mark each row only after its own steps pass.
 
-#### TOR-728 — NPC art from Steam Cloud (figurines, tokens, roll banners)
+#### ✅ TOR-728 — NPC art from Steam Cloud (figurines, tokens, roll banners)
 
 **How to verify:** After the build and Save & Play above:
 
@@ -184,7 +184,7 @@ These four rows share one build. Close TTS, run `npm run build:full` with Steam 
 3. Seat a PC. Their seat figurine should match the character.
 4. On the Storyteller Dashboard roster, open an NPC: the headshot and token should still appear (they are served from `assets/NPC Art/` on disk).
 
-#### TOR-729 — Dice faces, companion toggle and Blood Potency marks
+#### ✅ TOR-729 — Dice faces, companion toggle and Blood Potency marks
 
 **How to verify:** After the same build and Save & Play:
 
@@ -192,7 +192,7 @@ These four rows share one build. Close TTS, run `npm run build:full` with Steam 
 2. Flip a companion toggle on the table. Its faces should still change.
 3. On a character sheet, change Blood Potency (or look at the Page 1 / Page 2 Blood Potency marks). The surge / mending / discipline marks should still show the right art.
 
-#### TOR-732 — Site cards, district cards and skyboxes
+#### ✅ TOR-732 — Site cards, district cards and skyboxes
 
 **How to verify:** After the same build and Save & Play:
 
@@ -200,7 +200,7 @@ These four rows share one build. Close TTS, run `npm run build:full` with Steam 
 2. Open one of the seven cards that were new to TTS: Hockey Hall of Fame, Underground Med Clinic, or any of the five Warrens sites. Those should now show Cloud art instead of a blank or GitHub fallback.
 3. Switch the skybox from the Scenes tools to a few named skies and to Generic. The sky should change; named skies should match the sheet keys.
 
-#### TOR-730 — HUD art, character sheet faces and Global panels
+#### ✅ TOR-730 — HUD art, character sheet faces and Global panels
 
 **How to verify:** After the same build and Save & Play:
 
@@ -247,7 +247,7 @@ These four rows have no Linear issue yet: the Linear connection was down when th
 1. Put Benedict Kincaid, Severin Koslov and a Guard Ghoul on the stage. Their Stage Control tokens should show full names on both sides.
 2. Clear the stage and add several NPCs. From the Storyteller seat, the first token should appear in the top-left corner of the board, then fill to the right, then down.
 
-#### Project launch rolls open for the player
+#### ✅ Project launch rolls open for the player
 
 **How to verify:** Save & Play with the dashboard running. On the PCs tab, open a player's Projects and add a project. The fields still needed glow gold; fill them in until **Roll** lights up, then click it. The roll should appear in the dashboard Rolls column with its difficulty set **and** open on that player's screen, without re-picking the difficulty.
 
@@ -255,7 +255,7 @@ These four rows have no Linear issue yet: the Linear connection was down when th
 
 These rows have no Linear issue yet: the Linear connection is down. An agent will file them and add the ids here.
 
-#### Generic NPCs get a stat tier
+#### ✅ Generic NPCs get a stat tier
 
 **Context:** Each generic type (every "Police" figurine, say) now has up to four stat blocks: Weak, Average, Gifted and Deadly. A generic added to a scene remembers which one it uses, and shows it as a small badge.
 
@@ -268,7 +268,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 5. Save & Play again: the badge should still be there (the tier is saved with the scene).
 6. Give a different generic type only one tier block, then click one of its tokens: it should go straight onto the stage with that tier, no picker.
 
-#### NPC trackers: Health, Willpower, Hunger and Rage on the dashboard
+#### ✅ NPC trackers: Health, Willpower, Hunger and Rage on the dashboard
 
 **Context:** Every NPC on the table now has trackers that TTS keeps, like a PC's: Health and Willpower damage, plus Hunger (vampires) or Rage (werewolves), which start at 1 or 2. Named NPCs keep theirs for the rest of the night (a new night starts them fresh); a generic NPC keeps its own with the scene it is in.
 
@@ -312,7 +312,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 ### High — NPCs and dice no longer wait under the table
 
-#### TOR-707 — NPC figurines and spotlights spawn when a scene needs them
+#### ✅ TOR-707 — NPC figurines and spotlights spawn when a scene needs them
 
 **Context:** The ~90 NPC figurines and spotlights that used to sit in a hidden grid under the table are gone. An NPC now exists only while it is on the stage, in a seat, or in Scatter: it is created when a scene brings it in and destroyed when it leaves. Seated NPCs no longer carry a stage spotlight. The **4 Figurines** join-restore button on the Phases panel was removed (restore is now 1 Assets, 2 HUD, 3 Emitters).
 
@@ -326,7 +326,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 6. Add a generic NPC from the dashboard roster, put it on the stage and Send: it should appear after a short pause with the name you typed. Save & Play: it should still be on the stage with that name.
 7. Advance into the Spotlight phase: stage NPCs should disappear. Go back to play the scene: they should come back.
 
-#### TOR-708 — Dice are taken from the bags when you roll
+#### ✅ TOR-708 — Dice are taken from the bags when you roll
 
 **Context:** The parked dice under each bag are gone. When a roll stages, each die is taken out of the bag; when the roll is cleaned up, the dice are destroyed.
 
@@ -339,7 +339,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 5. Left-click the Rouse bag and roll: same as before. Roll a pool with Hunger dice: the red dice should come out of the Hunger bag as before.
 6. After several rolls, nothing should pile up under the table, and no console errors should appear.
 
-#### TOR-709 — Every NPC's figurine and spotlight token now comes from the repo
+#### ✅ TOR-709 — Every NPC's figurine and spotlight token now comes from the repo
 
 **Context:** Every NPC (named, generic and Memoriam) now gets its figurine picture, one shared figurine back, and a newly drawn spotlight token from GitHub instead of Steam Cloud. Each token shows the NPC's head (using your dashboard crop when you set one), the NPC's name in Bebas Neue, and a ring in the NPC's roster colour. The face-down side is a black silhouette with a black ring. The hand-made tokens are gone. The per-NPC back and token images were removed from the save's Custom UI assets (a backup copy of the save is in your backup saves folder). The images the roll result banner uses (one per PC, named NPC and Memoriam figure, named after the character) are now written by the same build step and point at the repo figurines; when a figurine is removed from the repo, its banner image is removed from the save too. Figurines that are in no catalog get no token or banner image, and the end of the Full build lists them along with catalogued NPCs that have no figurine yet.
 
@@ -376,7 +376,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 2. Seat an NPC at the table, light their seat (double-click it on the dashboard), then drag the seat onto the stage. Within a second or two the figurine on the stage should stand lit under its spotlight.
 3. Roll for an NPC from the dashboard, pick two or three dice and click Reroll. When the dice land, the dashboard's dice and result should update by themselves, without clicking Recalculate.
 
-#### TOR-715 — Secret Storyteller rolls keep the pool hidden
+#### ✅ TOR-715 — Secret Storyteller rolls keep the pool hidden
 
 **Context:** From your 2026-10-11 pins. A secret roll's dice are now hidden from players from the moment they appear and are never revealed. Players glimpse a random handful as the first throw is made, and every rerolled die while it tumbles. The result banner shows only the dice the result gives away.
 
@@ -400,7 +400,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 4. Turn an NPC's light off and on from the dashboard: its token flips face down and face up without moving.
 5. Hold the spotlight hotkey over a token: the NPC is spotlit as before.
 
-#### TOR-717 — NPC token settings window (name, colour, crop, card scale, seated height)
+#### ✅ TOR-717 — NPC token settings window (name, colour, crop, card scale, seated height)
 
 **Context:** From your 2026-10-11 pin. Right-clicking a roster token in the dashboard opens a settings window for that NPC. The name and colour change the dashboard and the spotlight token art. The name, card scale and seated height reach TTS through a generated file. Seated figurines still use card scale 53, so card scale only changes the figurine on the stage.
 
@@ -413,7 +413,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 5. Seat the NPC at the table. The figurine sits at the new height.
 6. Right-click the token again, clear every field and click off. Regenerate and Save & Play: everything is back to the defaults.
 
-#### TOR-711 — Compulsion badge on the dashboard seats
+#### ✅ TOR-711 — Compulsion badge on the dashboard seats
 
 **Context:** From your 2026-10-11 pin. A PC with a selected Compulsion card now shows a red tag on their dashboard seat naming the Compulsion. Hovering the tag shows the card's real Influence, Burden and Catharsis text, read from your `compulsions.jsonc` file (the 36 cards you extracted and numbered).
 
@@ -503,7 +503,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 ### High — the dashboard's Scenes tab: scene controls
 
-#### TOR-679 / TOR-680 / TOR-691 — The Scenes tab follows TTS and drives it
+#### ✅ TOR-679 / TOR-680 / TOR-691 — The Scenes tab follows TTS and drives it
 
 **Context:** TOR-679 is the plumbing (TTS pushes phase, scene, clock, sound and seat changes); if the Scenes tab follows TTS changes without a page refresh, it works. TOR-680 lets the tab send commands back. TOR-691 limits the real-time clock to Play's Main subphase and Memoriam.
 
@@ -534,17 +534,17 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 **How to verify:** Note the present-day time on the game-state overlay. Set a live scene's clock to ten minutes before present day: it should jump straight to present day. Set it to an hour before: it should stay an hour behind. With real time on and the scene catching up at ×5, it should land exactly on present day and then follow it, never stopping a few minutes short.
 
-#### TOR-690 — Sound volume changes stick to the track, in every scene
+#### ✅ TOR-690 — Sound volume changes stick to the track, in every scene
 
 **How to verify:** Start a scene whose music you know and drag the **Music** slider to about a quarter. Play a scene with different music, then go back: the first music should come back at your quarter level. The Location slider should behave the same way for an ambience. Thunder is unchanged: its slider still scales every clap.
 
-#### TOR-702 — End → Intermission keeps the TR Loop playing
+#### ✅ TOR-702 — End → Intermission keeps the TR Loop playing
 
 **How to verify:** Go from **End** to **Intermission**. The TR Loop should fade in after the blackout and keep playing for at least a minute without Main cutting in. Then advance to Play: the session intro should play and Main should come back afterwards.
 
 ### High — scene library and switching scenes
 
-#### TOR-684 — The dashboard keeps the scene library and sends scenes to TTS when you play them
+#### ✅ TOR-684 — The dashboard keeps the scene library and sends scenes to TTS when you play them
 
 **Context:** The dashboard holds the master copy of the scene library (in its own file, not in the public repo). Playing a scene sends it to TTS first. A linked scene on the table is written back to the dashboard as you change it.
 
@@ -557,7 +557,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 5. **Unlink and Fork:** click the table's scene title on the phase bar and choose **Unlink from the library**: an **unlinked** tag should appear, and the in-game row should show unlinked. Choose **Fork…**, name both scenes and press **Fork**: the phase bar should show the new name, and the in-game library should list both.
 6. **Delete:** press **Delete** twice on a scene that is not on the table. It should leave both the dashboard list and the in-game library.
 
-#### TOR-697 — The scene timing menu: Scene Time + and Now + rows, ×2 or ×5 to Now
+#### ✅ TOR-697 — The scene timing menu: Scene Time + and Now + rows, ×2 or ×5 to Now
 
 **How to verify:** Click a gold (new) scene on deck in the phase bar, or **Play** on a new scene in the Play a Scene window. Ongoing scenes (green) no longer open this menu; see TOR-705 below.
 
@@ -566,7 +566,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 3. With a scene earlier tonight than Now, ×5 to Now should be lit. Click the leftmost top button: the scene plays at its own time and the clock runs fast until it reaches Now, then at ×2.
 4. Switch again and click the third button on the Now row (+30 min): the scene should start 30 minutes after Now, Now should move on by 30 minutes, and the clock should run at ×2.
 
-#### TOR-693 — Scene edits stay when you switch to another scene and back
+#### ✅ TOR-693 — Scene edits stay when you switch to another scene and back
 
 **How to verify:** Play scene A. Move two or three NPCs on the stage and **Send**, change the music, and change the sky or lighting. Play scene B, then play A again: the NPCs, music and sky or lighting should be as you left them. Then move an NPC, press **End Scene**, and play A again: that move should still be there. Opening A's preview (**Edit**) while it is on the table should also show your latest changes. The weather override is not part of this: it covers the whole table until dawn.
 
@@ -576,7 +576,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 **How to verify:** Play Grand Audience: it should load with Mylène on chair 6 and no error. Then play a library scene on Table B, and End it or play a different scene. Change the table's seating (the Debug panel's simulated disconnect and connect for one PC, or switch tables so Table B reshuffles). Preview the first scene in the dashboard: its seats should be exactly as they were when it left the table. Play it again: no "already used by" message.
 
-#### TOR-705 — Scenes are new, ongoing, ended or templates, and the scene controls are simpler
+#### ✅ TOR-705 — Scenes are new, ongoing, ended or templates, and the scene controls are simpler
 
 **Context:** Every library scene now has a status. Playing a scene makes it **ongoing**, and it stays ongoing when you switch away; only **End Scene** makes it **ended**. Templates are reusable set-ups (Elysium, the council chamber) that always play as a fresh dated copy. The Advance ring is gone. Restart the dashboard and Save & Play first.
 
@@ -590,7 +590,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 6. **Templates:** open a scene's preview (**Edit**), change its picker from **New scene** to **Template** and **Save**. It shows in [square brackets] everywhere, and disappears from the in-game Scenes panel. Press **Play** on it and pick a time: TTS should play a new scene called, for example, "Elysium (Oct 12)" (the night's date), and the template itself stays unchanged in the list.
 7. **Memoriam:** with a scene on the table, open the window and start a **Memoriam…**. The phase bar's button should read **Return ▸**; click it twice and TTS should go back to that scene. Start a Memoriam from Downtime instead (End Scene first): the button should read **Downtime ▸** and leave you in Downtime with no scene.
 
-#### TOR-718 — The in-game scene library only plays scenes; the dashboard is the only place to edit them
+#### ✅ TOR-718 — The in-game scene library only plays scenes; the dashboard is the only place to edit them
 
 **Context:** Saved scenes are now created, edited, forked and deleted only on the dashboard, so TTS can no longer drift from the dashboard's copy. The in-game Import Scene window, the New Scene (fork) window and the Delete button are gone. The in-game Scenes panel still plays saved scenes and still changes the scene on the table. The Scenes panel's layout changed, so run the full build before Save & Play.
 
@@ -681,7 +681,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 6. Have a player spend Willpower on a rolled roll: the card turns blue and pulses during the reroll.
 7. **Hunt:** in the hunt panel under the location card, click a resonance flavor and pick the hunting PC, press the circling arrows to roll, then press the loudspeaker. TTS should show the resonance on the result banner, and the hunt bar should reset.
 
-#### TOR-688 / TOR-698 — Storyteller dice spawn on the drawer tray, and the drawers are visible
+#### ✅ TOR-688 / TOR-698 — Storyteller dice spawn on the drawer tray, and the drawers are visible
 
 **Context:** The Storyteller no longer has dice bags; dice are created on the drawer tray. The 72 spare Storyteller dice are removed on first load. Drawers used to rise invisibly, and a seated NPC's dice spawned under the tray. You can delete any leftover Storyteller dice bags from the save.
 
@@ -724,19 +724,19 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 **How to verify:** At a player seat with no roll in progress, left-click the Rouse bag. The roll panel appears straight away with **Roll** usable (no "Awaiting Storyteller"). Roll it: the result stays fully visible for about a second, then fades, like a right-click quick Rouse. Do the same with the Oblivion Rouse bag. A normal roll (left-click the Normal bag) should still wait for the Storyteller, and its result should still last about six seconds.
 
-#### TOR-696 — A lit signal fire shows on the dashboard, and the dashboard can put it out
+#### ✅ TOR-696 — A lit signal fire shows on the dashboard, and the dashboard can put it out
 
 **Context:** Your later pin made this gentler: no banner, edge glow or chime any more. The player's seat glows and a flame floats above it.
 
 **How to verify:** In TTS, click a player's signal candle to light their fire. Within a second their seat on the dashboard's Scenes tab should glow with a flame above it. Click the flame: the fire in TTS goes out and the glow disappears. Light it again, then put it out from TTS by clicking the candle: the dashboard glow should clear too.
 
-### Medium — Prince's Court sheet
+### ✅ Medium — Prince's Court sheet
 
 #### ✅ TOR-663 — Refresh XML keeps The Court on the people who had it open
 
 **How to verify:** Open The Court on its second spread so your Haven Merits show. On the Storyteller Phases panel, press **Refresh XML**. The Court should stay open on the same spread with the same merits, dots and text, and only the people who had it open should see it. Then close The Court and press Refresh XML again: it stays closed for everyone, and opening it afterwards still shows the current merits.
 
-### Medium — soundscape
+### ✅ Medium — soundscape
 
 #### ✅ TOR-706 — The build puts every sound emitter on silence in the save, so loading doesn't burst a track
 
@@ -749,9 +749,9 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 3. Go back to the TTS main menu and load save 230. There should be no blast of music while the table loads. The soundscape should start the normal way, fading in once the mod takes over.
 4. Run the build a second time: it should say `All 10 emitters already on silent.`
 
-### Medium — locations
+### ✅ Medium — locations
 
-#### TOR-719 — Site fog follows the sheet; four sites get their location sound back; Yonge & Bloor spelling
+#### ✅ TOR-719 — Site fog follows the sheet; four sites get their location sound back; Yonge & Bloor spelling
 
 **Context:** Every site carried the "Top Fog" value from your Districts & Sites workbook, but the game never read it, so every indoor site had fog off and every outdoor site had fog on. 37 sites are authored differently in the sheet and now follow it. Separately, eight sites asked for location sounds that do not exist under those names, so their location layer stayed silent.
 
@@ -761,7 +761,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 2. Go to **Auto Mechanic**, then **Bier Markt**, then **The St. Regis Toronto: Room 101**, then **The Nosferatu Warrens: Palis'**. Each should play a location sound (auto shop, dive bar, computer lab, and the Warrens ambience). The Host console should not print "Unknown location audio".
 3. Open the district picker: the museum district should read **The Yonge & Bloor Museum District**.
 
-#### TOR-722 — Sites, districts and the weather schedule now come straight from your sheets
+#### ✅ TOR-722 — Sites, districts and the weather schedule now come straight from your sheets
 
 **Context:** The game's list of districts and sites, and the hour-by-hour weather schedule, used to be hand-kept copies in the code. They are now generated from your Districts & Sites workbook and the WEATHER tab of the Toronto Rising sheet (`npm run locations:import`, `npm run weather:import`). Almost everything is identical. The visible differences come from your sheet: **Dupont by the Castle** is now spelled with lower-case "by the"; **Deer Park** now carries the **bestialNull** condition and **Riverdale** the **noHungerDice** condition (both are in the sheet's Condition column but were never in the game before); and five Warrens rooms (Antechamber, Drake's, Labyrinth, Spawning Pool, Tunnel Junction) asked for a "nosWarrens" music playlist that does not exist, so they now fall back to the default mood music instead of silently keeping whatever was playing before.
 
@@ -774,9 +774,9 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 5. Go to **The Nosferatu Warrens: Labyrinth**. The background music should switch to the default mood music. If you want a dedicated Warrens playlist instead, that needs adding to the soundscape catalog.
 6. Advance or set the in-game time across a few hours: the weather should change exactly as it did before (the schedule data itself did not change).
 
-### Debug Light — turn a spotlight on while you test it
+### ✅ Debug Light — turn a spotlight on while you test it
 
-#### TOR-742 — Enable button on the Debug Light tuner
+#### ✅ TOR-742 — Enable button on the Debug Light tuner
 
 **How to verify:** Save & Play. You do not need a full build.
 
