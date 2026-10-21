@@ -1,3 +1,154 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "sketch": "scenes",
+      "x": 662,
+      "y": 959,
+      "text": "There is no way to unseat an NPC from the table -- dragging them off the board does nothing.  Dragging a seated NPC off of the board should clear their seat.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:46:15.023Z",
+      "updatedAt": "2026-10-21T08:46:15.023Z"
+    },
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 196,
+      "y": 494,
+      "text": "Opened groups in the roster should gain a pulsing glow to indicate that they are open.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:46:41.830Z",
+      "updatedAt": "2026-10-21T08:46:41.830Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 108,
+      "y": 504,
+      "text": "Upon selecting a Generic NPC, the tier selection popup overflows off of the left side of the screen.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:47:11.759Z",
+      "updatedAt": "2026-10-21T08:47:11.759Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 466,
+      "y": 474,
+      "text": "In the NPC stat editor, the contents of the bottom special/notes field overflows the notes field vertically.  The notes field should instead scroll.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:47:54.872Z",
+      "updatedAt": "2026-10-21T08:47:54.872Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 296,
+      "y": 417,
+      "text": "The \"Kept\" pool for Generic NPCs elevated to unique character status should be reproduced in the Memoriams tab, for elevated Memoriam Generics.  Same for the \"in current scene\" display.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:48:33.478Z",
+      "updatedAt": "2026-10-21T08:48:33.478Z"
+    },
+    {
+      "id": 6,
+      "sketch": "scenes",
+      "x": 169,
+      "y": 289,
+      "text": "Clicking anywhere on a category in the \"Main\" tab of the NPC Roster should unfold it (not just the category title), though buttons should still render over top of the interaction bar.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:54:26.776Z",
+      "updatedAt": "2026-10-21T08:54:26.776Z"
+    },
+    {
+      "id": 7,
+      "sketch": "scenes",
+      "x": 170,
+      "y": 627,
+      "text": "Token groups in the Memoriam tab should get the same \"+\" button allowing for renaming and coloring as they do in the Generic tab.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:55:01.838Z",
+      "updatedAt": "2026-10-21T08:55:01.838Z"
+    },
+    {
+      "id": 8,
+      "sketch": "scenes",
+      "x": 287,
+      "y": 246,
+      "text": "In the Memoriam tab of the NPC Roster, the \"year\" and \"location\" buttons should be styled subtly differently to distinguish them, and they should be horizontally centered.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:55:36.915Z",
+      "updatedAt": "2026-10-21T08:55:36.915Z"
+    },
+    {
+      "id": 9,
+      "sketch": "scenes",
+      "x": 214,
+      "y": 245,
+      "text": "Change to how filters work in the Memoriam tab of the NPC Roster: It should be possible to select multiple \"year\" and \"location\" filters at once. The NPCs should filter to include all NPCs that match any of the selected filters (though, if filters are set for both year and location, they must still match at least one of each).  Clicking on a filter toggles it on or off.",
+      "status": "open",
+      "createdAt": "2026-10-21T08:56:39.617Z",
+      "updatedAt": "2026-10-21T08:56:39.617Z"
+    },
+    {
+      "id": 10,
+      "sketch": "scenes",
+      "x": 1691,
+      "y": 281,
+      "text": "Two text elements should be added to the roll control popup for PCs:  One at the top should specify any available details about what comprises the pool (currently, this should only be used for Project Launch rolls, and include the two traits configured in the Luanch roll window, as well as the calculated difficulty).  The bottom text element should be used in tandem with Conditions, and display the effect of any conditions that are relevant to the current step of the roll.  For example, the \"Reroll All Dice with Willpower\" condition should display a warning whenever the \"Spend WP\" option is available and, once selected and the player begins to reroll dice, that text should change to something like \"You must reroll all dice before Confirming\".",
+      "status": "open",
+      "createdAt": "2026-10-21T08:59:22.839Z",
+      "updatedAt": "2026-10-21T08:59:22.839Z"
+    },
+    {
+      "id": 11,
+      "sketch": "scenes",
+      "x": 1704,
+      "y": 342,
+      "text": "Double-clicking on an unfolded roll should clear the roll, just like a double-click on a folded roll.  (A single click should still fold it)",
+      "status": "open",
+      "createdAt": "2026-10-21T09:01:42.823Z",
+      "updatedAt": "2026-10-21T09:01:42.823Z"
+    },
+    {
+      "id": 12,
+      "sketch": "scenes",
+      "x": 1755,
+      "y": 393,
+      "text": "Completed rolls should be cleared from the dashboard on a scene or phase transition.",
+      "status": "open",
+      "createdAt": "2026-10-21T09:01:54.887Z",
+      "updatedAt": "2026-10-21T09:01:54.887Z"
+    },
+    {
+      "id": 13,
+      "sketch": "scenes",
+      "x": 1760,
+      "y": 31,
+      "text": "When the phase transitions from End to Intermission, the TR Loop should play at half normal volume (it should be allowed to restore to full volume when the save loads into Intermission for a fresh session though)",
+      "status": "open",
+      "createdAt": "2026-10-21T09:03:45.183Z",
+      "updatedAt": "2026-10-21T09:03:45.183Z"
+    },
+    {
+      "id": 14,
+      "sketch": "scenes",
+      "x": 279,
+      "y": 314,
+      "text": "Generic Memoriam NPCs, when promoted to unique characters, should remain in the Memoriam tab, displayed in the same style as non-Memoriam Generic NPCs who have been upgraded are displayed in that tab.",
+      "status": "open",
+      "createdAt": "2026-10-21T09:04:40.823Z",
+      "updatedAt": "2026-10-21T09:04:40.823Z"
+    },
+    {
+      "id": 15,
+      "sketch": "scenes",
+      "x": 102,
+      "y": 949,
+      "text": "The right-click menu for configuring NPCs in the Roster overflows the bottom of the screen if they are near the bottom of the display window",
+      "status": "open",
+      "createdAt": "2026-10-21T09:05:28.343Z",
+      "updatedAt": "2026-10-21T09:05:28.343Z"
+    }
+  ]
 }
