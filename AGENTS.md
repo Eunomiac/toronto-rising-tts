@@ -128,4 +128,6 @@ See `.cursor/rules/` and `.dev/DOCS_INDEX.md` for task-specific policy routing.
 
 ## Git And Scope
 
-Cursor repo rules favor frequent commits after logical units. Codex/API sessions must still preserve the author's uncommitted changes, respect explicit "do not commit" or audit-only instructions, and stage only intended files. Never silently include unrelated worktree changes.
+**Eager commit policy:** Commit completed logical units directly to `master` regularly. Do not wait for the author to request a commit, and do not ask for confirmation before committing. Run proportionate checks first and use clear commit messages. A request to commit the current work should normally produce as many focused commits as the accumulated work warrants rather than one undifferentiated snapshot.
+
+This policy does not authorize pushing, publishing, opening a pull request, rewriting history, or including unrelated work. Codex/API sessions must preserve the author's uncommitted changes, respect explicit "do not commit" or audit-only instructions, and stage only intended files. Never silently include unrelated worktree changes. If the current branch is not `master`, keep working on that branch unless the author explicitly asks to move the work.
