@@ -4,6 +4,7 @@
 
 Read this when:
 - starting the Storyteller Dashboard for a dashboard session
+- verifying any Dashboard implementation before it ships (mandatory; see `AGENTS.md`)
 - Playwright shows a debugger banner, Welcome / `connect.html`, or the wrong Chrome
 - the page is not 1920×1080
 - changing Cursor MCP Playwright flags
@@ -22,6 +23,19 @@ Verification:
 - A **Scenes** click (`#tab-scenes`) succeeds
 
 Status: current
+
+---
+
+## Required browser pass
+
+Every Dashboard implementation must be checked against a running dev server. TypeScript, Vitest and the production build do not replace this pass.
+
+1. Start a fresh `npm run dev` from this directory and wait for the listening message.
+2. Open the real dashboard at a 1920×1080 page size and exercise the changed interaction, including its edge placement or modal state where relevant. Check the page for browser exceptions.
+3. Run the applicable repository smoke: `npm run test:dnd` for Scenes, stage, roster, rolls or drag-and-drop; `npm run test:npc-rolls:browser` for the NPC Stats custom-roll editor. A task that touches neither still needs a focused Playwright interaction of the changed surface.
+4. State what the browser pass covered in the handoff. If a smoke already fails on `HEAD`, prove that baseline and name the exact assertion; do not silently waive it.
+
+The dedicated Playwright MCP Chrome below is preferred because it lets the agent and author inspect the same visual surface. If that MCP is unavailable in the current environment, use the dashboard's declared local `playwright` dependency headlessly at 1920×1080. If its Chromium cache is missing, `npx playwright install chromium` installs the browser runtime without changing tracked source. MCP unavailability is not a reason to skip Playwright verification.
 
 ---
 

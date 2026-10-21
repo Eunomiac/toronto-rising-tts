@@ -30,7 +30,7 @@ The GitHub remote is public. Never commit `.env`, API keys, or private chronicle
 - **Vite + React** render the tab shell, Scenes, PCs and the dev-only note pins. The Lua and Generate NPC tab bodies still boot as plain DOM through `initLuaTab` and `initGenerateNpc`. Do **not** wrap the app in React StrictMode while those inits run (it would bind listeners twice).
 - **Node** on **8788** keeps secrets, the TTS Lua bridge, and image/catalog files. In `--dev`, Vite middleware provides HMR on that same port. Production serves `dist/public`.
 - **SCSS** (nested) is the stylesheet source. Policy: [toronto-rising-dashboard-scss.mdc](../../.cursor/rules/toronto-rising-dashboard-scss.mdc).
-- **Tests:** [TESTING.md](TESTING.md). Vitest for logic and the React shell; Playwright MCP for the visual board. Do not steal OS focus from the existing Chrome window.
+- **Tests:** [TESTING.md](TESTING.md). Vitest covers logic and the React shell, but every Dashboard implementation also requires a running-server Playwright pass at 1920×1080 plus the applicable browser smoke. Prefer Playwright MCP for the visual board; use the local headless Playwright runner when MCP is unavailable. Do not steal OS focus from the existing Chrome window. Full recipe: [PLAYWRIGHT.md](PLAYWRIGHT.md).
 
 `gameState` stays in TTS. The dashboard holds drafts and sends small host commands.
 
