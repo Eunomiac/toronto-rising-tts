@@ -33,6 +33,7 @@ return {
   lexiMadi = { cardScale = 48 },
   lucasMerrow = { cardScale = 58 },
   masonSchmidt = { cardScale = 60 },
+  mem_westernLearnedMedia_01 = { name = "Priest" },
   moltsInShadow = { cardScale = 50 },
   moltsInShadowGarou = { cardScale = 50 },
   myleneHamelin = { cardScale = 47, seatedY = -57 },
