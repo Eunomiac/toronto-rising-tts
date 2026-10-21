@@ -4,12 +4,26 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const {
+  collectActiveCharacterKeys,
   collectCharacterKeys,
   parseMemoriamNpcRows,
   renderMemoriamNpcCatalogJson,
   renderMemoriamNpcCatalogLua,
   validateMemoriamVariants,
 } = require("./lib/memoriam_npcs_sheet_csv.js");
+
+test("collectActiveCharacterKeys reads only active CHARACTERS rows", () => {
+  const keys = collectActiveCharacterKeys([
+    "Name,API key,Is Active?",
+    "Maximillian Steele,maximillianSteele,TRUE",
+    "Adrian Gerrard,adrianGerrard,FALSE",
+  ].join("\n"));
+  assert.deepEqual([...keys], ["maximillianSteele"]);
+  assert.throws(
+    () => collectActiveCharacterKeys("Name,API key\nMaximillian Steele,maximillianSteele\n"),
+    /Is Active/,
+  );
+});
 
 const SAMPLE = [
   "filename,key,label,location,year,variantOfUnique,isGeneric,tags,periods",

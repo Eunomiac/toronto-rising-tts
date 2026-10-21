@@ -50,7 +50,7 @@
                                           characterKey = the PC's charKey) into a scatter group 1–6
     genericAdd        keys, labels?, tiers?, kept?
                                           spawn generic NPCs (catalog keys) named by the Storyteller, each
-                                          with an optional stat tier (`weak` / `average` / `gifted` / `deadly`)
+                                          with an optional stat tier (`weak` / `average` / `gifted` / `deadly` / `superhuman`)
                                           or kept character id (`kept`: key → id, no tier)
     genericRename     key, name           rename a generic NPC already in the scene
     genericTier       key, tier?          change (or clear) the stat tier of a generic NPC in the scene

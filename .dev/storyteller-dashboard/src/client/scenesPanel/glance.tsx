@@ -64,7 +64,7 @@ import { useMemoriamCatalog } from "../memoriamCatalog";
 import { saveNpcStats, useNpcStats } from "../npcStats";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
 import { NpcStatsModal } from "./npcStatsModal";
-import { TierBadge } from "./tierBadge";
+import { TokenBadges } from "./tierBadge";
 import { TierPicker } from "./tierPicker";
 import { loadGenericCatalog, type GenericEntry } from "./genericCatalog";
 import { NpcLevelBadge } from "./npcTrackers";
@@ -699,7 +699,7 @@ const RosterToken = ({ characterKey, name, className, color, tier, onConfigure }
     }}
   >
     <Headshot className={className} characterKey={characterKey} />
-    {tier && <TierBadge tier={tier} where="bin" />}
+    <TokenBadges characterKey={characterKey} tier={tier} where="bin" />
     <NpcLevelBadge characterKey={characterKey} where="bin" />
     <span className="lab-group-name">{name}</span>
   </span>
@@ -772,6 +772,7 @@ const GenericToken = ({ member, className, color, onPick, onPreview, onConfigure
     onMouseLeave={() => onPreview(null)}
   >
     <Headshot className={className} characterKey={member.characterKey} />
+    <TokenBadges characterKey={member.characterKey} where="bin" />
   </button>
 );
 
@@ -800,6 +801,7 @@ const KeptToken = ({ member, inUse, onAdd, onStats }: {
     }}
   >
     <Headshot className="lab-group-head" characterKey={member.figurineKey} />
+    <TokenBadges characterKey={member.figurineKey} where="bin" />
     <span className="lab-group-name">{member.name}</span>
   </button>
 );
@@ -1275,7 +1277,9 @@ export const MasonryRoster = (): ReactElement => {
             </span>}
             <span className="lab-group-cluster">
               {leaderFirst(group).map((npc) => (
-                <Headshot key={npc.characterKey} className={tokenClass(group, npc)} characterKey={npc.characterKey} />
+                <Headshot key={npc.characterKey} className={tokenClass(group, npc)} characterKey={npc.characterKey}>
+                  <TokenBadges characterKey={npc.characterKey} where="bin" />
+                </Headshot>
               ))}
             </span>
             <span className="lab-group-label" style={{ minWidth: group.labelWidth }}>{group.label}</span>

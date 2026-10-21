@@ -235,6 +235,46 @@ function parseMemoriamNpcRows(csvText) {
 }
 
 /**
+ * Active present-day character keys from the Toronto Rising CHARACTERS tab.
+ * Memoriam variants may inherit from these even when the character has no
+ * catalogued figurine art yet.
+ *
+ * @param {string} csvText
+ * @returns {Set<string>}
+ */
+function collectActiveCharacterKeys(csvText) {
+  const rows = parseCsv(csvText).filter((r) => r.some((c) => trimCell(c) !== ""));
+  if (rows.length < 2) {
+    throw new Error("CHARACTERS: needs a header row and at least one data row.");
+  }
+
+  const headers = rows[0].map(normalizeHeader);
+  const keyColumn = headers.indexOf("apikey");
+  const activeColumn = headers.indexOf("isactive?");
+  if (keyColumn < 0 || activeColumn < 0) {
+    throw new Error(
+      `CHARACTERS: expected headers "API key" and "Is Active?"; got ${JSON.stringify(rows[0])}`,
+    );
+  }
+
+  const keys = new Set();
+  for (let r = 1; r < rows.length; r += 1) {
+    if (trimCell(rows[r][activeColumn]).toUpperCase() !== "TRUE") {
+      continue;
+    }
+    const key = trimCell(rows[r][keyColumn]);
+    if (!KEY_RE.test(key)) {
+      throw new Error(`CHARACTERS: row ${r + 1} has active character with invalid API key ${JSON.stringify(key)}.`);
+    }
+    keys.add(key);
+  }
+  if (keys.size < 1) {
+    throw new Error("CHARACTERS: no active character keys.");
+  }
+  return keys;
+}
+
+/**
  * @param {{
  *   npcs: ReturnType<typeof parseMemoriamNpcRows>,
  *   meta: { sheetId: string, rangeName: string, tabName?: string }
@@ -242,9 +282,9 @@ function parseMemoriamNpcRows(csvText) {
  * @returns {string}
  */
 /**
- * Every variantOfUnique must name a catalogued character or another Memoriam NPC, with no cycle.
+ * Every variantOfUnique must name an active present-day character or another Memoriam NPC, with no cycle.
  * @param {ReturnType<typeof parseMemoriamNpcRows>} rows
- * @param {Set<string>} cataloguedKeys keys from lib/npcs_data.ttslua D.characters
+ * @param {Set<string>} cataloguedKeys active keys from the CHARACTERS tab
  */
 function validateMemoriamVariants(rows, cataloguedKeys) {
   /** @type {Map<string, string>} */
@@ -268,7 +308,7 @@ function validateMemoriamVariants(rows, cataloguedKeys) {
       }
       if (!variantOf.has(current)) {
         throw new Error(
-          `MEMORIAMNPCCSV: "${row.key}" variantOfUnique "${row.variantOfUnique}" reaches "${current}", which is not a catalogued NPC or a Memoriam NPC.`,
+          `MEMORIAMNPCCSV: "${row.key}" variantOfUnique "${row.variantOfUnique}" reaches "${current}", which is not an active CHARACTERS row or a Memoriam NPC.`,
         );
       }
       current = variantOf.get(current) || "";
@@ -352,6 +392,7 @@ function renderMemoriamNpcCatalogJson(payload) {
 }
 
 module.exports = {
+  collectActiveCharacterKeys,
   parseMemoriamNpcRows,
   renderMemoriamNpcCatalogJson,
   validateMemoriamVariants,

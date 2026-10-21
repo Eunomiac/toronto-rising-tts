@@ -11,4 +11,6 @@ export const tierBadgeSrc = (tier: NpcTier): string => {
   return src;
 };
 
-export const TIER_LABELS: Record<NpcTier, string> = { weak: "Weak", average: "Average", gifted: "Gifted", deadly: "Deadly" };
+export const TIER_LABELS: Record<NpcTier, string> = {
+  weak: "Weak", average: "Average", gifted: "Gifted", deadly: "Deadly", superhuman: "Superhuman"
+};

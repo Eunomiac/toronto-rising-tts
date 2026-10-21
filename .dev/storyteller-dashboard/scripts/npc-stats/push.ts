@@ -2,7 +2,7 @@ import { appendFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { clearPending, PENDING_FILE_NAME, readPending } from "../../src/server/npcStatsPending.ts";
 import { normalizeNpcStatsFile } from "../../src/shared/npcStats.ts";
-import { findColumns } from "./sheet.ts";
+import { sheetRecords } from "./sheet.ts";
 import { fetchCharactersRows } from "./sheetFetch.ts";
 import { planRowWrite } from "./sheetWrite.ts";
 import { writeSheet, type SheetWriteRow } from "./sheetWriter.ts";
@@ -34,14 +34,9 @@ if (keys.length === 0) {
 }
 
 const stats = normalizeNpcStatsFile(JSON.parse(await readFile(path.join(dataDir, "npc-stats.json"), "utf8")));
-const [header, ...body] = await fetchCharactersRows();
-if (!header) {
-  throw new Error("CHARACTERS is empty");
-}
-const columns = findColumns(header);
-const rows = new Map<string, readonly string[]>();
-for (const row of body) {
-  const key = (row[columns.key] ?? "").trim();
+const rows = new Map<string, Readonly<Record<string, string>>>();
+for (const row of sheetRecords(await fetchCharactersRows(), "CHARACTERS")) {
+  const key = (row["API key"] ?? "").trim();
   if (key !== "" && !rows.has(key)) {
     rows.set(key, row);
   }
@@ -64,19 +59,25 @@ for (const key of keys) {
     done[key] = pending[key]!;
     continue;
   }
-  const plan = planRowWrite(key, block, (column) => row[columns[column]] ?? "");
+  const plan = planRowWrite(key, block, row);
   if (plan.problems.length > 0) {
     problems.push(...plan.problems.map((problem) => `${key}: ${problem}`));
     continue;
   }
   if (plan.notesDiffer) {
-    notes.push(`${key}: Notes edits are not written to the sheet (Notes come from its Ancilla, Elder and Methuselah columns); the next import replaces them.`);
+    notes.push(`${key}: Notes edits are not written to the Sheet (Notes come from its custom-power and Special Abilities columns); the next import replaces them.`);
   }
   if (Object.keys(plan.cells).length === 0) {
     done[key] = pending[key]!;
   } else {
     writes.push({ key, cells: plan.cells });
   }
+}
+
+// A bad pending edit must stop the whole batch before the Apps Script sees any rows. That keeps a FULL build from
+// partially updating the Sheet when an older dashboard edit no longer fits the current Sheet schema.
+if (problems.length > 0) {
+  throw new Error(`${problems.length} edit(s) could not be written and stay waiting (the import keeps the dashboard's version):\n  ${problems.join("\n  ")}`);
 }
 
 if (writes.length > 0) {
@@ -103,7 +104,4 @@ const verb = dryRun ? "would write" : "wrote";
 console.log(`npc-stats:push: ${verb} ${writes.length} NPC(s) to the sheet${dryRun ? " (dry run: nothing written)" : ""}.`);
 for (const note of notes) {
   console.log(`npc-stats:push: ${note}`);
-}
-if (problems.length > 0) {
-  throw new Error(`${problems.length} edit(s) could not be written and stay waiting (the import keeps the dashboard's version):\n  ${problems.join("\n  ")}`);
 }

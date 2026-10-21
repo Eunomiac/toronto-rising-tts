@@ -139,7 +139,7 @@ function GenericNpcs.destroyAllLiveAndClearMembership()
 end
 
 --- Stat tier names the Storyteller Dashboard keeps a stat block for on each generic type.
-local TIERS = { weak = true, average = true, gifted = true, deadly = true }
+local TIERS = { weak = true, average = true, gifted = true, deadly = true, superhuman = true }
 
 --- A kept character's id (the dashboard's `kept:<id>` stats record; TTS keeps no list of them).
 --- @param id any
@@ -152,7 +152,7 @@ end
 --- Membership + roster registration only; the reconciler spawns each one when it is placed on the stage.
 --- @param keys string[] catalog keys
 --- @param labels table|nil key → display name
---- @param tiers table|nil key → stat tier (`weak` / `average` / `gifted` / `deadly`); omitted = no tier
+--- @param tiers table|nil key → stat tier (`weak` / `average` / `gifted` / `deadly` / `superhuman`); omitted = no tier
 --- @param kept table|nil key → kept character id; a kept character rolls from its own block, so it has no tier
 --- @return string|nil error
 function GenericNpcs.importNamed(keys, labels, tiers, kept)
@@ -244,6 +244,7 @@ function GenericNpcs.setTier(characterKey, tier)
     end
     row.tier = tier
     setMembership(membership)
+    require("core.stage_tokens").reconcileFromState()
     require("dashboard.push").markWorldDirty({ seats = true })
     return nil
 end

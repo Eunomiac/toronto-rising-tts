@@ -24,7 +24,7 @@ const vampire = {
   social: 5,
   mental: 4,
   supernatural: 3,
-  exceptional: [{ id: "occ", name: "Occult", dice: 9 }, { id: "half", name: "Academics" }, { id: "brawl", name: "Brawl (Feral Claws)", dice: 11 }],
+  exceptional: [{ id: "occ", name: "Occult", dice: 9 }, { id: "half", name: "" }, { id: "brawl", name: "Brawl (Feral Claws)", dice: 11 }],
   attacks: [{ id: "claws", name: "Feral Claws", pool: "ex:brawl", bonus: 2 }, { id: "gone", name: "Kick", pool: "ex:half", bonus: 0 }, { id: "x", name: "" }],
   powers: [
     { name: "Dominate", dots: 1, powers: [{ level: 1, name: "Compel", rouse: 0, pool: "social" }, { level: 2, name: "", pool: "" }] },
@@ -35,9 +35,10 @@ const vampire = {
 };
 
 describe("normalizeStatBlock", () => {
-  it("drops incomplete pools, nameless attacks and powers, empty categories, and dangling pool refs", () => {
+  it("derives exceptional dice and drops nameless pools, attacks and powers, empty categories, and dangling pool refs", () => {
     const block = normalizeStatBlock(vampire);
     expect(block?.exceptional.map((pool) => pool.name)).toEqual(["Occult", "Brawl (Feral Claws)"]);
+    expect(block?.exceptional.map((pool) => pool.dice)).toEqual([6, 6]);
     expect(block?.attacks).toEqual([
       { id: "claws", name: "Feral Claws", pool: "ex:brawl", bonus: 2 },
       { id: "gone", name: "Kick", pool: "", bonus: 0 }
@@ -46,14 +47,14 @@ describe("normalizeStatBlock", () => {
       { name: "Dominate", dots: 1, powers: [{ level: 1, name: "Compel", rouse: 0, pool: "social" }] },
       { name: "Protean", dots: 2, powers: [{ level: 2, name: "Feral Claws", rouse: 1, pool: "atk:claws" }] }
     ]);
-    expect(block?.notes).toBe("Hates the Prince.");
+    expect(block?.notes).toBe("<p>Hates the Prince.</p>");
   });
 
   it("keeps vampire fields, the fourth pool and rouse checks only for kinds that have them", () => {
     const mortal = normalizeStatBlock({ ...vampire, kind: "mortal" });
     expect(mortal).not.toHaveProperty("generation");
     expect(mortal).not.toHaveProperty("clan");
-    expect(mortal).not.toHaveProperty("supernatural");
+    expect(mortal).toHaveProperty("supernatural", 3);
     expect(mortal?.powers[1]?.powers[0]?.rouse).toBe(0);
     const ghoul = normalizeStatBlock({ ...vampire, kind: "ghoul" });
     expect(ghoul).not.toHaveProperty("bloodPotency");
@@ -79,7 +80,7 @@ describe("pool options", () => {
       "Physical", "Social", "Mental", "Disciplines", "Occult", "Brawl (Feral Claws)"
     ]);
     expect(poolOptions(block, true).slice(-2)).toEqual([
-      { ref: "atk:claws", label: "Feral Claws", dice: 11 },
+      { ref: "atk:claws", label: "Feral Claws", dice: 6 },
       { ref: "atk:gone", label: "Kick", dice: undefined }
     ]);
   });

@@ -29,7 +29,7 @@ export type NpcConfigTarget = {
   readonly defaultName: string;
   /** Ring colour the token gets from its roster group. */
   readonly defaultColor: string;
-  /** What the Stats button edits: a named NPC's block, a generic type's four tiers, or a kept character's block. */
+  /** What the Stats button edits: a named NPC's block, a generic type's five tiers, or a kept character's block. */
   readonly stats: { readonly key: string; readonly label: string; readonly tiered: boolean };
   /** A Memoriam variant with no block of its own: the Stats window starts from the linked NPC. */
   readonly statSeed?: NpcStats;

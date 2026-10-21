@@ -257,10 +257,18 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
             </div>
           </div>
         ))}
+        {(block.advantages?.length ?? 0) > 0 && (
+          <>
+            <span className="roll-options-head">Advantages</span>
+            <div className="npc-config-advantages">
+              {block.advantages?.map((advantage) => <div key={advantage.id}>{advantage.name}</div>)}
+            </div>
+          </>
+        )}
         {block.notes && block.notes.trim() !== "" && (
           <>
             <span className="roll-options-head">Notes</span>
-            <div className="npc-config-notes">{block.notes}</div>
+            <div className="npc-config-notes" dangerouslySetInnerHTML={{ __html: block.notes }} />
           </>
         )}
       </div>

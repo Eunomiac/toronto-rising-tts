@@ -7,7 +7,8 @@ export type NpcRollMetadata = {
 export type NpcDifficultyRule =
   | { readonly kind: "fixed"; readonly min: number }
   | { readonly kind: "range"; readonly min: number; readonly max: number }
-  | { readonly kind: "minimum"; readonly min: number };
+  | { readonly kind: "minimum"; readonly min: number }
+  | { readonly kind: "list"; readonly values: readonly number[]; readonly min: number };
 
 export const NPC_DIFFICULTY_MAX = 15;
 export const normalizeTraitName = (name: string): string => name.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -18,6 +19,12 @@ export const rollTraits = (metadata: NpcRollMetadata): readonly string[] =>
 export const parseNpcDifficulty = (input: string): NpcDifficultyRule | undefined | null => {
   const text = input.trim().replace(/^"(.*)"$/, "$1").trim();
   if (!text) return undefined;
+  if (text.includes(",")) {
+    const values = text.split(",").map((part) => Number(part.trim()));
+    return values.length > 1 && values.every((value) => Number.isSafeInteger(value) && value >= 0 && value <= NPC_DIFFICULTY_MAX)
+      ? { kind: "list", values: [...new Set(values)], min: Math.min(...values) }
+      : null;
+  }
   const match = /^(\d+)\s*(?:(-)\s*(\d+)|(\+))?$/.exec(text);
   if (!match) return null;
   const min = Number(match[1]);
@@ -30,11 +37,13 @@ export const parseNpcDifficulty = (input: string): NpcDifficultyRule | undefined
 };
 
 export const formatNpcDifficulty = (rule: NpcDifficultyRule): string =>
-  rule.kind === "range" ? `${rule.min}-${rule.max}` : `${rule.min}${rule.kind === "minimum" ? "+" : ""}`;
+  rule.kind === "range" ? `${rule.min}-${rule.max}` : rule.kind === "list" ? rule.values.join(",") : `${rule.min}${rule.kind === "minimum" ? "+" : ""}`;
 
 export const npcDifficultyAllows = (rule: NpcDifficultyRule | undefined | null, value: number): boolean =>
   Number.isInteger(value) && value >= 0 && value <= NPC_DIFFICULTY_MAX
-  && (!rule || rule.kind === "fixed" || (rule.kind === "minimum" ? value === 0 || value >= rule.min : value >= rule.min && value <= rule.max));
+  && (!rule || rule.kind === "fixed" || (rule.kind === "minimum" ? value === 0 || value >= rule.min
+    : rule.kind === "list" ? value === 0 || rule.values.includes(value)
+      : value >= rule.min && value <= rule.max));
 
 export const normalizeNpcRollMetadata = (raw: Record<string, unknown>): NpcRollMetadata => {
   const values = Array.isArray(raw.traits) ? raw.traits : [];

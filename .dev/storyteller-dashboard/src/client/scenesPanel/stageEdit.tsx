@@ -9,7 +9,7 @@ import { STAGE_GEOMETRY } from "./dnd/commit";
 import { DndUiContext } from "./dnd/uiContext";
 import { PANEL_EDGE_ATTR } from "./dnd/mime";
 import { RollsCommandContext } from "./rolls/commands";
-import { TierBadge } from "./tierBadge";
+import { TokenBadges } from "./tierBadge";
 import { NpcLevelBadge } from "./npcTrackers";
 import {
   GROUP_DRAG_TYPE,
@@ -69,8 +69,8 @@ export type TokenMenu = (event: MouseEvent<HTMLElement>, characterKey: string, k
 
 /**
  * A figurine headshot with the name under it; hovering enlarges the headshot. The ring is the token's group
- * colour (thicker and brighter for the group's boss); a gold halo means lit. A generic NPC's stat tier badge sits
- * at its top-left.
+ * colour (thicker and brighter for the group's boss); a gold halo means lit. Applicable tier and Memoriam-year
+ * badges sit at its top-right.
  */
 export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dragging, pc, handlers, opens, onDoubleClick, onContextMenu }: TokenProps): ReactElement => {
   const tier = useContext(GenericTiersContext)[characterKey];
@@ -85,7 +85,7 @@ export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dra
       {...(onContextMenu ? { onContextMenu } : {})}
     >
       <Headshot className="lab-token-head" characterKey={characterKey} />
-      {tier && <TierBadge tier={tier} where="stage" />}
+      <TokenBadges characterKey={characterKey} tier={tier} where="stage" />
       {!pc && <NpcLevelBadge characterKey={characterKey} where="stage" />}
       <span className="lab-token-name">{name}</span>
     </div>

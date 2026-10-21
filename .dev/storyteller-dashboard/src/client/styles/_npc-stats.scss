@@ -364,14 +364,15 @@ $power-height: 20px;
   }
 
   &.bin {
-    top: 0;
+    // Tier/year badges occupy the top-right corner; put Hunger/Rage immediately below them.
+    top: 17px;
     right: 0;
     width: 15px;
     height: 15px;
   }
 
   &.seat {
-    top: 3px;
+    top: 23px;
     right: 3px;
     width: 18px;
     height: 18px;

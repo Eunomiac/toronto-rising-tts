@@ -18,8 +18,8 @@
 var TAB = "CHARACTERS";
 var KEY_HEADER = "API key";
 var WRITABLE = [
-  "Type", "Clan", "Generation", "Rank", "Blood Potency", "Humanity", "Difficulty", "Health", "Willpower",
-  "Phy", "Soc", "Men", "Pow", "Exceptional Pools", "Attacks", "Powers", "Ancilla Power(s)"
+  "Kind", "Clan", "Generation", "Rank", "Blood Potency", "Humanity", "Difficulty", "Health", "Willpower",
+  "Phy", "Soc", "Men", "Pow", "Exceptional Pools", "Attacks", "Powers", "Advantages"
 ];
 
 function doGet() {

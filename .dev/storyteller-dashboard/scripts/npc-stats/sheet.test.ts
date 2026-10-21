@@ -1,125 +1,50 @@
 import { describe, expect, it } from "vitest";
 import { normalizeStatBlock } from "../../src/shared/npcStats.ts";
-import { COLUMNS, parseCharacters, splitTop, stableId } from "./sheet.ts";
+import { parseStatRecord, parseTier, sheetRecords, stableId, type SheetRecord } from "./sheet.ts";
 
-const HEADER = ["Name", "Quote", ...Object.values(COLUMNS), "Quote"];
+const base = (patch: Partial<SheetRecord> = {}): SheetRecord => ({
+  Kind: "Vampire", Clan: "Caitiff", Generation: "Ninth", Rank: "Ancilla", "Blood Potency": "3", Humanity: "6",
+  Difficulty: "5/3", Health: "7", Willpower: "6", Phy: "5", Soc: "4", Men: "3", Pow: "6",
+  "Exceptional Pools": "Stealth:Dexterity+Stealth|Blood Sorcery:Intelligence+Occult",
+  Attacks: "Fists=Phy+0:Strength+Brawl|Shiv=Stealth+2:Dexterity+Melee",
+  Powers: "Obfuscate 3 (1-0:Cloak of Shadows,2-1:Unseen Passage=Stealth:Dexterity+Stealth_3,5-1:Vanish=Pow:Wits+Stealth_3,5)",
+  "Ancilla Power(s)": "Secret Step (Spend one Rouse Check to disappear.)", "Elder Power(s)": "~", "Methuselah Power(s)": "~",
+  Advantages: "Resources 3|Mask 2", "Special Abilities": "Iron Will (Add two dice against coercion.)", ...patch
+});
+describe("new NPC Sheet notation", () => {
+  it("derives Exceptional dice and imports traits, difficulty lists, advantages and rich Notes", () => {
+    const block = parseStatRecord(base(), "example", true);
+    expect(block.exceptional[0]).toMatchObject({ name: "Stealth", dice: 10, traits: ["Dexterity", "Stealth"] });
+    expect(block.attacks[1]).toMatchObject({ name: "Shiv", bonus: 2, traits: ["Dexterity", "Melee"] });
+    expect(block.powers[0]?.powers[2]).toMatchObject({ name: "Vanish", difficulty: "3,5" });
+    expect(block.advantages?.map((entry) => entry.name)).toEqual(["Resources 3", "Mask 2"]);
+    expect(block.notes).toContain("<strong>Secret Step</strong>");
+    expect(block.notes).toContain("<strong>Iron Will</strong>");
+    expect(normalizeStatBlock(block)).toEqual(block);
+  });
 
-const row = (cells: Partial<Record<keyof typeof COLUMNS, string>>): string[] =>
-  ["Someone", "", ...Object.keys(COLUMNS).map((column) => cells[column as keyof typeof COLUMNS] ?? ""), ""];
+  it("supports a Powers pool on a mortal and omits generic Advantages", () => {
+    const block = parseStatRecord(base({ Kind: "Mortal", Clan: "", Generation: "", Rank: "", "Blood Potency": "~", Humanity: "~",
+      Pow: "2", Powers: "Manifestations 1 (1:Whisper Through Host=Pow:Resolve+Occult)", Advantages: "Resources 5" }), "host", false);
+    expect(block).toMatchObject({ kind: "mortal", supernatural: 2 });
+    expect(block.advantages).toEqual([]);
+  });
 
-const parse = (...rows: Partial<Record<keyof typeof COLUMNS, string>>[]) => parseCharacters([HEADER, ...rows.map(row)]);
+  it("recognizes the Superhuman generic tier", () => expect(parseTier("Superhuman")).toBe("superhuman"));
 
-describe("splitTop", () => {
-  it("splits only on top-level commas", () => {
-    expect(splitTop('A 2 (1-0-B, 2-1-C), D [E, F] 3, G-"x, y"')).toEqual(["A 2 (1-0-B, 2-1-C)", "D [E, F] 3", 'G-"x, y"']);
+  it("reports bad references instead of guessing", () => {
+    expect(() => parseStatRecord(base({ Attacks: "Bite=Brawl+1" }), "bad", true)).toThrow(/unknown pool/);
   });
 });
 
-describe("stableId", () => {
-  it("is the same for the same name and never repeats within a block", () => {
+describe("Sheet utilities", () => {
+  it("keeps the first duplicate header and ignores blank headers", () => {
+    expect(sheetRecords([["Key", "", "Key"], ["first", "x", "second"]], "TEST")).toEqual([{ Key: "first" }]);
+  });
+  it("makes deterministic, collision-free ids", () => {
     const used = new Set<string>();
     const first = stableId("Stealth", used);
     expect(stableId("Stealth", new Set())).toBe(first);
     expect(stableId("Stealth", used)).not.toBe(first);
-  });
-});
-
-describe("parseCharacters", () => {
-  it("reads a vampire block and resolves pool refs", () => {
-    const { blocks, errors } = parse({
-      key: "testVamp",
-      type: "Kindred",
-      clan: "caitiff",
-      generation: "Ninth",
-      rank: "Ancilla",
-      bloodPotency: "3",
-      humanity: "6",
-      difficulty: "6/4",
-      health: "7",
-      willpower: "6",
-      physical: "5",
-      social: "4",
-      mental: "3",
-      supernatural: "6",
-      exceptional: "Stealth 9, Melee [Knives] 8",
-      attacks: "Fists|Phy+0, Shiv|melee [knives]+2",
-      powers: "Obfuscate 3 (1|0|Silence of Death, 2|1|Unseen Passage|Stealth, 3|1|Self-Assurance, 3|1|Ghost Step-Script|pow, 3|0|Shiv Dance|Shiv)",
-      ancilla: 'Obfuscate 4 (4|1|Vanish|Stealth|"Disappears, even when watched.")',
-      elder: "Old Trick (Does a thing, slowly.)"
-    });
-    expect(errors).toEqual([]);
-    const block = blocks.get("testVamp")!;
-    const stealth = block.exceptional!.find((pool) => pool.name === "Stealth")!;
-    const knives = block.exceptional!.find((pool) => pool.name === "Melee [Knives]")!;
-    expect(block).toMatchObject({
-      kind: "vampire", clan: "Caitiff", generation: 9, rank: "Ancilla", bloodPotency: 3, humanity: 6,
-      difficultyStrong: 6, difficultyWeak: 4, health: 7, willpower: 6, physical: 5, supernatural: 6
-    });
-    expect(block.attacks).toEqual([
-      expect.objectContaining({ name: "Fists", pool: "physical", bonus: 0 }),
-      expect.objectContaining({ name: "Shiv", pool: `ex:${knives.id}`, bonus: 2 })
-    ]);
-    const shiv = block.attacks!.find((attack) => attack.name === "Shiv")!;
-    expect(block.powers).toEqual([{
-      name: "Obfuscate",
-      dots: 3,
-      powers: [
-        { level: 1, name: "Silence of Death", rouse: 0, pool: "" },
-        { level: 2, name: "Unseen Passage", rouse: 1, pool: `ex:${stealth.id}` },
-        { level: 3, name: "Self-Assurance", rouse: 1, pool: "" },
-        { level: 3, name: "Ghost Step-Script", rouse: 1, pool: "supernatural" },
-        { level: 3, name: "Shiv Dance", rouse: 0, pool: `atk:${shiv.id}` },
-        { level: 4, name: "Vanish", rouse: 1, pool: `ex:${stealth.id}`, ancilla: true }
-      ]
-    }]);
-    expect(block.notes).toBe(
-      "Vanish (Obfuscate ancilla power): Disappears, even when watched.\nElder power: Old Trick: Does a thing, slowly."
-    );
-    expect(normalizeStatBlock(block)).toEqual(block);
-  });
-
-  it("maps types to kinds and drops fields the kind does not use", () => {
-    const { blocks, errors } = parse(
-      { key: "testGhoul", type: "Mortal", clan: "Ghoul", physical: "4", supernatural: "2" },
-      { key: "testWolf", type: "Werewolf", rank: "Fostern", physical: "8", supernatural: "5" },
-      { key: "testShade", type: "Wraith", mental: "5" },
-      { key: "testMortal", type: "Mortal", clan: "~", social: "3", powers: "Faith 1 (1|2|Prayer|Soc)" }
-    );
-    expect(errors).toEqual([]);
-    expect(blocks.get("testGhoul")).toMatchObject({ kind: "ghoul", supernatural: 2 });
-    expect(blocks.get("testWolf")).toMatchObject({ kind: "werewolf", supernatural: 5 });
-    expect(blocks.get("testWolf")).not.toHaveProperty("rank");
-    expect(blocks.get("testShade")).toMatchObject({ kind: "spirit", mental: 5 });
-    expect(blocks.get("testMortal")!.powers![0]!.powers[0]).toEqual({ level: 1, name: "Prayer", rouse: 0, pool: "social" });
-  });
-
-  it("skips rows without stats", () => {
-    const { blocks, skipped, errors } = parse({ key: "testPc", type: "Kindred", bloodPotency: "2" }, { key: "" });
-    expect(errors).toEqual([]);
-    expect(blocks.size).toBe(0);
-    expect(skipped).toEqual(["testPc"]);
-  });
-
-  it("reports bad cells instead of guessing", () => {
-    const { blocks, errors } = parse(
-      { key: "testBad", type: "Kindred", clan: "Nobody", difficulty: "6", physical: "x", attacks: "Bite-Phy+1" },
-      { key: "testMortalPow", type: "Mortal", supernatural: "3" },
-      { key: "testSkill", type: "Animal", exceptional: "Melee [Teeth] 3", attacks: "Hit|Melee+0" },
-      { key: "testPower", type: "Kindred", physical: "2", powers: "Potence 1 (1|0|Lethal Body|Brawl)" },
-      { key: "testType", type: "Ghost", physical: "1" }
-    );
-    expect(blocks.size).toBe(0);
-    expect(errors).toHaveLength(5);
-    for (const problem of [/Clan "Nobody"/, /Difficulty "6"/, /Phy "x"/, /Attack "Bite-Phy\+1" is not/]) {
-      expect(errors[0]).toMatch(problem);
-    }
-    expect(errors[1]).toMatch(/testMortalPow: Pow 3/);
-    expect(errors[2]).toMatch(/testSkill: Attack "Hit\|Melee\+0": "Melee" is not/);
-    expect(errors[3]).toMatch(/testPower: Powers power "1\|0\|Lethal Body\|Brawl": "Brawl" is not/);
-    expect(errors[4]).toMatch(/testType: unknown Type "Ghost"/);
-  });
-
-  it("requires every header", () => {
-    expect(() => parseCharacters([["API key", "Type"]])).toThrow(/missing header\(s\): Clan/);
   });
 });

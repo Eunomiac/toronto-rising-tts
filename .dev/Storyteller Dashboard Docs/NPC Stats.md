@@ -8,9 +8,9 @@ A new button should be added to the right-click configuration menu of NPC tokens
 
 Named NPCs (both primary and Memoriam) shall have a single set of stats, which will always be linked to that character and will persist through any scenes where that character is present.
 
-Generic NPCs (again, both primary and Memoriam) require a bit more work, as they are meant to be able to represent characters of different skill levels. As such, generic NPCs will have four different stat blocks, each stored under a tab within the stat modal: "Weak", "Average", "Gifted", and "Deadly".
+Generic NPCs (again, both primary and Memoriam) can have five different stat blocks, each stored under a tab within the stat modal: "Weak", "Average", "Gifted", "Deadly", and "Superhuman". The Sheet decides which tier blocks are actually configured for a generic type.
 
-When a generic NPC is clicked in the roster and would be added to the "In this scene" bin, if more than one of the four tabs have been configured with stats, the Storyteller should be presented with a quick popup selection  modal allowing the Storyteller to select which stat block to apply to this generic NPC in this scene. Once a stat block has been assigned to a generic NPC, a badge should be added to the top left of their Dashboard token display representing the chosen level. These badges can be found in `/assets/badges`: `tier_deadly.svg`, `tier_gifted.svg`, `tier_average.svg`, `tier_weak.svg`.
+When a generic NPC is clicked in the roster and would be added to the "In this scene" bin, if more than one tab has been configured with stats, the Storyteller is presented with a quick tier picker. Once a tier is assigned, its badge appears at the token's top right. Memoriam tokens also show their year badge; additional badges extend left. The FULL build bakes year badges and every configured generic-tier variant into the TTS spotlight-token images, and TTS swaps the image when the selected tier changes.
 
 If an NPC has no stat blocks configured, they should be added to the stage normally (i.e. as they are now).
 
@@ -53,14 +53,14 @@ When such a roll is resolved and broadcast, the name of the dice pool used shoul
 
 #### Standard Dice Pools
 
-Mortals and Animals should display only three Standard dice pools: "Physical", "Social", and "Mental". Supernatural creatures gain a fourth Standard dice pool, whose name differs depending on the kind of creature:
+Every NPC displays "Physical", "Social", and "Mental". A populated fourth pool is shown as "Powers" for otherwise ordinary Kinds, or with the supernatural Kind's specific name:
 * Vampires & Ghouls - "Disciplines"
 * Werewolves - "Gifts"
 * Spirits - "Manifestations"
 
 #### Exceptional Dice Pools
 
-Beneath the row of three or four Standard dice pools should be a place where Exceptional dice pools can be defined, added, edited, and removed. A "+" icon should add a dice pool, which consists of a name (e.g. "Leadership", "Academics (Sociology)", etc.) and the size of the pool. Any incomplete pools (e.g. missing a name and/or a number) should be deleted when the panel is closed and saved.
+Beneath the Standard pools, Exceptional pools can be defined, added, edited, and removed. Their dice value is derived rather than stored: twice the NPC's exceptional Difficulty (the first Difficulty number). A Deadly NPC with Difficulty `5/3` therefore rolls 10 dice for every Exceptional pool. The editor still stores this derived value so the roller can use it directly.
 
 #### Attack Dice Pools
 
@@ -84,9 +84,13 @@ One blank space to add a new entry should always exist beneath each category -- 
 
 When constructing the pool selection popup for configuring storyteller rolls as described above, the individual entries under each power should be listed (i.e. not the category names themselves).
 
+### Advantages
+
+Named NPCs can have Advantages, one editable entry per line. Advantages have no roll-trait or Difficulty controls and are never roll buttons. Generic NPCs do not receive Advantages.
+
 ### Notes
 
-Finally, a simple, scrollable text field (no need for rich text) should be added to the bottom of the popup panel. The contents of this panel should be displayed within the popup modal for roll configuration.
+Notes use a toolbar-free rich-text field. Standard Ctrl/Cmd+B and Ctrl/Cmd+I shortcuts provide inline bold and italic; other formatting is removed when saved. Imported Ancilla, Elder and Methuselah powers and Special Abilities each appear on their own line with the power or ability name in bold. Discipline Expression is not imported.
 
 ### Hunger
 
@@ -187,9 +191,18 @@ waits for a valid choice. Selecting an unconfigured custom roll clears the prior
 TTS enforces the filter as well as the dashboard. Invalid text stays editable and prevents
 closing/saving until corrected.
 
-The new metadata lives in dashboard stats JSON. The sheet's current text format cannot store
-it; import preserves it by matching entry names (and power category), including after sheet
-ids change. Sheet write-back compares existing fields and does not export this metadata.
+The Sheet notation stores trait associations on Exceptional pools, Attacks and Powers, and stores
+Power Difficulty rules after an underscore. Import uses the Sheet value when present and preserves
+matching local metadata only when that particular Sheet field is blank. Sheet write-back exports
+the same notation for named present-day NPCs.
+
+## Sheet import
+
+`npm run npc-stats:import` reads all four stat sources in **Toronto Rising**: `CHARACTERS`,
+`GENERICS STATS`, `MEM NAMED STATS`, and `MEM GENERIC STATS`. Player characters are excluded by
+`IS PC?`. Present-day generics map by Label; named Memoriam rows map by Memoriam Key; Memoriam
+generic rows map to their catalog stems using Label, Location, Year and Tags. Any invalid or
+unmatched row stops the import before the stats file is replaced.
 
 Code: `src/shared/npcCustomRolls.ts`, `npcStats.ts`, `npcConditions.ts`, `npcRollPlan.ts`;
 editor: `src/client/scenesPanel/npcCustomRollFields.tsx`; TTS rules: `lib/npc_roll_difficulty.ttslua`.

@@ -1,5 +1,6 @@
 import { parseNpcDifficulty, type NpcRollMetadata } from "../../shared/npcCustomRolls";
 import { NpcCustomRollFields } from "./npcCustomRollFields";
+import { NpcNotesEditor } from "./npcNotesEditor";
 import { useState, type ReactElement, type ReactNode } from "react";
 import {
   configuredSlots,
@@ -46,6 +47,7 @@ type DraftBlock = {
   exceptional: DraftPool[];
   attacks: DraftAttack[];
   powers: DraftCategory[];
+  advantages: { id: string; name: string }[];
   notes: string;
 };
 
@@ -54,6 +56,7 @@ const toDraft = (block: NpcStatBlock | undefined): DraftBlock => ({
   exceptional: (block?.exceptional ?? []).map((pool) => ({ ...pool })),
   attacks: (block?.attacks ?? []).map((attack) => ({ ...attack })),
   powers: (block?.powers ?? []).map((category) => ({ ...category, id: newStatId(), powers: category.powers.map((power) => ({ ...power })) })),
+  advantages: (block?.advantages ?? []).map((advantage) => ({ ...advantage })),
   notes: block?.notes ?? ""
 });
 
@@ -99,7 +102,7 @@ const blankPower = (category: DraftCategory): DraftPower => ({
 });
 
 /**
- * The Stats window: one stat block for a named or kept NPC, or one per tier (Weak / Average / Gifted / Deadly)
+ * The Stats window: one stat block for a named or kept NPC, or one per generic tier
  * for a generic type (`generic`). Clicking off (or Escape) saves to `data/npc-stats.json` under `statsKey`;
  * incomplete pools, nameless attacks and powers, and empty power categories are dropped then.
  */
@@ -269,7 +272,14 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
                 value={pool.name}
                 onChange={(event) => update({ exceptional: replaceAt<DraftPool>(draft.exceptional, index, { name: event.target.value }) })}
               />
-              <NumberBox value={pool.dice} range={RANGES.dice} onChange={(dice) => update({ exceptional: replaceAt<DraftPool>(draft.exceptional, index, { dice }) })} />
+              <input
+                className="npc-stat-num"
+                type="number"
+                value={draft.difficultyStrong === undefined ? "" : draft.difficultyStrong * 2}
+                title="Twice this NPC's exceptional Difficulty"
+                aria-label={`${pool.name || "Exceptional pool"} dice (twice exceptional Difficulty)`}
+                readOnly
+              />
             </div>
             </NpcCustomRollFields>
           ))}
@@ -366,12 +376,19 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
             );
           })}
         </Section>
-        <textarea
-          className="npc-stats-notes"
-          placeholder="Notes (shown when configuring this NPC's rolls)"
-          value={draft.notes}
-          onChange={(event) => update({ notes: event.target.value })}
-        />
+        <Section title="Advantages" onAdd={() => update({ advantages: [...draft.advantages, { id: newStatId(), name: "" }] })}>
+          {draft.advantages.map((advantage, index) => (
+            <div key={advantage.id} className="npc-stats-entry">
+              <input
+                className="npc-stat-name"
+                placeholder="Advantage (blank removes)"
+                value={advantage.name}
+                onChange={(event) => update({ advantages: replaceAt(draft.advantages, index, { name: event.target.value }) })}
+              />
+            </div>
+          ))}
+        </Section>
+        <NpcNotesEditor key={slot} value={draft.notes} onChange={(notes) => update({ notes })} />
         {error && <p className="lab-note">{error}</p>}
       </div>
     </Overlay>

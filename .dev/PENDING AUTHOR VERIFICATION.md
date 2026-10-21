@@ -20,7 +20,20 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-19 (TOR-746 Memoriam roster, plus location and NPC condition checks). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-21 (new NPC Sheet schema, Superhuman tier, Dashboard badges and simplified TTS token art; Apps Script deployment, build checks and Cloud cleanup verified). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
+
+### NPC Sheet stats, Superhuman and token badges
+
+#### NPC Sheet stats, Superhuman and token badges — direct author request
+
+**Context:** The 14 obsolete local edits were cleared, the Sheet values now load cleanly, and the redeployed writer recognizes every required column. Generated TTS token art now has one lit/dark pair per NPC, without badges; 4,140 obsolete tier variants were removed locally and from Steam Cloud. The 3,289 current owned Cloud assets are in sync, apart from the same 14 unrelated files intentionally protected by the current save. This row is ready for live verification below.
+
+**How to verify:** Restart the Storyteller Dashboard, reload the Toronto Rising save in TTS, then Save & Play.
+
+1. Open several named, generic, named Memoriam and generic Memoriam stat windows. Confirm that Sheet pools, attacks, powers, Advantages and notes are present. Exceptional pools should have twice their listed exceptional Difficulty: for example, Difficulty 5 makes a 10-die pool. Advantages should be editable but should not appear as roll choices. In Notes, Ctrl+B / Cmd+B and Ctrl+I / Cmd+I should bold and italicize selected text without showing a formatting toolbar.
+2. Add a generic NPC and select each available tier, including Superhuman where the Sheet provides it. The stage token and its drag image should show the tier badge. An unconfigured generic in the roster should have no tier badge.
+3. Open the Memoriam roster. Every named and generic Memoriam token should show its year badge. After selecting a tier for a generic Memoriam NPC, it should show both badges, arranged from the top-right toward the left.
+4. In TTS, spotlight a Memoriam NPC and a tiered generic NPC. Their generated spotlight token images should not contain year or tier badges. Change the generic's tier and confirm its Dashboard badge changes while the TTS spotlight token keeps the same image.
 
 ### Memoriam NPCs on the roster
 

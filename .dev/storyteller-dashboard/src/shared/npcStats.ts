@@ -1,10 +1,11 @@
 import { normalizeNpcRollMetadata, type NpcRollMetadata } from "./npcCustomRolls.ts";
+import { normalizeNpcNotes } from "./npcNotes.ts";
 
 /**
  * NPC stat blocks set from the token configuration window's Stats button (`data/npc-stats.json`, git-ignored),
  * keyed three ways:
  * - a named NPC's characterKey: one block under `named`;
- * - `generic:<catalog label>`: up to four tier blocks, shared by every numbered figurine of that generic type;
+ * - `generic:<catalog label>`: up to five tier blocks, shared by every numbered figurine of that generic type;
  * - `kept:<id>`: a generic instance kept as a character, with its own block under `named` and `kept` details.
  * Blocks feed the Storyteller roll pool grid and the NPC trackers.
  */
@@ -12,7 +13,7 @@ import { normalizeNpcRollMetadata, type NpcRollMetadata } from "./npcCustomRolls
 export const NPC_KINDS = ["mortal", "animal", "ghoul", "vampire", "werewolf", "spirit", "other"] as const;
 export type NpcKind = (typeof NPC_KINDS)[number];
 
-export const NPC_TIERS = ["weak", "average", "gifted", "deadly"] as const;
+export const NPC_TIERS = ["weak", "average", "gifted", "deadly", "superhuman"] as const;
 export type NpcTier = (typeof NPC_TIERS)[number];
 export type NpcStatSlot = "named" | NpcTier;
 
@@ -39,7 +40,7 @@ export const RANGES = {
   rouse: [0, 5]
 } as const satisfies Record<string, readonly [number, number]>;
 
-export const NOTES_MAX = 4000;
+export const NOTES_MAX = 40000;
 const NAME_MAX = 80;
 const ID_PATTERN = /^[a-z0-9]{1,12}$/;
 // eslint-disable-next-line no-control-regex
@@ -57,6 +58,7 @@ export type NpcAttack = NpcRollMetadata & { readonly id: string; readonly name: 
  */
 export type NpcPower = NpcRollMetadata & { readonly level: number; readonly name: string; readonly rouse: number; readonly pool: string; readonly ancilla?: true };
 export type NpcPowerCategory = { readonly name: string; readonly dots?: number; readonly powers: readonly NpcPower[] };
+export type NpcAdvantage = { readonly id: string; readonly name: string };
 
 export type NpcStatBlock = {
   readonly kind?: NpcKind;
@@ -78,6 +80,7 @@ export type NpcStatBlock = {
   readonly exceptional: readonly NpcPool[];
   readonly attacks: readonly NpcAttack[];
   readonly powers: readonly NpcPowerCategory[];
+  readonly advantages?: readonly NpcAdvantage[];
   readonly notes?: string;
 };
 
@@ -87,14 +90,14 @@ export type KeptNpc = { readonly name: string; readonly figurineKey: string; rea
 export type NpcStats = Readonly<Partial<Record<NpcStatSlot, NpcStatBlock>> & { kept?: KeptNpc }>;
 export type NpcStatsFile = Readonly<Record<string, NpcStats>>;
 
-export const EMPTY_STAT_BLOCK: NpcStatBlock = { exceptional: [], attacks: [], powers: [] };
+export const EMPTY_STAT_BLOCK: NpcStatBlock = { exceptional: [], attacks: [], powers: [], advantages: [] };
 
 /** The fourth standard pool's label, or null for kinds without one. */
 export const supernaturalPoolName = (kind: NpcKind | undefined): string | null =>
   kind === "vampire" || kind === "ghoul" ? "Disciplines"
     : kind === "werewolf" ? "Gifts"
       : kind === "spirit" ? "Manifestations"
-        : null;
+        : kind ? "Powers" : null;
 
 export const usesRouse = (kind: NpcKind | undefined): boolean => kind === "vampire" || kind === "ghoul";
 
@@ -161,16 +164,17 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
   }
   const kind = oneOf(value.kind, NPC_KINDS);
   const vampire = kind === "vampire";
+  const difficultyStrong = intIn(value.difficultyStrong, RANGES.difficulty);
   const exceptional: NpcPool[] = [];
   for (const raw of Array.isArray(value.exceptional) ? value.exceptional : []) {
     const name = isRecord(raw) ? text(raw.name) : "";
-    const dice = isRecord(raw) ? intIn(raw.dice, RANGES.dice) : undefined;
+    const dice = difficultyStrong === undefined ? undefined : difficultyStrong * 2;
     const id = isRecord(raw) && typeof raw.id === "string" && ID_PATTERN.test(raw.id) ? raw.id : newStatId();
     if (name !== "" && dice !== undefined) {
       exceptional.push({ id, name, dice, ...normalizeNpcRollMetadata(raw) });
     }
   }
-  const hasSupernatural = supernaturalPoolName(kind) !== null;
+  const hasSupernatural = supernaturalPoolName(kind) !== null || value.supernatural !== undefined;
   const supernatural = hasSupernatural ? intIn(value.supernatural, RANGES.dice) : undefined;
   const rollPools = new Set<string>([
     "physical", "social", "mental", ...(hasSupernatural ? ["supernatural"] : []),
@@ -211,7 +215,15 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
       powers.push({ name, ...optional("dots", dots), powers: entries });
     }
   }
-  const notes = text(value.notes, NOTES_MAX);
+  const advantages: NpcAdvantage[] = [];
+  for (const raw of Array.isArray(value.advantages) ? value.advantages : []) {
+    const name = isRecord(raw) ? text(raw.name) : "";
+    if (name !== "") {
+      const id = isRecord(raw) && typeof raw.id === "string" && ID_PATTERN.test(raw.id) ? raw.id : newStatId();
+      advantages.push({ id, name });
+    }
+  }
+  const notes = normalizeNpcNotes(text(value.notes, NOTES_MAX));
   const block: NpcStatBlock = {
     ...optional("kind", kind),
     ...optional("generation", vampire ? intIn(value.generation, RANGES.generation) : undefined),
@@ -219,7 +231,7 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
     ...optional("rank", vampire ? oneOf(value.rank, NPC_RANKS) : undefined),
     ...optional("bloodPotency", vampire ? intIn(value.bloodPotency, RANGES.bloodPotency) : undefined),
     ...optional("humanity", vampire ? intIn(value.humanity, RANGES.humanity) : undefined),
-    ...optional("difficultyStrong", intIn(value.difficultyStrong, RANGES.difficulty)),
+    ...optional("difficultyStrong", difficultyStrong),
     ...optional("difficultyWeak", intIn(value.difficultyWeak, RANGES.difficulty)),
     ...optional("health", intIn(value.health, RANGES.tracker)),
     ...optional("willpower", intIn(value.willpower, RANGES.tracker)),
@@ -230,9 +242,11 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
     exceptional,
     attacks,
     powers,
+    ...(Array.isArray(value.advantages) ? { advantages } : {}),
     ...optional("notes", notes === "" ? undefined : notes)
   };
-  const empty = Object.keys(block).length === 3 && exceptional.length === 0 && attacks.length === 0 && powers.length === 0;
+  const empty = Object.keys(block).every((key) => ["exceptional", "attacks", "powers", "advantages"].includes(key))
+    && exceptional.length === 0 && attacks.length === 0 && powers.length === 0 && advantages.length === 0;
   return empty ? null : block;
 };
 
@@ -313,13 +327,13 @@ export const parseNpcStatsPatch = (value: unknown): Partial<NpcStatsFile> => {
 export const configuredSlots = (stats: NpcStats | undefined): readonly NpcStatSlot[] =>
   stats ? (["named", ...NPC_TIERS] as const).filter((slot) => stats[slot] !== undefined) : [];
 
-/** Tiers a generic type has blocks for, Weak to Deadly. */
+/** Tiers a generic type has blocks for, Weak to Superhuman. */
 export const configuredTiers = (stats: NpcStats | undefined): readonly NpcTier[] =>
   stats ? NPC_TIERS.filter((tier) => stats[tier] !== undefined) : [];
 
 export const isNpcTier = (value: unknown): value is NpcTier => NPC_TIERS.some((tier) => tier === value);
 
-/** Sheet cells cannot hold these associations yet. Keep matching entries' local metadata on import. */
+/** Keep local metadata only when an imported Sheet row leaves that field blank. */
 export const preserveNpcRollMetadata = (imported: NpcStatBlock, before: NpcStatBlock | undefined): NpcStatBlock => {
   if (!before) return imported;
   const merge = <T extends { readonly name: string } & NpcRollMetadata>(rows: readonly T[], old: readonly T[]): T[] => {
@@ -327,8 +341,8 @@ export const preserveNpcRollMetadata = (imported: NpcStatBlock, before: NpcStatB
     return rows.map((row) => {
       const at = remaining.findIndex((candidate) => candidate.name.trim().toLowerCase() === row.name.trim().toLowerCase());
       const previous = at < 0 ? undefined : remaining.splice(at, 1)[0];
-      return { ...row, ...(previous?.traits ? { traits: previous.traits } : {}),
-        ...(previous?.difficulty ? { difficulty: previous.difficulty } : {}) };
+      return { ...row, ...(!row.traits && previous?.traits ? { traits: previous.traits } : {}),
+        ...(!row.difficulty && previous?.difficulty ? { difficulty: previous.difficulty } : {}) };
     });
   };
   return {

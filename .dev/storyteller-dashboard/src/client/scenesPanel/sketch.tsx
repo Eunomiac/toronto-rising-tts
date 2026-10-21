@@ -12,7 +12,7 @@ import { LIGHTING_PRESETS, lightingLabel, type LightingPreset } from "../catalog
 import type { NpcTier } from "../../shared/npcStats";
 import { GenericTiersContext, useScenesCommand, type StageChanges } from "./commands";
 import { CompulsionBadge } from "./compulsionBadge";
-import { TierBadge } from "./tierBadge";
+import { TokenBadges } from "./tierBadge";
 import { BoxRow, HUNGER_DOT, NpcLevelBadge, NpcLiveContext, NpcTrackerPopup } from "./npcTrackers";
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
@@ -191,7 +191,7 @@ const TrackerPopup = ({ seat, onRing, onHunger, onOpenSheet }: {
 const SeatContent = ({ seat, tier }: { seat: SeatSketch; tier: NpcTier | undefined }): ReactElement => (
   <>
     <span className="lab-seat-badge">{seat.slot}</span>
-    {tier && <TierBadge tier={tier} where="seat" />}
+    {seat.characterKey && <TokenBadges characterKey={seat.characterKey} tier={tier} where="seat" />}
     {seat.kind === "npc" && seat.characterKey && <NpcLevelBadge characterKey={seat.characterKey} where="seat" />}
     <span className="lab-seat-text">
       {seat.playedBy && <span className="lab-seat-flag role">{seat.playedBy} as</span>}

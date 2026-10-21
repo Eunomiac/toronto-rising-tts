@@ -58,7 +58,7 @@ Figurine and token art come from `lib/npc_art_urls.ttslua` under the same key ([
 
 ## Import
 
-The only entry is the Storyteller Dashboard: a roster click queues (and Send delivers) `{ op = "genericAdd", keys = { ... }, labels = { [key] = name }, tiers = { [key] = tier }? }` through `GlobalDashboardScenesApply`, which calls `GenericNpcs.importNamed(keys, labels, tiers)`. `tier` (`weak` / `average` / `gifted` / `deadly`) names which of the type's dashboard stat blocks (`npc-stats.json` `generic:<label>`) the figurine rolls from; the dashboard picks it (tier picker when the type has several blocks). An unknown tier fails the whole import. The Dashboard bridge has **no clicker**, so it is treated as Storyteller-initiated (see `DashboardTtsBridge`).
+The only entry is the Storyteller Dashboard: a roster click queues (and Send delivers) `{ op = "genericAdd", keys = { ... }, labels = { [key] = name }, tiers = { [key] = tier }? }` through `GlobalDashboardScenesApply`, which calls `GenericNpcs.importNamed(keys, labels, tiers)`. `tier` (`weak` / `average` / `gifted` / `deadly` / `superhuman`) names which of the type's dashboard stat blocks (`npc-stats.json` `generic:<label>`) the figurine rolls from; the dashboard picks it (tier picker when the type has several blocks). An unknown tier fails the whole import. The Dashboard bridge has **no clicker**, so it is treated as Storyteller-initiated (see `DashboardTtsBridge`).
 
 Behavior (`GenericNpcs.importNamed`):
 

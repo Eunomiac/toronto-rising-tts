@@ -152,7 +152,7 @@
       "label": "Maximillian Steele",
       "location": "Toronto",
       "year": "Modern",
-      "variantOfUnique": "",
+      "variantOfUnique": "maximillianSteele",
       "isGeneric": false,
       "tags": "maximillianSteele steele camarilla prince ventrue vampire 2000s",
       "periods": [
@@ -168,7 +168,7 @@
       "label": "Maximillian Steele",
       "location": "Toronto",
       "year": "1800s",
-      "variantOfUnique": "mem_maximillianSteele",
+      "variantOfUnique": "maximillianSteele",
       "isGeneric": false,
       "tags": "maximillianSteele steele camarilla prince ventrue vampire 1800s",
       "periods": [
@@ -181,7 +181,7 @@
       "label": "Maximillian Steele",
       "location": "Toronto",
       "year": "1900s",
-      "variantOfUnique": "mem_maximillianSteele",
+      "variantOfUnique": "maximillianSteele",
       "isGeneric": false,
       "tags": "maximillianSteele steele camarilla prince ventrue vampire 1900s",
       "periods": [
@@ -196,7 +196,7 @@
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "lordOswald oswald camarilla vampire tremere primogen 2000s",
+      "tags": "lordOswald oswald camarilla vampire tremere primogen 2000s elder 8th",
       "periods": [
         "lucien17",
         "rashid21",
@@ -212,7 +212,7 @@
       "year": "1800s",
       "variantOfUnique": "mem_lordOswald",
       "isGeneric": false,
-      "tags": "lordOswald oswald camarilla vampire tremere primogen 1800s",
+      "tags": "lordOswald oswald camarilla vampire tremere primogen 1800s elder 8th",
       "periods": [
         "fomorach8"
       ]
@@ -225,7 +225,7 @@
       "year": "1900s",
       "variantOfUnique": "mem_lordOswald",
       "isGeneric": false,
-      "tags": "lordOswald oswald camarilla vampire tremere primogen 1900s",
+      "tags": "lordOswald oswald camarilla vampire tremere primogen 1900s ancilla 8th",
       "periods": [
         "fomorach22"
       ]
@@ -352,7 +352,7 @@
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "carna anarch vampire tremere 2000s",
+      "tags": "carna anarch vampire tremere 2000s 8th elder",
       "periods": [
         "blackCaesar27"
       ]
@@ -410,7 +410,10 @@
       "isGeneric": false,
       "tags": "preDeathJeanDucheskiFrancoisI jeanDucheskiIPreDeath 1700s",
       "periods": [
-        "blackCaesar18"
+        "blackCaesar10",
+        "blackCaesar11",
+        "blackCaesar12",
+        "blackCaesar13"
       ]
     },
     {
@@ -449,7 +452,7 @@
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "terenceMerik merik prince camarilla vampire ventrue 2000s",
+      "tags": "terenceMerik merik prince camarilla vampire ventrue 2000s 8th elder",
       "periods": [
         "blackCaesar37"
       ]
@@ -462,7 +465,7 @@
       "year": "1900s",
       "variantOfUnique": "mem_terenceMerik",
       "isGeneric": false,
-      "tags": "terenceMerik merik prince camarilla vampire ventrue 1900s",
+      "tags": "terenceMerik merik prince camarilla vampire ventrue 1900s 8th elder",
       "periods": [
         "blackCaesar27"
       ]
@@ -475,7 +478,7 @@
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "mortius camarilla vampire tremere 2000s",
+      "tags": "mortius camarilla vampire tremere 2000s 7th elder camarilla",
       "periods": [
         "blackCaesar37"
       ]
@@ -488,7 +491,7 @@
       "year": "1900s",
       "variantOfUnique": "mem_mortius",
       "isGeneric": false,
-      "tags": "mortius camarilla vampire tremere 1900s",
+      "tags": "mortius camarilla vampire tremere 1900s 7th elder camarilla",
       "periods": [
         "blackCaesar27"
       ]
@@ -515,7 +518,7 @@
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "princeDoran doran camarilla vampire ventrue 1900s",
+      "tags": "princeDoran doran camarilla vampire ventrue 1900s elder 6th",
       "periods": [
         "aishe13",
         "aishe18",
@@ -544,7 +547,7 @@
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "marcelGuilbeau guilbeau camarilla prince vampire ventrue 2000s",
+      "tags": "marcelGuilbeau guilbeau camarilla prince vampire ventrue 2000s ancilla 8th",
       "periods": [
         "aishe22",
         "aishe26",
@@ -573,7 +576,7 @@
       "year": "1800s",
       "variantOfUnique": "damienAbanda",
       "isGeneric": false,
-      "tags": "damienAbanda abanda anarch vampire toreador 1800s",
+      "tags": "preEmbraceDamienAbanda damienAbandaPreEmbrace damienAbanda abanda mortal 1800s",
       "periods": [
         "lucien6"
       ]
@@ -656,7 +659,7 @@
       "year": "1800s",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "ibrahimKethuda kethuda prince vampire ventrue 1800s",
+      "tags": "ibrahimKethuda kethuda prince vampire ventrue 1800s elder 6th camarilla",
       "periods": [
         "rashid6"
       ]
@@ -669,7 +672,7 @@
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "sofiaMavridi mavridi nephilim vampire toreador 2000s",
+      "tags": "sofiaMavridi mavridi nephilim vampire toreador 2000s 8th ancilla independent",
       "periods": [
         "rashid9",
         "rashid13"
@@ -683,7 +686,7 @@
       "year": "Modern, 1900s, 1800s,  1700s",
       "variantOfUnique": "",
       "isGeneric": false,
-      "tags": "michaelArchangel archangel bloodGod vampire toreador 2000s",
+      "tags": "michaelArchangel archangel bloodGod vampire toreador 2000s 4th independent",
       "periods": [
         "rashid13"
       ]

@@ -15,7 +15,7 @@
 const fs = require("fs");
 const path = require("path");
 const {
-  collectCharacterKeys,
+  collectActiveCharacterKeys,
   parseMemoriamNpcRows,
   renderMemoriamNpcCatalogJson,
   renderMemoriamNpcCatalogLua,
@@ -25,11 +25,10 @@ const {
 const root = path.resolve(__dirname, "..", "..");
 const defaultOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "memoriam-npcs.json");
 const defaultLuaPath = path.join(root, "lib", "memoriam_npc_catalog.ttslua");
-const npcsDataPath = path.join(root, "lib", "npcs_data.ttslua");
-
 const DEFAULT_SHEET_ID = "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs";
 const DEFAULT_RANGE = "MEMORIAMNPCCSV";
 const DEFAULT_TAB = "Memoriam NPC Export";
+const DEFAULT_CHARACTER_TAB = "CHARACTERS";
 const USER_AGENT = "toronto-rising-tts-memoriam-npcs-import/1.0";
 
 /**
@@ -148,7 +147,6 @@ function writeAtomic(filePath, contents) {
  *   tabName?: string,
  *   outPath?: string,
  *   luaPath?: string,
- *   npcsDataPath?: string,
  *   quiet?: boolean
  * }} [options]
  * @returns {Promise<{ npcCount: number, outPath: string, sheetId: string, tabName: string, rangeName: string }>}
@@ -159,17 +157,27 @@ async function importMemoriamNpcs(options = {}) {
   const tabName = String(options.tabName || process.env.MEMORIAM_NPC_TAB || DEFAULT_TAB).trim();
   const outPath = options.outPath || defaultOutPath;
   const luaPath = options.luaPath || defaultLuaPath;
-  const charactersPath = options.npcsDataPath || npcsDataPath;
   const meta = { sheetId, rangeName, tabName };
 
   if (!options.quiet) {
     console.log(`[memoriam-npcs:import] Fetching tab "${tabName}" (${rangeName}) …`);
   }
-  const gid = await resolveTabGid(sheetId, tabName);
-  const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/export?format=csv&gid=${gid}`;
-  const csv = await fetchCsv(url, tabName);
+  const [gid, charactersGid] = await Promise.all([
+    resolveTabGid(sheetId, tabName),
+    resolveTabGid(sheetId, DEFAULT_CHARACTER_TAB),
+  ]);
+  const [csv, charactersCsv] = await Promise.all([
+    fetchCsv(
+      `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/export?format=csv&gid=${gid}`,
+      tabName,
+    ),
+    fetchCsv(
+      `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/export?format=csv&gid=${charactersGid}`,
+      DEFAULT_CHARACTER_TAB,
+    ),
+  ]);
   const npcs = parseMemoriamNpcRows(csv);
-  const catalogued = collectCharacterKeys(fs.readFileSync(charactersPath, "utf8"));
+  const catalogued = collectActiveCharacterKeys(charactersCsv);
   validateMemoriamVariants(npcs, catalogued);
   const json = renderMemoriamNpcCatalogJson({ npcs, meta });
 
@@ -193,6 +201,7 @@ module.exports = {
   DEFAULT_SHEET_ID,
   DEFAULT_RANGE,
   DEFAULT_TAB,
+  DEFAULT_CHARACTER_TAB,
 };
 
 if (require.main === module) {

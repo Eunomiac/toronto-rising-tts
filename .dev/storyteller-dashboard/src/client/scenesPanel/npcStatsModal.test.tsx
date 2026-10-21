@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { save } = vi.hoisted(() => ({ save: vi.fn() }));
 const stats = { npc: { named: {
+  difficultyStrong: 4,
+  difficultyWeak: 3,
   exceptional: [{ id: "roll", name: "Concentration", dice: 8 }],
   attacks: [{ id: "attack", name: "Strike", pool: "ex:roll", bonus: 2 }],
   powers: [{ name: "Dominate", powers: [{ level: 1, name: "Command", rouse: 1, pool: "ex:roll" }] }]
@@ -28,7 +30,7 @@ describe("NPC custom-roll editor", () => {
     await user.type(screen.getByRole("textbox", { name: `${name} second trait` }), "Composure");
     await user.type(screen.getByRole("textbox", { name: `${name} difficulty rule` }), "3-5");
     expect(row).toHaveClass("editing");
-    await user.click(screen.getByPlaceholderText(/Notes/));
+    await user.click(screen.getByText("NPC", { selector: ".lab-modal-title" }));
     expect(row).not.toHaveClass("editing");
     await user.click(screen.getByRole("button", { name: "Close" }));
     await waitFor(() => expect(save).toHaveBeenCalled());

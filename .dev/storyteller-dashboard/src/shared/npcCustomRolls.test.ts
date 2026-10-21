@@ -4,6 +4,8 @@ import { normalizeStatBlock, preserveNpcRollMetadata, type NpcStatBlock } from "
 
 const block: NpcStatBlock = {
   kind: "vampire",
+  difficultyStrong: 4,
+  difficultyWeak: 3,
   exceptional: [{ id: "roll", name: "Concentration", dice: 8, traits: ["Resolve", "Composure"], difficulty: "3-5" }],
   attacks: [{ id: "attack", name: "Strike", pool: "ex:roll", bonus: 2, traits: ["Strength", "Brawl"], difficulty: "4" }],
   powers: [{ name: "Dominate", powers: [{ level: 1, name: "Command", pool: "atk:attack", rouse: 1, traits: ["Charisma", "Dominate"], difficulty: "3+" }] }]
