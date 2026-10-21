@@ -54,7 +54,7 @@ const FIGURINE_BACK_REL = `${ART_REL}/Shared/npcFigurineBack.webp`;
 const GENERATED_BY = ".dev/storyteller-dashboard/scripts/npc-art/generate.ts (npm run npc-art:draw / npc-art:urls)";
 const KEY_PATTERN = /^[A-Za-z0-9_]+$/;
 const FIGURINE_FILE = /^npc_(.+)\.webp$/;
-const TOKEN_FILE = /^npcToken_(.+)\.(front|back)\.webp$/;
+const TOKEN_FILE = /^npcToken_(.+?)(?:\.tier_([a-z]+))?\.(front|back)\.webp$/;
 const CONCURRENCY = 4;
 
 const figurineRel = (folder: NpcFolder, key: string): string => `${ART_REL}/Figurines/${folder}/npc_${key}.webp`;
@@ -265,7 +265,10 @@ const draw = async (force: boolean): Promise<void> => {
       const token = await drawToken(figurine, subject.name, subject.color, subject.manualCrop, assets).catch((error: unknown) => {
         throw new Error(`Drawing the token for ${subject.folder}/${subject.key} failed: ${error instanceof Error ? error.message : String(error)}`);
       });
-      await Promise.all([writeFile(frontFile, token.front), writeFile(backFile, token.back)]);
+      await Promise.all([
+        writeFile(frontFile, token.front),
+        writeFile(backFile, token.back)
+      ]);
       drawn += 1;
       if (token.autoCrop) {
         autoCropped.push(subject.key);
@@ -278,7 +281,7 @@ const draw = async (force: boolean): Promise<void> => {
   let pruned = 0;
   for (const file of await readdir(tokenDir)) {
     const match = TOKEN_FILE.exec(file);
-    if (match && !keys.has(match[1]!)) {
+    if (match && (!keys.has(match[1]!) || match[2] !== undefined)) {
       await rm(path.join(tokenDir, file));
       pruned += 1;
     }

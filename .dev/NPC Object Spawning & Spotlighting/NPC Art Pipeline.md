@@ -11,6 +11,7 @@ Source of truth:
 - Figurine images: `assets/NPC Art/Figurines/{Catalogued,Generic,Memoriam}/npc_<key>.webp` (local mirror of Steam Cloud, not in git)
 - Shared figurine back: `assets/NPC Art/Shared/npcFigurineBack.webp`
 - Ring templates: `.dev/storyteller-dashboard/scripts/npc-art/token-template/ring-{lit,dark}.svg`
+- Dashboard badge art: `.dev/storyteller-dashboard/assets/badges/` (`tier_*.svg`, `year_*.svg`); these are overlays in the Dashboard and are not baked into TTS token images
 - Generator: `.dev/storyteller-dashboard/scripts/npc-art/` (`generate.ts`, `draw.ts`, `model.ts`, `report.ts`)
 - Cloud jobs: `.tools/cloud-asset-sync.jsonc` (`npcFiguresCatalogued`, `npcFiguresMemoriam`, `npcFiguresMemoriamGeneric`, `npcFiguresGeneric`, `npcTokens`, `figurineBack`)
 - Memoriam NPC list: `.dev/storyteller-dashboard/data/memoriam-npcs.json` (`npm run memoriam-npcs:import`, named range `MEMORIAMNPCCSV`)
@@ -49,7 +50,7 @@ return {
 - **Catalog gate:** a figurine gets a token and a link only when its key is in its folder's catalog (named: `D.characters` via `data/scene-catalogs.json`; generic: `.dev/storyteller-dashboard/data/generic-npcs.json`, whose labels also land on the generic rows as `genericLabel`; Memoriam: every row of `.dev/storyteller-dashboard/data/memoriam-npcs.json`). Memoriam generics are not written as `genericLabel` rows, so they do not join the present-day generic importer.
 - **Links change with the art:** a Steam Cloud link names the file's content, so changed art always gets a new link and TTS never shows a stale cached copy. A token is redrawn only when its inputs change (figurine, name, ring colour, manual crop, ring SVGs, font, `draw.ts`, `model.ts`, recorded in `.cache/npc-tokens.json`).
 - **Not uploaded yet:** `npc-art:urls` leaves out (with a warning) any NPC whose figurine or token has no Cloud link yet, and warns when a local file changed since its upload. Close TTS and run `npm run build:full` again.
-- **Pruning:** removing a figurine removes its tokens on the next draw; the sync then deletes the Cloud copies and the banner row, and `npc-art:urls` drops the link.
+- **Pruning:** removing a figurine removes its token pair on the next draw. The draw step also removes historical `.tier_<tier>` token variants. The sync then deletes obsolete Cloud copies and the banner row, and `npc-art:urls` drops obsolete links.
 - **Readers (Global only):** `core/npc_spawn.ttslua` (`NpcSpawn.figurineUrls`) and `core/stage_tokens.ttslua` (`tokenArt`). Both error loudly when a key has no art. `lib/npcs_data.ttslua` `D.initGenericNPCs()` registers only generic catalog keys that have art (and prints the rest).
 - **Overrides (TOR-717):** right-clicking a Dashboard roster token opens a window that saves `{ name?, color?, cardScale?, seatedY? }` per NPC. `name` and `color` feed the token art (see Token look). The draw step writes the TTS fields to `lib/npc_overrides.ttslua` (bundled by Save & Play, not hosted): `lib/npcs_data.ttslua` applies `name` to `fullName` and `cardScale` to `figurine.scale` for named NPCs at load, `D.initGenericNPCs` uses `name` as a generic's default label, `NPCS.registerGenericCharacter` uses `cardScale`, and `lib/figurine_seat_layout.ttslua` `computeSlotFrames` uses `seatedY` instead of the `SEAT_FIGURE` `defaultY` (-52.89) for an NPC at a table seat. Seated figurines still use card scale 53.
 - **Saved stage tokens:** `StageTokens` replaces any saved token whose images differ from the current links, so new art shows up on the next Save & Play.
@@ -62,6 +63,7 @@ return {
 - Name in Bebas Neue at lower centre, up to two lines, then an ellipsis. Named NPCs and named Memoriam NPCs use the first word of their full name (titles such as "Prince", "Lady", "The" are skipped). Present-day generic NPCs and generic Memoriam NPCs (`isGeneric` on the sheet, key ending `_` plus two digits) use their full catalog label. An override `name` replaces the full name or label before that rule.
 - **Front (lit):** ring in the override `color`, else the NPC's roster colour (its first group's colour in the Dashboard roster layout, `data/npc-roster.json` `layout`, else that group's category colour, else a neutral grey).
 - **Back (dark):** black ring, black silhouette, dimmed name.
+- **Badges:** tier and Memoriam year badges are Dashboard-only overlays. Generated TTS spotlight tokens never bake in badges, and changing a generic NPC's tier does not change its TTS token image.
 
 Generic NPCs renamed in a scene keep their catalog label on the token image; the rename only changes object names.
 

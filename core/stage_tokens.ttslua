@@ -65,7 +65,10 @@ end
 --- @return table|nil `{ front, back }`
 local function tokenArt(key)
     local art = ART[key]
-    return type(art) == "table" and art.token or nil
+    if type(art) ~= "table" then
+        return nil
+    end
+    return art.token
 end
 
 --- @param obj Object
@@ -110,8 +113,9 @@ end
 --- The only part of a placement row a token follows after spawning.
 --- @param row table placement row
 --- @return string
-local function rowSig(row)
-    return tostring(row.npcLightMode)
+local function rowSig(key, row)
+    local art = tokenArt(key)
+    return tostring(row.npcLightMode) .. "|" .. tostring(art and art.front or "")
 end
 
 --- @param row table
@@ -283,7 +287,7 @@ function StageTokens.reconcileFromState(opts)
     end
     for key, row in pairs(placements) do
         if type(row) == "table" then
-            local sig = rowSig(row)
+            local sig = rowSig(key, row)
             local guid = tokenGuidByKey[key]
             local obj = guid and G.getObject(guid) or nil
             if not U.isGameObject(obj) then
@@ -298,7 +302,14 @@ function StageTokens.reconcileFromState(opts)
                 end
                 appliedSigByKey[key] = sig
             elseif force or appliedSigByKey[key] ~= sig then
-                obj.setRotationSmooth(tokenRotation(row), false, true)
+                if not tokenCurrent(obj, key) then
+                    local position = obj.getPosition()
+                    obj.destruct()
+                    obj = spawnToken(key, position, row)
+                    tokenGuidByKey[key] = obj and obj.getGUID() or nil
+                else
+                    obj.setRotationSmooth(tokenRotation(row), false, true)
+                end
                 appliedSigByKey[key] = sig
             end
         end

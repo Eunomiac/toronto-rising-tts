@@ -83,7 +83,7 @@ Key-up or hovering off the tokens clears both previews. Entry: `Gameboard.onCont
 
 ## Token art
 
-`StageTokens` reads front/back art from `lib/npc_art_urls.ttslua` (`ART[key].token`), generated for every NPC by `npm run build:full` ([NPC Art Pipeline](NPC%20Art%20Pipeline.md)). Tokens are circle `Custom_Tile` (`type = 2`, thickness 0.1); face down = NPC stands dark. When indexing saved tokens, any token whose images differ from the current links is destroyed so it respawns with the new art. Missing art prints `[StageTokens] no token art for …` and that NPC gets no token.
+`StageTokens` reads one front/back pair from `lib/npc_art_urls.ttslua` (`ART[key].token`), generated for every NPC by `npm run build:full` ([NPC Art Pipeline](NPC%20Art%20Pipeline.md)). Tokens are circle `Custom_Tile` (`type = 2`, thickness 0.1); face down = NPC stands dark. When indexing saved tokens, any token whose images differ from the current links is destroyed so it respawns with the new art. Tier and year badges remain Dashboard overlays and do not create alternate TTS token images. Missing art prints `[StageTokens] no token art for …` and that NPC gets no token.
 
 GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD` in `lib/guids.ttslua`.
 

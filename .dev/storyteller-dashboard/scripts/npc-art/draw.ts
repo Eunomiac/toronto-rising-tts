@@ -218,7 +218,12 @@ const compose = async (head: Buffer, ring: Buffer, name: Buffer, disc: Buffer): 
     .webp({ quality: 88, alphaQuality: 100 })
     .toBuffer();
 
-export type DrawnToken = { readonly front: Buffer; readonly back: Buffer; readonly crop: HeadCrop; readonly autoCrop: boolean };
+export type DrawnToken = {
+  readonly front: Buffer;
+  readonly back: Buffer;
+  readonly crop: HeadCrop;
+  readonly autoCrop: boolean;
+};
 
 export const drawToken = async (
   figurine: Buffer,

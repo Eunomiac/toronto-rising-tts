@@ -119,6 +119,7 @@ describe("renderLuaModule", () => {
     expect(lua.indexOf("  amy = {")).toBeLessThan(lua.indexOf("  zed = {"));
     expect(lua).toContain('figurine = { front = "https://cloud.test/amy/", back = FIGURINE_BACK },');
     expect(lua).toContain('token = { front = "https://cloud.test/zedF/", back = "https://cloud.test/zedB/" },');
+    expect(lua).not.toContain("tierTokens");
     expect(lua).toContain('    genericLabel = "Street \\"Amy\\"",');
     expect(lua.match(/genericLabel = /g)).toHaveLength(1);
   });
