@@ -46,4 +46,7 @@ npm install
 - Writes are refused while Tabletop Simulator is open (TTS keeps its own copy of the index). The build skips the push and warns instead.
 - Every index write snapshots first, re-reads, and checks that no untouched entry changed; on a mismatch it restores the snapshot and stops.
 - `assets/.cloud-ledger.json` records what was synced. Only ledger files are deleted from Cloud, and only when the current save, repo code, and saves of other mods no longer use them.
-- `assets/Save Only/` is a read-only copy of art authored in the save; `assets/images/` is the old repo art folder (no longer tracked or read; safe to delete). Push ignores both.
+- `assets/Save Only/` is a read-only copy of art authored in the save.
+- `assets/Protected Cloud Files/` is a read-only inspection mirror of retired files that a build wanted to delete but retained because a save or repository file still references them. Its `index.json` records the original Cloud path and every protecting reference.
+- `npm run cloud:protected-usage` traces every URL from that index through the current save and writes `usage-report.md` plus full JSON evidence beside it. The report identifies Global or object Custom UI, decals, image fields, serialized script state, containing object names/GUIDs, and exact JSON paths.
+- Push ignores both read-only mirrors. It also ignores `assets/images/`, the old repo art folder (no longer tracked or read; safe to delete).

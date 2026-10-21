@@ -69,6 +69,10 @@ After the upload step, Full build also runs **`cloud:consolidate --apply`**: any
 
 `assets/Save Only/` is a read-only copy pulled from Cloud. Push never uploads from it.
 
+`assets/Protected Cloud Files/` is another read-only build output. It contains copies of files the Cloud sync wanted to retire but could not delete because the current save, repository, or another mod still references them. Open its `index.json` to see the original Cloud path and the references protecting each file. Push never uploads from this folder.
+
+If you need to know exactly where the current save mentions those URLs, run **`npm run cloud:protected-usage`**. Open `assets/Protected Cloud Files/usage-report.md` for the readable result. It names the containing object and GUID where possible and includes the exact save JSON path; `usage-report.json` contains the same evidence in machine-readable form.
+
 ## Clean-up (occasional)
 
 Run these in this order, with TTS closed. Each shows a report first; nothing is deleted or moved without the extra flag.

@@ -18,6 +18,7 @@ const { findExistingConfig } = require("../../custom-ui-assets/lib/tts-assets-co
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const TTS_APP_ID = 286160;
 const SAVE_ONLY_FOLDER = "Save Only";
+const PROTECTED_CLOUD_FOLDER = "Protected Cloud Files";
 const LEGACY_ROOTS = ["Toronto Rising"];
 
 /**
@@ -86,6 +87,7 @@ module.exports = {
   REPO_ROOT,
   TTS_APP_ID,
   SAVE_ONLY_FOLDER,
+  PROTECTED_CLOUD_FOLDER,
   LEGACY_ROOTS,
   loadCloudConfig,
   isTtsRunning,

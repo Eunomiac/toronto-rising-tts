@@ -23,7 +23,7 @@ Status:
 
 ## Run order
 
-1. **Push** (`push.js`): uploads new/changed files, index-moves relocated ones (same name and content in another folder keeps the URL), plans deletes for files removed locally. Skipped with a warning while TTS is open (TTS keeps its own index copy). Ignores `assets/Save Only/` (read-only pull of save-authored art) and `assets/images/` (old repo art, untracked; safe to delete).
+1. **Push** (`push.js`): uploads new/changed files, index-moves relocated ones (same name and content in another folder keeps the URL), plans deletes for files removed locally, and downloads deletion candidates that remain protected into `assets/Protected Cloud Files/` with an `index.json` explaining their references. Skipped with a warning while TTS is open (TTS keeps its own index copy). Ignores the read-only `assets/Save Only/` and `assets/Protected Cloud Files/` mirrors, plus `assets/images/` (old repo art, untracked; safe to delete).
 2. **Jobs**: each job scans its folder (non-recursive unless `recurIntoSubfolders`), maps file names through its pattern, and reads URLs from the ledger.
 3. **Save write** (global/object Custom UI rows, object image fields), after `backupSaveBeforeWrite`.
 4. **Lua modules** and the **manifest** `lib/json/cloud-assets.json` (`jobs[id].rows[{path, name, sha1, url, size}]`, every job).

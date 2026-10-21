@@ -10,20 +10,25 @@
  * deletes the Cloud copy on the next push. Cloud files never in the ledger are strays.
  *
  * Not mirrored by push:
- *   Save Only/  pulled read-only from Cloud (art authored in the save)
- *   images/     legacy repo art still being migrated into the mirrored layout
+ *   Save Only/             pulled read-only from Cloud (art authored in the save)
+ *   Protected Cloud Files/ inspection copies of retired files that are still referenced
+ *   images/                legacy repo art still being migrated into the mirrored layout
  */
 
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
-const { REPO_ROOT, SAVE_ONLY_FOLDER } = require("./cloud_config.js");
+const { PROTECTED_CLOUD_FOLDER, REPO_ROOT, SAVE_ONLY_FOLDER } = require("./cloud_config.js");
 const { normalizeCloudPath } = require("./cloud_index.js");
 
 const LEDGER_FILE = ".cloud-ledger.json";
 const HASH_CACHE = path.join(REPO_ROOT, ".cache", "assets-hash.json");
-const PUSH_EXCLUDED_TOP = new Set([SAVE_ONLY_FOLDER.toLowerCase(), "images"]);
+const PUSH_EXCLUDED_TOP = new Set([
+  SAVE_ONLY_FOLDER.toLowerCase(),
+  PROTECTED_CLOUD_FOLDER.toLowerCase(),
+  "images",
+]);
 
 /**
  * @typedef {{ relPath: string, folder: string, name: string, absPath: string, size: number, sha1: string, key: string }} LocalFile

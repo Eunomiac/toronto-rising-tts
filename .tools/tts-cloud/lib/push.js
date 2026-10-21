@@ -23,8 +23,121 @@ const {
 } = require("./assets_tree.js");
 const { readIndex, rowsFromIndex, ugcMatchKey } = require("./cloud_index.js");
 const { uploadFiles, moveFiles, deleteFiles } = require("./cloud_ops.js");
-const { isTtsRunning, SAVE_ONLY_FOLDER } = require("./cloud_config.js");
+const { isTtsRunning, PROTECTED_CLOUD_FOLDER, SAVE_ONLY_FOLDER } = require("./cloud_config.js");
 const { buildInUseIndex } = require("./in_use.js");
+
+const PROTECTED_INDEX = "index.json";
+
+/**
+ * @param {string} relPath
+ */
+function safeProtectedRelPath(relPath) {
+  const normalized = String(relPath || "").replace(/\\/g, "/");
+  const parts = normalized.split("/");
+  if (normalized === "" || path.isAbsolute(normalized) || parts.some((part) => part === "" || part === "." || part === "..")) {
+    throw new Error(`Unsafe protected Cloud relative path: ${JSON.stringify(relPath)}.`);
+  }
+  return parts.join("/");
+}
+
+/**
+ * Keep inspection copies of Cloud files that deletion protection retained.
+ * Only files recorded by the previous generated index are pruned.
+ *
+ * @param {{ assetsDir: string }} cfg
+ * @param {ReturnType<import("./steam_session.js").openSteamSession>} session
+ * @param {{ candidate: any, use: { protectedBy: string[], otherModSaves: string[], olderTorontoRisingSaves: string[] } }[]} entries
+ */
+function refreshProtectedCloudFiles(cfg, session, entries) {
+  const root = path.resolve(cfg.assetsDir, PROTECTED_CLOUD_FOLDER);
+  const indexPath = path.join(root, PROTECTED_INDEX);
+  let previous = { files: [] };
+  try {
+    previous = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  } catch {
+    previous = { files: [] };
+  }
+
+  const records = [];
+  const wanted = new Set();
+  let written = 0;
+  let unchanged = 0;
+  for (const { candidate, use } of entries) {
+    const rel = safeProtectedRelPath(candidate.relPath);
+    const key = rel.toLowerCase();
+    if (wanted.has(key)) throw new Error(`Duplicate protected Cloud mirror path: ${rel}.`);
+    wanted.add(key);
+    if (!session.fileExists(candidate.row.key)) {
+      throw new Error(`Protected Cloud file is indexed but missing from Steam: ${candidate.row.key}.`);
+    }
+    const bytes = session.readFile(candidate.row.key);
+    const abs = path.resolve(root, ...rel.split("/"));
+    if (!abs.startsWith(`${root}${path.sep}`)) throw new Error(`Protected Cloud mirror escaped its root: ${rel}.`);
+    let same = false;
+    try {
+      same = fs.readFileSync(abs).equals(bytes);
+    } catch {
+      same = false;
+    }
+    if (same) {
+      unchanged += 1;
+    } else {
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, bytes);
+      written += 1;
+    }
+    records.push({
+      path: rel,
+      cloudPath: `${candidate.row.folder}/${candidate.row.name}`,
+      url: candidate.row.url,
+      key: candidate.row.key,
+      size: candidate.row.size,
+      reason: candidate.reason,
+      protectedBy: [...use.protectedBy],
+      otherModSaves: [...use.otherModSaves],
+      olderTorontoRisingSaves: [...use.olderTorontoRisingSaves],
+    });
+  }
+  records.sort((a, b) => a.path.localeCompare(b.path));
+
+  let removed = 0;
+  for (const old of Array.isArray(previous.files) ? previous.files : []) {
+    let rel;
+    try {
+      rel = safeProtectedRelPath(old.path);
+    } catch {
+      continue;
+    }
+    if (wanted.has(rel.toLowerCase())) continue;
+    const abs = path.resolve(root, ...rel.split("/"));
+    if (abs.startsWith(`${root}${path.sep}`) && fs.existsSync(abs) && fs.statSync(abs).isFile()) {
+      fs.unlinkSync(abs);
+      removed += 1;
+    }
+  }
+
+  const removeEmptyDirs = (dir) => {
+    if (!fs.existsSync(dir)) return;
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (ent.isDirectory()) removeEmptyDirs(path.join(dir, ent.name));
+    }
+    if (dir !== root && fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
+  };
+  fs.mkdirSync(root, { recursive: true });
+  removeEmptyDirs(root);
+  const indexText = `${JSON.stringify({
+    purpose: "Read-only inspection copies of retired Cloud files that the current build cannot delete because something still references them.",
+    files: records,
+  }, null, 2)}\n`;
+  let oldIndex = "";
+  try {
+    oldIndex = fs.readFileSync(indexPath, "utf8");
+  } catch {
+    oldIndex = "";
+  }
+  if (oldIndex !== indexText) fs.writeFileSync(indexPath, indexText, "utf8");
+  return { count: records.length, written, unchanged, removed, indexPath };
+}
 
 /**
  * @param {ReturnType<import("./cloud_config.js").loadCloudConfig>} cfg
@@ -93,6 +206,12 @@ async function applyPush(cfg, session, plan, opts) {
   const files = { ...plan.ledger.files };
   for (const rel of plan.staleLedgerPaths) delete files[rel];
   for (const { file, row } of plan.inSync) files[file.relPath] = { key: row.key, url: row.url, size: row.size };
+  // Persist reconciliation before any new Steam writes. Uploads are indexed in
+  // batches, so a quota or API failure can leave successfully uploaded files in
+  // Cloud even though this function never reaches its final ledger write. A
+  // retry can already see those files through plan.inSync; recording them here
+  // keeps cleanup/audit tools from misclassifying them as Cloud-only strays.
+  saveLedger(cfg.assetsDir, { cloudRoot: cfg.cloudRoot, files });
   const writes = plan.uploads.length + plan.moves.length;
   if (writes > 0 && isTtsRunning()) {
     opts.log(
@@ -135,14 +254,10 @@ async function applyPush(cfg, session, plan, opts) {
  * @param {{ log: (msg: string) => void, warn: (msg: string) => void, label: string, protectAllSaves?: boolean }} opts
  */
 function applyDeletes(cfg, session, plan, opts) {
-  if (plan.deleteCandidates.length === 0) return { deleted: [], kept: [] };
-  if (isTtsRunning()) {
-    opts.log(`SKIP Cloud deletes: Tabletop Simulator is open (${plan.deleteCandidates.length} waiting).`);
-    return { deleted: [], kept: [] };
-  }
   const inUse = buildInUseIndex(cfg, { protectAllSaves: opts.protectAllSaves });
   const deleted = [];
   const kept = [];
+  const protectedEntries = [];
   /** @type {Map<string, number>} */
   const olderSaveUse = new Map();
   for (const c of plan.deleteCandidates) {
@@ -151,13 +266,23 @@ function applyDeletes(cfg, session, plan, opts) {
     if (use.otherModSaves.length > 0) {
       opts.warn(`KEPT ${label} (${c.reason}): used by a save other than Toronto Rising: ${use.otherModSaves.join(", ")}`);
       kept.push(c);
+      protectedEntries.push({ candidate: c, use });
     } else if (use.protectedBy.length > 0) {
       opts.warn(`KEPT ${label} (${c.reason}): still referenced by ${use.protectedBy.join(", ")}`);
       kept.push(c);
+      protectedEntries.push({ candidate: c, use });
     } else {
       for (const s of use.olderTorontoRisingSaves) olderSaveUse.set(s, (olderSaveUse.get(s) || 0) + 1);
       deleted.push(c);
     }
+  }
+  const protectedMirror = refreshProtectedCloudFiles(cfg, session, protectedEntries);
+  opts.log(
+    `Protected Cloud Files: ${protectedMirror.count} mirrored (${protectedMirror.written} updated, ${protectedMirror.unchanged} unchanged, ${protectedMirror.removed} removed) → assets/${PROTECTED_CLOUD_FOLDER}/${PROTECTED_INDEX}`,
+  );
+  if (isTtsRunning()) {
+    opts.log(`SKIP Cloud deletes: Tabletop Simulator is open (${plan.deleteCandidates.length} waiting).`);
+    return { deleted: [], kept };
   }
   if (olderSaveUse.size > 0) {
     const list = [...olderSaveUse].map(([s, n]) => `${s} (${n})`).join(", ");
@@ -219,6 +344,8 @@ function refreshSaveOnly(cfg, session, rows, opts = {}) {
 }
 
 module.exports = {
+  refreshProtectedCloudFiles,
+  safeProtectedRelPath,
   refreshSaveOnly,
   planPush,
   applyPush,
