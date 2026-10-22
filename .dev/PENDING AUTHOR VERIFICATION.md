@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-21 (new NPC Sheet schema, Superhuman tier, Dashboard badges and simplified TTS token art; Apps Script deployment, build checks and Cloud cleanup verified). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
+_Last populated: 2026-10-22 (spotlight figurines now use the same portraits as the seat figurines). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
 
 ### Storyteller Dashboard pins from 2026-10-21
 
@@ -810,6 +810,15 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 4. Move a slider, such as Intensity or Spot Angle. You should see that change in the beam. The other sliders should stay where you put them.
 5. Click **ENABLED**. The beam should turn off, and the slider changes from step 4 should stay.
 6. Click **Discard**. The light, including whether it is on or off, should go back to how it was when you selected it.
+
+#### TOR-747 — Spotlight figurines use the same portraits as the seat figurines
+
+**How to verify:** Tabletop Simulator was closed while this was applied, and save 230 was rewritten on disk. A backup of the previous save was taken first. Load **TS_Save_230** from the main menu (do not save over it from a copy that was already open).
+
+1. Look at the five spotlight figurines (Aishe, Black Caesar, Fomorach, Lucien, and Rashid). Each front should still be that player, and each back should be the shared figurine back.
+2. The next full build should no longer print the five "KEPT … deleted locally" warnings for `Aishe.png`, `Black Caesar.png`, `Fomorach.png`, `Lucien.png`, and `Rashid.png`.
+
+Older Toronto Rising saves and autosaves still point at those deleted Cloud files, so the spotlight portraits in those older files will be missing. Save 230 is the one that was updated.
 
 ## Cleared
 

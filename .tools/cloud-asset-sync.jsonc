@@ -23,7 +23,9 @@
     "csheetPage7": ["35df08", "8e7623", "edb0b1", "f38d69", "f85e4f"],
     "csheetPage8": ["07ead9", "511c50", "f93aea", "645189", "ceb48e"],
     // SEAT_FIGURE_BROWN / ORANGE / RED / PINK / PURPLE (PC seat figurines)
-    "pcSeatFigurines": ["1c5b18", "e1a378", "1e70cf", "390349", "923872"]
+    "pcSeatFigurines": ["1c5b18", "e1a378", "1e70cf", "390349", "923872"],
+    // SPOTLIGHT_FIGURE_BROWN / ORANGE / RED / PINK / PURPLE (same players, same order)
+    "pcSpotlightFigurines": ["6ab32d", "f97704", "19ac51", "358075", "5628dd"]
   },
 
   "jobs": [
@@ -380,12 +382,12 @@
       "filenameToNameReplacePattern": "$1"
     },
     {
-      // Shared back of every NPC figurine (lib/npc_art_urls.ttslua) and of the PC seat figurines.
+      // Shared back of every NPC figurine (lib/npc_art_urls.ttslua) and of the PC seat and spotlight figurines.
       "id": "figurineBack",
       "folder": "NPC Art/Shared",
       "output": "ObjectImage",
       "field": "CustomImage.ImageSecondaryURL",
-      "objects": { "back": "pcSeatFigurines" },
+      "objects": { "back": ["pcSeatFigurines", "pcSpotlightFigurines"] },
       "filenameToNameSearchPattern": "^npcFigurineBack\\.webp$",
       "filenameToNameReplacePattern": "back"
     },
@@ -394,7 +396,13 @@
       "folder": "PCs/Seat Figurines",
       "output": "ObjectImage",
       "field": "CustomImage.ImageURL",
-      "objects": { "fomorach": "1c5b18", "rashid": "e1a378", "lucien": "1e70cf", "aishe": "390349", "blackCaesar": "923872" },
+      "objects": {
+        "fomorach": ["1c5b18", "6ab32d"],
+        "rashid": ["e1a378", "f97704"],
+        "lucien": ["1e70cf", "19ac51"],
+        "aishe": ["390349", "358075"],
+        "blackCaesar": ["923872", "5628dd"]
+      },
       "filenameToNameSearchPattern": "^pcSeatFigurine_(.*)\\.png$",
       "filenameToNameReplacePattern": "$1"
     },
