@@ -515,7 +515,7 @@ return {
   },
   civilianChildGirl_03 = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/13879382745361505977/441A68B5EBD48C78A71F2699C9295269A39FFEBB/", back = FIGURINE_BACK },
-    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12547035161336114355/5776F6F90E6A88D6586203C7A98D6A33A0CF52AA/", back = "https://steamusercontent-a.akamaihd.net/ugc/13267414199784745023/2D64E8D492069FFA450B849D2C3CF40DD210EF65/" },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12547035161336114355/5776F6F90E6A88D6586203C7A98D6A33A0CF52AA/", back = "https://steamusercontent-a.akamaihd.net/ugc/11889731810423711156/2D64E8D492069FFA450B849D2C3CF40DD210EF65/" },
     genericLabel = "Child (Girl)",
   },
   civilianChildGirl_04 = {
@@ -625,7 +625,7 @@ return {
   },
   civilianHomeless_04 = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/17813324882323228671/CDDC8ABC6086D1D7B39B1B50ADE3DA3EDC601E31/", back = FIGURINE_BACK },
-    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/11060403391891609553/55500CCCF79329583AF8FC2C6CB83A24E8B1363E/", back = "https://steamusercontent-a.akamaihd.net/ugc/12363404662638448695/0B902AA14238E28E484AEC79D4633E6B2FE173B1/" },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/11060403391891609553/55500CCCF79329583AF8FC2C6CB83A24E8B1363E/", back = "https://steamusercontent-a.akamaihd.net/ugc/17029210934057495693/0B902AA14238E28E484AEC79D4633E6B2FE173B1/" },
     genericLabel = "Homeless Civilian",
   },
   civilianHomeless_05 = {
@@ -1806,7 +1806,7 @@ return {
   },
   mem_bertrice1900 = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/10680311932299401143/501528E21AE25994B5FE79BEA42571739F9C13F3/", back = FIGURINE_BACK },
-    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12971733349183887978/64CF6C977F6E7F0BE21B9EB859C7219BD2D83E82/", back = "https://steamusercontent-a.akamaihd.net/ugc/12444197896779082497/DACBD78FDFA3B350D15D99DCC04F9E63C9718EC6/" },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12971733349183887978/64CF6C977F6E7F0BE21B9EB859C7219BD2D83E82/", back = "https://steamusercontent-a.akamaihd.net/ugc/16854631380022314164/DACBD78FDFA3B350D15D99DCC04F9E63C9718EC6/" },
   },
   mem_camarillaCourtClerk_01 = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/13968982993074649596/E92019C3B5FD5CD5CB5C288DD583C2C89EF84FCC/", back = FIGURINE_BACK },

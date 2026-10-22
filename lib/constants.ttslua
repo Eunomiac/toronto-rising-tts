@@ -2848,11 +2848,18 @@ C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 -- Memoriam panel art lives in assets/Memoriam (`memoriamPanel_<skyboxKey>_<a|b|c|d>.jpg`, synced to Steam Cloud) and reaches
 -- Lua as AUTO-GENERATED `lib/cloud_memoriam_panels.ttslua` (job `memoriamPanels`; regenerate: npm run cloud-asset-sync).
 -- That module is the URL authority for `panelA`–`panelD`.`url` (filled at load). The sheet does not supply panel URLs.
+-- `MEMORIAM_PANEL_ART_ALIAS` borrows one period's panel files for another (rashid12 uses rashid7's pictures). The borrowed
+-- skybox keeps its own titles and years; only the picture links are copied.
 -- Memoriam NPC figurine / token art comes from `lib/npc_art_urls.ttslua` (keyed `mem_<stem>`), like every other NPC.
 local CloudMemoriamPanels = require("lib.cloud_memoriam_panels")
 
 local MEMORIAM_PANEL_KEYS = { "panelA", "panelB", "panelC", "panelD" }
 local MEMORIAM_PANEL_KEY_BY_LETTER = { a = "panelA", b = "panelB", c = "panelC", d = "panelD" }
+
+--- Borrowed panel art: skybox key → the skybox whose `memoriamPanel_<source>_<a-d>` files it uses.
+local MEMORIAM_PANEL_ART_ALIAS = {
+  rashid12 = "rashid7",
+}
 
 --- @param value any
 --- @return string
@@ -2904,6 +2911,34 @@ local function applyMemoriamCloudPanelUrls(catalog, cloudPanels)
   return linked, unmatched
 end
 
+--- Copies panel picture links from the source skybox onto each borrowed skybox. Titles and years stay on the borrower.
+--- @param catalog table `C.MemoriamSkyboxes`
+local function applyMemoriamPanelArtAliases(catalog)
+  for skyboxKey, sourceKey in pairs(MEMORIAM_PANEL_ART_ALIAS) do
+    local entry = catalog[skyboxKey]
+    local source = catalog[sourceKey]
+    if type(entry) ~= "table" then
+      error("Memoriam panel alias `" .. tostring(skyboxKey) .. "` is not a catalog skybox")
+    end
+    if type(source) ~= "table" then
+      error("Memoriam panel alias `" .. tostring(skyboxKey) .. "` points at unknown skybox `" .. tostring(sourceKey) .. "`")
+    end
+    for i = 1, #MEMORIAM_PANEL_KEYS do
+      local panelKey = MEMORIAM_PANEL_KEYS[i]
+      local panel = entry[panelKey]
+      local sourcePanel = source[panelKey]
+      local url = type(sourcePanel) == "table" and trimmedString(sourcePanel.url) or ""
+      if type(panel) ~= "table" or url == "" then
+        error(
+          "Memoriam panel alias `" .. tostring(skyboxKey) .. "` cannot copy `"
+            .. tostring(sourceKey) .. "." .. tostring(panelKey) .. "`"
+        )
+      end
+      panel.url = url
+    end
+  end
+end
+
 --- Catalog panels (`"<skyboxKey>.<panelKey>"`) whose `url` is still blank after the Cloud merge — sorted.
 --- @return string[]
 function C.getMemoriamPanelsWithoutArt()
@@ -2949,6 +2984,7 @@ end
 
 do
   local linked, unmatched = applyMemoriamCloudPanelUrls(C.MemoriamSkyboxes, CloudMemoriamPanels)
+  applyMemoriamPanelArtAliases(C.MemoriamSkyboxes)
   local missing = C.getMemoriamPanelsWithoutArt()
   local summary = string.format(
     "[constants] Memoriam panel art: %d linked from Cloud, %d catalog panel(s) still without art (C.getMemoriamPanelsWithoutArt)",

@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-22 (spotlight figurines now use the same portraits as the seat figurines). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
+_Last populated: 2026-10-22 (shared Memoriam panels and token backs; spotlight figurines use the same portraits as the seat figurines). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
 
 ### Storyteller Dashboard pins from 2026-10-21
 
@@ -819,6 +819,16 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 2. The next full build should no longer print the five "KEPT … deleted locally" warnings for `Aishe.png`, `Black Caesar.png`, `Fomorach.png`, `Lucien.png`, and `Rashid.png`.
 
 Older Toronto Rising saves and autosaves still point at those deleted Cloud files, so the spotlight portraits in those older files will be missing. Save 230 is the one that was updated.
+
+#### TOR-748 — Shared Memoriam panels and token backs
+
+**How to verify:** Tabletop Simulator was open, so nothing was changed on Steam Cloud. Save 230 was rewritten on disk, and a backup of the previous save was taken first. Do not save from the session that is already open, because that would put the old links back. Load **TS_Save_230** from the main menu, then Save & Play.
+
+1. Open Rashid's Memoriam period 12. Its four pictures should match period 7.
+2. The token backs should match for Bertrice and Bertrice 1900, for child girl 01 and 03, and for homeless 02 and 04. Their fronts stay different.
+3. Blood Potency icons, and the Sylvain and Robin companion toggles, should look the same as before.
+
+The extra copies are still on Cloud until the next full build with Tabletop Simulator closed. Older saves may still point at those copies.
 
 ## Cleared
 

@@ -6,6 +6,7 @@ import { loadGenericNpcCatalog } from "../../src/server/genericNpcCatalog.ts";
 import { loadMemoriamNpcCatalog } from "../../src/server/memoriamNpcCatalog.ts";
 import { isEmptyNpcOverride, NPC_OVERRIDE_KEY_PATTERN, parseNpcOverride, type NpcOverride } from "../../src/shared/npcOverride.ts";
 import { drawToken, loadFont, type DrawAssets } from "./draw.ts";
+import { tokenBackShareMap } from "./token-back-share.ts";
 import {
   buildSubject,
   discrepancyReport,
@@ -28,7 +29,7 @@ import {
  * npm run npc-art:draw — one figurine per NPC at assets/NPC Art/Figurines/{Catalogued,Generic,Memoriam}/npc_<key>.webp.
  * Each figurine whose key is in its folder's catalog gets a spotlight token (both sides) at
  * assets/NPC Art/Tokens/npcToken_<key>.{front,back}.webp; tokens whose inputs are unchanged are skipped (--force redraws
- * all). Also writes lib/npc_overrides.ttslua (the TTS half of data/npc-overrides.json) and the discrepancy list
+ * all). Identical token backs keep one file (the alphabetically first NPC) and the others point at it. Also writes lib/npc_overrides.ttslua (the TTS half of data/npc-overrides.json) and the discrepancy list
  * .dev/build-logs/npc-art-discrepancies.txt (figurines in no catalog, catalogued NPCs without a figurine).
  *
  * npm run npc-art:urls — reads the Steam Cloud links cloud-asset-sync recorded in lib/json/cloud-assets.json and writes
@@ -44,6 +45,7 @@ const artDir = path.join(repoRoot, "assets", ART_REL);
 const tokenDir = path.join(artDir, "Tokens");
 const templateDir = path.join(scriptDir, "token-template");
 const tokenCachePath = path.join(repoRoot, ".cache", "npc-tokens.json");
+const backSharePath = path.join(repoRoot, ".cache", "npc-token-back-shares.json");
 const cloudManifestPath = path.join(repoRoot, "lib", "json", "cloud-assets.json");
 const luaPath = path.join(repoRoot, "lib", "npc_art_urls.ttslua");
 const overridesLuaPath = path.join(repoRoot, "lib", "npc_overrides.ttslua");
@@ -164,6 +166,34 @@ const readTokenCache = async (): Promise<TokenCache> => {
   return isRecord(file) ? Object.fromEntries(Object.entries(file).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
 };
 
+/** NPC key → the NPC whose token-back file it shares. Written by the draw step. */
+const readBackShares = async (): Promise<Record<string, string>> => {
+  if (!existsSync(backSharePath)) {
+    return {};
+  }
+  const file = await readJson(backSharePath);
+  if (!isRecord(file)) return {};
+  return Object.fromEntries(Object.entries(file).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+};
+
+const shareIdenticalTokenBacks = async (): Promise<number> => {
+  const files: { key: string; sha1: string }[] = [];
+  for (const file of await readdir(tokenDir)) {
+    const match = /^npcToken_([A-Za-z0-9_]+)\.back\.webp$/.exec(file);
+    if (!match) continue;
+    const bytes = await readFile(path.join(tokenDir, file));
+    files.push({ key: match[1]!, sha1: createHash("sha1").update(bytes).digest("hex") });
+  }
+  const shares = tokenBackShareMap(files);
+  for (const key of shares.keys()) {
+    await rm(path.join(tokenDir, `npcToken_${key}.back.webp`));
+  }
+  const sorted = Object.fromEntries([...shares.entries()].sort(([a], [b]) => a.localeCompare(b)));
+  await mkdir(path.dirname(backSharePath), { recursive: true });
+  await writeFile(backSharePath, `${JSON.stringify(sorted, null, 2)}\n`);
+  return shares.size;
+};
+
 const listFigurines = async (folder: NpcFolder): Promise<string[]> => {
   const dir = path.join(artDir, "Figurines", folder);
   if (!existsSync(dir)) {
@@ -240,7 +270,11 @@ const loadSubjects = async (): Promise<Subjects> => {
 };
 
 const draw = async (force: boolean): Promise<void> => {
-  const [{ subjects, uncatalogued, withoutFigurine, overrides }, cache] = await Promise.all([loadSubjects(), readTokenCache()]);
+  const [{ subjects, uncatalogued, withoutFigurine, overrides }, cache, backShares] = await Promise.all([
+    loadSubjects(),
+    readTokenCache(),
+    readBackShares()
+  ]);
   const [ringLit, ringDark, fontBytes, drawSource, modelSource] = await Promise.all([
     readFile(path.join(templateDir, "ring-lit.svg"), "utf8"),
     readFile(path.join(templateDir, "ring-dark.svg"), "utf8"),
@@ -259,15 +293,17 @@ const draw = async (force: boolean): Promise<void> => {
     const figurine = await readFile(abs(figurineRel(subject.folder, subject.key)));
     const tokenHash = fingerprint(styleHash, fingerprint(figurine), subject.name, subject.color, JSON.stringify(subject.manualCrop));
     const frontFile = abs(tokenRel(subject.key, "front"));
-    const backFile = abs(tokenRel(subject.key, "back"));
-    const current = !force && cache[subject.key] === tokenHash && existsSync(frontFile) && existsSync(backFile);
+    const sharedBack = backShares[subject.key];
+    const backReady = existsSync(abs(tokenRel(subject.key, "back")))
+      || (sharedBack !== undefined && existsSync(abs(tokenRel(sharedBack, "back"))));
+    const current = !force && cache[subject.key] === tokenHash && existsSync(frontFile) && backReady;
     if (!current) {
       const token = await drawToken(figurine, subject.name, subject.color, subject.manualCrop, assets).catch((error: unknown) => {
         throw new Error(`Drawing the token for ${subject.folder}/${subject.key} failed: ${error instanceof Error ? error.message : String(error)}`);
       });
       await Promise.all([
         writeFile(frontFile, token.front),
-        writeFile(backFile, token.back)
+        writeFile(abs(tokenRel(subject.key, "back")), token.back)
       ]);
       drawn += 1;
       if (token.autoCrop) {
@@ -287,13 +323,15 @@ const draw = async (force: boolean): Promise<void> => {
     }
   }
 
+  const sharedBacks = await shareIdenticalTokenBacks();
+
   await mkdir(path.dirname(tokenCachePath), { recursive: true });
   const sortedCache = Object.fromEntries(Object.entries(nextCache).sort(([a], [b]) => a.localeCompare(b)));
   await writeFile(tokenCachePath, `${JSON.stringify(sortedCache, null, 2)}\n`);
   await writeFile(overridesLuaPath, renderOverridesLuaModule(overrides, GENERATED_BY));
 
   console.log(
-    `[npc-art] ${subjects.length} NPCs: ${drawn} token(s) drawn, ${subjects.length - drawn} unchanged, ${pruned} stale token file(s) removed.`
+    `[npc-art] ${subjects.length} NPCs: ${drawn} token(s) drawn, ${subjects.length - drawn} unchanged, ${pruned} stale token file(s) removed, ${sharedBacks} shared token back(s).`
   );
   if (autoCropped.length > 0) {
     console.log(`[npc-art] ${autoCropped.length} drawn token(s) used the automatic head crop (set a crop in the dashboard to override).`);
@@ -326,7 +364,7 @@ const readCloudRows = async (): Promise<Map<string, CloudRow>> => {
 const sha1Of = async (file: string): Promise<string> => createHash("sha1").update(await readFile(file)).digest("hex").toUpperCase();
 
 const urls = async (): Promise<void> => {
-  const [{ subjects, genericLabels }, cloud] = await Promise.all([loadSubjects(), readCloudRows()]);
+  const [{ subjects, genericLabels }, cloud, backShares] = await Promise.all([loadSubjects(), readCloudRows(), readBackShares()]);
   const notInCloud: string[] = [];
   const outdated: string[] = [];
   const link = async (rel: string): Promise<string | null> => {
@@ -351,7 +389,7 @@ const urls = async (): Promise<void> => {
     const [figurineFront, tokenFront, tokenBack] = await Promise.all([
       link(figurineRel(subject.folder, subject.key)),
       link(tokenRel(subject.key, "front")),
-      link(tokenRel(subject.key, "back"))
+      link(tokenRel(backShares[subject.key] ?? subject.key, "back"))
     ]);
     if (figurineFront === null || tokenFront === null || tokenBack === null) {
       missingNpcs.push(subject.key);

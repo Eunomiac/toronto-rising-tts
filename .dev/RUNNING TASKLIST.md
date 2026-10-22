@@ -658,6 +658,7 @@ _Parent: the local, gitignored `assets/` folder is the one source of truth, push
 - [x] **Cloud writer + safeguards:** backup, index snapshots/restore, upload/move/delete with verification; `cloud:pull` / `cloud:push`. _(TOR-726)_
 - [x] **Cloud cleanup scripts:** `cloud:audit`, `cloud:consolidate`, `cloud:dedupe`, `cloud:strays`. _(TOR-727)_
 - [x] **NPC art on Cloud:** figurines, generated tokens, `rollFigure_*` banners and PC seat figurines from Cloud jobs. _(TOR-728)_ — Pending Save & Play_
+- [x] **Shared duplicate art:** Rashid Memoriam 12 uses period 7's panel pictures; identical token backs keep one file; save 230's Blood Potency and companion-toggle links point at the tracked files. Extra Cloud copies remain until the next build with TTS closed. Pending Save & Play. _(TOR-748)_
 - [x] **Hand-typed URL lists to Cloud jobs:** dice art, companion toggle, Blood Potency decals (spotlight duplicate removed). _(TOR-729)_ — Pending Save & Play_
 - [x] **Locations from Cloud:** site cards, district cards, skyboxes, scene catalogs from the manifest. _(TOR-732)_ — Pending Save & Play_
 - [x] **HUD image names owned by Cloud jobs:** Global HUD folders + jobs; dead bare-name banners removed; dashboard sheet art from `assets/`. _(TOR-730)_ — Pending Save & Play_
