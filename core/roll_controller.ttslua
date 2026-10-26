@@ -4092,7 +4092,7 @@ end
 -- Reusing a completion id is harmless after save/reload; no consequence replay.
 function RC.completeComplications(target, delta, gameId)
     if target.completedGame == gameId then return nil end
-    local color, active = target.color, U.clone(target.roll)
+    local color, active = target.color, U.clone(target.roll, true)
     local STR = require("core.storyteller_rolls")
     local existing = STR.findHistoryEntry(color, target.rollId)
     if existing and existing.complicationsGame == gameId then target.completedGame = gameId; return nil end

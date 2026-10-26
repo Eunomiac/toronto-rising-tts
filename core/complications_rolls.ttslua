@@ -12,18 +12,18 @@ function R.capture(color,rollId)
     local roll,confirmed
     if active and active.id==rollId then
         if active.phase~='postRoll' or active.pendingResolution then return nil,'Finish the current roll choices first.' end
-        roll=U.clone(active); confirmed=false
+        roll=U.clone(active, true); confirmed=false
     elseif entry then
         local snapshot=S.getStateVal('storytellerRolls','pcDash',color)
-        roll=U.clone(entry); roll.id=rollId
+        roll=U.clone(entry, true); roll.id=rollId
         if snapshot and snapshot.rollId==rollId then
-            for k,v in pairs(snapshot) do if roll[k]==nil then roll[k]=U.clone(v) end end
+            for k,v in pairs(snapshot) do if roll[k]==nil then roll[k]=U.clone(v, true) end end
         end
         roll.difficulty=entry.difficulty or ((entry.result.successes or 0)-entry.result.margin+(entry.result.complicationsDelta or 0))
         confirmed=true
     else return nil,'That roll is no longer available.' end
     if not Model.eligible(roll) then return nil,'Complications requires a Launch, Goal, Standard, Willpower, or Discipline roll with a known margin.' end
-    return {color=color,rollId=rollId,rollType=roll.rollType,result=U.clone(roll.result),roll=roll,confirmed=confirmed}
+    return {color=color,rollId=rollId,rollType=roll.rollType,result=U.clone(roll.result, true),roll=roll,confirmed=confirmed}
 end
 function R.finish(target,total,gameId)
     return require('core.roll_controller').completeComplications(target,total,gameId)
