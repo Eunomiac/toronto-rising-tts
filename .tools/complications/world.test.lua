@@ -135,6 +135,13 @@ D.button({color='Black'},'-1','button_Automate')
 -- Reload with duplication queued; it must not plan or spawn the same batch twice.
 scheduled={};state.complications=clone(g);package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain();g=state.complications
 copies=0;for _,c in pairs(g.cards) do if c.doomSource==doom then copies=copies+1 end end;assert(copies==rare*4)
+-- A retained copy discarded after reversal must not become an extra fifth copy.
+D.button({color='Black'},'-1','button_Automate');drain()
+g.selected=kept;D.button({color='Black'},'-2','button_Negate');drain()
+assert(g.cards[kept] and g.cards[kept].zone=='discard')
+g.selected=doom;D.button({color='Black'},'-1','button_Automate');drain()
+copies=0;for _,c in pairs(g.cards) do if c.doomSource==doom then copies=copies+1 end end
+assert(copies==rare*4 and not g.cards[kept])
 local outside=make('outside','Card','1:'..catalog[1].name,{'deckOfComplications'});outside.position={x=60,y=10,z=60};outside.is_face_down=false
 D.button({color='Black'},'-1','button_StopSelect');D.hotkey('Black',outside,false);drain();assert(g.selected=='outside' and g.cards.outside.zone=='external')
 local before=Model.totals(g);D.button({color='Black'},'-1','button_Enhance');drain();assert(g.cards.outside.clone and Model.totals(g)==before)

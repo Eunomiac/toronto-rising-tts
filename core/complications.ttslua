@@ -219,6 +219,12 @@ local function execute(g,op,done)
         if not op.planned then
             local roots={}
             for guid,c in pairs(g.cards) do
+                -- A copy retained by reversal may since have been discarded or turned down.
+                -- Only still-revealed copies count toward this fresh application.
+                if c.doomSource==op.guid and not (c.zone=='slot' and c.up) then
+                    for i,v in pairs(g.slots) do if v==guid then g.slots[i]=nil end end
+                    c.zone='retired';Model.queue(g,{kind='destroyCard',guid=guid})
+                end
                 if c.rarity=='Rare' and c.zone~='excluded' and c.zone~='external' and c.zone~='retired' and c.doomSource~=op.guid then roots[#roots+1]=guid end
             end
             table.sort(roots)
@@ -388,6 +394,10 @@ function D.onPlayerAction(player,action,targets)
                 if player.color~=g.target.color and not U.isStorytellerSteamPlayer(player) then return false end
                 found=guid
             end
+        elseif c and c.zone=='deck' and action==Player.Action.FlipOver and not busy(g) then
+            -- A manually drawn nested Complication stays outside this game's future deals.
+            c.zone,c.up='external',o.is_face_down==true
+            save(g)
         elseif o.hasTag('enhancedComplication') and not U.isStorytellerSteamPlayer(player) then return false end
     end
     if found and Model.reveal(g,found) then
@@ -463,7 +473,7 @@ function D.hotkey(playerColor,hovered,isKeyUp)
         if not def or def.name~=name then return true end
         c=c or {index=index,name=name,value=def.value,category=def.category,rollTypes=U.clone(def.rollTypes,true)}
         c.zone,c.up='external',true
-        c.externalPose=c.externalPose or {position=vector(hovered.getPosition()),rotation=vector(hovered.getRotation())}
+        if not c.enhanced then c.externalPose={position=vector(hovered.getPosition()),rotation=vector(hovered.getRotation())} end
         g.cards[guid]=c
     end
     if not c or (c.zone~='slot' and c.zone~='external') then return true end
