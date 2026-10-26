@@ -54,7 +54,9 @@ make=function(id,tag,notes,tags,children)
   dest.children[#dest.children+1]={id=other.getGUID(),notes=other.getGMNotes(),tags=other.tags};objects[other.getGUID()]=nil
   return dest
  end
- o.UI={setAttribute=function() end,setAttributes=function() end}
+ local uiTree={{tag='HorizontalLayout',attributes={id='controlsPanel'},children={}}}
+ o.UI={setAttribute=function() end,setAttributes=function() end,
+ getXmlTable=function() return uiTree end,setXmlTable=function(t) uiTree=t end}
  o.positionToWorld=function(p) return {x=o.position.x+p.x*10,y=o.position.y+p.y,z=o.position.z+p.z*10} end
  return o
 end
@@ -86,7 +88,7 @@ for i=1,66 do enh[#enh+1]={id='e'..i,notes=i..':'..catalog[i].name..':Enhanced',
 make('base','Deck','',{'deckOfComplications'},base);make('source','Deck','',{'deckOfComplications','enhancedComplication'},enh)
 local D=require('core.complications');assert(not D.start('Red','roll1'));drain()
 local g=state.complications;assert(g and not g.error)
-local count=0;for _,id in pairs(g.slots) do count=count+1;assert(objects[id]);assert(g.cards[id].category~='Project');assert(not objects[id].locked) end;assert(count==10)
+local count=0;for _,id in pairs(g.slots) do count=count+1;assert(objects[id]);assert(Model.available(g,g.cards[id]));assert(not objects[id].locked) end;assert(count==10)
 local id=g.slots[1]
 assert(not D.onPlayerAction({color='Pink'},'flip',{objects[id]}));assert(D.onPlayerAction({color='Red'},'flip',{objects[id]}));drain();assert(g.cards[id].up and objects[id].locked)
 local total=Model.totals(g)

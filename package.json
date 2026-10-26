@@ -102,7 +102,7 @@
     "csv-to-markdown:ts:run": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:run",
     "csv-to-markdown:ts:compile": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:compile",
     "complications:import": "node .dev/scripts/import_complications_from_sheet.js",
-    "complications:test": "node --test .dev/scripts/import_complications_from_sheet.test.js && fengari .tools/complications/model.test.lua && fengari .tools/complications/world.test.lua"
+    "complications:test": "node --test .dev/scripts/import_complications_from_sheet.test.js && fengari .tools/complications/run.lua .tools/complications/model.test.lua && fengari .tools/complications/run.lua .tools/complications/world.test.lua"
   },
   "keywords": [
     "tabletop-simulator",

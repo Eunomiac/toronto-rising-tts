@@ -8,6 +8,7 @@ local G = require('lib.guids')
 local O = require('core.objects')
 local Model = require('lib.complications_model')
 local Catalog = require('lib.complications_catalog')
+local Automations = require('lib.complications_automations')
 local running, selectArmed, randomEpoch, confirmEpoch = false, false, 0, 0
 local pump
 local function game() return S.getStateVal('complications') end
@@ -21,6 +22,27 @@ local function fail(g, message)
     U.AlertGM('Complications: '..message..' Reload to retry the saved operation.')
 end
 local function board() return obj(G.GUIDS.COMPLICATIONS_BOARD) end
+-- Cold migration for existing saves: only the known board, only if the new button
+-- is absent. Normal refreshes use attributes; never rebuild XML on clicks/reveals.
+local function mountAutomationButton()
+    local b=board(); if not b then return end
+    local tree=b.UI.getXmlTable()
+    for _,node in ipairs(tree) do
+        if node.attributes and node.attributes.id=='controlsPanel' then
+            node.children=node.children or {}
+            for _,child in ipairs(node.children) do
+                if child.attributes and child.attributes.id=='button_Automate' then return end
+            end
+            node.attributes.width='2900'
+            node.children[#node.children+1]={tag='Button',attributes={id='button_Automate',
+                class='complicationButton blueButton',text='Automate',interactable='false',
+                onClick='Global/onComplicationButtonClick'}}
+            b.UI.setXmlTable(tree)
+            return
+        end
+    end
+    error('Complications board UI has no controlsPanel')
+end
 local function activeObject(g, guid)
     local c=g.cards[guid]
     return c and c.enhanced and obj(c.clone) or obj(guid)
@@ -37,12 +59,13 @@ function D.refresh()
     b.UI.setAttribute('text_originalMargin','text',signed(g.target.result.margin))
     b.UI.setAttribute('text_complicationsTotal','text',signed(total))
     b.UI.setAttribute('text_adjustedMargin','text',signed(margin))
-    for _,id in ipairs({'button_StopSelect','button_Enhance','button_SelectRandom','button_Negate','button_Adjust','button_ToggleCategoryDiscard'}) do
+    for _,id in ipairs({'button_StopSelect','button_Enhance','button_SelectRandom','button_Negate','button_Adjust','button_ToggleCategoryDiscard','button_Automate'}) do
         b.UI.setAttribute(id,'onClick','Global/onComplicationButtonClick')
     end
     local mode=g.mode
     b.UI.setAttributes('button_StopSelect',{text=mode=='select' and 'Select' or mode=='confirm' and 'Confirm' or 'Stop',class='complicationButton '..(mode=='select' and 'magentaButton' or mode=='confirm' and 'redButton' or 'yellowButton')})
     local selected=g.selected and g.cards[g.selected] and g.cards[g.selected].zone=='slot'
+    b.UI.setAttribute('button_Automate','interactable',selected and not busy(g) and Automations.has(g.cards[g.selected].index) and 'true' or 'false')
     for _,id in ipairs({'button_Enhance','button_Negate'}) do b.UI.setAttribute(id,'active',selected and 'true' or 'false') end
     b.UI.setAttribute('button_Adjust','text','Adjust ('..signed(g.adjust)..')')
     b.UI.setAttributes('button_ToggleCategoryDiscard',{text=g.autoDiscard and 'Auto-Disc' or 'Mults Okay',class='complicationButton '..(g.autoDiscard and 'greenButton' or 'redButton')})
@@ -90,7 +113,7 @@ local function pile(g,zone,exclude)
     return nil
 end
 local function poseCard(g,o,slot,up,buried)
-    local p=U.clone(g.positions[slot]); p.y=p.y-(buried and 0.5 or 0)
+    local p=U.clone(g.positions[slot], true); p.y=p.y-(buried and 0.5 or 0)
     O.restoreObject(o,{position=p,rotation={x=0,y=g.rotation.y,z=up and 0 or 180},locked=true,interactable=true})
     o.setInvisibleTo({}); o.setLock(true)
 end
@@ -165,7 +188,7 @@ local function execute(g,op,done)
         if clone then finish(clone) else
             local template=g.templates[tostring(c.index)]
             if not template then fail(g,'No enhanced template for '..c.name); return end
-            local data=U.clone(template); data.GUID=''; data.Tags=data.Tags or {}
+            local data=U.clone(template, true); data.GUID=''; data.Tags=data.Tags or {}
             data.Tags[#data.Tags+1]='complicationsClone_'..op.guid
             spawnObjectData({data=data,position=g.positions[slot],rotation={0,g.rotation.y,0},callback_function=finish})
         end
@@ -221,7 +244,7 @@ function D.start(color,rollId)
                 local index,name=Model.identity(entry.gm_notes)
                 local def=Catalog[index]
                 if not def or def.name~=name then return 'Unknown card GM Notes: '..tostring(entry.gm_notes) end
-                cards[entry.guid]={index=index,name=name,value=def.value,category=def.category,zone='deck',up=false}
+                cards[entry.guid]={index=index,name=name,value=def.value,category=def.category,rollTypes=U.clone(def.rollTypes,true),zone='deck',up=false}
             end
         end
     end
@@ -255,7 +278,7 @@ function D.start(color,rollId)
         local preset=require('core.main').resolveCameraPreset(player,'dice'..color)
         if preset then preset.position.x=preset.position.x+dx; preset.position.z=preset.position.z+dz; player.lookAt(preset) end
     end
-    begin(g); return nil
+    mountAutomationButton(); begin(g); return nil
 end
 function D.onPlayerAction(player,action,targets)
     local g=game(); if not g then return true end
@@ -326,6 +349,7 @@ function D.button(player,value,id)
     elseif id=='button_Negate' and c then
         if right then Model.discard(g) else c.negated=not c.negated end
     elseif id=='button_Adjust' then g.adjust=g.adjust+(right and -1 or 1)
+    elseif id=='button_Automate' and c then Automations.run(g,g.selected,right)
     elseif id=='button_ToggleCategoryDiscard' and not right then Model.toggleCategories(g) end
     begin(g)
 end
@@ -349,6 +373,7 @@ function D.toggle(player)
 end
 function D.restore()
     running=false; selectArmed=false
+    mountAutomationButton()
     local g=game(); if not g then D.refresh(); return end
     local slots,positions={},{}
     for k,v in pairs(g.slots) do slots[tonumber(k)]=v end

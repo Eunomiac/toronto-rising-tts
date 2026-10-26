@@ -260,3 +260,12 @@ Lift paths may still reset cameras while the blindfold is down via `scheduleEnd`
 - [x] Sync audit — inventory + actor-identity gates + Global.call routing (TOR-144 prep)
 - [ ] `Sync.full` / `Sync.npcs` call-site pass — see TOR-168, Performance Audit rank 1.
 - [ ] Agent review Prompt 2 — dual-apply on drop paths (TOR-102).
+
+### Deck of Complications (author-requested feature branch)
+
+- `onPlayerAction`: exits immediately without a live game; checks only supplied targets against saved card GUIDs. A legal flip updates state, locks the other nine slots at most, and uses one `U.await` after the flip. No broad scan in the event path.
+- `onComplicationButtonClick` and `HUD_toggleComplications`: Storyteller Steam identity and live/busy/hidden guards precede mutations. `D.refresh` touches the known board and ten saved slots, plus the one HUD toggle.
+- Spotlight hotkey: intercepts only an armed Complications selection; resolves the hovered original or enhanced GUID inside this game's saved card set.
+- `GlobalDashboardRollsApply` complications operation: validates the exact PC roll id and five allowed roll types; start scans the tagged source decks once. Saved transfer operations run serially through `U.await`; container transfers rebuild locations because TTS deck GUIDs collapse.
+- Board UI migration: `mountAutomationButton` reads only the known board at start/reload. It uses one `setXmlTable` call site, only if `button_Automate` is missing, preserving the rest of the loaded UI. Normal interactions use attribute updates. This deliberately raises the full-table mount baseline by one bounded, cold migration site.
+- Hide/show uses `O.hideObject` / `O.restoreObject`; the target roll, logical card state, and operation journal live in `gameState.complications`.

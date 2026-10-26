@@ -1,0 +1,32 @@
+-- Registration boundary for reviewed card effects. No card handlers are enabled yet.
+-- Handlers plan saved-state changes and journal operations; core.complications executes
+-- the journal. They must not perform immediate world mutations or schedule callbacks.
+local A = {}
+local entries = {}
+function A.register(index, handler)
+    assert(type(index)=='number' and not entries[index], 'Duplicate/invalid automation index')
+    assert(type(handler.apply)=='function' and type(handler.reverse)=='function', 'Automation needs apply and reverse')
+    entries[index]=handler
+end
+function A.has(index) return entries[index]~=nil end
+function A.run(g, guid, reverse)
+    local c=g.cards[guid]
+    local handler=c and entries[c.index]
+    if not handler or not c.up or c.zone~='slot' then return false end
+    g.automations=g.automations or {}
+    local receipt=g.automations[guid]
+    if reverse then
+        if not receipt then return false end
+        handler.reverse(g,guid,receipt)
+        g.automations[guid]=nil
+    else
+        if receipt then return false end
+        -- Return a serializable receipt recording exactly this source's contribution.
+        -- Keep its variant even if the card is subsequently enhanced/unenhanced.
+        receipt=handler.apply(g,guid,c.enhanced==true)
+        assert(type(receipt)=='table','Automation must return a saved reversal receipt')
+        g.automations[guid]=receipt
+    end
+    return true
+end
+return A
