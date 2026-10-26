@@ -65,7 +65,7 @@ The Storyteller will then conduct the resolution process via the Storyteller Con
 ### End Game Sequence
 When the End Game sequence is triggered:
 
-1. Return all Complication cards in the discard pile or in board slots to the Complications Deck, and destroy all Enhanced Complication cards.
+1. Return all Complication cards in the discard pile or in board slots to the Complications Deck, and destroy all cloned Enhanced Complication cards.
 2. Shuffle the Complications Deck.
 3. Return the Complications Board and Deck as a rigid-body to its home location.
 4. Set the Complications Board, Complications Deck, and Enhanced Complications Deck invisible to all players other than the Storyteller.
