@@ -42,6 +42,7 @@ A game can be started with the click of a button by the Storyteller on the Story
   1.e. The Enhanced Complications Deck should remain where it is.
 2. The Complications Board and the Complications Deck (but not the Enhanced Complications Deck) should be set visible to all players, then moved instantly as a rigid body to the position and rotation of the player's deck drawer anchor (`G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_<COLOR>`), except 7 world units closer to the table origin, at a height of `{y = 7.75}`, and with a 180-degree rotation applied to the y-axis
 3. A listener should be registered to fire whenever a player flips over a face-down Complication card
+4. Storyteller Control buttons (see below) should be initialized to their starting values (as described in the corresponding section below).
 4. The setup sequence should be played.
 
 #### The Setup Sequence
