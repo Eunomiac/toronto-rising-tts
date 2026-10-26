@@ -83,7 +83,7 @@
     "build:gates": "npm run check:tts-object-stub-guids -- --quiet && npm run check:bundle-size-gate -- --quiet && npm run check:pcall-gate && npm run check:effective-stats-gate && npm run check:lua-local-limit-gate -- --quiet",
     "build:stubs": "node .dev/scripts/fix_tts_object_stubs.js --quiet",
     "build:xml-tooling": "npm run csheet-defaults:generate && npm run ui-xml-templates:embed && npm run debug-light-panel:generate && node .dev/scripts/princes_court_trait_placeholders.js && node .dev/scripts/extract_shared_princes_court.js && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && npm run roll-dashboard:generate && npm run roll-options-modal:generate && npm run ui-global-xml:embed",
-    "build:all-tooling": "npm run build:gates && node .dev/scripts/generate_pcs_data_lua.js && node .dev/scripts/generate_coterie_data_lua.js && node .dev/scripts/generate_pc_relationships_lua.js && npm run weather:import && npm run csheet-xp-log:bake && npm run csheet-defaults:generate && npm run e2e-playbook:generate && npm run ui-xml-templates:embed && npm run debug-light-panel:generate && node .dev/scripts/princes_court_trait_placeholders.js && node .dev/scripts/extract_shared_princes_court.js && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && npm run roll-dashboard:generate && npm run roll-options-modal:generate && npm run npc-stats:push && npm run npc-stats:import && npm run memoriam-npcs:import && npm run npc-art:draw && npm run build:stubs && npm run cloud-asset-sync && npm run cloud:consolidate -- --apply && npm run skyboxes:import && npm run locations:import && npm run npc-art:urls && npm run npc-art:report && npm run check:asset-ownership && npm run check:asset-references",
+    "build:all-tooling": "npm run complications:import && npm run build:gates && node .dev/scripts/generate_pcs_data_lua.js && node .dev/scripts/generate_coterie_data_lua.js && node .dev/scripts/generate_pc_relationships_lua.js && npm run weather:import && npm run csheet-xp-log:bake && npm run csheet-defaults:generate && npm run e2e-playbook:generate && npm run ui-xml-templates:embed && npm run debug-light-panel:generate && node .dev/scripts/princes_court_trait_placeholders.js && node .dev/scripts/extract_shared_princes_court.js && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && npm run roll-dashboard:generate && npm run roll-options-modal:generate && npm run npc-stats:push && npm run npc-stats:import && npm run memoriam-npcs:import && npm run npc-art:draw && npm run build:stubs && npm run cloud-asset-sync && npm run cloud:consolidate -- --apply && npm run skyboxes:import && npm run locations:import && npm run npc-art:urls && npm run npc-art:report && npm run check:asset-ownership && npm run check:asset-references",
     "build": "npm run tts-save:backup-daily && npm run tts-save:silence-emitters && npm run build:gates && npm run build:stubs",
     "build:xml": "npm run tts-save:backup-daily && npm run tts-save:silence-emitters && npm run build:gates && npm run build:xml-tooling && npm run build:stubs",
     "build:review:test": "node --test .tools/build-review/classify.test.cjs .tools/build-review/capture.test.cjs",
@@ -100,7 +100,9 @@
     "csv-to-markdown:dev": "npm --prefix \".dev/CSV to Markdown Parser\" run dev",
     "csv-to-markdown:ts:init": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:init",
     "csv-to-markdown:ts:run": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:run",
-    "csv-to-markdown:ts:compile": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:compile"
+    "csv-to-markdown:ts:compile": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:compile",
+    "complications:import": "node .dev/scripts/import_complications_from_sheet.js",
+    "complications:test": "node --test .dev/scripts/import_complications_from_sheet.test.js && fengari .tools/complications/model.test.lua"
   },
   "keywords": [
     "tabletop-simulator",
@@ -119,6 +121,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "fengari-node-cli": "^0.1.0",
     "luabundle": "^1.7.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.2"

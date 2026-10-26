@@ -1,0 +1,143 @@
+-- Pure saved-game rules. No TTS calls; one logical card per original GUID.
+local M = {}
+M.allowed = { launch = true, goal = true, standard = true, willpowerRoll = true, discipline = true }
+function M.eligible(roll)
+    return type(roll) == 'table' and M.allowed[roll.rollType] == true
+        and type(roll.result) == 'table' and type(roll.result.margin) == 'number'
+end
+function M.identity(notes)
+    local id, name, enhanced = tostring(notes):match('^(%d+):(.-)(:Enhanced)$')
+    if not id then id, name = tostring(notes):match('^(%d+):(.+)$') end
+    return tonumber(id), name, enhanced ~= nil
+end
+function M.new(target, cards)
+    return { version = 1, target = target, cards = cards, slots = {}, adjust = 0,
+        autoDiscard = true, mode = 'stop', hidden = false, operations = {}, operationIndex = 1 }
+end
+function M.totals(g)
+    local total = g.adjust
+    for _, guid in pairs(g.slots) do
+        local c = g.cards[guid]
+        if c and c.zone == 'slot' and c.up then total = total + (tonumber(c.value) or 0) end
+    end
+    return total, g.target.result.margin + total
+end
+function M.available(g, c)
+    return not (g.target.rollType ~= 'launch' and c.category == 'Project')
+end
+function M.deck(g)
+    local out = {}
+    for guid,c in pairs(g.cards) do if c.zone == 'deck' and M.available(g,c) then out[#out+1]=guid end end
+    table.sort(out)
+    return out
+end
+function M.queue(g, op) g.operations[#g.operations+1] = op end
+function M.draw(g, slot, random)
+    local deck = M.deck(g)
+    if #deck == 0 then g.exhausted = true; g.slots[slot] = nil; return nil end
+    local guid = deck[(random or math.random)(#deck)]
+    local c = g.cards[guid]
+    c.zone, c.up, c.enhanced, c.negated = 'slot', false, false, false
+    g.slots[slot] = guid
+    M.queue(g, {kind='place', guid=guid, slot=slot})
+    return guid
+end
+function M.move(g, guid, zone)
+    local c = assert(g.cards[guid])
+    for i,v in pairs(g.slots) do if v == guid then g.slots[i] = nil end end
+    c.zone, c.up = zone, false
+    M.queue(g, {kind='collect', guid=guid, zone=zone})
+end
+function M.redeal(g)
+    local slots = {}
+    for i=1,10 do
+        local guid = g.slots[i]
+        if not guid or not g.cards[guid].up then
+            slots[#slots+1]=i
+            if guid then M.move(g,guid,'deck') end
+        end
+    end
+    M.queue(g,{kind='shuffle'})
+    for _,i in ipairs(slots) do M.draw(g,i) end
+end
+function M.restrict(g, category)
+    if not g.autoDiscard or category == '' then return end
+    local removed = {}
+    for guid,c in pairs(g.cards) do
+        if c.category == category and (c.zone == 'deck' or (c.zone == 'slot' and not c.up)) then removed[#removed+1]=guid end
+    end
+    table.sort(removed)
+    local slots = {}
+    for _,guid in ipairs(removed) do
+        for i,v in pairs(g.slots) do if v == guid then slots[#slots+1]=i end end
+        M.move(g,guid,'discard')
+    end
+    table.sort(slots)
+    for _,i in ipairs(slots) do M.draw(g,i) end
+end
+function M.reveal(g, guid)
+    local c = g.cards[guid]
+    if g.hidden or g.mode ~= 'stop' or g.exhausted or not c or c.zone ~= 'slot' or c.up then return false end
+    c.up, g.selected, g.last, g.mode = true, guid, guid, 'select'
+    M.restrict(g,c.category)
+    return true
+end
+function M.discard(g)
+    local guid = g.selected
+    local c = guid and g.cards[guid]
+    if not c or c.zone ~= 'slot' or not c.up then return false end
+    local slot
+    for i,v in pairs(g.slots) do if v == guid then slot=i end end
+    if c.enhanced then M.queue(g,{kind='unenhance',guid=guid}); c.enhanced=false end
+    M.move(g,guid,'discard')
+    c.negated = false
+    g.selected, g.mode = nil, 'select'
+    if c.category ~= '' then
+        local matching = {}
+        for other,v in pairs(g.cards) do
+            if other ~= guid and v.zone == 'discard' and v.category == c.category and M.available(g,v) then matching[#matching+1]=other end
+        end
+        table.sort(matching)
+        for _,other in ipairs(matching) do M.move(g,other,'deck') end
+        M.redeal(g)
+    else M.draw(g,slot) end
+    return true
+end
+function M.toggleCategories(g)
+    g.autoDiscard = not g.autoDiscard
+    if g.autoDiscard then
+        local categories = {}
+        for _,guid in pairs(g.slots) do local c=g.cards[guid]; if c.up then categories[c.category]=true end end
+        for category in pairs(categories) do M.restrict(g,category) end
+    else
+        local back = {}
+        for guid,c in pairs(g.cards) do if c.zone=='discard' and c.category~='' and M.available(g,c) then back[#back+1]=guid end end
+        table.sort(back)
+        for _,guid in ipairs(back) do M.move(g,guid,'deck') end
+        M.redeal(g)
+    end
+end
+function M.candidates(g, mode)
+    local out={}
+    for _,guid in pairs(g.slots) do
+        local c=g.cards[guid]
+        if c.up and not c.negated and (mode=='all' or (mode=='enhanced' and c.enhanced) or (mode=='normal' and not c.enhanced)) then out[#out+1]=guid end
+    end
+    table.sort(out)
+    return out
+end
+-- The original dice successes/flags remain untouched; only margin and classification change.
+function M.adjustResult(result, delta, classes, rollType)
+    local out={}; for k,v in pairs(result) do out[k]=v end
+    out.margin = result.margin + delta
+    out.complicationsDelta = (result.complicationsDelta or 0) + delta
+    if out.margin >= 0 then
+        if rollType ~= 'goal' and (result.pairs or 0)>0 then
+            out.resultClass = result.hungerTens and classes.MESSY_CRITICAL or classes.CRITICAL_WIN
+        else out.resultClass=classes.WIN end
+    elseif result.hungerOnes then
+        out.resultClass = result.successes==0 and classes.TOTAL_BESTIAL_FAILURE or classes.BESTIAL_FAILURE
+    else out.resultClass=result.successes==0 and classes.TOTAL_FAILURE or classes.FAILURE end
+    return out
+end
+return M
