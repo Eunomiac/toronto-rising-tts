@@ -27,6 +27,8 @@ const world = {
     liveKey: "browser-scene",
     liveTitle: "Browser verification",
     liveLinked: false,
+    districtKey: catalogs.districts[0].key,
+    siteKey: catalogs.sites[0].key,
     tableKey: "Table A",
     placementMode: "STANDARD",
     topFog: false,
@@ -211,6 +213,19 @@ try {
     "rolls",
     await page.locator("[data-tr-dnd-roll]").count(),
   );
+
+  await page.locator('.lab-conditions-head').first().click();
+  const conditionModal = page.locator('.lab-conditions-modal');
+  for (const id of ['WPRerollLimit2', 'WPRerollLimit1', 'WPRefreshLow', 'WPRefresh1', 'BestialNullBasicSuccess', 'BestialNullCrit', 'NoMessyReroll', 'ExpensiveMessyReroll', 'NoDisciplineBonus']) {
+    const condition = catalogs.conditions.find((row) => row.id === id);
+    assert(condition, `missing condition ${id}`);
+    await conditionModal.getByRole('button', { name: condition.displayName, exact: true }).waitFor();
+  }
+  await conditionModal.getByRole('button', { name: 'Willpower Reroll Limit: 1', exact: true }).click();
+  await conditionModal.getByRole('button', { name: 'Apply', exact: true }).click();
+  await page.waitForTimeout(150);
+  assert(commands.some((script) => script.includes('WPRerollLimit1') && script.includes('conditions')));
+  console.log('PASS nine Complications conditions are available and selecting one sends its exact id');
 
   if (!process.argv.includes("--complications-only")) {
   const position = async (locator) => {
