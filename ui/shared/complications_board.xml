@@ -39,7 +39,7 @@
     fontSize = "60"
     fontStyle = "Bold"
     textColor = "White"
-    onClick = "onComplicationButtonClick"
+    onClick = "Global/onComplicationButtonClick"
   />
   <Button class="greenButton" color = "#00FF00" textColor = "#000000"  />
   <Button class="blueButton" color = "#0000FF" />

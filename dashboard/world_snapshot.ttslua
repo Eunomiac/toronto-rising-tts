@@ -361,7 +361,7 @@ local function historyDifficulty(entry)
   local result = type(entry.result) == "table" and entry.result or nil
   local margin = result ~= nil and tonumber(result.margin) or nil
   local successes = result ~= nil and tonumber(result.successes) or nil
-  return (margin ~= nil and successes ~= nil) and (successes - margin) or nil
+  return tonumber(entry.difficulty) or ((margin ~= nil and successes ~= nil) and (successes - margin + (result.complicationsDelta or 0)) or nil)
 end
 
 --- @param roll table
@@ -428,6 +428,8 @@ local function pcRollRow(color, pid, roll, done)
     pending = roll.pendingResolution,
     wpReroll = type(roll.willpower) == "table" and roll.willpower.wpRerollWave == true or nil,
     done = done,
+    canStartComplications = S.getStateVal("complications") == nil
+      and require("lib.complications_model").eligible(roll) and (done or roll.phase == "postRoll") and not roll.pendingResolution,
     canModifyPool = not done and require("core.roll_controller").canPostRollModifyPool(color, roll) == true,
     dice = diceRows(roll.diceFaces),
   }

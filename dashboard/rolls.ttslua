@@ -656,6 +656,11 @@ local function applyCommand(cmd)
   end
   local op = cmd.op
 
+  if op == "complications" then
+    local err = pcColorError(cmd.color)
+    if err then return err end
+    return require("core.complications").start(cmd.color, cmd.rollId)
+  end
   if op == "hunt" then
     return applyHunt(cmd)
   end

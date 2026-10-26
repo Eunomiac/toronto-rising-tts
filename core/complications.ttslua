@@ -1,0 +1,369 @@
+-- Deck of Complications: saved operations + bounded physical reconciliation.
+-- Broad tag scans occur only at start/reload or container transfers (never hover/frame ticks).
+local D = {}
+local S = require('core.state')
+local U = require('lib.util')
+local C = require('lib.constants')
+local G = require('lib.guids')
+local O = require('core.objects')
+local Model = require('lib.complications_model')
+local Catalog = require('lib.complications_catalog')
+local running, selectArmed, randomEpoch, confirmEpoch = false, false, 0, 0
+local pump
+local function game() return S.getStateVal('complications') end
+local function save(g) S.setStateVal(g,'complications') end
+local function obj(guid) return guid and getObjectFromGUID(guid) or nil end
+local function vector(v) return {x=v.x,y=v.y,z=v.z} end
+local function busy(g) return running or g.operationIndex <= #g.operations or g.ending end
+local function signed(n) return string.format('%+d',n) end
+local function fail(g, message)
+    running=false; g.error=message; save(g)
+    U.AlertGM('Complications: '..message..' Reload to retry the saved operation.')
+end
+local function board() return obj(G.GUIDS.COMPLICATIONS_BOARD) end
+local function activeObject(g, guid)
+    local c=g.cards[guid]
+    return c and c.enhanced and obj(c.clone) or obj(guid)
+end
+local function locked(g,c)
+    return c.up or g.hidden or g.exhausted or g.mode~='stop' or busy(g)
+end
+function D.refresh()
+    local g=game()
+    UI.setAttributes('complicationsToggle',{active=g and 'true' or 'false',text=g and g.hidden and 'Show cards' or 'Hide cards'})
+    if not g then return end
+    local b=board(); if not b then return end
+    local total,margin=Model.totals(g)
+    b.UI.setAttribute('text_originalMargin','text',signed(g.target.result.margin))
+    b.UI.setAttribute('text_complicationsTotal','text',signed(total))
+    b.UI.setAttribute('text_adjustedMargin','text',signed(margin))
+    for _,id in ipairs({'button_StopSelect','button_Enhance','button_SelectRandom','button_Negate','button_Adjust','button_ToggleCategoryDiscard'}) do
+        b.UI.setAttribute(id,'onClick','Global/onComplicationButtonClick')
+    end
+    local mode=g.mode
+    b.UI.setAttributes('button_StopSelect',{text=mode=='select' and 'Select' or mode=='confirm' and 'Confirm' or 'Stop',class='complicationButton '..(mode=='select' and 'magentaButton' or mode=='confirm' and 'redButton' or 'yellowButton')})
+    local selected=g.selected and g.cards[g.selected] and g.cards[g.selected].zone=='slot'
+    for _,id in ipairs({'button_Enhance','button_Negate'}) do b.UI.setAttribute(id,'active',selected and 'true' or 'false') end
+    b.UI.setAttribute('button_Adjust','text','Adjust ('..signed(g.adjust)..')')
+    b.UI.setAttributes('button_ToggleCategoryDiscard',{text=g.autoDiscard and 'Auto-Disc' or 'Mults Okay',class='complicationButton '..(g.autoDiscard and 'greenButton' or 'redButton')})
+    for _,guid in pairs(g.slots) do
+        local c=g.cards[guid]; local o=activeObject(g,guid)
+        if o then
+            o.setLock(locked(g,c)); o.interactable=not g.hidden
+            if c.negated then o.highlightOn({1,0,0})
+            elseif guid==g.selected then o.highlightOn({0,1,1}) else o.highlightOff() end
+        end
+        if c.enhanced and obj(guid) then obj(guid).setLock(true); obj(guid).highlightOff() end
+    end
+end
+local function announce(g)
+    save(g); D.refresh(); require('dashboard.push').markWorldDirty({rolls=true})
+end
+-- Rebuild physical GUID locations after transfers: Deck GUIDs can collapse into the final card.
+local function locations(g)
+    local out={}
+    for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
+        if o.tag=='Deck' then
+            for _,c in ipairs(o.getObjects()) do if g.cards[c.guid] then out[c.guid]={container=o} end end
+        elseif g.cards[o.getGUID()] then out[o.getGUID()]={object=o} end
+    end
+    return out
+end
+local function card(g,guid,done)
+    local direct=obj(guid)
+    if direct then done(direct); return end
+    local loc=locations(g)[guid]
+    if not loc then fail(g,'Card '..guid..' is missing.'); return end
+    local b=board(); local p=b.getPosition()
+    loc.container.takeObject({guid=guid,position={x=p.x,y=p.y+3,z=p.z},smooth=false,callback_function=done})
+end
+local function pile(g,zone,exclude)
+    local map=locations(g)
+    for guid,c in pairs(g.cards) do
+        if guid~=exclude and c.zone==zone and map[guid] then
+            local candidate=map[guid].container or map[guid].object
+            -- A future journal operation may still be moving this card out of another pile.
+            local p=candidate.getPosition(); local target=g.piles[zone]
+            if target and math.abs(p.x-target.x)<1 and math.abs(p.z-target.z)<1 then return candidate end
+        end
+    end
+    return nil
+end
+local function poseCard(g,o,slot,up,buried)
+    local p=U.clone(g.positions[slot]); p.y=p.y-(buried and 0.5 or 0)
+    O.restoreObject(o,{position=p,rotation={x=0,y=g.rotation.y,z=up and 0 or 180},locked=true,interactable=true})
+    o.setInvisibleTo({}); o.setLock(true)
+end
+local function collect(g,o,zone,done)
+    o.highlightOff(); o.setLock(false)
+    if zone~='excluded' then o.setInvisibleTo({}) end
+    if O.isHiddenObject(o) then O.restoreObject(o,{locked=false,interactable=true}) end
+    local dest=pile(g,zone,o.getGUID())
+    if dest then
+        dest.setLock(false)
+        local merged=dest.putObject(o)
+        if merged then merged.setLock(true); if zone~='excluded' then merged.setInvisibleTo({}) end end
+    else
+        local p=g.piles[zone]
+        o.setPosition(p); o.setRotation({0,g.rotation.y,zone=='discard' and 0 or 180}); o.setLock(true)
+    end
+    if zone=='excluded' then
+        local physical=pile(g,zone) or obj(o.getGUID())
+        if physical then physical.setInvisibleTo({'White','Brown','Orange','Red','Pink','Purple','Grey'}) end
+    end
+    done()
+end
+local function eachPhysical(g,fn)
+    local seen={}; local map=locations(g)
+    local function visit(o) if o and not seen[o.getGUID()] then seen[o.getGUID()]=true; fn(o) end end
+    visit(board())
+    for guid,c in pairs(g.cards) do
+        if c.zone~='excluded' then local loc=map[guid]; if loc then visit(loc.container or loc.object) end end
+        if c.clone then visit(obj(c.clone)) end
+    end
+end
+local function applyHidden(g)
+    eachPhysical(g,function(o)
+        if g.hidden then O.hideObject(o) else O.restoreObject(o) end
+    end)
+    if not g.hidden then D.refresh() end
+end
+local function execute(g,op,done)
+    if op.kind=='collect' then
+        local loc=locations(g)[op.guid]
+        local physical=loc and (loc.container or loc.object)
+        local p=physical and physical.getPosition()
+        local target=g.piles[op.zone]
+        if p and math.abs(p.x-target.x)<0.05 and math.abs(p.z-target.z)<0.05 then done()
+        else card(g,op.guid,function(o) collect(g,o,op.zone,done) end) end
+    elseif op.kind=='place' then card(g,op.guid,function(o) poseCard(g,o,op.slot,false); done() end)
+    elseif op.kind=='shuffle' then
+        local deck=pile(g,'deck'); if deck and deck.tag=='Deck' then deck.shuffle() end; done()
+    elseif op.kind=='unenhance' then
+        local c=g.cards[op.guid]; local clone=obj(c.clone)
+        if clone then clone.destruct() end; c.clone=nil
+        local original=obj(op.guid)
+        if original then
+            for i,guid in pairs(g.slots) do if guid==op.guid then poseCard(g,original,i,true) end end
+        end
+        done()
+    elseif op.kind=='enhance' then
+        local c=g.cards[op.guid]; local slot
+        for i,guid in pairs(g.slots) do if guid==op.guid then slot=i end end
+        if not slot then fail(g,'Enhanced card has no board slot.'); return end
+        local clone=obj(c.clone)
+        if not clone then
+            -- A save can occur after spawn but before its callback; recover by original GUID tag.
+            for _,candidate in ipairs(getObjectsWithTag('complicationsClone_'..op.guid)) do clone=candidate; break end
+        end
+        local function finish(o)
+            c.clone=o.getGUID(); o.addTag('complicationsClone_'..op.guid)
+            poseCard(g,o,slot,true); local original=obj(op.guid)
+            if original then poseCard(g,original,slot,true,true) end
+            done()
+        end
+        if clone then finish(clone) else
+            local template=g.templates[tostring(c.index)]
+            if not template then fail(g,'No enhanced template for '..c.name); return end
+            local data=U.clone(template); data.GUID=''; data.Tags=data.Tags or {}
+            data.Tags[#data.Tags+1]='complicationsClone_'..op.guid
+            spawnObjectData({data=data,position=g.positions[slot],rotation={0,g.rotation.y,0},callback_function=finish})
+        end
+    elseif op.kind=='home' then
+        local b=board(); O.restoreObject(b,{position=g.home.position,rotation=g.home.rotation,locked=true})
+        local deck=pile(g,'deck')
+        if deck then O.restoreObject(deck,{position=g.home.deck,rotation=g.home.rotation,locked=true}) end
+        local invisible={}; for _,color in ipairs(Player.getAvailableColors()) do if color~='Black' then invisible[#invisible+1]=color end end
+        b.setInvisibleTo(invisible); if deck then deck.setInvisibleTo(invisible) end
+        local source=obj(g.source); if source then source.setInvisibleTo(invisible) end
+        done()
+    else fail(g,'Unknown saved operation '..tostring(op.kind)) end
+end
+pump=function()
+    local g=game(); if not g or running then return end
+    local op=g.operations[g.operationIndex]
+    if not op then
+        g.operations={}; g.operationIndex=1
+        if g.ending then
+            local err=require('core.complications_rolls').finish(g.target,g.finalTotal,g.id)
+            if err then fail(g,err); return end
+            save(nil); D.refresh(); require('dashboard.push').markWorldDirty({rolls=true}); return
+        end
+        announce(g); return
+    end
+    running=true; g.error=nil; save(g)
+    execute(g,op,function()
+        if game()~=g then return end
+        g.operationIndex=g.operationIndex+1; save(g); running=false
+        U.await(pump,0.12)
+    end)
+end
+local function begin(g) announce(g); pump() end
+function D.start(color,rollId)
+    if game() then return 'A Complications game is already live.' end
+    local target,err=require('core.complications_rolls').capture(color,rollId)
+    if not target then return err end
+    local b=board(); if not b then return 'Complications Board is missing.' end
+    local anchor=obj(G.GUIDS['CSHEET_DICE_DRAWER_ANCHOR_ON_'..string.upper(color)])
+    if not anchor then return 'The player drawer anchor is missing.' end
+    local cards,templates,source={},{},nil
+    for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
+        local enhanced=o.hasTag('enhancedComplication')
+        if enhanced and o.tag=='Deck' then
+            source=o.getGUID()
+            for _,data in ipairs(o.getData().ContainedObjects or {}) do
+                local index=Model.identity(data.GMNotes)
+                if index then templates[tostring(index)]=data end
+            end
+        elseif not enhanced then
+            local entries=o.tag=='Deck' and o.getObjects() or {{guid=o.getGUID(),gm_notes=o.getGMNotes()}}
+            for _,entry in ipairs(entries) do
+                local index,name=Model.identity(entry.gm_notes)
+                local def=Catalog[index]
+                if not def or def.name~=name then return 'Unknown card GM Notes: '..tostring(entry.gm_notes) end
+                cards[entry.guid]={index=index,name=name,value=def.value,category=def.category,zone='deck',up=false}
+            end
+        end
+    end
+    if not source or not next(cards) then return 'Both Complications decks must be present.' end
+    local slots,tagged={},{}
+    for _,snap in ipairs(b.getSnapPoints()) do
+        local isPile=false; for _,tag in ipairs(snap.tags or {}) do if tag=='deckOfComplications' then isPile=true end end
+        if isPile then tagged[#tagged+1]=snap.position else slots[#slots+1]=snap.position end
+    end
+    if #slots~=10 or #tagged~=2 then return 'Board requires ten card snaps and two tagged pile snaps.' end
+    table.sort(tagged,function(a,b2) return a.x<b2.x end)
+    local g=Model.new(target,cards); g.id=tostring(os.time())..':'..rollId; g.templates=templates; g.source=source
+    g.home={position=vector(b.getPosition()),rotation=vector(b.getRotation()),deck=vector(b.positionToWorld(tagged[2]))}
+    local p=anchor.getPosition(); local length=math.sqrt(p.x*p.x+p.z*p.z)
+    if length==0 then return 'Drawer anchor cannot be at table origin.' end
+    local dx,dz=-7*p.x/length,-7*p.z/length
+    g.rotation={x=0,y=anchor.getRotation().y+180,z=0}
+    O.restoreObject(b,{position={x=p.x+dx,y=7.75,z=p.z+dz},rotation=g.rotation,locked=true})
+    b.setInvisibleTo({})
+    g.positions={}; for i,localPos in ipairs(slots) do g.positions[i]=vector(b.positionToWorld(localPos)) end
+    g.piles={deck=vector(b.positionToWorld(tagged[2])),discard=vector(b.positionToWorld(tagged[1])),excluded={x=g.home.position.x+30,y=g.home.position.y,z=g.home.position.z}}
+    local guids={}; for guid in pairs(cards) do guids[#guids+1]=guid end; table.sort(guids)
+    for _,guid in ipairs(guids) do
+        local c=cards[guid]; c.zone=Model.available(g,c) and 'deck' or 'excluded'
+        Model.queue(g,{kind='collect',guid=guid,zone=c.zone})
+    end
+    Model.queue(g,{kind='shuffle'})
+    local order={1,2,3,4,5,6,7,8,9,10}; for i=10,2,-1 do local j=math.random(i); order[i],order[j]=order[j],order[i] end
+    for _,i in ipairs(order) do Model.draw(g,i) end
+    for _,player in ipairs(Player.getPlayers()) do
+        local preset=require('core.main').resolveCameraPreset(player,'dice'..color)
+        if preset then preset.position.x=preset.position.x+dx; preset.position.z=preset.position.z+dz; player.lookAt(preset) end
+    end
+    begin(g); return nil
+end
+function D.onPlayerAction(player,action,targets)
+    local g=game(); if not g then return true end
+    local found
+    for _,o in ipairs(targets or {}) do
+        local guid=o.getGUID(); local c=g.cards[guid]
+        if c and c.zone=='slot' then
+            if action~=Player.Action.FlipOver then
+                if not U.isStorytellerSteamPlayer(player) then return false end
+            else
+                if found or #targets~=1 or busy(g) or g.hidden or g.exhausted or c.up or g.mode~='stop' then return false end
+                if player.color~=g.target.color and not U.isStorytellerSteamPlayer(player) then return false end
+                found=guid
+            end
+        elseif o.hasTag('enhancedComplication') and not U.isStorytellerSteamPlayer(player) then return false end
+    end
+    if found and Model.reveal(g,found) then
+        save(g); -- lock other cards now, but do not interrupt the current flip animation.
+        for _,guid in pairs(g.slots) do if guid~=found and obj(guid) then obj(guid).setLock(true) end end
+        U.await(function() if game()==g then begin(g) end end,0.7)
+    end
+    return true
+end
+local function finish(g)
+    g.finalTotal=Model.totals(g); g.ending=true; g.hidden=false; applyHidden(g)
+    for guid,c in pairs(g.cards) do
+        if c.enhanced or c.clone then Model.queue(g,{kind='unenhance',guid=guid}); c.enhanced=false end
+        Model.move(g,guid,'deck')
+    end
+    Model.queue(g,{kind='shuffle'}); Model.queue(g,{kind='home'}); begin(g)
+end
+local function randomSelect(g,mode)
+    local candidates=Model.candidates(g,mode)
+    if #candidates==0 then return end
+    randomEpoch=randomEpoch+1; local epoch=randomEpoch
+    local steps={}
+    local count=#candidates==1 and 1 or 16
+    for i=1,count do
+        local delay=0.03+i*i*0.001
+        steps[#steps+1]=function()
+            if game()~=g or epoch~=randomEpoch or g.hidden then return 0 end
+            g.selected=candidates[math.random(#candidates)]; g.mode='select'; announce(g)
+            return delay
+        end
+    end
+    U.chain(steps)
+end
+function D.button(player,value,id)
+    if not U.isStorytellerSteamPlayer(player) then return end
+    local g=game(); if not g or busy(g) or g.hidden then return end
+    randomEpoch=randomEpoch+1
+    local right=tostring(value)=='-2'
+    local c=g.selected and g.cards[g.selected]
+    if id=='button_StopSelect' then
+        if g.mode=='select' then
+            if right then g.selected=nil; selectArmed=false; g.mode='stop' else selectArmed=not selectArmed end
+        elseif right then
+            if g.last and g.cards[g.last].zone=='slot' then g.selected=g.last; g.mode='select' end
+        elseif g.mode=='confirm' then finish(g); return
+        else
+            g.mode='confirm'; confirmEpoch=confirmEpoch+1; local epoch=confirmEpoch
+            U.await(function() if game()==g and epoch==confirmEpoch and g.mode=='confirm' then g.mode='stop'; announce(g) end end,5)
+        end
+    elseif id=='button_SelectRandom' then randomSelect(g,right and 'all' or 'normal'); return
+    elseif id=='button_Enhance' then
+        if right then randomSelect(g,'enhanced'); return
+        elseif c then c.enhanced=not c.enhanced; Model.queue(g,{kind=c.enhanced and 'enhance' or 'unenhance',guid=g.selected}) end
+    elseif id=='button_Negate' and c then
+        if right then Model.discard(g) else c.negated=not c.negated end
+    elseif id=='button_Adjust' then g.adjust=g.adjust+(right and -1 or 1)
+    elseif id=='button_ToggleCategoryDiscard' and not right then Model.toggleCategories(g) end
+    begin(g)
+end
+function D.hotkey(playerColor,hovered,isKeyUp)
+    local g=game(); if not g or not selectArmed then return false end
+    if isKeyUp or busy(g) or g.hidden or not hovered then return true end
+    local guid=hovered.getGUID()
+    for original,c in pairs(g.cards) do if c.clone==guid then guid=original; break end end
+    local c=g.cards[guid]; if not c or c.zone~='slot' then return true end
+    if c.up then g.selected=guid else
+        local slot; for i,v in pairs(g.slots) do if v==guid then slot=i end end
+        Model.move(g,guid,'deck'); Model.queue(g,{kind='shuffle'}); Model.draw(g,slot)
+    end
+    selectArmed=false; begin(g); return true
+end
+function D.toggle(player)
+    if not U.isStorytellerSteamPlayer(player) then return end
+    local g=game(); if not g or busy(g) then return end
+    g.hidden=not g.hidden; randomEpoch=randomEpoch+1; selectArmed=false
+    save(g); applyHidden(g); announce(g)
+end
+function D.restore()
+    running=false; selectArmed=false
+    local g=game(); if not g then D.refresh(); return end
+    local slots,positions={},{}
+    for k,v in pairs(g.slots) do slots[tonumber(k)]=v end
+    for k,v in pairs(g.positions) do positions[tonumber(k)]=v end
+    g.slots,g.positions=slots,positions
+    if g.mode=='confirm' then g.mode='stop' end
+    -- Rebuild active card poses after a save made during a flip or enhancement.
+    if not g.hidden and not busy(g) then
+        for i,guid in pairs(g.slots) do
+            local c=g.cards[guid]; local o=obj(guid)
+            if o then poseCard(g,o,i,c.up,c.enhanced) end
+            if c.enhanced and obj(c.clone) then poseCard(g,obj(c.clone),i,true) end
+        end
+    end
+    if g.hidden then applyHidden(g) end
+    begin(g)
+end
+return D

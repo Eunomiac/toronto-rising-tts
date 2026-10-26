@@ -35,6 +35,7 @@ function M.queue(g, op) g.operations[#g.operations+1] = op end
 function M.draw(g, slot, random)
     local deck = M.deck(g)
     if #deck == 0 then g.exhausted = true; g.slots[slot] = nil; return nil end
+    if #deck == 1 then g.exhausted = true end
     local guid = deck[(random or math.random)(#deck)]
     local c = g.cards[guid]
     c.zone, c.up, c.enhanced, c.negated = 'slot', false, false, false

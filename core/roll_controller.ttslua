@@ -3047,6 +3047,13 @@ function RC.confirmRoll(color)
         npcBroadcast = RC.npcBroadcastText(active)
     end
 
+    -- Remember normal confirmation even if an interruption later replaces the short history.
+    local complications = S.getStateVal("complications")
+    if complications and complications.target.rollId == active.id then
+        complications.target.confirmed = true
+        S.setStateVal(complications, "complications")
+    end
+
     -- Advance to RESOLVED
     active.phase       = C.RollPhase.RESOLVED
     active.batonHolder = C.BatonHolder.AUTO
@@ -4079,6 +4086,50 @@ function RC.broadcastPcDashResult(color)
     local RUI = require("core.roll_ui")
     RUI.showResultBroadcastFromEntry(color, entry)
     return true
+end
+
+-- Resolve an exact saved Complications target without touching a newer interruption roll.
+-- Reusing a completion id is harmless after save/reload; no consequence replay.
+function RC.completeComplications(target, delta, gameId)
+    if target.completedGame == gameId then return nil end
+    local color, active = target.color, U.clone(target.roll)
+    local STR = require("core.storyteller_rolls")
+    local existing = STR.findHistoryEntry(color, target.rollId)
+    if existing and existing.complicationsGame == gameId then target.completedGame = gameId; return nil end
+    active.result = require("lib.complications_model").adjustResult(target.result, delta, C.ResultClass, target.rollType)
+    -- A player may have confirmed while the minigame was open; history establishes that too.
+    if not target.confirmed and not existing then
+        if RollConditionHandlers.run("onConfirmRoll", color, active) == false then
+            return "The target roll still requires a confirmation choice."
+        end
+        RollConditionHandlers.run("onRollConsequences", color, active)
+        RC._applyRollConsequences(color, active)
+        RC._applyRouseOutcomeStrips(color, active)
+        target.confirmed = true
+    end
+    if existing then
+        existing.result = active.result
+        existing.complicationsGame = gameId
+        existing.difficulty = active.difficulty
+    else
+        appendHistory(color, active.result, active.label, active.diceDisplay, active.rollType,
+            active.diceFaces, active.rouseOutcomeStrips, nil, target.rollId)
+        existing = STR.findHistoryEntry(color, target.rollId)
+        existing.complicationsGame = gameId
+        existing.difficulty = active.difficulty
+    end
+    active.phase = C.RollPhase.RESOLVED
+    STR.savePcDashSnapshot(color, active)
+    local current = getActive(color)
+    if current and current.id == target.rollId then
+        setActive(color, nil)
+        if PRTL.getLivePcColor() == color then PRTL.onLivePcRollFinished(); notifyLiveConcurrencyChanged() end
+        processQueue(color)
+    end
+    target.completedGame = gameId
+    notifyStateChanged(color)
+    notifyRollResolved(color, active.result, active.label)
+    return nil
 end
 
 return RC
