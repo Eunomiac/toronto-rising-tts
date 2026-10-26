@@ -21,6 +21,7 @@ export type RollOptionsApply = {
 };
 
 export type RollsCommand =
+  | { readonly op: "complications"; readonly color: string; readonly rollId: string }
   | { readonly op: "initiate"; readonly color: string; readonly rollType: string }
   | { readonly op: "difficulty"; readonly color: string; readonly value: number }
   | { readonly op: "rollType"; readonly color: string; readonly rollType: string }

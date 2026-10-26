@@ -593,6 +593,7 @@ local function computeAutoPoolForRollType(color, rollType)
 
     if rollType == C.RollType.DISCIPLINE then
         local discBonus = math.max(0, math.floor(tonumber(ctx.bloodPotencyDerived().discBonus) or 0))
+        if ctx.rollPolicy().features.noDisciplineBonus then discBonus=0 end
         local playerHunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
         local hungerDice = math.min(playerHunger, discBonus)
         return DK.normalizePool({
@@ -1103,6 +1104,9 @@ local CLASSIFICATION_OPT_BUILDERS = {
         end
     end,
     function(active, opts)
+        local features=active.rollPolicy and active.rollPolicy.features or {}
+        opts.bestialNullBasic=features.bestialNullBasic==true
+        opts.bestialNullCrit=features.bestialNullCrit==true
         opts.bestialNull = type(active.rollPolicy) == "table"
             and active.rollPolicy.bestialNull == true
     end,
@@ -2228,7 +2232,7 @@ local function tryFinishWpRerollWaveWhenCapSatisfied(color)
     local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
     -- "Reroll all" scopes and uncapped waves have no maximum to auto-finish on; the player
     -- must click Confirm (TOR-165 requirement 1).
-    if scope == "all_optional" or scope == "all_mandatory" then
+    if (scope == "all_optional" or scope == "all_mandatory") and not (active.rollPolicy and active.rollPolicy.wpDiceLimit) then
         return false
     end
     if cap <= 0 then
@@ -2615,7 +2619,7 @@ function RC.onWpRerollDieRandomized(color, obj)
     local guid   = obj.getGUID()
     local scope  = wpRerollScopeForActive(active)
     local cap    = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
-    if scope == "all_optional" or scope == "all_mandatory" then
+    if (scope == "all_optional" or scope == "all_mandatory") and not (active.rollPolicy and active.rollPolicy.wpDiceLimit) then
         cap = 0
     end
     local waveId = active.willpower.wpWaveId or 0
@@ -2936,7 +2940,10 @@ function RC.spendWillpower(color)
     if color == "Black" then
         chargeNpcWillpowerReroll(active)
     elseif RO.getPermanent(RO.PERM_AUTO_WP) then
-        P.applyDamageOrHeal(color, "willpower", 1, 0)
+        local features=active.rollPolicy and active.rollPolicy.features or {}
+        local cost=features.expensiveMessyReroll and active.result
+            and active.result.resultClass==C.ResultClass.MESSY_CRITICAL and 2 or 1
+        P.applyDamageOrHeal(color, "willpower", cost, 0)
         Sync.player(color)
     end
 
@@ -3045,6 +3052,13 @@ function RC.confirmRoll(color)
     local npcBroadcast = nil
     if color == "Black" and type(active.npcPlan) == "table" then
         npcBroadcast = RC.npcBroadcastText(active)
+    end
+
+    -- Remember normal confirmation even if an interruption later replaces the short history.
+    local complications = S.getStateVal("complications")
+    if complications and complications.target.rollId == active.id then
+        complications.target.confirmed = true
+        S.setStateVal(complications, "complications")
     end
 
     -- Advance to RESOLVED
@@ -4079,6 +4093,50 @@ function RC.broadcastPcDashResult(color)
     local RUI = require("core.roll_ui")
     RUI.showResultBroadcastFromEntry(color, entry)
     return true
+end
+
+-- Resolve an exact saved Complications target without touching a newer interruption roll.
+-- Reusing a completion id is harmless after save/reload; no consequence replay.
+function RC.completeComplications(target, delta, gameId)
+    if target.completedGame == gameId then return nil end
+    local color, active = target.color, U.clone(target.roll, true)
+    local STR = require("core.storyteller_rolls")
+    local existing = STR.findHistoryEntry(color, target.rollId)
+    if existing and existing.complicationsGame == gameId then target.completedGame = gameId; return nil end
+    active.result = require("lib.complications_model").adjustResult(target.result, delta, C.ResultClass, target.rollType)
+    -- A player may have confirmed while the minigame was open; history establishes that too.
+    if not target.confirmed and not existing then
+        if RollConditionHandlers.run("onConfirmRoll", color, active) == false then
+            return "The target roll still requires a confirmation choice."
+        end
+        RollConditionHandlers.run("onRollConsequences", color, active)
+        RC._applyRollConsequences(color, active)
+        RC._applyRouseOutcomeStrips(color, active)
+        target.confirmed = true
+    end
+    if existing then
+        existing.result = active.result
+        existing.complicationsGame = gameId
+        existing.difficulty = active.difficulty
+    else
+        appendHistory(color, active.result, active.label, active.diceDisplay, active.rollType,
+            active.diceFaces, active.rouseOutcomeStrips, nil, target.rollId)
+        existing = STR.findHistoryEntry(color, target.rollId)
+        existing.complicationsGame = gameId
+        existing.difficulty = active.difficulty
+    end
+    active.phase = C.RollPhase.RESOLVED
+    STR.savePcDashSnapshot(color, active)
+    local current = getActive(color)
+    if current and current.id == target.rollId then
+        setActive(color, nil)
+        if PRTL.getLivePcColor() == color then PRTL.onLivePcRollFinished(); notifyLiveConcurrencyChanged() end
+        processQueue(color)
+    end
+    target.completedGame = gameId
+    notifyStateChanged(color)
+    notifyRollResolved(color, active.result, active.label)
+    return nil
 end
 
 return RC

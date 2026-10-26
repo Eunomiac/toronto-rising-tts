@@ -28,7 +28,7 @@
   <HorizontalLayout class="controlsPanel"
     visibility="Black"
     height = "100"
-    width = "2500"
+    width = "2900"
     color = "#00FF00"
     position="0 105 -25"
     rotation="0 0 180"
@@ -39,7 +39,7 @@
     fontSize = "60"
     fontStyle = "Bold"
     textColor = "White"
-    onClick = "onComplicationButtonClick"
+    onClick = "Global/onComplicationButtonClick"
   />
   <Button class="greenButton" color = "#00FF00" textColor = "#000000"  />
   <Button class="blueButton" color = "#0000FF" />
@@ -65,4 +65,5 @@
   <Button id="button_Negate" class="complicationButton redButton" text="Negate" />
   <Button id="button_Adjust" class="complicationButton yellowButton" text="Adjust" />
   <Button id="button_ToggleCategoryDiscard" class="complicationButton greenButton" text="Auto-Disc" />
+  <Button id="button_Automate" class="complicationButton blueButton" text="Automate" interactable="false" />
 </HorizontalLayout>

@@ -1,0 +1,25 @@
+-- Pure cancellation rules. Physical faces are preserved for display/rerolls.
+local D={}
+function D.cancel(normal,hunger,basic,critical)
+    local n,h,canceled={},{},{}
+    local ones=0
+    for i,v in ipairs(normal) do n[i]=v end
+    for i,v in ipairs(hunger) do h[i]=v;if v==1 then ones=ones+1 end end
+    local function remove(values,kind,count,predicate)
+        for i,v in ipairs(values) do
+            if count>0 and predicate(v) then
+                canceled[#canceled+1]={kind=kind,index=i,value=v}
+                values[i]=5;count=count-1
+            end
+        end
+        return count
+    end
+    if critical then remove(n,'normal',ones,function(v) return v==10 end) end
+    if basic then
+        local function success(v) return v>=6 and v<=9 end
+        local left=remove(n,'normal',ones,success)
+        remove(h,'hunger',left,success)
+    end
+    return n,h,canceled
+end
+return D

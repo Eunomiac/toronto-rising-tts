@@ -821,6 +821,9 @@ local function healAmountForPlayer(playerID)
     local ctx = ES.forPlayer(playerID)
     local resolve = tonumber(ctx.dotRating("resolve")) or 0
     local composure = tonumber(ctx.dotRating("composure")) or 0
+    local features=ctx.rollPolicy().features or {}
+    if features.wpRefreshOne then return 1 end
+    if features.wpRefreshLow then return math.max(0,math.floor(math.min(resolve,composure))) end
     local amt = resolve
     if composure > amt then
         amt = composure

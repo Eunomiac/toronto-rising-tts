@@ -5275,6 +5275,42 @@
       "displayName": "Can Reroll Hunger"
     },
     {
+      "id": "WPRerollLimit2",
+      "displayName": "Willpower Reroll Limit: 2"
+    },
+    {
+      "id": "WPRerollLimit1",
+      "displayName": "Willpower Reroll Limit: 1"
+    },
+    {
+      "id": "WPRefreshLow",
+      "displayName": "Willpower Refresh: Lower Attribute"
+    },
+    {
+      "id": "WPRefresh1",
+      "displayName": "Willpower Refresh: 1"
+    },
+    {
+      "id": "BestialNullBasicSuccess",
+      "displayName": "Bestial Dice Cancel Basic Successes"
+    },
+    {
+      "id": "BestialNullCrit",
+      "displayName": "Bestial Dice Cancel Normal Tens"
+    },
+    {
+      "id": "NoMessyReroll",
+      "displayName": "No Messy Critical Reroll"
+    },
+    {
+      "id": "ExpensiveMessyReroll",
+      "displayName": "Messy Critical Reroll Costs 2 WP"
+    },
+    {
+      "id": "NoDisciplineBonus",
+      "displayName": "No Discipline Bonus"
+    },
+    {
       "id": "bestialNull",
       "displayName": "Bestial Null"
     }

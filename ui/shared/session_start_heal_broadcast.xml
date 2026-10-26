@@ -36,7 +36,7 @@
     <Image id="sessionStartHeal_screen_content_background" class="sessionStartHeal_image sessionStartHeal_image_background" image="resultsBG" />
     <VerticalLayout id="db_sessionStartHeal_screen_title_container" class="sessionStartHeal_screen_title_container">
       <Text id="db_sessionStartHeal_title" class="sessionStartHeal_title" text="Willpower Refresh" />
-      <Text id="db_sessionStartHeal_description" class="sessionStartHeal_description" text="All characters automatically heal an amount of superficial Willpower damage equal to the highest of their Resolve or Composure attributes:" />
+      <Text id="db_sessionStartHeal_description" class="sessionStartHeal_description" text="Characters recover superficial Willpower damage using Resolve or Composure, with any active refresh restrictions:" />
     </VerticalLayout>
     <!-- Only activate those HorizontalLayout elements for players who have Willpower damage to heal. -->
     <HorizontalLayout id="sessionStartHeal_playerContainer_Red" class="sessionStartHeal_playerRow" active="false">

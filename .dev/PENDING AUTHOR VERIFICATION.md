@@ -20,6 +20,19 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Deck of Complications base system — direct author request
+
+**Context:** Implemented on `feat/deck-of-complications`; the ten reviewed automation requirements are now implemented. Automate toggles the recorded application; enhancing the card first still reverses its previous variant on the next click. Linear could not be updated because the connector requires reauthentication.
+
+**How to verify:** After checking out this branch, restart the dashboard and Save & Play using the supplied save. Start Complications from an eligible PC roll, once before confirmation and once after it. Verify ten face-down cards appear; reveal one and wait for its flip to finish. It should lock, select itself, update the total, and remove matching-category cards immediately. Right-click Select to allow the next reveal.
+
+Try Enhance, Negate, Random, Adjust, category restoration, and right-click Negate to discard. Negation must not change value; discarding must remove the original contribution and replace the slot. Enhanced copies must never enter the discard pile. Hide and show the game with the new HUD button; save/reload both visible and hidden games and continue playing. Finally use Stop and Confirm: the original target roll should receive the additive margin change and become confirmed, with no repeated Hunger, Stains, or Willpower consequences. Verify each game excludes cards unchecked for its roll type in the Sheet, and that all ten revealed cards or an exhausted eligible deck still allow Stop.
+
+
+**Automation checks:** Apply Cognitive Dissonance, enhance it, and click Automate twice: the first click must remove the original two-die limit, and the second must apply the one-die limit. Verify the WP refresh variants, Messy Critical reroll block/cost, Blood Surge block and omitted Discipline Bonus; clear these Conditions manually afterward. With both Beast Ascendant Conditions active, a Hunger 1 must cancel one 6–9 and a separate normal 10, never changing physical die faces.
+
+For Blood Rush, reverse once while the four choices are visible and once after choosing the Clan Compulsion. Repeat after saving/reloading during the choice; another Compulsion must never be removed. For Impending Doom, reveal one of its copies before reversal: it must remain, while other copies disappear and face-down holes refill. Reverse the base application before applying enhanced; retained copies count toward the four-per-original limit. At Cross Purposes must affect another PC's active Project and reverse that same change. Buzzkill's displayed capped margin must match the final roll result. Select an external face-up Complication with the Spotlight hotkey and Enhance it; its value must not enter the total.
+
 _Last populated: 2026-10-22 (shared Memoriam panels and token backs; spotlight figurines use the same portraits as the seat figurines). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
 
 ### Storyteller Dashboard pins from 2026-10-21

@@ -27,6 +27,8 @@ const world = {
     liveKey: "browser-scene",
     liveTitle: "Browser verification",
     liveLinked: false,
+    districtKey: catalogs.districts[0].key,
+    siteKey: catalogs.sites[0].key,
     tableKey: "Table A",
     placementMode: "STANDARD",
     topFog: false,
@@ -156,6 +158,7 @@ try {
   const roster = JSON.parse(
     fs.readFileSync(new URL("../data/npc-roster.json", import.meta.url)),
   ).layout;
+  await page.route("**/api/roll-chronicle", (route) => route.fulfill({ json: { entries: [], permanent: {} } }));
   await page.route("**/api/scene-deck", (route) =>
     route.fulfill({ json: { deck: [], previews: [], notes: {}, roster } }),
   );
@@ -211,6 +214,20 @@ try {
     await page.locator("[data-tr-dnd-roll]").count(),
   );
 
+  await page.locator('.lab-conditions-head').first().click();
+  const conditionModal = page.locator('.lab-conditions-modal');
+  for (const id of ['WPRerollLimit2', 'WPRerollLimit1', 'WPRefreshLow', 'WPRefresh1', 'BestialNullBasicSuccess', 'BestialNullCrit', 'NoMessyReroll', 'ExpensiveMessyReroll', 'NoDisciplineBonus']) {
+    const condition = catalogs.conditions.find((row) => row.id === id);
+    assert(condition, `missing condition ${id}`);
+    await conditionModal.getByRole('button', { name: condition.displayName, exact: true }).waitFor();
+  }
+  await conditionModal.getByRole('button', { name: 'Willpower Reroll Limit: 1', exact: true }).click();
+  await conditionModal.getByRole('button', { name: 'Apply', exact: true }).click();
+  await page.waitForTimeout(150);
+  assert(commands.some((script) => script.includes('WPRerollLimit1') && script.includes('conditions')));
+  console.log('PASS nine Complications conditions are available and selecting one sends its exact id');
+
+  if (!process.argv.includes("--complications-only")) {
   const position = async (locator) => {
     const b = await locator.boundingBox();
     assert(b, "missing element");
@@ -445,6 +462,28 @@ try {
   await finish(page.locator('[data-tr-dnd-roll="npcRollPreroll"]'));
   assert(commands.slice(beforeMargin).some((c) => c.includes('"op":"npcDifficulty"') && c.includes('"value":3')));
   console.log("PASS new rolls open despite saved folds; completed PC margin → NPC difficulty");
+
+  }
+
+  // Complications starts the exact displayed roll, including already-confirmed results.
+  for (const [index, rollType] of ["launch", "goal", "standard", "willpowerRoll", "discipline"].entries()) {
+    const target = world.rolls.pcs[0];
+    target.rollId = `complications-${rollType}`;
+    target.rollType = rollType;
+    target.phase = index % 2 ? "postRoll" : "resolved";
+    target.done = index % 2 === 0;
+    target.result = { text: "FAILURE -2", margin: -2 };
+    target.canStartComplications = true;
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Play Deck of Complications", exact: true }).click();
+    await page.waitForTimeout(150);
+    assert(commands.some((c) => c.includes('"op":"complications"') && c.includes(`"rollId":"${target.rollId}"`) && c.includes('"color":"Pink"')));
+  }
+  world.rolls.pcs[0].canStartComplications = false;
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.locator('[data-tr-dnd-roll="pcRollPostroll"]').waitFor();
+  assert.equal(await page.getByRole("button", { name: "Play Deck of Complications", exact: true }).count(), 0);
+  console.log("PASS Complications start for five eligible roll types, confirmed/unconfirmed targets, and unavailable state");
 
   await page.screenshot({ path: path.join(output, "dnd-final.png") });
   assert.deepEqual(errors, []);

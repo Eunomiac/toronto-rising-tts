@@ -521,6 +521,42 @@ CD.Defs = {
     statChanges = {},
     roll = { wpCanRerollHunger = true },
   },
+  WPRerollLimit2 = {
+    id = "WPRerollLimit2", type = "roll", displayName = "Willpower Reroll Limit: 2",
+    canApplyManually = true, priority = 30, roll = {wpDiceLimit=2},
+  },
+  WPRerollLimit1 = {
+    id = "WPRerollLimit1", type = "roll", displayName = "Willpower Reroll Limit: 1",
+    canApplyManually = true, priority = 30, roll = {wpDiceLimit=1},
+  },
+  WPRefreshLow = {
+    id = "WPRefreshLow", type = "roll", displayName = "Willpower Refresh: Lower Attribute",
+    canApplyManually = true, priority = 30, roll = {features={wpRefreshLow=true}},
+  },
+  WPRefresh1 = {
+    id = "WPRefresh1", type = "roll", displayName = "Willpower Refresh: 1",
+    canApplyManually = true, priority = 30, roll = {features={wpRefreshOne=true}},
+  },
+  BestialNullBasicSuccess = {
+    id = "BestialNullBasicSuccess", type = "roll", displayName = "Bestial Dice Cancel Basic Successes",
+    canApplyManually = true, priority = 30, roll = {features={bestialNullBasic=true}},
+  },
+  BestialNullCrit = {
+    id = "BestialNullCrit", type = "roll", displayName = "Bestial Dice Cancel Normal Tens",
+    canApplyManually = true, priority = 30, roll = {features={bestialNullCrit=true}},
+  },
+  NoMessyReroll = {
+    id = "NoMessyReroll", type = "roll", displayName = "No Messy Critical Reroll",
+    canApplyManually = true, priority = 30, roll = {features={noMessyReroll=true}},
+  },
+  ExpensiveMessyReroll = {
+    id = "ExpensiveMessyReroll", type = "roll", displayName = "Messy Critical Reroll Costs 2 WP",
+    canApplyManually = true, priority = 30, roll = {features={expensiveMessyReroll=true}},
+  },
+  NoDisciplineBonus = {
+    id = "NoDisciplineBonus", type = "roll", displayName = "No Discipline Bonus",
+    canApplyManually = true, priority = 30, roll = {features={noDisciplineBonus=true}},
+  },
   bestialNull = {
     id = "bestialNull",
     type = "roll",

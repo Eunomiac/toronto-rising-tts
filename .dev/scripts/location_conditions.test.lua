@@ -680,4 +680,70 @@ test("actual NPC controller sets fixed difficulty and enforces then clears filte
   plan.difficultyRule="bad"
   assert(controller.applyNpcStatPlan(plan));eq(a.difficulty,2)
 end)
+test("Complications confirms once, preserves dice and leaves an interruption roll alone",function()
+  reset()
+  C.RollPhase.RESOLVED="resolved"
+  local finished=0
+  package.loaded["lib.pc_roll_tray_lower"]={getLivePcColor=function() return "Brown" end,
+    onLivePcRollFinished=function() finished=finished+1 end}
+  local snapshot
+  package.loaded["core.storyteller_rolls"]={
+    findHistoryEntry=function(color,id)
+      for _,v in ipairs(S.getStateVal("playerData",color,"hud","rollData","history") or {}) do
+        if v.rollId==id then return v end
+      end
+    end,
+    savePcDashSnapshot=function(_,a) snapshot=a end,
+  }
+  local controller=assert(loadfile("core/roll_controller.ttslua"))()
+  local consequences,strips=0,0
+  controller._applyRollConsequences=function() consequences=consequences+1 end
+  controller._applyRouseOutcomeStrips=function() strips=strips+1 end
+  local a=active({});a.phase="postRoll";a.difficulty=5
+  a.result={margin=-1,successes=4,pairs=1,hungerTens=true,resultClass=C.ResultClass.FAILURE}
+  a.diceFaces={normal={10,7},hunger={10}}
+  local target={color="Brown",rollId=a.id,rollType=a.rollType,roll=a,result=a.result}
+  local interruption=active({});interruption.id="later-roll"
+  S.setStateVal(interruption,"playerData","Brown","hud","rollData","active")
+  eq(controller.completeComplications(target,2,"game1"),nil)
+  eq(snapshot.result.margin,1);eq(snapshot.result.successes,4)
+  eq(snapshot.result.resultClass,C.ResultClass.MESSY_CRITICAL)
+  eq(snapshot.diceFaces.normal[1],10);eq(snapshot.diceFaces.hunger[1],10)
+  eq(a.result.margin,-1);eq(consequences,1);eq(strips,1);eq(finished,0)
+  eq(S.getStateVal("playerData","Brown","hud","rollData","active"),interruption)
+  eq(controller.completeComplications(target,2,"game1"),nil)
+  target.completedGame=nil -- history also prevents replay after a partial save
+  eq(controller.completeComplications(target,2,"game1"),nil)
+  eq(consequences,1);eq(strips,1)
+  -- Confirmation before play remains authoritative even if history was pruned.
+  target.confirmed=true;target.completedGame=nil
+  S.setStateVal({},"playerData","Brown","hud","rollData","history")
+  S.setStateVal(a,"playerData","Brown","hud","rollData","active")
+  eq(controller.completeComplications(target,0,"game2"),nil)
+  eq(consequences,1);eq(strips,1);eq(finished,1)
+  eq(S.getStateVal("playerData","Brown","hud","rollData","active"),nil)
+end)
+test("Beast Rampant enforces its prohibition and charges enhanced Messy rerolls with Auto-WP",function()
+  reset()
+  C.BatonHolder={AUTO="auto"}
+  local controller=assert(loadfile("core/roll_controller.ttslua"))()
+  controller._getDiceObjectsByKindForRoll=function() return {} end
+  local function setup(condition,autoWp,result)
+    local a=active({condition});a.phase=C.RollPhase.POST_ROLL
+    a.rollOptions=require('lib.roll_options').defaultsForRollType(a.rollType)
+    a.result={resultClass=result or C.ResultClass.MESSY_CRITICAL}
+    a.willpower={available=true,rerollsRemaining=1}
+    S.setStateVal(a,"playerData","Brown","hud","rollData","active")
+    S.setStateVal({autoWp=autoWp},"stRollSettings")
+    return a
+  end
+  setup("NoMessyReroll",true)
+  eq(controller.spendWillpower("Brown"),false);eq(#damages,0)
+  setup("ExpensiveMessyReroll",true)
+  eq(controller.spendWillpower("Brown"),true);eq(#damages,1);eq(damages[1].superficial,2)
+  setup("ExpensiveMessyReroll",false)
+  eq(controller.spendWillpower("Brown"),true);eq(#damages,1)
+  setup("ExpensiveMessyReroll",true,C.ResultClass.FAILURE)
+  eq(controller.spendWillpower("Brown"),true);eq(#damages,2);eq(damages[2].superficial,1)
+end)
 print(passed .. " location condition tests passed")

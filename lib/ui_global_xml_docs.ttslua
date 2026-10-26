@@ -9891,13 +9891,14 @@ UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", of
 </Defaults>
 
 <Panel id="adminControls" visibility="Host">
-  <HorizontalLayout class="debug_seat_color_row">
+  <HorizontalLayout class="debug_seat_color_row" width="280" offsetXY="-10 0">
     <Button id="debugSeat_Black" class="debug_seat_color_button" colors="#1A1A1A|#2A2A2A|#0F0F0F|#1A1A1A" onClick="HUD_debugSeatColor" />
     <Button id="debugSeat_Red" class="debug_seat_color_button" colors="#B22222|#C42828|#901818|#B22222" onClick="HUD_debugSeatColor" />
     <Button id="debugSeat_Orange" class="debug_seat_color_button" colors="#E67300|#F08010|#CC6600|#E67300" onClick="HUD_debugSeatColor" />
     <Button id="debugSeat_Brown" class="debug_seat_color_button" colors="#6B4423|#7A5030|#5A3820|#6B4423" onClick="HUD_debugSeatColor" />
     <Button id="debugSeat_Pink" class="debug_seat_color_button" colors="#C71585|#D02090|#B01075|#C71585" onClick="HUD_debugSeatColor" />
     <Button id="debugSeat_Purple" class="debug_seat_color_button" colors="#5E2A7E|#6E358E|#4E2070|#5E2A7E" onClick="HUD_debugSeatColor" />
+    <Button id="complicationsToggle" active="false" text="Hide cards" width="88" height="30" fontSize="13" onClick="HUD_toggleComplications" />
   </HorizontalLayout>
   <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="30" childForceExpandHeight="false">
   </VerticalLayout>
@@ -13027,7 +13028,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     <Image id="sessionStartHeal_screen_content_background" class="sessionStartHeal_image sessionStartHeal_image_background" image="resultsBG" />
     <VerticalLayout id="db_sessionStartHeal_screen_title_container" class="sessionStartHeal_screen_title_container">
       <Text id="db_sessionStartHeal_title" class="sessionStartHeal_title" text="Willpower Refresh" />
-      <Text id="db_sessionStartHeal_description" class="sessionStartHeal_description" text="All characters automatically heal an amount of superficial Willpower damage equal to the highest of their Resolve or Composure attributes:" />
+      <Text id="db_sessionStartHeal_description" class="sessionStartHeal_description" text="Characters recover superficial Willpower damage using Resolve or Composure, with any active refresh restrictions:" />
     </VerticalLayout>
     <!-- Only activate those HorizontalLayout elements for players who have Willpower damage to heal. -->
     <HorizontalLayout id="sessionStartHeal_playerContainer_Red" class="sessionStartHeal_playerRow" active="false">

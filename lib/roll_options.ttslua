@@ -226,15 +226,11 @@ function RO.getNumberForActive(active, id)
     if type(def) ~= "number" then
         def = 0
     end
-    if active == nil or type(active.rollOptions) ~= "table" then
-        return def
-    end
-    local v = active.rollOptions[id]
-    if type(v) == "string" then
-        v = tonumber(v)
-    end
-    if type(v) ~= "number" or v ~= v then
-        return def
+    local v = active and active.rollOptions and tonumber(active.rollOptions[id]) or def
+    if type(v)~="number" or v~=v then v=def end
+    local limit=active and active.rollPolicy and active.rollPolicy.wpDiceLimit
+    if id==RO.ROLL_NUMBER_OF_DICE_REROLLED and limit then
+        v=v<=0 and limit or math.min(v,limit)
     end
     return math.floor(v)
 end
@@ -245,6 +241,8 @@ end
 function RO.isWillpowerSpendAllowedByOptions(active)
     if active == nil then return false end
     if not RO.getForActive(active, RO.ROLL_WP_REROLL) then return false end
+    local f=active.rollPolicy and active.rollPolicy.features or {}
+    if f.noMessyReroll and active.result and active.result.resultClass==C.ResultClass.MESSY_CRITICAL then return false end
     if RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS) <= 0 then return false end
     return true
 end

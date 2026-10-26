@@ -3306,6 +3306,7 @@ function onLoad(saved_data)
                 local Phases = require("core.phases")
                 Phases.reconcileIntermissionAmbientOnLoad()
             end
+            require("core.complications").restore()
             setStartupAction("startup-ready-complete")
             syncDebugLastLoadClockLabel()
             return 0
@@ -3343,6 +3344,7 @@ function onLoad(saved_data)
                 if not U.isStorytellerSteamPlayer(playerColor) then
                     return
                 end
+                if require("core.complications").hotkey(playerColor, hoveredObject, isKeyUp == true) then return end
                 require("core.npc_gameboard").onControlBoardSpotlightHotkey(playerColor, hoveredObject, isKeyUp == true)
             end,
             true
@@ -7111,4 +7113,17 @@ function onPlayerDisconnect(player)
         RC.cancelRoll(seatColor)
     end
     PlayerConnection.handleSeatDisconnected(seatColor)
+end
+-- Host-executed, known live-game/card GUID gate before any physical work.
+function onPlayerAction(player, action, targets)
+    if S.getStateVal("complications") == nil then return true end
+    return require("core.complications").onPlayerAction(player, action, targets)
+end
+function onComplicationButtonClick(player, value, id)
+    if not U.isStorytellerSteamPlayer(player) then return end
+    require("core.complications").button(player, value, id)
+end
+function HUD_toggleComplications(player)
+    if not U.isStorytellerSteamPlayer(player) then return end
+    require("core.complications").toggle(player)
 end
