@@ -499,11 +499,16 @@ function Dice.classifyRoll(normalDice, hungerDice, difficulty, opts)
         nd, canceledOrdered = applyBestialNullNormals(normalDice, hungerDice)
     end
 
+    local effectiveHunger=hungerDice
+    local complicationCanceled
+    if opts.bestialNullBasic or opts.bestialNullCrit then
+        nd,effectiveHunger,complicationCanceled=require('lib.complications_dice').cancel(nd,hungerDice,opts.bestialNullBasic,opts.bestialNullCrit)
+    end
     local totalSuccesses, pairs, bonusSuccesses
     if countCrit then
-        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccesses(nd, hungerDice)
+        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccesses(nd, effectiveHunger)
     else
-        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccessesNoPairs(nd, hungerDice)
+        totalSuccesses, pairs, bonusSuccesses = Dice.computeSuccessesNoPairs(nd, effectiveHunger)
     end
 
     local margin = totalSuccesses - difficulty
@@ -553,6 +558,7 @@ function Dice.classifyRoll(normalDice, hungerDice, difficulty, opts)
     if useBestialNull and #canceledOrdered > 0 then
         out.bestialNullCanceled = canceledOrdered
     end
+    if complicationCanceled and #complicationCanceled>0 then out.complicationsCanceled=complicationCanceled end
 
     return out
 end

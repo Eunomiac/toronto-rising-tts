@@ -5,6 +5,16 @@
 
 ---@diagnostic disable: undefined-global
 local RollConditionHandlers = {}
+local function cappedWaveComplete(active)
+  local limit=active.rollPolicy and active.rollPolicy.wpDiceLimit
+  if not limit then return false end
+  local required,chosen=0,0
+  for guid in pairs(active.willpower.mandatoryFullRerollRequired or {}) do
+    required=required+1
+    if (active.willpower.rerollRandomizedGuids or {})[guid] then chosen=chosen+1 end
+  end
+  return chosen>=math.min(required,limit)
+end
 
 --- Mandatory full reroll: player must reroll every eligible die before confirm.
 RollConditionHandlers.HANDLERS = {
@@ -43,7 +53,7 @@ RollConditionHandlers.HANDLERS = {
           break
         end
       end
-      active.willpower.mandatoryFullRerollComplete = allDone
+      active.willpower.mandatoryFullRerollComplete = allDone or cappedWaveComplete(active)
     end,
 
     --- @param color string
@@ -57,7 +67,7 @@ RollConditionHandlers.HANDLERS = {
       if type(required) ~= "table" or next(required) == nil then
         return true
       end
-      if active.willpower.mandatoryFullRerollComplete == true then
+      if active.willpower.mandatoryFullRerollComplete == true or cappedWaveComplete(active) then
         return true
       end
       local chosen = active.willpower.rerollRandomizedGuids or {}

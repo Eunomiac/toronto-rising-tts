@@ -569,3 +569,7 @@ conditions = {
 ### Torpor (Storyteller)
 
 * **Torpor clear:** A per-row control (e.g. **Torpor** button) lets the Storyteller **clear** the `torpor` condition when appropriate. Automatic gains still apply when aggravated damage fills the health track; removal per chronicle rules may require healing **and** this manual clear.
+
+### Complications conditions
+
+Additional manual `ConditionId` values: `WPRerollLimit2`, `WPRerollLimit1`, `WPRefreshLow`, `WPRefresh1`, `BestialNullBasicSuccess`, `BestialNullCrit`, `NoMessyReroll`, `ExpensiveMessyReroll`, `NoDisciplineBonus`. These use boolean persisted instances and remain until manually cleared. `noBloodSurge` is reused. Roll policy caps apply even when the configured reroll count is unlimited; a mandatory full reroll with a cap requires at most that many eligible dice. Basic Bestial cancellation targets 6–9 (normal before Hunger); critical cancellation targets only normal 10s. Original faces remain unchanged.

@@ -303,7 +303,7 @@ end
 --- @param playerID string
 --- @param conditionId string
 --- @param instanceOrTrue boolean|table|nil when nil, treated as true
-function Conditions.setManual(playerID, conditionId, instanceOrTrue)
+function Conditions.setManual(playerID, conditionId, instanceOrTrue, opts)
   if playerID == C.StorytellerID then
     return
   end
@@ -320,7 +320,7 @@ function Conditions.setManual(playerID, conditionId, instanceOrTrue)
   end
   assertPersistedShape(conditionId, value)
   S.setStateVal(value, "playerData", playerID, "conditions", conditionId)
-  Conditions.afterChange(playerID)
+  if not (opts and opts.skipAfterChange) then Conditions.afterChange(playerID) end
 end
 
 --- @param playerID string

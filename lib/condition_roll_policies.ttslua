@@ -73,6 +73,10 @@ function RollPolicies.mergeConditionRoll(roll, acc, conditionId, priority)
     acc.wpCanRerollHunger = true
   end
 
+  if type(roll.wpDiceLimit)=="number" then
+    acc.wpDiceLimit=math.min(acc.wpDiceLimit or math.huge,roll.wpDiceLimit)
+  end
+
   local bonus = tonumber(roll.wpRerollCountBonus)
   if bonus ~= nil and bonus ~= 0 then
     acc.wpRerollCountBonus = acc.wpRerollCountBonus + bonus
