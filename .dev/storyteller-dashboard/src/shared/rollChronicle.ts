@@ -65,14 +65,25 @@ export const normalizeRollChronicle = (value: unknown): RollChronicle => {
   return { permanent: permanentOf(source.permanent), entries: entries.slice(-CAP) };
 };
 
-/** Adds rolls the chronicle does not already have, newest last, and keeps the last 200. */
+/** Adds finished rolls and updates corrected results without moving their original timestamp/order. */
 export const appendRolls = (chronicle: RollChronicle, incoming: readonly SavedRoll[]): RollChronicle => {
-  const known = new Set(chronicle.entries.map((entry) => entry.rollId));
-  const added = incoming.filter((entry) => entry.rollId !== "" && !known.has(entry.rollId));
-  if (added.length === 0) {
-    return chronicle;
+  const entries = [...chronicle.entries];
+  let changed = false;
+  for (const row of incoming) {
+    if (!row.rollId) continue;
+    const index = entries.findIndex((entry) => entry.rollId === row.rollId && entry.color === row.color);
+    if (index < 0) {
+      entries.push(row);
+      changed = true;
+    } else {
+      const prior = entries[index]!;
+      if (prior.text !== row.text || JSON.stringify(prior.entry) !== JSON.stringify(row.entry)) {
+        entries[index] = { ...row, at: prior.at };
+        changed = true;
+      }
+    }
   }
-  return { ...chronicle, entries: [...chronicle.entries, ...added].slice(-CAP) };
+  return changed ? { ...chronicle, entries: entries.slice(-CAP) } : chronicle;
 };
 
 export const parseRollChroniclePatch = (value: unknown): Partial<RollChronicle> => {

@@ -355,6 +355,10 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
   const actions: CardAction[] = roll.done
     ? [{ key: "broadcast", icon: "broadcast", label: "Broadcast again", tone: "gold", keep: true, onClick: () => send({ op: "broadcast", color }) }]
     : [];
+  if (roll.canStartComplications && roll.rollId) {
+    actions.push({ key: "complications", icon: "cards", label: "Play Deck of Complications", tone: "gold", keep: true,
+      onClick: () => send({ op: "complications", color, rollId: roll.rollId! }) });
+  }
   return (
     <RollCard
       className={`pc ${phaseClass(roll.phase, roll.wpReroll)}${roll.done ? " broadcast" : ""}`}

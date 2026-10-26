@@ -191,6 +191,7 @@ export type RollResult = {
 
 /** A PC's live roll, or (`done`) their last finished one, already broadcast, that the Storyteller may broadcast again. */
 export type PcRoll = {
+  readonly canStartComplications?: boolean;
   readonly color: string;
   readonly name: string;
   readonly rollId?: string;
