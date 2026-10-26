@@ -1,7 +1,9 @@
 "use strict";
 
 /**
- * Fetch a whole tab of a public Google Sheet as CSV (gviz endpoint, no header inference).
+ * Fetch a whole tab of a public Google Sheet as CSV.
+ * Supply options.gid to use the regular export and preserve mixed-type columns;
+ * gviz (the default) can blank text in predominantly numeric/boolean columns.
  * Sheet ids and tab map: `.dev/Chronicle Data/Google Sheets.md`.
  */
 
@@ -27,10 +29,13 @@ function tabCsvUrl(sheetId, tab) {
  * @param {string} sheetId
  * @param {string} tab
  * @param {string} userAgent
+ * @param {{gid?: number}} [options]
  * @returns {Promise<string>}
  */
-async function fetchTabCsv(sheetId, tab, userAgent) {
-  const url = tabCsvUrl(sheetId, tab);
+async function fetchTabCsv(sheetId, tab, userAgent, options = {}) {
+  const url = options.gid != null
+    ? `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/export?format=csv&gid=${encodeURIComponent(options.gid)}`
+    : tabCsvUrl(sheetId, tab);
   const response = await fetch(url, { redirect: "follow", headers: { "User-Agent": userAgent } });
   const text = await response.text();
   if (!response.ok) {
