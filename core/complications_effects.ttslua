@@ -1,0 +1,101 @@
+-- Reviewed effects: plan serializable receipts and operations; execute through the game journal.
+local E={}
+local S=require('core.state')
+local U=require('lib.util')
+local C=require('lib.constants')
+local Model=require('lib.complications_model')
+local registered=false
+local variants={
+ [11]={{'WPRerollLimit2'},{'WPRerollLimit1'}},
+ [17]={{'WPRefreshLow'},{'WPRefresh1'}},
+ [52]={{'BestialNullBasicSuccess'},{'BestialNullBasicSuccess','BestialNullCrit'}},
+ [57]={{'NoMessyReroll'},{'ExpensiveMessyReroll'}},
+ [59]={{'noBloodSurge'},{'noBloodSurge','NoDisciplineBonus'}},
+}
+function E.register()
+ if registered then return end
+ registered=true
+ local A=require('lib.complications_automations')
+ for index,pair in pairs(variants) do
+  A.register(index,{
+   apply=function(g,guid,enhanced)
+    local pid=S.getPlayerID(g.target.color)
+    local before=S.getStateVal('playerData',pid,'conditions') or {}
+    local desired,restore={},{}
+    if index==11 or index==17 or index==57 then
+     for _,ids in ipairs(pair) do for _,id in ipairs(ids) do desired[id]=false end end
+    end
+    for _,id in ipairs(pair[enhanced and 2 or 1]) do desired[id]=true end
+    for id in pairs(desired) do restore[id]=U.clone(before[id] or false,true) end
+    Model.queue(g,{kind='effect',effect='conditions',pid=pid,values=desired})
+    return {pid=pid,restore=restore,enhanced=enhanced}
+   end,
+   reverse=function(g,guid,r)
+    Model.queue(g,{kind='effect',effect='conditions',pid=r.pid,values=r.restore})
+   end,
+  })
+ end
+ A.register(6,{
+  apply=function(g,guid,enhanced)
+   local Projects=require('core.projects')
+   local pid=S.getPlayerID(g.target.color)
+   local owner=C.PlayerData[pid].charKey
+   local eligible={}
+   local pcOwners={};for _,p in pairs(C.PlayerData) do if p.charKey then pcOwners[p.charKey]=true end end
+   for id,p in pairs(S.getStateVal('projects') or {}) do
+    if pcOwners[p.owner] and p.owner~=owner and p.phase==Projects.PHASE.IN_PROGRESS and Projects.deriveDieAndEnd(p) then eligible[#eligible+1]=id end
+   end
+   table.sort(eligible)
+   if #eligible==0 then U.AlertGM('No active Project owned by another PC is available.');return nil end
+   local id=eligible[math.random(#eligible)];local p=Projects.getProject(id)
+   local amount=math.min(enhanced and 4 or 2,Projects.deriveDieAndEnd(p))
+   Model.queue(g,{kind='effect',effect='project',id=id,value=(p.projectDieMod or 0)-amount})
+   return {project=id,amount=amount}
+  end,
+  reverse=function(g,guid,r)
+   local p=require('core.projects').getProject(r.project)
+   if p then Model.queue(g,{kind='effect',effect='project',id=r.project,value=(p.projectDieMod or 0)+r.amount})
+   else U.AlertGM('The affected Project no longer exists; no other Project was changed.') end
+  end,
+ })
+ A.register(7,{
+  apply=function(g,guid)
+   local Compulsions=require('core.compulsions')
+   if not Compulsions.canStartClan(g.target.color) then return nil end
+   g.effectSerial=(g.effectSerial or 0)+1
+   local source=g.id..':'..guid..':'..g.effectSerial
+   Model.queue(g,{kind='effect',effect='compulsion',color=g.target.color,source=source})
+   return {color=g.target.color,source=source}
+  end,
+  reverse=function(g,guid,r)
+   Model.queue(g,{kind='effect',effect='compulsion',color=r.color,source=r.source,reverse=true})
+  end,
+ })
+ -- Physical clones are planned by the runtime, whose journal owns GUID allocation.
+ A.register(28,{
+  apply=function(g,guid,enhanced)
+   Model.queue(g,{kind='doomPlan',guid=guid,copies=enhanced and 4 or 2})
+   return {source=guid}
+  end,
+  reverse=function(g,guid,r) Model.queue(g,{kind='doomReverse',guid=r.source}) end,
+ })
+end
+function E.execute(op)
+ if op.effect=='conditions' then
+  local Conditions=require('core.conditions')
+  for id,value in pairs(op.values) do
+   if value then Conditions.setManual(op.pid,id,value,{skipAfterChange=true})
+   else Conditions.clear(op.pid,id,{skipAfterChange=true}) end
+  end
+  Conditions.afterChange(op.pid)
+ elseif op.effect=='project' then
+  local Projects=require('core.projects');local p=Projects.getProject(op.id)
+  if not p then error('Complications Project disappeared: '..op.id) end
+  p.projectDieMod=op.value;Projects.saveProject(p);Projects.refreshAfterMutation()
+ elseif op.effect=='compulsion' then
+  local Compulsions=require('core.compulsions')
+  if op.reverse then Compulsions.reverseClanSource(op.color,op.source)
+  else Compulsions.startClanSource(op.color,op.source) end
+ else error('Unknown Complications effect '..tostring(op.effect)) end
+end
+return E

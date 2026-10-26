@@ -16,11 +16,14 @@ function M.new(target, cards)
 end
 function M.totals(g)
     local total = g.adjust
+    local capped=false
     for _, guid in pairs(g.slots) do
         local c = g.cards[guid]
         if c and c.zone == 'slot' and c.up then total = total + (tonumber(c.value) or 0) end
+        if c and c.zone=='slot' and c.up and c.index==9 and not c.negated then capped=true end
     end
-    return total, g.target.result.margin + total
+    local margin=g.target.result.margin+total
+    return total, capped and math.min(0,margin) or margin
 end
 function M.available(g, c)
     if c.rollTypes then return c.rollTypes[g.target.rollType]==true end

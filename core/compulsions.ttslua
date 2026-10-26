@@ -598,6 +598,8 @@ local function finishSelection(color, chosenCard)
     presentByColor[color] = nil
 
     local chosenGuid = chosenCard ~= nil and chosenCard.getGUID and chosenCard.getGUID() or nil
+    local source=S.getStateVal('complicationCompulsions',color)
+    if source and source.session==session then source.chosenGuid=chosenGuid end
     local unselected = collectUnselectedPresented(color, session, chosenGuid)
     local genericGuid = drawnGenericByColor[color]
     drawnGenericByColor[color] = nil
@@ -624,6 +626,7 @@ local function finishSelection(color, chosenCard)
             local moveDur = applyPoseFromKey(chosenCard, selectedKey, color, token, true)
             tagSeatObject(chosenCard, color)
             announceActive(color, chosenCard)
+            if source and source.chosenGuid==chosenGuid then source.session=nil end
             print(string.format("[Compulsions] Selected Compulsion for %s", color))
             return math.max(moveDur, 0.5)
         end,
@@ -639,6 +642,8 @@ end
 --- @param color string
 --- @param card Object
 local function finishRemoval(color, card)
+    local source=S.getStateVal('complicationCompulsions',color)
+    if source and card and source.chosenGuid==card.getGUID() then S.setStateVal(nil,'complicationCompulsions',color) end
     clearPlayerSelection(color)
     local token = bumpOpToken(color)
     U.chain({
@@ -893,6 +898,12 @@ function Compulsions.onGenericDrawn(container, card)
     if not containerMatchesPlayerDeck(container, color) then
         return false
     end
+    local canceled=S.getStateVal('complicationCompulsions',color)
+    if canceled and canceled.canceled and canceled.genericGuid==card.getGUID() then
+        Compulsions.resolvePlayerDeck(color).putObject(card)
+        S.setStateVal(nil,'complicationCompulsions',color)
+        return true
+    end
 
     if findSelectedCompulsionForColor(color) ~= nil then
         U.Alert("You already have an active Compulsion.")
@@ -934,6 +945,10 @@ function Compulsions.onGenericDrawn(container, card)
         guidToSlot = {},
     }
     presentByColor[color] = session
+    local source=S.getStateVal('complicationCompulsions',color)
+    if source and source.genericGuid==card.getGUID() then
+        session.planned=planned;source.session=session
+    end
 
     local cardGuid = card.getGUID and card.getGUID() or nil
     if type(cardGuid) == "string" then
@@ -1093,6 +1108,96 @@ end
 --- @return boolean
 function Compulsions.containerLooksLikePlayerDeck(container)
     return Compulsions.colorFromPlayerDeckContainer(container) ~= nil
+end
+
+-- Source-bound Clan Compulsions for Blood Rush; no unrelated Compulsion is removed.
+function Compulsions.canStartClan(color)
+    if findSelectedCompulsionForColor(color) or presentByColor[color] then
+        U.AlertGM('Resolve the current Compulsion before applying Blood Rush.');return false
+    end
+    local deck=Compulsions.resolvePlayerDeck(color)
+    if not deck then U.AlertGM('The player Compulsions deck is missing.');return false end
+    for _,entry in ipairs(deck.getObjects()) do
+        local parsed=Compulsions.parseNotes(entry.gm_notes)
+        if parsed and parsed.type=='Clan' and parsed.suffix=='generic' then return true end
+    end
+    U.AlertGM('The Clan Compulsion card is missing from the player deck.');return false
+end
+function Compulsions.startClanSource(color,source)
+    local saved=S.getStateVal('complicationCompulsions',color)
+    if saved and saved.source==source then return end
+    if not Compulsions.canStartClan(color) then error('Blood Rush cannot start its Clan Compulsion') end
+    local deck=Compulsions.resolvePlayerDeck(color)
+    for _,entry in ipairs(deck.getObjects()) do
+        local parsed=Compulsions.parseNotes(entry.gm_notes)
+        if parsed and parsed.type=='Clan' and parsed.suffix=='generic' then
+            S.setStateVal({source=source,genericGuid=entry.guid},'complicationCompulsions',color)
+            local p=deck.getPosition();p.y=p.y+2
+            deck.takeObject({guid=entry.guid,position=p,smooth=false})
+            return
+        end
+    end
+end
+function Compulsions.reverseClanSource(color,source)
+    local saved=S.getStateVal('complicationCompulsions',color)
+    if not saved or saved.source~=source then return end
+    local selected=saved.chosenGuid and getObjectFromGUID(saved.chosenGuid)
+    if selected and findSelectedCompulsionForColor(color)==selected then
+        finishRemoval(color,selected)
+    elseif presentByColor[color] and saved.session==presentByColor[color] then
+        local session=presentByColor[color]
+        bumpOpToken(color);presentByColor[color]=nil
+        for _,card in ipairs(collectUnselectedPresented(color,session,nil)) do returnCardToMaster(card) end
+        drawnGenericByColor[color]=nil
+        restoreCsheetControlsForColor(color)
+        local deck=Compulsions.resolvePlayerDeck(color)
+        local generic=getObjectFromGUID(saved.genericGuid)
+        if deck and generic then deck.putObject(generic) end
+        if deck and deck.reset then deck.reset() end
+        setPlayerDeckInteractable(color,true)
+    elseif not saved.chosenGuid then
+        saved.canceled=true
+        local generic=getObjectFromGUID(saved.genericGuid)
+        if generic then Compulsions.resolvePlayerDeck(color).putObject(generic) end
+        -- Keep a tombstone until a delayed object-leave event has been consumed.
+        return
+    end
+    S.setStateVal(nil,'complicationCompulsions',color)
+end
+function Compulsions.restoreClanSources()
+    for color,saved in pairs(S.getStateVal('complicationCompulsions') or {}) do
+        if saved.canceled then
+            local generic=getObjectFromGUID(saved.genericGuid)
+            if generic then Compulsions.resolvePlayerDeck(color).putObject(generic) end
+        elseif saved.session and saved.chosenGuid then
+            bumpOpToken(color)
+            local chosen=getObjectFromGUID(saved.chosenGuid)
+            if chosen then
+                for _,card in ipairs(collectUnselectedPresented(color,saved.session,saved.chosenGuid)) do returnCardToMaster(card) end
+                local generic=getObjectFromGUID(saved.genericGuid)
+                local deck=Compulsions.resolvePlayerDeck(color)
+                if generic and deck then deck.putObject(generic) end
+                restoreCsheetControlsForColor(color)
+                snapPoseFromKey(chosen,positionKey('SELECTED',color),color)
+                tagSeatObject(chosen,color);announceActive(color,chosen)
+                setPlayerDeckInteractable(color,false);saved.session=nil
+            end
+        elseif saved.session and not saved.chosenGuid then
+            local session=saved.session
+            session.token=bumpOpToken(color);presentByColor[color]=session
+            drawnGenericByColor[color]=saved.genericGuid
+            blockCsheetControlsForColor(color);setPlayerDeckInteractable(color,false)
+            for _,plan in ipairs(session.planned or {}) do
+                local card=getObjectFromGUID(plan.guid)
+                if card then snapPoseFromKey(card,plan.key,color)
+                else takeAndPresentSlot(color,plan,session.token,session) end
+            end
+        elseif not saved.chosenGuid then
+            -- Save after takeObject but before onObjectLeaveContainer: resume the generic draw.
+            local card=getObjectFromGUID(saved.genericGuid)
+            if card then Compulsions.onGenericDrawn(Compulsions.resolvePlayerDeck(color),card) end
+        end
+    end
 end
 
 return Compulsions

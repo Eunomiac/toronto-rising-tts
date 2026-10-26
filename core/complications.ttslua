@@ -9,6 +9,8 @@ local O = require('core.objects')
 local Model = require('lib.complications_model')
 local Catalog = require('lib.complications_catalog')
 local Automations = require('lib.complications_automations')
+local Effects=require('core.complications_effects')
+Effects.register()
 local running, selectArmed, randomEpoch, confirmEpoch = false, false, 0, 0
 local pump
 local function game() return S.getStateVal('complications') end
@@ -64,9 +66,11 @@ function D.refresh()
     end
     local mode=g.mode
     b.UI.setAttributes('button_StopSelect',{text=mode=='select' and 'Select' or mode=='confirm' and 'Confirm' or 'Stop',class='complicationButton '..(mode=='select' and 'magentaButton' or mode=='confirm' and 'redButton' or 'yellowButton')})
-    local selected=g.selected and g.cards[g.selected] and g.cards[g.selected].zone=='slot'
-    b.UI.setAttribute('button_Automate','interactable',selected and not busy(g) and Automations.has(g.cards[g.selected].index) and 'true' or 'false')
-    for _,id in ipairs({'button_Enhance','button_Negate'}) do b.UI.setAttribute(id,'active',selected and 'true' or 'false') end
+    local selected=g.selected and g.cards[g.selected] and (g.cards[g.selected].zone=='slot' or g.cards[g.selected].zone=='external')
+    b.UI.setAttribute('button_Automate','interactable',selected and g.cards[g.selected].zone=='slot' and not busy(g) and Automations.has(g.cards[g.selected].index) and 'true' or 'false')
+    b.UI.setAttribute('button_Enhance','active',selected and 'true' or 'false')
+    b.UI.setAttribute('button_Negate','active',selected and g.cards[g.selected].zone=='slot' and 'true' or 'false')
+    b.UI.setAttribute('button_Automate','text',g.automations and g.automations[g.selected] and 'Reverse' or 'Automate')
     b.UI.setAttribute('button_Adjust','text','Adjust ('..signed(g.adjust)..')')
     b.UI.setAttributes('button_ToggleCategoryDiscard',{text=g.autoDiscard and 'Auto-Disc' or 'Mults Okay',class='complicationButton '..(g.autoDiscard and 'greenButton' or 'redButton')})
     for _,guid in pairs(g.slots) do
@@ -77,6 +81,15 @@ function D.refresh()
             elseif guid==g.selected then o.highlightOn({0,1,1}) else o.highlightOff() end
         end
         if c.enhanced and obj(guid) then obj(guid).setLock(true); obj(guid).highlightOff() end
+    end
+    for guid,c in pairs(g.cards) do
+        if c.zone=='external' then
+            local o=activeObject(g,guid)
+            if o then
+                o.setLock(true)
+                if guid==g.selected then o.highlightOn({0,1,1}) else o.highlightOff() end
+            end
+        end
     end
 end
 local function announce(g)
@@ -117,6 +130,14 @@ local function poseCard(g,o,slot,up,buried)
     O.restoreObject(o,{position=p,rotation={x=0,y=g.rotation.y,z=up and 0 or 180},locked=true,interactable=true})
     o.setInvisibleTo({}); o.setLock(true)
 end
+local function poseLogicalCard(g,o,guid,slot,buried)
+    local c=g.cards[guid]
+    if c.externalPose then
+        local p=U.clone(c.externalPose.position,true);p.y=p.y-(buried and 0.5 or 0)
+        O.restoreObject(o,{position=p,rotation=c.externalPose.rotation,locked=true,interactable=true})
+        o.setInvisibleTo({});o.setLock(true)
+    else poseCard(g,o,slot,true,buried) end
+end
 local function collect(g,o,zone,done)
     o.highlightOff(); o.setLock(false)
     if zone~='excluded' then o.setInvisibleTo({}) end
@@ -141,8 +162,8 @@ local function eachPhysical(g,fn)
     local function visit(o) if o and not seen[o.getGUID()] then seen[o.getGUID()]=true; fn(o) end end
     visit(board())
     for guid,c in pairs(g.cards) do
-        if c.zone~='excluded' then local loc=map[guid]; if loc then visit(loc.container or loc.object) end end
-        if c.clone then visit(obj(c.clone)) end
+        if c.zone~='excluded' and c.zone~='external' then local loc=map[guid]; if loc then visit(loc.container or loc.object) end end
+        if c.clone and c.zone~='external' then visit(obj(c.clone)) end
     end
 end
 local function applyHidden(g)
@@ -167,13 +188,14 @@ local function execute(g,op,done)
         if clone then clone.destruct() end; c.clone=nil
         local original=obj(op.guid)
         if original then
-            for i,guid in pairs(g.slots) do if guid==op.guid then poseCard(g,original,i,true) end end
+            if c.externalPose then poseLogicalCard(g,original,op.guid,nil,false)
+            else for i,guid in pairs(g.slots) do if guid==op.guid then poseCard(g,original,i,true) end end end
         end
         done()
     elseif op.kind=='enhance' then
         local c=g.cards[op.guid]; local slot
         for i,guid in pairs(g.slots) do if guid==op.guid then slot=i end end
-        if not slot then fail(g,'Enhanced card has no board slot.'); return end
+        if not slot and not c.externalPose then fail(g,'Enhanced card has no board slot.'); return end
         local clone=obj(c.clone)
         if not clone then
             -- A save can occur after spawn but before its callback; recover by original GUID tag.
@@ -181,8 +203,8 @@ local function execute(g,op,done)
         end
         local function finish(o)
             c.clone=o.getGUID(); o.addTag('complicationsClone_'..op.guid)
-            poseCard(g,o,slot,true); local original=obj(op.guid)
-            if original then poseCard(g,original,slot,true,true) end
+            poseLogicalCard(g,o,op.guid,slot,false); local original=obj(op.guid)
+            if original then poseLogicalCard(g,original,op.guid,slot,true) end
             done()
         end
         if clone then finish(clone) else
@@ -190,8 +212,74 @@ local function execute(g,op,done)
             if not template then fail(g,'No enhanced template for '..c.name); return end
             local data=U.clone(template, true); data.GUID=''; data.Tags=data.Tags or {}
             data.Tags[#data.Tags+1]='complicationsClone_'..op.guid
-            spawnObjectData({data=data,position=g.positions[slot],rotation={0,g.rotation.y,0},callback_function=finish})
+            spawnObjectData({data=data,position=c.externalPose and c.externalPose.position or g.positions[slot],rotation=c.externalPose and c.externalPose.rotation or {0,g.rotation.y,0},callback_function=finish})
         end
+    elseif op.kind=='effect' then Effects.execute(op); done()
+    elseif op.kind=='doomPlan' then
+        if not op.planned then
+            local roots={}
+            for guid,c in pairs(g.cards) do
+                if c.rarity=='Rare' and c.zone~='excluded' and c.zone~='external' and c.zone~='retired' and c.doomSource~=op.guid then roots[#roots+1]=guid end
+            end
+            table.sort(roots)
+            for _,root in ipairs(roots) do
+                local retained=0
+                for _,c in pairs(g.cards) do if c.doomSource==op.guid and c.doomRoot==root and c.zone=='slot' and c.up then retained=retained+1 end end
+                for i=1,math.max(0,op.copies-retained) do
+                    g.cloneSerial=(g.cloneSerial or 0)+1
+                    Model.queue(g,{kind='doomClone',root=root,source=op.guid,tag='complicationsDoom_'..g.id..'_'..g.cloneSerial})
+                end
+            end
+            Model.queue(g,{kind='doomRedeal'});op.planned=true;save(g)
+        end
+        done()
+    elseif op.kind=='doomClone' then
+        local existing=op.actualGuid and locations(g)[op.actualGuid]
+        if existing then
+            if existing.container then done() else collect(g,existing.object,'deck',done) end
+            return
+        end
+        local c=g.cards[op.root]
+        if not c or not c.data then fail(g,'Missing Rare source data for '..op.root);return end
+        local function finishClone(o)
+            local guid=o.getGUID();op.actualGuid=guid
+            if not g.cards[guid] then
+                local copy=U.clone(c,true)
+                copy.zone,copy.up,copy.enhanced,copy.negated,copy.clone='deck',false,false,false,nil
+                copy.doomSource,copy.doomRoot=op.source,op.root
+                g.cards[guid]=copy
+            end
+            o.addTag(op.tag);save(g)
+            collect(g,o,'deck',done)
+        end
+        local recovered=getObjectsWithTag(op.tag)[1]
+        if recovered then finishClone(recovered) else
+            local data=U.clone(c.data,true);data.GUID='';data.Tags=data.Tags or {}
+            data.Tags[#data.Tags+1]=op.tag
+            spawnObjectData({data=data,position={x=g.piles.deck.x,y=g.piles.deck.y+3,z=g.piles.deck.z},callback_function=finishClone})
+        end
+    elseif op.kind=='doomReverse' then
+        if not op.planned then
+            for guid,c in pairs(g.cards) do
+                if c.doomSource==op.guid and not (c.zone=='slot' and c.up) then
+                    for i,v in pairs(g.slots) do if v==guid then g.slots[i]=nil end end
+                    c.zone='retired';Model.queue(g,{kind='destroyCard',guid=guid})
+                end
+            end
+            Model.queue(g,{kind='doomRefill'});op.planned=true;save(g)
+        end
+        done()
+    elseif op.kind=='destroyCard' then
+        if not locations(g)[op.guid] then g.cards[op.guid]=nil;done();return end
+        card(g,op.guid,function(o) o.destruct();g.cards[op.guid]=nil;done() end)
+    elseif op.kind=='doomRedeal' or op.kind=='doomRefill' then
+        if not op.planned then
+            g.exhausted=#Model.deck(g)==0
+            if op.kind=='doomRedeal' then Model.redeal(g)
+            else for i=1,10 do if not g.slots[i] then Model.draw(g,i) end end end
+            op.planned=true;save(g)
+        end
+        done()
     elseif op.kind=='home' then
         local b=board(); O.restoreObject(b,{position=g.home.position,rotation=g.home.rotation,locked=true})
         local deck=pile(g,'deck')
@@ -239,12 +327,19 @@ function D.start(color,rollId)
                 if index then templates[tostring(index)]=data end
             end
         elseif not enhanced then
+            local dataByGuid={}
+            if o.tag=='Deck' then for _,data in ipairs(o.getData().ContainedObjects or {}) do dataByGuid[data.GUID]=data end end
             local entries=o.tag=='Deck' and o.getObjects() or {{guid=o.getGUID(),gm_notes=o.getGMNotes()}}
             for _,entry in ipairs(entries) do
                 local index,name=Model.identity(entry.gm_notes)
                 local def=Catalog[index]
                 if not def or def.name~=name then return 'Unknown card GM Notes: '..tostring(entry.gm_notes) end
-                cards[entry.guid]={index=index,name=name,value=def.value,category=def.category,rollTypes=U.clone(def.rollTypes,true),zone='deck',up=false}
+                cards[entry.guid]={index=index,name=name,value=def.value,category=def.category,rarity=def.rarity,rollTypes=U.clone(def.rollTypes,true),zone='deck',up=false}
+                if def.rarity=='Rare' then
+                    if o.tag=='Deck' then
+                        cards[entry.guid].data=dataByGuid[entry.guid]
+                    else cards[entry.guid].data=o.getData() end
+                end
             end
         end
     end
@@ -303,10 +398,12 @@ function D.onPlayerAction(player,action,targets)
     return true
 end
 local function finish(g)
-    g.finalTotal=Model.totals(g); g.ending=true; g.hidden=false; applyHidden(g)
+    local _,margin=Model.totals(g)
+    g.finalTotal=margin-g.target.result.margin; g.ending=true; g.hidden=false; applyHidden(g)
     for guid,c in pairs(g.cards) do
         if c.enhanced or c.clone then Model.queue(g,{kind='unenhance',guid=guid}); c.enhanced=false end
-        Model.move(g,guid,'deck')
+        if c.doomSource then c.zone='retired';Model.queue(g,{kind='destroyCard',guid=guid})
+        elseif c.zone~='external' then Model.move(g,guid,'deck') end
     end
     Model.queue(g,{kind='shuffle'}); Model.queue(g,{kind='home'}); begin(g)
 end
@@ -346,10 +443,10 @@ function D.button(player,value,id)
     elseif id=='button_Enhance' then
         if right then randomSelect(g,'enhanced'); return
         elseif c then c.enhanced=not c.enhanced; Model.queue(g,{kind=c.enhanced and 'enhance' or 'unenhance',guid=g.selected}) end
-    elseif id=='button_Negate' and c then
+    elseif id=='button_Negate' and c and c.zone=='slot' then
         if right then Model.discard(g) else c.negated=not c.negated end
     elseif id=='button_Adjust' then g.adjust=g.adjust+(right and -1 or 1)
-    elseif id=='button_Automate' and c then Automations.run(g,g.selected,right)
+    elseif id=='button_Automate' and c then Automations.run(g,g.selected,right and true or nil)
     elseif id=='button_ToggleCategoryDiscard' and not right then Model.toggleCategories(g) end
     begin(g)
 end
@@ -358,7 +455,18 @@ function D.hotkey(playerColor,hovered,isKeyUp)
     if isKeyUp or busy(g) or g.hidden or not hovered then return true end
     local guid=hovered.getGUID()
     for original,c in pairs(g.cards) do if c.clone==guid then guid=original; break end end
-    local c=g.cards[guid]; if not c or c.zone~='slot' then return true end
+    local c=g.cards[guid]
+    if (not c or c.zone~='slot') and hovered.hasTag('deckOfComplications') and hovered.tag=='Card' and not hovered.is_face_down then
+        local index,name,enhanced=Model.identity(hovered.getGMNotes())
+        if enhanced and not c then return true end
+        local def=Catalog[index]
+        if not def or def.name~=name then return true end
+        c=c or {index=index,name=name,value=def.value,category=def.category,rollTypes=U.clone(def.rollTypes,true)}
+        c.zone,c.up='external',true
+        c.externalPose=c.externalPose or {position=vector(hovered.getPosition()),rotation=vector(hovered.getRotation())}
+        g.cards[guid]=c
+    end
+    if not c or (c.zone~='slot' and c.zone~='external') then return true end
     if c.up then g.selected=guid else
         local slot; for i,v in pairs(g.slots) do if v==guid then slot=i end end
         Model.move(g,guid,'deck'); Model.queue(g,{kind='shuffle'}); Model.draw(g,slot)
@@ -374,6 +482,7 @@ end
 function D.restore()
     running=false; selectArmed=false
     mountAutomationButton()
+    require('core.compulsions').restoreClanSources()
     local g=game(); if not g then D.refresh(); return end
     local slots,positions={},{}
     for k,v in pairs(g.slots) do slots[tonumber(k)]=v end

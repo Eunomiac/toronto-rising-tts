@@ -31,7 +31,7 @@ make=function(id,tag,notes,tags,children)
   local a={} for _,v in ipairs(o.children or {}) do a[#a+1]={guid=v.id,gm_notes=v.notes} end return a
  end
  o.getData=function()
-  local a={} for _,v in ipairs(o.children or {}) do a[#a+1]={GUID=v.id,GMNotes=v.notes,Tags=v.tags} end return {ContainedObjects=a}
+  local a={} for _,v in ipairs(o.children or {}) do a[#a+1]={GUID=v.id,GMNotes=v.notes,Tags=v.tags} end return {GUID=id,GMNotes=notes,Tags=o.tags,ContainedObjects=a}
  end
  o.takeObject=function(p)
   for i,v in ipairs(o.children) do if v.id==p.guid then
@@ -74,6 +74,7 @@ end}
 package.loaded['core.state']=S;package.loaded['lib.util']=U;package.loaded['lib.constants']={};package.loaded['core.objects']=O
 package.loaded['lib.guids']={GUIDS={COMPLICATIONS_BOARD='board',CSHEET_DICE_DRAWER_ANCHOR_ON_RED='anchor'}}
 package.loaded['dashboard.push']={markWorldDirty=function() end}
+package.loaded['core.compulsions']={restoreClanSources=function() end}
 local target={color='Red',rollId='roll1',rollType='standard',result={margin=-5}}
 local finishes=0
 package.loaded['core.complications_rolls']={capture=function() return clone(target) end,finish=function(t,total) finishes=finishes+1;eqTotal=total;return nil end}
@@ -108,3 +109,38 @@ D.button({color='Black'},'-2','button_StopSelect');drain()
 D.button({color='Black'},'-1','button_Adjust');drain();assert(Model.totals(g)==1)
 D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain();assert(not state.complications and finishes==1 and eqTotal==1)
 print('Complications world: startup, permissions, locks, enhance/negate/discard, hidden reload, operation recovery, and cleanup passed.')
+-- A fresh game exercises real tagged Rare duplication, partial reversal and external enhancement.
+assert(not D.start('Red','roll1'));drain();g=state.complications
+local function placeIndex(index,slot)
+ local chosen;for guid,c in pairs(g.cards) do if c.index==index and c.zone=='deck' then chosen=guid;break end end
+ assert(chosen,'missing index '..index)
+ if g.slots[slot] then Model.move(g,g.slots[slot],'deck') end
+ g.cards[chosen].zone='slot';g.slots[slot]=chosen;Model.queue(g,{kind='place',guid=chosen,slot=slot})
+ D.restore();drain();return chosen
+end
+local doom=placeIndex(28,1)
+assert(D.onPlayerAction({color='Red'},'flip',{objects[doom]}));drain()
+local rare=0;for _,c in pairs(g.cards) do if c.rarity=='Rare' and c.zone~='excluded' then rare=rare+1 end end
+D.button({color='Black'},'-1','button_Automate');drain()
+local copies=0;for _,c in pairs(g.cards) do if c.doomSource==doom then copies=copies+1 end end;assert(copies==rare*2)
+-- Reveal one generated copy, then return selection to Doom and reverse.
+local kept;for guid,c in pairs(g.cards) do if c.doomSource==doom and c.zone=='deck' then kept=guid;break end end
+assert(kept)
+Model.move(g,g.slots[2],'deck');g.cards[kept].zone='slot';g.slots[2]=kept;Model.queue(g,{kind='place',guid=kept,slot=2});D.restore();drain()
+g.cards[kept].up=true;g.selected=doom
+D.button({color='Black'},'-1','button_Automate');drain()
+copies=0;for _,c in pairs(g.cards) do if c.doomSource==doom then copies=copies+1 end end;assert(copies==1 and g.cards[kept].up)
+D.button({color='Black'},'-1','button_Enhance');drain()
+D.button({color='Black'},'-1','button_Automate')
+-- Reload with duplication queued; it must not plan or spawn the same batch twice.
+scheduled={};state.complications=clone(g);package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain();g=state.complications
+copies=0;for _,c in pairs(g.cards) do if c.doomSource==doom then copies=copies+1 end end;assert(copies==rare*4)
+local outside=make('outside','Card','1:'..catalog[1].name,{'deckOfComplications'});outside.position={x=60,y=10,z=60};outside.is_face_down=false
+D.button({color='Black'},'-1','button_StopSelect');D.hotkey('Black',outside,false);drain();assert(g.selected=='outside' and g.cards.outside.zone=='external')
+local before=Model.totals(g);D.button({color='Black'},'-1','button_Enhance');drain();assert(g.cards.outside.clone and Model.totals(g)==before)
+local externalClone=objects[g.cards.outside.clone];assert(externalClone.position.x==60 and outside.position.y==9.5)
+D.button({color='Black'},'-1','button_Enhance');drain();assert(not g.cards.outside.clone and outside.position.y==10)
+D.button({color='Black'},'-2','button_StopSelect');drain();D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
+assert(not state.complications and objects.outside)
+for _,o in pairs(objects) do for _,tag in ipairs(o.tags) do assert(not tag:match('^complicationsDoom_')) end end
+print('Complications world: Rare cloning, retained face-up copies, enhanced count, mid-batch reload, clone cleanup and external enhancement passed.')
