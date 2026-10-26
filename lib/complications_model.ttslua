@@ -23,6 +23,8 @@ function M.totals(g)
     return total, g.target.result.margin + total
 end
 function M.available(g, c)
+    if c.rollTypes then return c.rollTypes[g.target.rollType]==true end
+    -- Compatibility for saved games created before per-roll eligibility was added.
     return not (g.target.rollType ~= 'launch' and c.category == 'Project')
 end
 function M.deck(g)
