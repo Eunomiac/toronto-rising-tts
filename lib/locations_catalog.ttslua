@@ -2027,6 +2027,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensAntechamber",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,
@@ -2038,6 +2039,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensDrakes",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,
@@ -2049,6 +2051,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensLabyrinth",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,
@@ -2060,6 +2063,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensLabyrinth",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,
@@ -2071,6 +2075,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensLabyrinth",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,
@@ -2082,6 +2087,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensLabyrinth",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,
@@ -2093,6 +2099,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensSpawningPool",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,
@@ -2104,6 +2111,7 @@ LocationsCatalog.Sites = {
     skybox = "WarrensTunnelJunction",
     district = Districts.Sewers,
     soundscape = {
+      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "warrens" },
     },
     isIndoors = true,

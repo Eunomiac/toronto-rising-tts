@@ -1,3 +1,64 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "sketch": "scenes",
+      "x": 447,
+      "y": 283,
+      "text": "The drag behavior is extremely laggy. Is GSAP being used, or can you identify what's going on behind the scenes that makes it so choppy?",
+      "status": "open",
+      "createdAt": "2026-10-22T10:43:56.158Z",
+      "updatedAt": "2026-10-22T10:43:56.158Z"
+    },
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 600,
+      "y": 275,
+      "text": "In NPC stat panels:\n\n1. Expand the panel width by 50%.\n2. Hide the Kind buttons once a Kind has been selected. Double-clicking on the NPC name should show the Kind line again.\n3. Move everything in the Generation/Clan/Blood Potency/Humanity line to the right of the NPC's name at the very top.\n4. Put Difficulty, Health, Willpower, and the Standard Pools on one line.\n5. Remove the pool number from the Exceptional Pools, and allow them to shrink horizontally (with padding/spacing) so that more can occupy a single line before wrapping.\n6. Display Attacks and Disciplines in four columns (up from two)\n7. Display the contents of the bottom text field in three columns when it is not selected/focused, and increase the height (but still allow scrolling for extremely long content)",
+      "status": "open",
+      "createdAt": "2026-10-22T10:44:51.357Z",
+      "updatedAt": "2026-10-22T10:51:25.793Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 1412,
+      "y": 778,
+      "text": "Somehow, an NPC was seated at the table when no scene was active - I believe it happened while I was trying to drag NPCs onto seated positions within the preview panel.",
+      "status": "open",
+      "createdAt": "2026-10-22T10:58:03.958Z",
+      "updatedAt": "2026-10-22T10:58:03.958Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 658,
+      "y": 739,
+      "text": "In the Preview Panel (and possibly live scenes), dragging a seated NPC from their seat to off the board does nothing (it should unseat them). But dragging a staged NPC who is also occupying a seat off the board removes them from the stage and from their seat (it should only remove them from the stage, and activate their seat -- i.e. they're \"returning to their seat\")",
+      "status": "open",
+      "createdAt": "2026-10-22T10:59:02.105Z",
+      "updatedAt": "2026-10-22T10:59:02.105Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 1567,
+      "y": 391,
+      "text": "Upon dropping a completed PC roll against a Difficulty of 0 onto a fresh NPC roll, I got a warning reading \"The completed roll has no margin yet\".  What should have happened is the Difficulty of the NPC roll was set to the margin on the completed PC roll -- which was +6. However, against a Difficulty of 0, the margin wasn't processed and only the number of successes was displayed.",
+      "status": "open",
+      "createdAt": "2026-10-22T11:04:53.706Z",
+      "updatedAt": "2026-10-22T11:04:53.706Z"
+    },
+    {
+      "id": 6,
+      "sketch": "scenes",
+      "x": 547,
+      "y": 422,
+      "text": "NPC Vampires in the roster should have Hunger trackers randomly generated for them in the same way they are generated when added to a scene, for use when making NPC rolls for characters who are not in the scene.  The first time an NPC rolls dice OR is added to a scene in any given night, their Hunger tracker should be randomly set according to the rules that currently govern how Hunger is set for NPCs joining scnees.",
+      "status": "open",
+      "createdAt": "2026-10-22T11:08:26.943Z",
+      "updatedAt": "2026-10-22T11:08:26.943Z"
+    }
+  ]
 }

@@ -302,6 +302,8 @@ G.GUIDS = {
     -- Particle Effect Emitters
     PARTICLE_EMITTER = "098667",
 
+    -- The Deck of Complications Minigame
+    COMPLICATIONS_BOARD = "8f6e58",
 
     -- Dice bags (one per seat color).
     -- Each bag is a TTS object that spawns d10s when rolled by the player.
