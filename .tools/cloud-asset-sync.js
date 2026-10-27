@@ -451,6 +451,25 @@ function filesInScope(job, local) {
   return local.filter((f) => f.folder === job.folder || (job.recurIntoSubfolders && f.folder.startsWith(`${job.folder}/`)));
 }
 
+/** Collect only rows whose current local bytes have a matching Cloud ledger entry. */
+function collectJobRows(job, local, ledger) {
+  const re = parseUserRegExp(job.searchPattern);
+  const rows = [], pending = [], seen = new Map();
+  for (const f of filesInScope(job, local)) {
+    if (!re.test(f.name)) continue;
+    const name = transformName(f.name, re, job.replacePattern);
+    if (seen.has(name)) throw new Error(`Job "${job.id}": assets/${f.relPath} and assets/${seen.get(name)} both become "${name}".`);
+    seen.set(name, f.relPath);
+    const entry = ledger.files[f.relPath];
+    // A skipped push can leave an older version at this path. Never publish
+    // the new local hash beside the old Cloud URL.
+    if (!entry || entry.key !== f.key) pending.push(f.name);
+    else rows.push({ name, filename: f.name, path: f.relPath, sha1: f.sha1, url: entry.url, size: f.size });
+  }
+  rows.sort((a, b) => a.path.localeCompare(b.path));
+  return { rows, pending };
+}
+
 /**
  * Files in a job folder that no job (skipped or not) matches.
  * @param {Job[]} jobs
@@ -531,19 +550,7 @@ async function main() {
     /** @type {Map<string, { name: string, filename: string, path: string, sha1: string, url: string, size: number }[]>} */
     const rowsByJob = new Map();
     for (const job of [...active]) {
-      const re = parseUserRegExp(job.searchPattern);
-      const rows = [];
-      const pending = [];
-      const seen = new Map();
-      for (const f of filesInScope(job, local)) {
-        if (!re.test(f.name)) continue;
-        const name = transformName(f.name, re, job.replacePattern);
-        if (seen.has(name)) throw new Error(`Job "${job.id}": assets/${f.relPath} and assets/${seen.get(name)} both become "${name}".`);
-        seen.set(name, f.relPath);
-        const entry = ledger.files[f.relPath];
-        if (!entry) pending.push(f.name);
-        else rows.push({ name, filename: f.name, path: f.relPath, sha1: f.sha1, url: entry.url, size: f.size });
-      }
+      const { rows, pending } = collectJobRows(job, local, ledger);
       if (pending.length > 0) {
         warn(
           `HOLD job "${job.id}": ${pending.length} file(s) are not in Cloud yet (${pending.slice(0, 3).join(", ")}${pending.length > 3 ? ", …" : ""}). Its outputs are left as they are until npm run cloud:push (TTS closed).`,
@@ -552,7 +559,6 @@ async function main() {
         carried.add(job.id);
         continue;
       }
-      rows.sort((a, b) => a.path.localeCompare(b.path));
       rowsByJob.set(job.id, rows);
       log(`Job "${job.id}" (${job.output}, assets/${job.folder}): ${rows.length} file(s)`);
     }
@@ -704,4 +710,5 @@ module.exports = {
   MANIFEST_PATH,
   renderLuaModule,
   parseCli,
+  collectJobRows,
 };

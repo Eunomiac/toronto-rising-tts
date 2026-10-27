@@ -3,7 +3,19 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 
-const { distinguishingLiteral, derivePurgePatterns, validateConfig, renderLuaModule, parseCli } = require("./cloud-asset-sync.js");
+const { distinguishingLiteral, derivePurgePatterns, validateConfig, renderLuaModule, parseCli, collectJobRows } = require("./cloud-asset-sync.js");
+
+test("changed local art cannot publish a new hash paired with a stale Cloud URL when push is skipped", () => {
+  const job = validateConfig({ jobs: [{ id: "sheets", folder: "Decks", output: "Manifest",
+    filenameToNameSearchPattern: "^sheet_(.*)\\.png$", filenameToNameReplacePattern: "$1" }] })[0];
+  const file = { folder: "Decks", name: "sheet_test.png", relPath: "Decks/sheet_test.png", sha1: "NEW", key: "NEW_sheet_test.png", size: 123 };
+  const ledger = { files: { [file.relPath]: { key: "OLD_sheet_test.png", url: "https://example.test/old" } } };
+  assert.deepEqual(collectJobRows(job, [file], ledger), { pending: [file.name], rows: [] });
+  assert.deepEqual(collectJobRows(job, [file], { files: {} }), { pending: [file.name], rows: [] });
+  ledger.files[file.relPath] = { key: file.key, url: "https://example.test/new" };
+  assert.deepEqual(collectJobRows(job, [file], ledger), { pending: [], rows: [{ name: "test", filename: file.name,
+    path: file.relPath, sha1: "NEW", url: "https://example.test/new", size: 123 }] });
+});
 
 test("distinguishingLiteral accepts prefixes and suffixes outside capture groups", () => {
   assert.equal(distinguishingLiteral("^token_(.*)\\.webp$"), "token_");
