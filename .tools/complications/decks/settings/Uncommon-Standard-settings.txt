@@ -1,0 +1,36 @@
+Tabletop Simulator custom deck: Uncommon-Standard
+Face: Uncommon-Standard.png
+Width: 7
+Height: 3
+Number: 20
+Unique Backs: OFF
+Back is Hidden: ON
+Back: supply your separate card-back image
+Sheet: 3528 x 2109 pixels (RGB PNG)
+Card cell: 504 x 703 pixels
+Crop: (0, 0, 630, 879)
+Width multiplier: 0.8
+Scaling: UNIFORM (LANCZOS)
+Unused cells, including the bottom-right cell, are black.
+
+Card order (left to right, then top to bottom):
+1: 1 A Matter of Pride.webp
+2: 5 Absolution.webp
+3: 8 Breakthrough.webp
+4: 9 Buzzkill.webp
+5: 13 Costly Blunder.webp
+6: 15 Ennui.webp
+7: 16 Espionage.webp
+8: 20 False Lead.webp
+9: 28 Impending Doom.webp
+10: 32 Loose Lips.webp
+11: 33 Mental Block.webp
+12: 34 Micromanagement.webp
+13: 35 Miles To Go.webp
+14: 45 Repeat Mistakes.webp
+15: 49 Silent Beneficiary.webp
+16: 52 The Beast Ascendant.webp
+17: 53 The Beast Despotic.webp
+18: 58 The Beast Ravenous.webp
+19: 60 The Rule of Three.webp
+20: 65 Unfinished Business.webp

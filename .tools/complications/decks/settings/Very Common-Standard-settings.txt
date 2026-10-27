@@ -1,0 +1,17 @@
+Tabletop Simulator custom deck: Very Common-Standard
+Face: Very Common-Standard.png
+Width: 2
+Height: 2
+Number: 1
+Unique Backs: OFF
+Back is Hidden: ON
+Back: supply your separate card-back image
+Sheet: 1008 x 1406 pixels (RGB PNG)
+Card cell: 504 x 703 pixels
+Crop: (0, 0, 630, 879)
+Width multiplier: 0.8
+Scaling: UNIFORM (LANCZOS)
+Unused cells, including the bottom-right cell, are black.
+
+Card order (left to right, then top to bottom):
+1: 40 Powderkeg.webp

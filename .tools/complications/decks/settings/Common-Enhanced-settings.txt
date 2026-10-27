@@ -1,0 +1,44 @@
+Tabletop Simulator custom deck: Common-Enhanced
+Face: Common-Enhanced.png
+Width: 6
+Height: 5
+Number: 28
+Unique Backs: OFF
+Back is Hidden: ON
+Back: supply your separate card-back image
+Sheet: 3024 x 3515 pixels (RGB PNG)
+Card cell: 504 x 703 pixels
+Crop: (0, 0, 630, 879)
+Width multiplier: 0.8
+Scaling: UNIFORM (LANCZOS)
+Unused cells, including the bottom-right cell, are black.
+
+Card order (left to right, then top to bottom):
+1: 2 A Moment of Despair.webp
+2: 4 A Moment of Inspiration.webp
+3: 11 Cognitive Dissonance.webp
+4: 17 Exhausted.webp
+5: 18 Faith.webp
+6: 23 Field Work.webp
+7: 26 Heavy Lies the Crown.webp
+8: 29 In A Bind.webp
+9: 30 In the Red.webp
+10: 36 Necessary Evils.webp
+11: 37 Obsessed.webp
+12: 38 Options.webp
+13: 39 Overwhelmed.webp
+14: 41 Preoccupied.webp
+15: 44 Reckless Gamble.webp
+16: 47 Ripple Effects.webp
+17: 48 Rocky Start.webp
+18: 50 Spread Thin.webp
+19: 54 The Beast Insatiable.webp
+20: 55 The Beast Insensate.webp
+21: 56 The Beast Perilous.webp
+22: 57 The Beast Rampant.webp
+23: 59 The Beast Scorned.webp
+24: 61 Tilted.webp
+25: 62 Triage.webp
+26: 63 Tunnel Vision.webp
+27: 64 Under the Bus.webp
+28: 66 Weight of the World.webp

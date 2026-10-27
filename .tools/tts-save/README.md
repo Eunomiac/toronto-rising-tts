@@ -13,6 +13,10 @@ Source of truth:
 Status:
 - current
 
+## Complications decks (Full build hook)
+
+`npm run build:full` assembles the Standard and Enhanced Complications decks after cloud asset sync and consolidation. It rebuilds only variants with changed image/settings/URL fingerprints, defers pending uploads, and refuses to rebuild an active saved game or loose cards. Setup, exact filenames, save behavior, and verification: [`../complications/decks/README.md`](../complications/decks/README.md). Direct command: `npm run complications:decks -- --dry-run`.
+
 ## Daily save snapshot (build hook)
 
 `npm run build` runs `tts-save:backup-daily` first. It copies the live save into `backupDir` (or `<savesDir>/tts-assets-backups/`) as `TS_Save_<id>_YYYY_MM_DD.json`, at most once per 24 hours (stamp file `.last-daily-backup` in that folder). Missing config/save soft-fails so codegen still runs. If `_a`/`_b` variants for that date already exist, the build hard-fails. First same-day collision renames the existing dated file to `_a` and writes the new copy as `_b`. Skip with `SKIP_SAVE_BACKUP=1` or `npm run tts-save:backup-daily -- --skip`; force with `npm run tts-save:backup-daily:force`. Retention is unbounded — prune the backup folder manually.

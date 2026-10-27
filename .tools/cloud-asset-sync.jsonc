@@ -29,6 +29,14 @@
   },
 
   "jobs": [
+    // Deck records are assembled by complications:decks after this manifest is synced.
+    {
+      "id": "complicationsDeckSheets",
+      "folder": "Deck of Complications",
+      "output": "Manifest",
+      "filenameToNameSearchPattern": "^complicationsDeck_(Very Common|Common|Uncommon|Rare)-(Standard|Enhanced)\\.png$",
+      "filenameToNameReplacePattern": "$1-$2"
+    },
     {
       "id": "scatterOverlay",
       "folder": "HUD/Scatter Overlay",
