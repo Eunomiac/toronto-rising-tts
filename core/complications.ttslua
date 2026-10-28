@@ -69,6 +69,8 @@ function D.refresh()
     local g=game()
     UI.setAttributes('complicationsToggle',{active=g and 'true' or 'false',text=g and g.hidden and 'Show cards' or 'Hide cards'})
     if not g then return end
+    local discard=obj(g.pileGuids and g.pileGuids.discard)
+    if discard and not g.hidden and not discard.hasTag('masterDeck') then discard.setLock(false) end
     local b=board(); if not b then return end
     local total,margin=Model.totals(g)
     b.UI.setAttribute('text_originalMargin','text',signed(g.target.result.margin))
@@ -190,10 +192,10 @@ local function collect(g,o,zone,done)
     if dest then
         dest.setLock(false)
         local merged=dest.putObject(o)
-        if merged then rememberPile(g,zone,merged);merged.setLock(true); if zone~='excluded' then merged.setInvisibleTo({}) end end
+        if merged then rememberPile(g,zone,merged);merged.setLock(zone~='discard'); if zone~='excluded' then merged.setInvisibleTo({}) end end
     else
         local p=g.piles[zone]
-        o.setPosition(p); o.setRotation({0,g.rotation.y,zone=='discard' and 0 or 180}); o.setLock(true)
+        o.setPosition(p); o.setRotation({0,g.rotation.y,zone=='discard' and 0 or 180}); o.setLock(zone~='discard')
         rememberPile(g,zone,o)
     end
     if zone=='excluded' then
@@ -253,6 +255,7 @@ local function batchMove(g,op,done)
                 template.GUID=ids[zone] or ''
                 local p=U.clone(g.piles[zone],true);p.y=p.y+2
                 local data=Decks.pileData(template,groups[zone],p,{x=0,y=g.rotation.y,z=zone=='discard' and 0 or 180})
+                if zone=='discard' then data.Locked=false end
                 job.parts[#job.parts+1]={data=data,invisibleTo={},zone=zone}
             end
         end
@@ -269,6 +272,7 @@ local function batchMove(g,op,done)
             local o=obj(part.guid)
             local zone=part.zone or (math.abs(o.getPosition().x-g.piles.deck.x)<1 and 'deck' or 'discard')
             rememberPile(g,zone,o)
+            if zone=='discard' then o.setLock(false) end
         end
         if op.zone=='retired' then for _,guid in ipairs(op.guids) do g.cards[guid]=nil end end
         done()

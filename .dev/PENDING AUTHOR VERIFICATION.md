@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications discard pile stays unlocked — direct author request
+
+**How to verify:** Build and Save & Play with the existing discard pile present; it should unlock and settle onto the board. Reveal a categorized card, discard a selected card, and hide/show the board: the discard pile should remain unlocked when visible, including after it merges or is replaced. Category-removal consistency is still under investigation; this change fixes the discard lock only.
+
 #### Complications card GUIDs and player roll controls — direct author request
 
 **How to verify:** Build and Save & Play, then start a fresh Complications game from a save before the broken setup. The old empty-GUID game has overwritten card records and cannot be safely resumed. All ten dealt cards should have distinct nonempty GUIDs, unlock, and respond to flips. The targeted player’s roll controls should hide when the game starts and remain hidden if the board is temporarily hidden or the game is reloaded. Other players and different roll IDs should retain normal controls. Ending the game should restore normal roll-panel behavior. Check Impending Doom copies and save/reload during dealing too.
