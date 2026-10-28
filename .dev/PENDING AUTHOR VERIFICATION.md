@@ -20,13 +20,9 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-#### TOR-749 — Startup crashes when a GM Note is long
+#### Complications camera and card unlocking — direct author request
 
-**Context:** Several trims used one Lua pattern that only removes spaces at the start and end. Tabletop Simulator gives up on that pattern once the text is long and reports `pattern too complex`. That happened while reading seat role notes, and again while the Deck of Complications was starting. Those trims now go through one shared helper, `U.trim`, which strips the two ends separately. Character-sheet object scripts and the NPC difficulty parser cannot load that helper, so they use the same two end-trims on their own.
-
-**How to verify:** Save & Play on the save that just failed. Startup should finish without a console error that says `pattern too complex`. Let the Deck of Complications initialize. Seat lights and chairs should still line up with their role notes.
-
-_Last populated: 2026-10-28 (startup GM Notes trim). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
+**How to verify:** Start Complications with another player connected. Everyone should look toward the participating player’s dice tray, shifted toward the board. Once dealing finishes, face-down cards should unlock without a SetLock error. Reveal a card, then right-click Select: the remaining face-down cards should unlock while the revealed card stays locked. Repeat after saving and reloading an unfinished game.
 
 #### Deck of Complications base system — direct author request
 
