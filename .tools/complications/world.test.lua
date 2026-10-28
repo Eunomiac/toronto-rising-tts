@@ -11,6 +11,14 @@ local function drain(limit)
  while #scheduled>0 and n<(limit or 2000) do n=n+1; table.remove(scheduled,1)() end
  assert(n<(limit or 2000) or limit, 'queue did not settle')
 end
+local stagedChecks=0
+local function assertStaged(p)
+ local g=assert(state.complications)
+ for _,slot in pairs(g.positions) do
+  assert(p.x>=slot.x+10 and p.z>=slot.z+10 and p.y>=slot.y+10,'temporary card overlaps board staging area')
+ end
+ stagedChecks=stagedChecks+1
+end
 local function nextGuid() seq=seq+1; return 'new'..seq end
 local make
 make=function(id,tag,notes,tags,children)
@@ -41,7 +49,8 @@ make=function(id,tag,notes,tags,children)
  o.takeObject=function(p)
   takeCount=takeCount+1;assert(not o.hasTag('masterDeck'),'master drawn from')
   local live=state.complications;local op=live and live.operations[live.operationIndex]
-  if op and op.kind=='drawTop' then assert(p.guid==o.children[1].id,'replacement must come from the physical top') end
+  if op and op.kind=='drawTop' then assert(p.guid==o.children[1].id,'replacement must come from the physical top')
+  elseif op then assertStaged(p.position) end
   for i,v in ipairs(o.children) do if v.id==p.guid or (not p.guid and i==1) then
    table.remove(o.children,i)
    local c=make(v.id,'Card',v.notes,v.tags); c.setPosition(p.position)
@@ -77,6 +86,10 @@ end
 function getObjectFromGUID(id) return objects[id] end
 function getObjectsWithTag(t) local a={} for _,o in pairs(objects) do if o.hasTag(t) then a[#a+1]=o end end return a end
 function spawnObjectData(p)
+ local live=state.complications;local op=live and live.operations[live.operationIndex]
+ if op and (op.kind=='enhance' or op.kind=='doomBatch' or op.kind=='doomClone') then
+  local t=p.data.Transform or {};assertStaged(p.position or {x=t.posX,y=t.posY,z=t.posZ})
+ end
  spawnCount=spawnCount+1
  local data=clone(p.data);local children
  if data.ContainedObjects then children={} for _,row in ipairs(data.ContainedObjects) do
@@ -157,7 +170,12 @@ local id=g.slots[1]
 assert(not D.onPlayerAction({color='Pink'},'flip',{objects[id]}));assert(D.onPlayerAction({color='Red'},'flip',{objects[id]}));drain();assert(g.cards[id].up and objects[id].locked)
 local total=Model.totals(g)
 D.button({color='Black'},'-1','button_Negate');drain();assert(g.cards[id].negated);assert(Model.totals(g)==total);assert(#Model.candidates(g,'all')==0)
-D.button({color='Black'},'-1','button_Negate');D.button({color='Black'},'-1','button_Enhance');drain();assert(objects[g.cards[id].clone]);assert(Model.totals(g)==total)
+D.button({color='Black'},'-1','button_Negate');D.button({color='Black'},'-1','button_Enhance')
+assert(not objects[id].highlight and objects[g.cards[id].clone].highlight[2]==1,'highlight must transfer before the next refresh')
+drain();assert(objects[g.cards[id].clone]);assert(Model.totals(g)==total)
+D.button({color='Black'},'-1','button_Negate');drain()
+assert(not objects[id].highlight and objects[g.cards[id].clone].highlight[1]==1)
+D.button({color='Black'},'-1','button_Negate');drain()
 D.toggle({color='Black'});assert(g.hidden and b.hidden)
 -- Reload, including sparse JSON-like slot keys, while hidden.
 scheduled={};state.complications=clone(g);local textSlots={};for k,v in pairs(g.slots) do textSlots[tostring(k)]=v end;state.complications.slots=textSlots
@@ -207,9 +225,11 @@ copies=0;for _,c in pairs(g.cards) do if c.doomSource==doom then copies=copies+1
 assert(copies==rare*4 and not g.cards[kept])
 local outside=make('outside','Card','1:'..catalog[1].name,{'deckOfComplications'});outside.position={x=60,y=10,z=60};outside.is_face_down=false
 D.button({color='Black'},'-1','button_StopSelect');D.hotkey('Black',outside,false);drain();assert(g.selected=='outside' and g.cards.outside.zone=='external')
-local before=Model.totals(g);D.button({color='Black'},'-1','button_Enhance');drain();assert(g.cards.outside.clone and Model.totals(g)==before)
+local before=Model.totals(g);D.button({color='Black'},'-1','button_Enhance')
+assert(not outside.highlight and objects[g.cards.outside.clone].highlight[2]==1,'external original must lose its highlight immediately')
+drain();assert(g.cards.outside.clone and Model.totals(g)==before)
 local externalClone=objects[g.cards.outside.clone];assert(externalClone.position.x==60 and outside.position.y==9.5)
-D.button({color='Black'},'-1','button_Enhance');drain();assert(not g.cards.outside.clone and outside.position.y==10)
+D.button({color='Black'},'-1','button_Enhance');drain();assert(not g.cards.outside.clone and outside.position.y==10 and outside.highlight[2]==1)
 D.button({color='Black'},'-2','button_StopSelect');drain();D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
 assert(not state.complications and not objects.outside)
 assert(objects.base and #objects.base.children==100 and objects.source and #objects.source.children==66)
@@ -255,3 +275,6 @@ end
 for index,flag in pairs(flags) do catalog[index].rollTypes.standard=flag end
 assert(same(mastersBefore.base,objects.base.getData()) and same(mastersBefore.source,objects.source.getData()))
 print('Bulk piles: interrupted replacement recovery, no per-card pile extraction, top-card redeals, one-card and empty pools passed.')
+
+assert(stagedChecks>0)
+print("Presentation: off-board temporary staging and immediate board/external enhancement highlights passed.")

@@ -53,6 +53,18 @@ end
 local function locked(g,c)
     return c.up or g.hidden or g.exhausted or g.mode~='stop' or busy(g)
 end
+local function refreshHighlight(g,guid)
+    local c=g.cards[guid];local original=obj(guid);local enhanced=obj(c.clone)
+    local visible=c.enhanced and enhanced or original
+    if c.enhanced and original then original.highlightOff() end
+    if not c.enhanced and enhanced then enhanced.highlightOff() end
+    -- Never highlight the buried original while an enhanced spawn is pending.
+    if c.enhanced and not enhanced then return end
+    if visible then
+        if c.negated then visible.highlightOn({1,0,0})
+        elseif guid==g.selected then visible.highlightOn({0,1,1}) else visible.highlightOff() end
+    end
+end
 function D.refresh()
     local g=game()
     UI.setAttributes('complicationsToggle',{active=g and 'true' or 'false',text=g and g.hidden and 'Show cards' or 'Hide cards'})
@@ -78,18 +90,18 @@ function D.refresh()
         local c=g.cards[guid]; local o=activeObject(g,guid)
         if o then
             o.setLock(locked(g,c)); o.interactable=not g.hidden
-            if c.negated then o.highlightOn({1,0,0})
-            elseif guid==g.selected then o.highlightOn({0,1,1}) else o.highlightOff() end
         end
-        if c.enhanced and obj(guid) then obj(guid).setLock(true); obj(guid).highlightOff() end
+        if c.enhanced and obj(guid) then obj(guid).setLock(true) end
+        refreshHighlight(g,guid)
     end
     for guid,c in pairs(g.cards) do
         if c.zone=='external' then
             local o=activeObject(g,guid)
             if o then
                 o.setLock(true)
-                if guid==g.selected then o.highlightOn({0,1,1}) else o.highlightOff() end
             end
+            if c.enhanced and obj(guid) then obj(guid).setLock(true) end
+            refreshHighlight(g,guid)
         end
     end
 end
@@ -106,13 +118,21 @@ local function locations(g)
     end
     return out
 end
+-- Outside the world-space envelope of every board snap, with vertical clearance.
+-- Works for rotated boards and old saves without introducing a new saved field.
+local function stagingPosition(g)
+    local p=vector(board().getPosition())
+    for _,positions in ipairs({g.positions or {},g.piles or {}}) do
+        for _,v in pairs(positions) do p.x=math.max(p.x,v.x);p.y=math.max(p.y,v.y);p.z=math.max(p.z,v.z) end
+    end
+    return {x=p.x+15,y=p.y+15,z=p.z+15}
+end
 local function card(g,guid,done)
     local direct=obj(guid)
     if direct then done(direct); return end
     local loc=locations(g)[guid]
     if not loc then fail(g,'Card '..guid..' is missing.'); return end
-    local b=board(); local p=b.getPosition()
-    loc.container.takeObject({guid=guid,position={x=p.x,y=p.y+3,z=p.z},smooth=false,callback_function=done})
+    loc.container.takeObject({guid=guid,position=stagingPosition(g),smooth=false,callback_function=done})
 end
 local function pile(g,zone,exclude)
     local map=locations(g)
@@ -331,7 +351,7 @@ local function doomBatch(g,op,done)
         end
         if #rows==0 then done();return end
         local template=U.clone(g.deckTemplate,true);template.GUID=''
-        local p=U.clone(g.piles.deck,true);p.y=p.y+4
+        local p=stagingPosition(g)
         local data=Decks.pileData(template,rows,p,{x=0,y=g.rotation.y,z=180})
         g.batchSerial=(g.batchSerial or 0)+1
         op.job={remove={},parts={{data=data,invisibleTo={}}},tag='complicationsDoom_'..g.id..'_'..g.batchSerial}
@@ -378,6 +398,7 @@ local function execute(g,op,done)
             if c.externalPose then poseLogicalCard(g,original,op.guid,nil,false)
             else for i,guid in pairs(g.slots) do if guid==op.guid then poseCard(g,original,i,true) end end end
         end
+        refreshHighlight(g,op.guid)
         done()
     elseif op.kind=='enhance' then
         local c=g.cards[op.guid]; local slot
@@ -390,8 +411,10 @@ local function execute(g,op,done)
         end
         local function finish(o)
             c.clone=o.getGUID(); o.addTag('complicationsClone_'..op.guid)
-            poseLogicalCard(g,o,op.guid,slot,false); local original=obj(op.guid)
-            if original then poseLogicalCard(g,original,op.guid,slot,true) end
+            local original=obj(op.guid)
+            if original then original.highlightOff();poseLogicalCard(g,original,op.guid,slot,true) end
+            poseLogicalCard(g,o,op.guid,slot,false)
+            refreshHighlight(g,op.guid)
             done()
         end
         if clone then finish(clone) else
@@ -399,7 +422,7 @@ local function execute(g,op,done)
             if not template then fail(g,'No enhanced template for '..c.name); return end
             local data=U.clone(template, true); data.GUID=''; data.Tags=data.Tags or {}
             data.Tags[#data.Tags+1]='complicationsClone_'..op.guid
-            spawnObjectData({data=data,position=c.externalPose and c.externalPose.position or g.positions[slot],rotation=c.externalPose and c.externalPose.rotation or {0,g.rotation.y,0},callback_function=finish})
+            spawnObjectData({data=data,position=stagingPosition(g),rotation=c.externalPose and c.externalPose.rotation or {0,g.rotation.y,0},callback_function=finish})
         end
     elseif op.kind=='effect' then Effects.execute(op); done()
     elseif op.kind=='doomPlan' then
@@ -449,7 +472,7 @@ local function execute(g,op,done)
         if recovered then finishClone(recovered) else
             local data=U.clone(c.data,true);data.GUID='';data.Tags=data.Tags or {}
             data.Tags[#data.Tags+1]=op.tag
-            spawnObjectData({data=data,position={x=g.piles.deck.x,y=g.piles.deck.y+3,z=g.piles.deck.z},callback_function=finishClone})
+            spawnObjectData({data=data,position=stagingPosition(g),callback_function=finishClone})
         end
     elseif op.kind=='doomReverse' then
         if not op.planned then
