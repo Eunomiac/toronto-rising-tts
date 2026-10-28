@@ -1,11 +1,35 @@
 package.path='./?.ttslua;'..package.path
 local Model=require('lib.complications_model')
 local catalog=require('lib.complications_catalog')
+local realUtil=require('lib.util')
 local function clone(v) if type(v)~='table' then return v end local o={} for k,x in pairs(v) do o[k]=clone(x) end return o end
 local state,scheduled,objects,seq={}, {}, {}, 0
 local takeCount,spawnCount=0,0
 local warnings,deferSpawn,allowMasterMutation={},false,false
-local deferDestroy=false
+local deferDestroy,dropTakeCallbacks,holdTaken=false,true,false
+-- Use the production timing helpers, with a frame-driven engine underneath.
+-- Numeric waits scheduled from condition callbacks are an unsafe TTS pattern.
+Time={time=0}
+local inCondition=false
+Wait={time=function(f,seconds)
+ assert(not inCondition,'numeric wait nested in engine condition callback')
+ scheduled[#scheduled+1]=function() Time.time=Time.time+seconds;f() end
+end,condition=function(f,pred)
+ local poll;poll=function()
+  Time.time=Time.time+0.03
+  if pred() then inCondition=true;f();inCondition=false else scheduled[#scheduled+1]=poll end
+ end
+ scheduled[#scheduled+1]=poll
+end}
+function startLuaCoroutine(_,name)
+ local co=coroutine.create(_G[name]);local resume
+ resume=function()
+  Time.time=Time.time+0.03
+  local ok,err=coroutine.resume(co);assert(ok,err)
+  if coroutine.status(co)~='dead' then scheduled[#scheduled+1]=resume end
+ end
+ resume()
+end
 local function drain(limit)
  local n=0
  while #scheduled>0 and n<(limit or 2000) do n=n+1; table.remove(scheduled,1)() end
@@ -57,7 +81,12 @@ make=function(id,tag,notes,tags,children)
    if #o.children==1 then
     local last=o.children[1];local single=make(last.id,'Card',last.notes,last.tags);single.position=clone(o.position);objects[id]=nil
    elseif #o.children==0 then objects[id]=nil end
-   p.callback_function(c);return c
+   c.spawning=true;c.loading_custom=true
+   scheduled[#scheduled+1]=function()
+    if not holdTaken then c.spawning=false;c.loading_custom=false end
+    if p.callback_function and not dropTakeCallbacks then p.callback_function(c) end
+   end
+   return c
   end end
   error('take missing '..p.guid)
  end
@@ -113,13 +142,27 @@ package.loaded['core.main']={resolveCameraPreset=function(player,key)
  assert(key=='diceTrayRed','camera must use the participating seat diceTray preset')
  return {position={x=20,y=18,z=20},pitch=58,distance=11}
 end}
-local S={getStateVal=function(k) return state[k] end,setStateVal=function(v,k) state[k]=v end}
-local U={clone=clone,await=function(f,test) local poll;poll=function() if type(test)=='function' and not test() then scheduled[#scheduled+1]=poll else f() end end;scheduled[#scheduled+1]=poll end,chain=function(fs) for _,f in ipairs(fs) do scheduled[#scheduled+1]=f end end,isStorytellerSteamPlayer=function(p) return (type(p)=='table' and p.color or p)=='Black' end,AlertGM=function(s) warnings[#warnings+1]=s;if s:match('^Complications:') then error(s) end end}
+local U=setmetatable({isStorytellerSteamPlayer=function(p) return (type(p)=='table' and p.color or p)=='Black' end,AlertGM=function(s) warnings[#warnings+1]=s end,
+ logCoroutineIssue=function(tag,err) warnings[#warnings+1]=tag..': '..tostring(err) end},{__index=realUtil})
+-- Timing helpers close over the real utility table.
+realUtil.AlertGM=U.AlertGM;realUtil.logCoroutineIssue=U.logCoroutineIssue
 local O={isHiddenObject=function(o) return o.hidden end,hideObject=function(o) if not o.hidden then o.previous={p=o.getPosition(),r=o.getRotation(),l=o.locked};o.hidden=true;o.position.y=-200 end end,restoreObject=function(o,p)
  p=p or {}; if o.hidden then o.position=o.previous.p;o.rotation=o.previous.r;o.locked=o.previous.l;o.hidden=false end
- if p.position then o.setPosition(p.position) end;if p.rotation then o.setRotation(p.rotation) end;if p.locked~=nil then o.setLock(p.locked) end
+ if p.position then o.setPosition(p.position) end
+ if p.rotation then assert(p.rotation.x and p.rotation.y and p.rotation.z,'restoreObject requires named rotation coordinates');o.setRotation(p.rotation) end
+ if p.locked~=nil then o.setLock(p.locked) end
 end}
-package.loaded['core.state']=S;package.loaded['lib.util']=U;package.loaded['lib.constants']={};package.loaded['core.objects']=O
+package.loaded['lib.util']=U;package.loaded['lib.constants']={};package.loaded['core.objects']=O
+for _,name in ipairs({'lib.pc_bootstrap','lib.pc_relationships_data','core.scene_library','lib.npc_placements_convert'}) do package.loaded[name]={} end
+local S=require('core.state') -- actual recursive validation and nested setters
+local rootWrites=0
+local setStateVal=S.setStateVal
+S.setStateVal=function(value,...)
+ local keys={...}
+ if #keys==1 and keys[1]=='complications' then rootWrites=rootWrites+1 end
+ return setStateVal(value,...)
+end
+state=setmetatable({},{__index=function(_,k) return S.getStateVal(k) end,__newindex=function(_,k,v) S.setStateVal(v,k) end})
 package.loaded['lib.guids']={GUIDS={COMPLICATIONS_BOARD='board',CSHEET_DICE_DRAWER_ANCHOR_ON_RED='anchor'}}
 package.loaded['dashboard.push']={markWorldDirty=function() end}
 package.loaded['core.compulsions']={restoreClanSources=function() end}
@@ -158,7 +201,8 @@ assert(not D.start('Red','roll1'))
 scheduled={};state.complications=clone(state.complications);deferSpawn=false
 package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain()
 assert(spawnCount==3,'setup must clone twice and filter once, not respawn a recovered clone')
-assert(takeCount==10,'setup must extract only the ten dealt cards')
+assert(takeCount==10,'setup must extract ten cards; got '..takeCount)
+dropTakeCallbacks=false
 
 local g=state.complications;assert(g and not g.error)
 for _,color in ipairs({'Black','Red','Pink'}) do
@@ -278,3 +322,45 @@ print('Bulk piles: interrupted replacement recovery, no per-card pile extraction
 
 assert(stagedChecks>0)
 print("Presentation: off-board temporary staging and immediate board/external enhancement highlights passed.")
+
+-- Full-size gameplay fixture, real state validation and real timing helpers.
+-- Drop every take callback: a spawned card must still complete its saved deal.
+objects.base.children={}
+for i=1,254 do local row=clone(base[(i-1)%#base+1]);row.id='large'..i;objects.base.children[i]=row end
+dropTakeCallbacks=true;takeCount=0
+assert(not D.start('Red','roll1'))
+local steps=0
+while takeCount==0 and steps<200 do drain(1);steps=steps+1 end
+assert(takeCount==1,'first deal never started')
+g=state.complications
+assert(not g.deckTemplate.ContainedObjects and not g.deckTemplate.DeckIDs,'retained a redundant full-deck template')
+for i=1,g.operationIndex-1 do assert(not g.operations[i].job,'completed deck snapshot survived into dealing') end
+local beforeDealWrites=rootWrites
+drain()
+assert(takeCount==10 and rootWrites-beforeDealWrites==1,'deals must not revalidate the entire game state')
+for _,guid in pairs(g.slots) do assert(not objects[guid].locked) end
+print('Setup: 254-card master, missing take callbacks, all ten deals, unlocked cards and bounded state writes passed.')
+local function stopGame()
+ D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
+ assert(not state.complications)
+end
+stopGame()
+
+-- A card that never finishes loading must identify the stalled operation instead
+-- of leaving an unexplained live/locked game. Reload then resumes the same deal.
+holdTaken=true;takeCount=0
+assert(not D.start('Red','roll1'));drain();g=state.complications
+assert(takeCount==1 and g.error and g.error:find('drawTop',1,true) and g.error:find('slot',1,true))
+local pending=g.operations[g.operationIndex];local firstGuid=pending.guid
+assert(g.slots[pending.slot]==firstGuid)
+scheduled={};state.complications=clone(g);holdTaken=false
+objects[firstGuid].spawning=false;objects[firstGuid].loading_custom=false
+-- Old builds saved completed jobs and a second full-deck template; reclaim both.
+state.complications.operations[1].job={parts={{data={ContainedObjects={{GUID='obsolete'}}}}}}
+state.complications.deckTemplate.ContainedObjects={{GUID='obsolete'}}
+package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain();g=state.complications
+assert(not g.error and takeCount==10,'reload duplicated the first card or failed to resume the remaining nine')
+assert(not g.deckTemplate.ContainedObjects)
+for _,guid in pairs(g.slots) do assert(not objects[guid].locked) end
+stopGame()
+print('Setup recovery: loading timeout names the deal; reload resumes nine remaining cards without duplicating the first.')

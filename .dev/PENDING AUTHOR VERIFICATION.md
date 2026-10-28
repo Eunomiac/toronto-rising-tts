@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications setup lag and first-card stall — direct author request
+
+**How to verify:** Build and Save & Play, then start Complications with the full master decks. The board and disposable deck should move into position, and all ten cards should deal with short gaps, without the previous long freezes. Once dealing finishes, face-down cards should unlock; flipping one should select and resolve it as usual. Save & Play during a deal (or with the previously stalled game still saved): the remaining cards should deal without duplicating the first card. If an object fails to load for 30 seconds, a Storyteller warning should name the unfinished operation and slot instead of leaving the game silently stuck. Save & Play retries that saved operation. Also check a category replacement and Impending Doom redeal, then end the game; both masters should remain unchanged.
+
 #### Complications staging, broadcast Difficulty and enhancement highlighting — direct author request
 
 **How to verify:** Enhance a selected card on the board and a manually selected external card. Cyan should move immediately to the enhanced representation, leaving the buried original unhighlighted; unenhancing should restore cyan to the original. A negated card should retain red only on its visible representation. Exercise Impending Doom and card replacement: temporary cards should appear outside the board’s snap area, never above its centre. Resolve a roll with 3 successes against Difficulty 7, then earn +4 from Complications: the final broadcast should show 3 successes vs. Difficulty 7 and WIN +0. Rebroadcast that roll and check the same values.

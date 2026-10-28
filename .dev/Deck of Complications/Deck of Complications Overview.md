@@ -109,6 +109,8 @@ The two source decks are immutable templates during gameplay. On save load, chec
 
 Saved operations make cloning, filtering and dealing resumable without duplicating a gameplay deck. Fixed pauses are limited to a small number of setup operations and visible card steps, not one operation per master-deck card.
 
+Each deal records the chosen top-card GUID before extraction, then waits for that specific object to finish spawning and loading before positioning/locking it and advancing. Dealing must not depend on delivery of a spawn callback. A setup or transfer operation that cannot complete within 30 seconds reports its name (and card slot, when applicable) to the Storyteller; it retains the unfinished operation so Save & Play can retry it. Completed container snapshots are discarded immediately, and the reusable deck template stores only container settings. Advancing/dealing updates the relevant saved fields rather than repeatedly validating every saved card and template.
+
 ### Accelerated Deck Modification
 
 Cards already inside the gameplay deck or discard pile move as one group, in a single pile transaction, to their destination: face-down on top of the deck when restored, or face-up on top of the discard pile when excluded by category. Preserve their logical card GUIDs. Face-down playmat cards still return in brief stepped sequence.

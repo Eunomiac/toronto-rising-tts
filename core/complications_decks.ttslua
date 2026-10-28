@@ -16,6 +16,14 @@ function B.cloneData(source)
  end
  clear(data);return data
 end
+-- A future pile needs the container settings, not another saved copy of every card.
+function B.templateData(source)
+ local data={}
+ for key,value in pairs(source) do
+  if key~='ContainedObjects' and key~='DeckIDs' then data[key]=U.clone(value,true) end
+ end
+ return data
+end
 function B.masters()
  local found={standard={},enhanced={}}
  for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
@@ -51,7 +59,7 @@ end
 -- A one-card pile must be a Card, not an invalid one-card Deck.
 function B.pileData(template,rows,position,rotation,keepMaster)
  if #rows==0 then return nil end
- local data=U.clone(#rows==1 and rows[1] or template,true)
+ local data=#rows==1 and U.clone(rows[1],true) or B.templateData(template)
  if #rows>1 then
   data.Name='DeckCustom';data.CardID=nil;data.ContainedObjects=U.clone(rows,true);data.DeckIDs={};data.CustomDeck={}
   for _,row in ipairs(rows) do
