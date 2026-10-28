@@ -83,7 +83,10 @@ make=function(id,tag,notes,tags,children)
    elseif #o.children==0 then objects[id]=nil end
    c.spawning=true;c.loading_custom=true
    scheduled[#scheduled+1]=function()
-    if not holdTaken then c.spawning=false;c.loading_custom=false end
+    if not holdTaken then c.spawning=false end
+    -- Custom art can keep loading after the physical card is usable. Also
+    -- model an unlocked card falling/merging before the next script frame.
+    if not p.callback_function then assert(c.locked,'dealt card was left loose while waiting') end
     if p.callback_function and not dropTakeCallbacks then p.callback_function(c) end
    end
    return c
