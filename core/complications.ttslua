@@ -247,14 +247,30 @@ local function drawTop(g,op,done)
         local c=assert(g.cards[op.guid],'Top card is not registered to this game')
         assert(Model.available(g,c),'Ineligible card reached the playable deck')
         c.zone,c.up,c.enhanced,c.negated='slot',false,false,false
-        g.slots[op.slot]=op.guid;g.exhausted=#entries==1;save(g)
+        g.slots[op.slot]=op.guid;g.exhausted=#entries==1
+        -- These tables already belong to gameState. Validate only the changed
+        -- deal intent, not all saved card art/templates on each of ten deals.
+        S.setStateVal(op,'complications','operations',g.operationIndex)
+        S.setStateVal(c,'complications','cards',op.guid)
+        S.setStateVal(op.guid,'complications','slots',op.slot)
+        S.setStateVal(g.exhausted,'complications','exhausted')
     end
-    local function placed(o) poseCard(g,o,op.slot,false);done() end
     local direct=obj(op.guid)
-    if direct then placed(direct);return end
-    local loc=locations(g)[op.guid]
-    if not loc then fail(g,'Top card '..op.guid..' is missing.');return end
-    loc.container.takeObject({guid=op.guid,position=g.positions[op.slot],rotation={0,g.rotation.y,180},smooth=false,callback_function=placed})
+    if not direct then
+        local loc=locations(g)[op.guid]
+        if not loc then fail(g,'Top card '..op.guid..' is missing.');return end
+        loc.container.takeObject({guid=op.guid,position=g.positions[op.slot],rotation={0,g.rotation.y,180},smooth=false})
+    end
+    -- GUID was saved before extraction. It also recovers an interrupted take
+    -- without relying on the engine delivering a spawn callback. The journal
+    -- runner bounds this wait and reports the operation if the card never loads.
+    return {
+        ready=function()
+            local o=obj(op.guid)
+            return o~=nil and o.spawning~=true and o.loading_custom~=true
+        end,
+        complete=function() poseCard(g,assert(obj(op.guid),'Dealt card disappeared'),op.slot,false);done() end,
+    }
 end
 local function cloneMaster(g,op,done)
     if not op.job then
@@ -284,7 +300,7 @@ local function filterClone(g,op,done)
             local index,name=Model.identity(row.GMNotes);local def=Catalog[index]
             if def and def.name==name and Model.available(g,def) then kept[#kept+1]=row end
         end
-        g.deckTemplate=U.clone(data,true)
+        g.deckTemplate=Decks.templateData(data)
         local filtered=Decks.pileData(data,kept,copy.getPosition(),copy.getRotation())
         op.job={remove={copy.getGUID()},parts=filtered and {{data=filtered}} or {},tag='complicationsFilter_'..g.id}
         save(g)
@@ -315,7 +331,7 @@ local function moveToPlayer(g,done)
     local deck=obj(g.playClone)
     if deck then
         local pos=U.clone(g.piles.deck,true);pos.y=pos.y+2
-        O.restoreObject(deck,{position=pos,rotation={0,g.rotation.y,180},locked=false,interactable=true})
+        O.restoreObject(deck,{position=pos,rotation={x=0,y=g.rotation.y,z=180},locked=false,interactable=true})
         deck.setInvisibleTo({})
     end
     for _,player in ipairs(Player.getPlayers()) do
@@ -373,7 +389,7 @@ local function execute(g,op,done)
     if op.kind=='cloneMaster' then cloneMaster(g,op,done)
     elseif op.kind=='filterClone' then filterClone(g,op,done)
     elseif op.kind=='moveToPlayer' then moveToPlayer(g,done)
-    elseif op.kind=='drawTop' then drawTop(g,op,done)
+    elseif op.kind=='drawTop' then return drawTop(g,op,done)
     elseif op.kind=='batchMove' then batchMove(g,op,done)
     elseif op.kind=='cleanupClones' then
         for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
@@ -513,12 +529,38 @@ pump=function()
         end
         announce(g); return
     end
-    running=true; g.error=nil; save(g)
-    execute(g,op,function()
-        if game()~=g then return end
-        g.operationIndex=g.operationIndex+1; save(g); running=false
-        U.await(pump,0.12)
-    end)
+    running=true; g.error=nil
+    local completed,detail,pending=false,nil,nil
+    -- Use coroutine-based inter-step waits: advancing the journal must not
+    -- schedule a numeric engine timer inside a spawn/condition callback.
+    U.chain({
+        function()
+            pending=execute(g,op,function() completed=true end)
+            return function()
+                if game()~=g or g.error then return true end
+                return completed or (pending~=nil and pending.ready())
+            end
+        end,
+        function()
+            if game()~=g or g.error then return 0 end
+            if pending and not completed then pending.complete() end
+            assert(completed,'Operation wait ended before completion')
+            op.job=nil -- completed snapshots are no longer recovery state
+            g.operationIndex=g.operationIndex+1
+            S.setStateVal(g.operationIndex,'complications','operationIndex')
+            return 0.12
+        end,
+        function()
+            if game()~=g or g.error then return 0 end
+            running=false;pump();return 0
+        end,
+    },{maxWait=30,
+        onStepEnd=function(_,_,ok,err) if not ok then detail=tostring(err) end end,
+        onComplete=function(ok,reason)
+            if not ok and game()==g and not g.error then
+                fail(g,op.kind..(op.slot and ' (slot '..op.slot..')' or '')..' did not finish: '..(detail or reason))
+            end
+        end})
 end
 local function begin(g) announce(g); pump() end
 function D.start(color,rollId)
@@ -672,6 +714,9 @@ function D.restore()
     mountAutomationButton()
     require('core.compulsions').restoreClanSources()
     local g=game(); if not g then D.refresh(); return end
+    -- Saves made by older builds retain already-finished full-deck snapshots.
+    for i=1,g.operationIndex-1 do if g.operations[i] then g.operations[i].job=nil end end
+    if g.deckTemplate and g.deckTemplate.ContainedObjects then g.deckTemplate=Decks.templateData(g.deckTemplate) end
     local slots,positions={},{}
     for k,v in pairs(g.slots) do slots[tonumber(k)]=v end
     for k,v in pairs(g.positions) do positions[tonumber(k)]=v end
