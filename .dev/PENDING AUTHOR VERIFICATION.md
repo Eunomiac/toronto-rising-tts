@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications staging, broadcast Difficulty and enhancement highlighting — direct author request
+
+**How to verify:** Enhance a selected card on the board and a manually selected external card. Cyan should move immediately to the enhanced representation, leaving the buried original unhighlighted; unenhancing should restore cyan to the original. A negated card should retain red only on its visible representation. Exercise Impending Doom and card replacement: temporary cards should appear outside the board’s snap area, never above its centre. Resolve a roll with 3 successes against Difficulty 7, then earn +4 from Complications: the final broadcast should show 3 successes vs. Difficulty 7 and WIN +0. Rebroadcast that roll and check the same values.
+
 #### Complications master decks and fast transfers — direct author request
 
 **How to verify:** Finish any older Complications game before updating the save. Run Full build and reload the save from TTS’s Games menu to load the two masterDeck tags and sorted decks; alternatively add masterDeck to each source Deck and use Debug → Sort Master Decks. On loading, a missing/duplicate master or descending index among its first five cards should warn only the Storyteller. Sorting should preserve both masters’ GUIDs, positions and card counts, with duplicate indices adjacent.
