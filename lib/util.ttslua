@@ -853,6 +853,19 @@ function U.split(inputstr, sep)
     return t
 end
 
+--- Strip whitespace from both ends. Non-strings become "".
+-- Two anchored replacements, not one capture. MoonSharp raises "pattern too complex"
+-- on a single "^%s*(.-)%s*$" match once the string is long (GM Notes, deck notes).
+-- @param s any
+-- @return string
+-- @usage local notes = U.trim(obj.getGMNotes())
+function U.trim(s)
+	if type(s) ~= "string" then
+		return ""
+	end
+	return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
 -- ============================================================================
 -- ERROR HANDLING & VALIDATION
 -- ============================================================================
@@ -2041,7 +2054,7 @@ local function normalizeVisibilityToken(token)
   if type(token) ~= "string" then
     return nil
   end
-  local t = token:match("^%s*(.-)%s*$")
+  local t = U.trim(token)
   if t == nil or t == "" then
     return nil
   end
@@ -2062,7 +2075,7 @@ function U.parseVisibilityAudience(visibilityStr)
   if type(visibilityStr) ~= "string" then
     return out
   end
-  local trimmed = visibilityStr:match("^%s*(.-)%s*$") or ""
+  local trimmed = U.trim(visibilityStr)
   if trimmed == ""
       or string.lower(trimmed) == "none"
       or trimmed == U.VISIBILITY_EMPTY_SENTINEL then

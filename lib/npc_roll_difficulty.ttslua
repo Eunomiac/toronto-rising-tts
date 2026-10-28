@@ -2,12 +2,22 @@
 local Difficulty = {}
 Difficulty.MAX = 15
 
+--- Same end-trim as `U.trim`. This file stays free of `lib.util` so the plain Lua contract test can load it.
+--- @param value any
+--- @return string
+local function trim(value)
+  if type(value) ~= "string" then
+    return ""
+  end
+  return (value:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
 function Difficulty.parse(value)
   if value == nil or value == "" then return nil end
   if type(value) ~= "string" then return nil, "NPC difficulty rule must be text." end
-  local text = value:match("^%s*(.-)%s*$")
+  local text = trim(value)
   text = text:match('^"(.*)"$') or text
-  text = text:match("^%s*(.-)%s*$")
+  text = trim(text)
   if text == "" then return nil end
   local lo, hi = text:match("^(%d+)%s*%-%s*(%d+)$")
   local kind = lo and "range" or nil

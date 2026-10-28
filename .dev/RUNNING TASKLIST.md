@@ -623,7 +623,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 
 ## Table Objects
 
-- [x] **Startup "pattern too complex" while reading seat role notes:** the seat-role trim used one Lua capture that Tabletop Simulator rejects once any object's GM Notes are long. It now strips spaces at the start and at the end with two simple replacements. Pending Save & Play. _(TOR-749)_
+- [x] **Startup "pattern too complex" while trimming long notes:** seat-role lookup and the Deck of Complications (and the other copies of that trim) used one Lua capture that Tabletop Simulator rejects once the text is long. They now call `U.trim`, which strips spaces at the start and at the end separately. Character-sheet object scripts and the NPC difficulty parser keep that same two-step trim locally, because they cannot load the shared helper. Pending Save & Play. _(TOR-749)_
 - [x] **Hunger smoke / signal fire "attempt to index a nil value":** `core/objects` and `lib/object_positions` required each other, so `OP` in `core/objects` loaded as nil (since 2026-09-15); turning hunger smoke on crashed (seen after a failed quick Rouse). `core/objects` now looks object positions up at call time. Author confirmed 2026-10-08. _(TOR-664)_
 - [x] **Seat-role offsets in world inches, not Figurine_Custom local space:** Dump + layout share `lib.figurine_frame` yaw-only XZ; `C.SeatRoleOffsets` rebuilt from dump world coords. Odd/left CSHEET pages sit at about world x = −6.12 at the reference seat, not −7.24. relatedTo **TOR-507**, **TOR-496**. Pending Save & Play. _(TOR-592)_
 - [x] **Do not rescale player dice bags or companion toggles:** Companion toggles skip layout scale so workshop size stays. Dice bags: see TOR-589. Pending Save & Play. _(TOR-584)_

@@ -22,9 +22,9 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### TOR-749 — Startup crashes when a GM Note is long
 
-**Context:** While the table was syncing on load, the game trimmed every object's GM Notes with one Lua pattern. That pattern only removes spaces at the start and end, but Tabletop Simulator gives up once a note is long and reports `pattern too complex`. The trim now does the same job as two simple end-trims.
+**Context:** Several trims used one Lua pattern that only removes spaces at the start and end. Tabletop Simulator gives up on that pattern once the text is long and reports `pattern too complex`. That happened while reading seat role notes, and again while the Deck of Complications was starting. Those trims now go through one shared helper, `U.trim`, which strips the two ends separately. Character-sheet object scripts and the NPC difficulty parser cannot load that helper, so they use the same two end-trims on their own.
 
-**How to verify:** Save & Play on the save that just failed. Startup should finish without a console error that says `pattern too complex` while it is reading seat role notes. Seat lights and chairs should still line up with their role notes, the same as before this error started.
+**How to verify:** Save & Play on the save that just failed. Startup should finish without a console error that says `pattern too complex`. Let the Deck of Complications initialize. Seat lights and chairs should still line up with their role notes.
 
 _Last populated: 2026-10-28 (startup GM Notes trim). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
 

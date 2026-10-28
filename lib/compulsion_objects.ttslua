@@ -6,6 +6,7 @@
     `Compulsion:` GM Notes with a typed suffix (`:1`–`:4`). Absent when no selection is active.
 ]]
 
+local U = require("lib.util")
 local CI = require("lib.csheet_identity")
 
 local CompulsionObjects = {}
@@ -34,12 +35,12 @@ local function typedCompulsionSuffix(notes)
     if type(notes) ~= "string" then
         return nil
     end
-    local trimmed = string.match(notes, "^%s*(.-)%s*$") or ""
+    local trimmed = U.trim(notes)
     local _, _, suffix = string.match(trimmed, "^Compulsion:[^%-]+%-[^:]+:(.+)$")
     if suffix == nil then
         return nil
     end
-    suffix = string.lower(string.match(suffix, "^%s*(.-)%s*$") or suffix)
+    suffix = string.lower(U.trim(suffix))
     if suffix == "generic" then
         return nil
     end
