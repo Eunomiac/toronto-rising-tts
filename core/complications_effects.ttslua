@@ -9,7 +9,7 @@ local variants={
  [11]={{'WPRerollLimit2'},{'WPRerollLimit1'}},
  [17]={{'WPRefreshLow'},{'WPRefresh1'}},
  [52]={{'BestialNullBasicSuccess'},{'BestialNullBasicSuccess','BestialNullCrit'}},
- [57]={{'NoMessyReroll'},{'ExpensiveMessyReroll'}},
+ [57]={{'NoMessyReroll'},{'NoMessyReroll'}},
  [59]={{'noBloodSurge'},{'noBloodSurge','NoDisciplineBonus'}},
 }
 function E.register()

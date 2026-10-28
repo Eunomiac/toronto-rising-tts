@@ -1,6 +1,68 @@
 {
   "cloudRoot": "Vampire the Masquerade 5E",
   "jobs": {
+    "complicationsDeckSheets": {
+      "output": "Manifest",
+      "folder": "Deck of Complications",
+      "rows": [
+        {
+          "path": "Deck of Complications/complicationsDeck_Common-Enhanced.png",
+          "name": "Common-Enhanced",
+          "sha1": "810FD7BB7B47B5083C0196198782BBF1167FE96E",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14514847143237587214/810FD7BB7B47B5083C0196198782BBF1167FE96E/",
+          "size": 6508803
+        },
+        {
+          "path": "Deck of Complications/complicationsDeck_Common-Standard.png",
+          "name": "Common-Standard",
+          "sha1": "0247CF39AA61C7D4174CEF22642479E47582C40A",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16483531528510629124/0247CF39AA61C7D4174CEF22642479E47582C40A/",
+          "size": 5722010
+        },
+        {
+          "path": "Deck of Complications/complicationsDeck_Rare-Enhanced.png",
+          "name": "Rare-Enhanced",
+          "sha1": "A3EA1561CF3B385317BDBC8D342D0413886E5B8A",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17085443468039127256/A3EA1561CF3B385317BDBC8D342D0413886E5B8A/",
+          "size": 4480429
+        },
+        {
+          "path": "Deck of Complications/complicationsDeck_Rare-Standard.png",
+          "name": "Rare-Standard",
+          "sha1": "807ED1D759DDF9893064DDB16788F7E5180C7A0F",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12873381138006968810/807ED1D759DDF9893064DDB16788F7E5180C7A0F/",
+          "size": 4032259
+        },
+        {
+          "path": "Deck of Complications/complicationsDeck_Uncommon-Enhanced.png",
+          "name": "Uncommon-Enhanced",
+          "sha1": "A15B074AE27CAFDEA13A858CB0575A6161AE9463",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9864342721557871041/A15B074AE27CAFDEA13A858CB0575A6161AE9463/",
+          "size": 5855761
+        },
+        {
+          "path": "Deck of Complications/complicationsDeck_Uncommon-Standard.png",
+          "name": "Uncommon-Standard",
+          "sha1": "83E3C0F4E5944D8E6AA5A7F59C35B8B0F6E68FC0",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12959353865500646763/83E3C0F4E5944D8E6AA5A7F59C35B8B0F6E68FC0/",
+          "size": 5149683
+        },
+        {
+          "path": "Deck of Complications/complicationsDeck_Very Common-Enhanced.png",
+          "name": "Very Common-Enhanced",
+          "sha1": "2F7572E97F004D71819328709E0BAF488AC6E685",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15198609534731543833/2F7572E97F004D71819328709E0BAF488AC6E685/",
+          "size": 714597
+        },
+        {
+          "path": "Deck of Complications/complicationsDeck_Very Common-Standard.png",
+          "name": "Very Common-Standard",
+          "sha1": "330B74DE6CFC95BF87E00EC3E3DA6DB6563E51AD",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14590099973160365645/330B74DE6CFC95BF87E00EC3E3DA6DB6563E51AD/",
+          "size": 588227
+        }
+      ]
+    },
     "scatterOverlay": {
       "output": "GlobalCustomUIAssets",
       "folder": "HUD/Scatter Overlay",
