@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications stored pile GUIDs — direct author request
+
+**How to verify:** Build and Save & Play with the one-card game still saved. The remaining nine cards should deal and unlock. In a fresh game, move the gameplay deck away from its snap; dealing, category transfers and replacements should continue using that same deck. Check a nearly exhausted deck through its final two cards, then stop the game. Both masters should remain unchanged.
+
 #### Complications fixed staggered dealing — direct author request
 
 **How to verify:** Build and Save & Play, then start a game. Ten face-down cards should deal to randomized slots at fixed short intervals, with no per-card readiness wait. After the last deal, cards should unlock and flips should select them. Save & Play with the previously stalled game: the remaining nine should deal without duplicating the first. This replaces the readiness checks and card-loading timeout expectations in the earlier setup entries below.
