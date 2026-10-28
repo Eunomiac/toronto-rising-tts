@@ -19,7 +19,7 @@ const DECKS = [
   { style: "Enhanced", guid: "2d57f2", tags: ["deckOfComplications", "enhancedComplication"] },
 ];
 // Stored on the deck, so TTS round trips and copied saves retain the build stamp.
-// Never use card order/count as a rebuild trigger: playing changes those normally.
+// Ordering repairs belong to DEBUG.SortMasterDecks; an unchanged build never silently rewrites a master.
 const STAMP = /\n?\[complications-deck-build:v1:[a-f0-9]{64}\]/g;
 const hash = (bytes, algorithm = "sha256") => crypto.createHash(algorithm).update(bytes).digest("hex");
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -152,9 +152,9 @@ function planDecks(save, sheets) {
     }
     const back = commonBack(deck);
     const inputs = sheets.filter((s) => s.style === spec.style);
-    const fingerprint = hash(JSON.stringify({ version: 1, style: spec.style, back, tags: spec.tags, inputs }));
+    const fingerprint = hash(JSON.stringify({ version: 2, masterDeck: true, order: "card-index", style: spec.style, back, tags: spec.tags, inputs }));
     const stamp = `[complications-deck-build:v1:${fingerprint}]`;
-    return { spec, deck, back, inputs, stamp, changed: !(deck.GMNotes || "").includes(stamp) };
+    return { spec, deck, back, inputs, stamp, changed: !(deck.GMNotes || "").includes(stamp) || !(deck.Tags || []).includes("masterDeck") };
   });
   if (!targets.some((t) => t.changed)) return [];
   assertIdle(save, targets.map((t) => t.deck));
@@ -179,6 +179,7 @@ function planDecks(save, sheets) {
     const prototype = deck.ContainedObjects?.find((o) => o.Name === "Card" || o.Name === "CardCustom");
     if (!prototype) throw new Error(`${spec.style} deck has no card to use as an object-settings template.`);
     const next = clone(deck);
+    next.Tags = [...new Set([...(next.Tags || []), "masterDeck"])];
     next.CustomDeck = {};
     next.ContainedObjects = [];
     next.DeckIDs = [];
@@ -205,6 +206,8 @@ function planDecks(save, sheets) {
         });
       }
     }
+    next.ContainedObjects.sort((a, b) => parseInt(a.GMNotes, 10) - parseInt(b.GMNotes, 10));
+    next.DeckIDs = next.ContainedObjects.map((card) => card.CardID);
     return { original: deck, replacement: next, style: spec.style };
   });
 }

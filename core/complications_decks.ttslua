@@ -1,0 +1,144 @@
+-- Cold deck operations only: load verification, explicit sorting, and saved pile transactions.
+local B={}
+local U=require('lib.util')
+local S=require('core.state')
+local Model=require('lib.complications_model')
+local sorting=false
+local function tagsWithoutMaster(tags)
+ local out={};for _,tag in ipairs(tags or {}) do if tag~='masterDeck' then out[#out+1]=tag end end;return out
+end
+function B.cloneData(source)
+ local data=U.clone(source,true)
+ local function clear(o)
+  o.GUID='';o.Tags=tagsWithoutMaster(o.Tags)
+  for _,child in ipairs(o.ContainedObjects or {}) do clear(child) end
+  for _,child in pairs(o.States or {}) do clear(child) end
+ end
+ clear(data);return data
+end
+function B.masters()
+ local found={standard={},enhanced={}}
+ for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
+  if o.tag=='Deck' and o.hasTag('masterDeck') then
+   local kind=o.hasTag('enhancedComplication') and 'enhanced' or 'standard'
+   found[kind][#found[kind]+1]=o
+  end
+ end
+ local errors={}
+ for _,kind in ipairs({'standard','enhanced'}) do
+  if #found[kind]~=1 then errors[#errors+1]='Expected exactly one '..kind..' Complications master Deck; found '..#found[kind]..'. Check its masterDeck and Complications tags.' end
+ end
+ return found,errors
+end
+function B.verify()
+ local found,errors=B.masters()
+ for _,kind in ipairs({'standard','enhanced'}) do
+  if #found[kind]==1 then
+   local entries=found[kind][1].getObjects();local previous=0
+   for i=1,math.min(5,#entries) do
+    local index=Model.identity(entries[i].gm_notes)
+    if not index or index<previous then
+     errors[#errors+1]='The first five cards of the '..kind..' Complications master are out of order or have invalid indices. Run DEBUG.SortMasterDecks (Sort Master Decks in Debug).';break
+    end
+    previous=index
+   end
+  end
+ end
+ for _,message in ipairs(errors) do U.AlertGM(message) end
+ return #errors==0
+end
+-- Convert a snapshot into a pile. Preserve card GUIDs when partitioning existing piles.
+-- A one-card pile must be a Card, not an invalid one-card Deck.
+function B.pileData(template,rows,position,rotation,keepMaster)
+ if #rows==0 then return nil end
+ local data=U.clone(#rows==1 and rows[1] or template,true)
+ if #rows>1 then
+  data.Name='DeckCustom';data.CardID=nil;data.ContainedObjects=U.clone(rows,true);data.DeckIDs={};data.CustomDeck={}
+  for _,row in ipairs(rows) do
+   data.DeckIDs[#data.DeckIDs+1]=row.CardID
+   for key,definition in pairs(row.CustomDeck or template.CustomDeck or {}) do data.CustomDeck[key]=U.clone(definition,true) end
+  end
+ end
+ data.Transform=data.Transform or {}
+ local t=data.Transform
+ t.posX,t.posY,t.posZ=position.x,position.y,position.z
+ t.rotX,t.rotY,t.rotZ=rotation.x,rotation.y,rotation.z
+ data.Locked=true
+ if not keepMaster then
+  data.Tags=tagsWithoutMaster(data.Tags)
+  for _,row in ipairs(data.ContainedObjects or {}) do row.Tags=tagsWithoutMaster(row.Tags) end
+ end
+ return data
+end
+-- Persist parts before removing old containers. Tags recover a spawn whose callback
+-- did not finish before saving; replacement cards keep their original logical GUIDs.
+function B.replace(job,save,done)
+ for _,guid in ipairs(job.remove) do
+  local o=getObjectFromGUID(guid)
+  if o and not o.hasTag(job.tag) then
+   assert(job.allowMasters or not o.hasTag('masterDeck'),'Refusing to replace a master during gameplay')
+   o.destruct()
+  end
+ end
+ local nextPart
+ nextPart=function(i)
+  local part=job.parts[i];if not part then done();return end
+  local tag=job.tag..'_'..i
+  local existing=part.guid and getObjectFromGUID(part.guid)
+  if not existing then existing=getObjectsWithTag(tag)[1] end
+  local function complete(o)
+   if part.data.GUID and part.data.GUID~='' then
+    assert(o.getGUID()==part.data.GUID,'Complications pile replacement did not preserve its GUID')
+   end
+   part.guid=o.getGUID();save()
+   if part.invisibleTo then o.setInvisibleTo(part.invisibleTo) end
+   nextPart(i+1)
+  end
+  if existing then complete(existing) else
+   local data=U.clone(part.data,true);data.Tags=data.Tags or {}
+   data.Tags[#data.Tags+1]=job.tag;data.Tags[#data.Tags+1]=tag
+   spawnObjectData({data=data,callback_function=complete})
+  end
+ end
+ local function removed()
+  for _,guid in ipairs(job.remove) do
+   local o=getObjectFromGUID(guid)
+   if o and not o.hasTag(job.tag) then return false end
+  end
+  return true
+ end
+ -- TTS destruction may finish next frame. Never reuse a still-occupied GUID.
+ if removed() then nextPart(1) else U.await(function() nextPart(1) end,removed) end
+end
+function B.restoreSort()
+ local job=S.getStateVal('complicationsMasterSort');if not job or sorting then return end
+ sorting=true
+ B.replace(job,function() S.setStateVal(job,'complicationsMasterSort') end,function()
+  sorting=false;S.setStateVal(nil,'complicationsMasterSort');B.verify()
+ end)
+end
+function B.sortMasters()
+ if S.getStateVal('complicationsMasterSort') then B.restoreSort();return end
+ local found,errors=B.masters()
+ if #errors>0 then for _,message in ipairs(errors) do U.AlertGM(message) end;return false end
+ local serial=(S.getStateVal('complicationsMasterSortSerial') or 0)+1
+ S.setStateVal(serial,'complicationsMasterSortSerial')
+ local job={remove={},parts={},allowMasters=true,tag='complicationsMasterSort_'..serial}
+ local invisible={};for _,color in ipairs(Player.getAvailableColors()) do if color~='Black' then invisible[#invisible+1]=color end end
+ for _,kind in ipairs({'standard','enhanced'}) do
+  local o=found[kind][1];local data=o.getData();local rows=data.ContainedObjects
+  for _,row in ipairs(rows) do
+   if not Model.identity(row.GMNotes) then U.AlertGM('Cannot sort '..kind..' master: a card has no valid index in GM Notes.');return false end
+  end
+  table.sort(rows,function(a,b)
+   local ia,ib=Model.identity(a.GMNotes),Model.identity(b.GMNotes)
+   return ia==ib and a.GUID<b.GUID or ia<ib
+  end)
+  local sorted=B.pileData(data,rows,o.getPosition(),o.getRotation(),true)
+  sorted.Locked=data.Locked
+  job.remove[#job.remove+1]=o.getGUID()
+  job.parts[#job.parts+1]={data=sorted,invisibleTo=invisible}
+ end
+ S.setStateVal(job,'complicationsMasterSort');B.restoreSort();return true
+end
+return B

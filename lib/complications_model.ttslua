@@ -38,6 +38,7 @@ function M.deck(g)
 end
 function M.queue(g, op) g.operations[#g.operations+1] = op end
 function M.draw(g, slot, random)
+    if g.version>=2 then M.queue(g,{kind='drawTop',slot=slot});return end
     local deck = M.deck(g)
     if #deck == 0 then g.exhausted = true; g.slots[slot] = nil; return nil end
     if #deck == 1 then g.exhausted = true end
@@ -53,6 +54,19 @@ function M.move(g, guid, zone)
     for i,v in pairs(g.slots) do if v == guid then g.slots[i] = nil end end
     c.zone, c.up = zone, false
     M.queue(g, {kind='collect', guid=guid, zone=zone})
+end
+-- Pile contents move in one transaction; visible board cards retain stepped moves.
+function M.moveCards(g,guids,zone)
+    if g.version<2 then for _,guid in ipairs(guids) do M.move(g,guid,zone) end;return end
+    local piles,board={},{}
+    for _,guid in ipairs(guids) do
+        local c=g.cards[guid]
+        if c.zone=='deck' or c.zone=='discard' then
+            piles[#piles+1]=guid;c.zone,c.up=zone,false
+        else board[#board+1]=guid end
+    end
+    if #piles>0 then M.queue(g,{kind='batchMove',guids=piles,zone=zone}) end
+    for _,guid in ipairs(board) do M.move(g,guid,zone) end
 end
 function M.redeal(g)
     local slots = {}
@@ -70,15 +84,16 @@ function M.restrict(g, category)
     if not g.autoDiscard or category == '' then return end
     local removed = {}
     for guid,c in pairs(g.cards) do
-        if c.category == category and (c.zone == 'deck' or (c.zone == 'slot' and not c.up)) then removed[#removed+1]=guid end
+        if ((type(category)=='table' and category[c.category]) or c.category == category) and c.category~='' and (c.zone == 'deck' or (c.zone == 'slot' and not c.up)) then removed[#removed+1]=guid end
     end
     table.sort(removed)
     local slots = {}
     for _,guid in ipairs(removed) do
         for i,v in pairs(g.slots) do if v == guid then slots[#slots+1]=i end end
-        M.move(g,guid,'discard')
     end
+    M.moveCards(g,removed,'discard')
     table.sort(slots)
+    if #removed>0 then M.queue(g,{kind='shuffle'}) end
     for _,i in ipairs(slots) do M.draw(g,i) end
 end
 function M.reveal(g, guid)
@@ -104,7 +119,7 @@ function M.discard(g)
             if other ~= guid and v.zone == 'discard' and v.category == c.category and M.available(g,v) then matching[#matching+1]=other end
         end
         table.sort(matching)
-        for _,other in ipairs(matching) do M.move(g,other,'deck') end
+        M.moveCards(g,matching,'deck')
         M.redeal(g)
     else M.draw(g,slot) end
     return true
@@ -114,12 +129,13 @@ function M.toggleCategories(g)
     if g.autoDiscard then
         local categories = {}
         for _,guid in pairs(g.slots) do local c=g.cards[guid]; if c.up then categories[c.category]=true end end
-        for category in pairs(categories) do M.restrict(g,category) end
+        if g.version>=2 then M.restrict(g,categories)
+        else for category in pairs(categories) do M.restrict(g,category) end end
     else
         local back = {}
         for guid,c in pairs(g.cards) do if c.zone=='discard' and c.category~='' and M.available(g,c) then back[#back+1]=guid end end
         table.sort(back)
-        for _,guid in ipairs(back) do M.move(g,guid,'deck') end
+        M.moveCards(g,back,'deck')
         M.redeal(g)
     end
 end

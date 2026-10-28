@@ -1826,6 +1826,7 @@ local function snapshotBroadcastPayload(color, result, label, historyEntryOverri
         result = resultCopy,
         rollerName = rollerName,
         rollTypeKey = rollTypeKey,
+        difficulty = lastEntry and lastEntry.difficulty or nil,
         diceFaces = diceFacesCopy,
         rouseStrips = rouseStripsCopy,
         npcCharacterKey = npcCharacterKey,
@@ -1864,9 +1865,11 @@ local function applyBroadcastPayload(payload)
     end
     refreshBroadcastMainDiceRow(rollTypeKey, diceFaces, rouseStrips)
 
-    local difficulty = nil
-    if result ~= nil and result.margin ~= nil then
-        difficulty = result.successes - result.margin
+    local difficulty = payload.difficulty
+    if difficulty == nil and result ~= nil and result.margin ~= nil then
+        -- Older history/preview records may omit difficulty. Undo only the margin
+        -- adjustment when reconstructing it; the displayed successes stay unchanged.
+        difficulty = result.successes - result.margin + (result.complicationsDelta or 0)
     end
 
     if result ~= nil then

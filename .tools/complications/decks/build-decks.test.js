@@ -52,7 +52,7 @@ function fixture(t) {
   return { ...options, root, save, options, syncImages, read: () => JSON.parse(fs.readFileSync(savePath, "utf8")) };
 }
 
-test("assembles 257 Standard and 66 Enhanced cards, with correct identities, image slots and multiplicities", (t) => {
+test("assembles 254 Standard and 66 Enhanced cards, with correct identities, image slots and multiplicities", (t) => {
   const f = fixture(t);
   assert.deepEqual(build(f.options), { status: "rebuilt", changed: 2 });
   const result = f.read();
@@ -65,7 +65,10 @@ test("assembles 257 Standard and 66 Enhanced cards, with correct identities, ima
     assert.deepEqual(deck.Transform, original.Transform);
     assert.equal(deck.Locked, original.Locked);
     assert.match(deck.GMNotes, /^Author deck notes\n\[complications-deck-build:v1:/);
-    assert.equal(deck.ContainedObjects.length, i ? 66 : 257);
+    assert.equal(deck.ContainedObjects.length, i ? 66 : 254);
+    assert.ok(deck.Tags.includes("masterDeck"));
+    const indices = deck.ContainedObjects.map((c) => parseInt(c.GMNotes, 10));
+    assert.deepEqual(indices, [...indices].sort((a, b) => a - b));
     assert.equal(Object.keys(deck.CustomDeck).length, 4);
     assert.deepEqual(deck.DeckIDs, deck.ContainedObjects.map((c) => c.CardID));
     const expectedCounts = new Map();
@@ -168,7 +171,7 @@ test("generated card GUIDs avoid collisions with unrelated saved objects", (t) =
   assert.deepEqual(result.ObjectStates.at(-1), original.ObjectStates.at(-1));
   const cards = result.ObjectStates.slice(0, 2).flatMap((d) => d.ContainedObjects);
   assert.ok(cards.every((c) => c.GUID !== collision));
-  assert.equal(new Set(cards.map((c) => c.GUID)).size, 323);
+  assert.equal(new Set(cards.map((c) => c.GUID)).size, 320);
 });
 
 test("first-time builds hold when manifest or ledger is missing", (t) => {
@@ -215,7 +218,7 @@ test("CLI can inspect a copied save using explicit paths without a live TTS conf
   const f = fixture(t);
   const output = execFileSync(process.execPath, [path.join(__dirname, "build-decks.js"), "--save", f.savePath,
     "--assets-dir", f.assetsDir, "--settings-dir", f.settingsDir, "--manifest", f.manifestPath, "--dry-run"], { encoding: "utf8" });
-  assert.match(output, /Would rebuild Standard: 257 cards/);
+  assert.match(output, /Would rebuild Standard: 254 cards/);
   assert.match(output, /Would rebuild Enhanced: 66 cards/);
   assert.deepEqual(f.read(), f.save);
 });
