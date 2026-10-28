@@ -36,7 +36,7 @@ function getObjectFromGUID(id) return objects[id] end
 function Vector(t) return t end
 Player={Red={clearSelectedObjects=function() end}}
 package.loaded['core.state']=S;package.loaded['lib.constants']=C;package.loaded['lib.guids']={}
-package.loaded['lib.util']={AlertGM=function() end,Alert=function() end,chain=function(fs) for _,f in ipairs(fs) do queue[#queue+1]=f end end}
+package.loaded['lib.util']={trim=function(s) return tostring(s or ''):gsub('^%s+',''):gsub('%s+$','') end,AlertGM=function() end,Alert=function() end,chain=function(fs) for _,f in ipairs(fs) do queue[#queue+1]=f end end}
 package.loaded['lib.seat-role-identity']={findObjectByRoleIdentity=function(role) if role=='COMPULSION_DECK_RED' then return deck end end}
 package.loaded['lib.csheet_identity']={seatColorObjectTag=function(c) return 'seat_'..c end,pageRoleGmNotes=function() return 'page' end}
 package.loaded['lib.object_positions']={resolveStatePose=function() return {position={x=1,y=1,z=1}} end,applyResolvedPose=function() return 0 end}

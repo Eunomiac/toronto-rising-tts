@@ -19,7 +19,7 @@ const DECKS = [
   { style: "Enhanced", guid: "2d57f2", tags: ["deckOfComplications", "enhancedComplication"] },
 ];
 // Stored on the deck, so TTS round trips and copied saves retain the build stamp.
-// Never use card order/count as a rebuild trigger: playing changes those normally.
+// Ordering repairs belong to DEBUG.SortMasterDecks; an unchanged build never silently rewrites a master.
 const STAMP = /\n?\[complications-deck-build:v1:[a-f0-9]{64}\]/g;
 const hash = (bytes, algorithm = "sha256") => crypto.createHash(algorithm).update(bytes).digest("hex");
 const clone = (value) => JSON.parse(JSON.stringify(value));
