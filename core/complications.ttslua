@@ -20,9 +20,9 @@ local function obj(guid) return guid and getObjectFromGUID(guid) or nil end
 local function vector(v) return {x=v.x,y=v.y,z=v.z} end
 local function busy(g) return running or g.operationIndex <= #g.operations or g.ending == true end
 local function signed(n) return string.format('%+d',n) end
-local function fail(g, message)
+local function fail(g, message, retry)
     running=false; g.error=message; save(g)
-    U.AlertGM('Complications: '..message..' Reload to retry the saved operation.')
+    U.AlertGM('Complications: '..message..(retry==false and '' or ' Reload to retry the saved operation.'))
 end
 local function board() return obj(G.GUIDS.COMPLICATIONS_BOARD) end
 -- Cold migration for existing saves: only the known board, only if the new button
@@ -283,6 +283,7 @@ local function drawTop(g,op,done)
         end
         local entries=deck.tag=='Deck' and deck.getObjects() or {{guid=deck.getGUID()}}
         rememberPile(g,'deck',deck)
+        assert(type(entries[1].guid)=='string' and entries[1].guid~='','Top Complication has an empty GUID; restart from a save before setup')
         op.guid=entries[1].guid
         local c=assert(g.cards[op.guid],'Top card is not registered to this game')
         assert(Model.available(g,c),'Ineligible card reached the playable deck')
@@ -324,6 +325,7 @@ local function cloneMaster(g,op,done)
     end
     Decks.replace(op.job,function() save(g) end,function()
         local copy=obj(op.job.parts[1].guid)
+        Decks.assertCardIds(copy.getData())
         if op.role=='enhanced' then
             g.source=copy.getGUID();g.templates={}
             for _,data in ipairs(copy.getData().ContainedObjects or {}) do
@@ -338,6 +340,7 @@ end
 local function filterClone(g,op,done)
     if not op.job then
         local copy=obj(g.playClone);local data=copy.getData();local kept={}
+        Decks.assertCardIds(data)
         for _,row in ipairs(data.ContainedObjects or {}) do
             local index,name=Model.identity(row.GMNotes);local def=Catalog[index]
             if def and def.name==name and Model.available(g,def) then kept[#kept+1]=row end
@@ -352,6 +355,7 @@ local function filterClone(g,op,done)
         for _,part in ipairs(op.job.parts) do
             local o=obj(part.guid);g.playClone=part.guid
             local data=o.getData()
+            Decks.assertCardIds(data)
             for _,row in ipairs(o.tag=='Deck' and data.ContainedObjects or {data}) do
                 local index,name=Model.identity(row.GMNotes);local def=Catalog[index]
                 g.cards[row.GUID]={index=index,name=name,value=def.value,category=def.category,
@@ -399,10 +403,11 @@ end
 local function doomBatch(g,op,done)
     if not op.job then
         local rows={}
+        local allocate=Decks.cloneIds()
         for _,entry in ipairs(op.roots) do
             local c=assert(g.cards[entry.guid],'Rare root disappeared')
             for i=1,entry.count do
-                local row=Decks.cloneData(c.data);row.Tags=row.Tags or {}
+                local row=Decks.cloneData(c.data,allocate);row.Tags=row.Tags or {}
                 row.Tags[#row.Tags+1]='complicationsRoot_'..entry.guid
                 rows[#rows+1]=row
             end
@@ -567,7 +572,8 @@ pump=function()
         if g.ending then
             local err=require('core.complications_rolls').finish(g.target,g.finalTotal,g.id)
             if err then fail(g,err); return end
-            save(nil); D.refresh(); require('dashboard.push').markWorldDirty({rolls=true}); return
+            save(nil); D.refresh(); require('core.roll_ui').refreshPlayerRollPanel(g.target.color)
+            require('dashboard.push').markWorldDirty({rolls=true}); return
         end
         announce(g); return
     end
@@ -635,7 +641,9 @@ function D.start(color,rollId)
     Model.queue(g,{kind='shuffle'})
     local order={1,2,3,4,5,6,7,8,9,10};for i=10,2,-1 do local j=math.random(i);order[i],order[j]=order[j],order[i] end
     for _,i in ipairs(order) do Model.draw(g,i) end
-    mountAutomationButton(); begin(g); return nil
+    mountAutomationButton();save(g)
+    require('core.roll_ui').refreshPlayerRollPanel(g.target.color)
+    begin(g); return nil
 end
 function D.onPlayerAction(player,action,targets)
     local g=game(); if not g then return true end
@@ -755,6 +763,11 @@ function D.restore()
     mountAutomationButton()
     require('core.compulsions').restoreClanSources()
     local g=game(); if not g then D.refresh(); return end
+    require('core.roll_ui').refreshPlayerRollPanel(g.target.color)
+    if g.cards[''] then
+        fail(g,'This saved game has empty card GUIDs from an older build. Load a save from before Complications setup and start a new game; its overwritten card records cannot be recovered safely.',false)
+        return
+    end
     -- Saves made by older builds retain already-finished full-deck snapshots.
     for i=1,g.operationIndex-1 do if g.operations[i] then g.operations[i].job=nil end end
     if g.deckTemplate and g.deckTemplate.ContainedObjects then g.deckTemplate=Decks.templateData(g.deckTemplate) end

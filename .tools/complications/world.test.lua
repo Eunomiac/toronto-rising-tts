@@ -119,6 +119,7 @@ make=function(id,tag,notes,tags,children)
  return o
 end
 function getObjectFromGUID(id) return objects[id] end
+function getAllObjects() local a={} for _,o in pairs(objects) do a[#a+1]=o end;return a end
 function getObjectsWithTag(t) local a={} for _,o in pairs(objects) do if o.hasTag(t) then a[#a+1]=o end end return a end
 function spawnObjectData(p)
  local live=state.complications;local op=live and live.operations[live.operationIndex]
@@ -128,7 +129,9 @@ function spawnObjectData(p)
  spawnCount=spawnCount+1
  local data=clone(p.data);local children
  if data.ContainedObjects then children={} for _,row in ipairs(data.ContainedObjects) do
-  children[#children+1]={id=row.GUID~='' and row.GUID or nextGuid(),notes=row.GMNotes,tags=row.Tags,cardId=row.CardID}
+  -- TTS preserves explicit empty GUIDs in contained card data. Do not silently
+  -- repair them here: that assumption hid the live ten-slots/one-record bug.
+  children[#children+1]={id=row.GUID or nextGuid(),notes=row.GMNotes,tags=row.Tags,cardId=row.CardID}
  end end
  local id=data.GUID and data.GUID~='' and data.GUID or nextGuid()
  assert(not objects[id],'spawn GUID collision '..id)
@@ -171,6 +174,10 @@ end
 state=setmetatable({},{__index=function(_,k) return S.getStateVal(k) end,__newindex=function(_,k,v) S.setStateVal(v,k) end})
 package.loaded['lib.guids']={GUIDS={COMPLICATIONS_BOARD='board',CSHEET_DICE_DRAWER_ANCHOR_ON_RED='anchor'}}
 package.loaded['dashboard.push']={markWorldDirty=function() end}
+local panelRefreshes={}
+package.loaded['core.roll_ui']={refreshPlayerRollPanel=function(color)
+ panelRefreshes[#panelRefreshes+1]={color=color,live=state.complications~=nil}
+end}
 package.loaded['core.compulsions']={restoreClanSources=function() end}
 local target={color='Red',rollId='roll1',rollType='standard',result={margin=-5}}
 local finishes=0
@@ -203,6 +210,7 @@ end
 local D=require('core.complications')
 spawnCount,takeCount=0,0;deferSpawn=true
 assert(not D.start('Red','roll1'))
+assert(panelRefreshes[#panelRefreshes].color=='Red' and panelRefreshes[#panelRefreshes].live)
 -- Saving between spawn and its callback must recover the existing clone.
 scheduled={};state.complications=clone(state.complications);deferSpawn=false
 package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain()
@@ -211,6 +219,12 @@ assert(takeCount==10,'setup must extract ten cards; got '..takeCount)
 dropTakeCallbacks=false
 
 local g=state.complications;assert(g and not g.error)
+assert(not g.cards[''],'empty GUID collapsed the card catalog')
+local unique={}
+for _,guid in pairs(g.slots) do
+ assert(guid:match('^%x%x%x%x%x%x$') and not unique[guid],'slot GUID is invalid or duplicated')
+ unique[guid]=true
+end
 for _,color in ipairs({'Black','Red','Pink'}) do
  assert(cameras[color] and math.abs(cameras[color].position.x-(20-7/math.sqrt(2)))<0.001)
  assert(cameras[color].pitch==58 and cameras[color].distance==11)
@@ -282,6 +296,7 @@ local externalClone=objects[g.cards.outside.clone];assert(externalClone.position
 D.button({color='Black'},'-1','button_Enhance');drain();assert(not g.cards.outside.clone and outside.position.y==10 and outside.highlight[2]==1)
 D.button({color='Black'},'-2','button_StopSelect');drain();D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
 assert(not state.complications and not objects.outside)
+assert(panelRefreshes[#panelRefreshes].color=='Red' and not panelRefreshes[#panelRefreshes].live)
 assert(objects.base and #objects.base.children==100 and objects.source and #objects.source.children==66)
 for _,o in pairs(objects) do for _,tag in ipairs(o.tags) do assert(not tag:match('^complicationsDoom_')) end end
 print('Complications world: Rare cloning, retained face-up copies, enhanced count, mid-batch reload, clone cleanup and external enhancement passed.')
@@ -386,3 +401,10 @@ assert(takeCount==10 and not g.exhausted and not g.error)
 for _,guid in pairs(g.slots) do assert(not objects[guid].locked) end
 stopGame()
 print('Pile identity: moved decks still deal/transfer; reload repairs a completed queue with false exhaustion.')
+-- Do not silently resume a legacy save whose ten records overwrote the empty key.
+local broken=Model.new(clone(target),{['']={zone='slot',up=false}})
+state.complications=broken;D.restore()
+assert(broken.error:find('empty card GUIDs',1,true))
+assert(state.complications==broken and broken.cards[''],'corrupt save must not be silently rewritten')
+assert(not warnings[#warnings]:find('Reload to retry',1,true))
+print('Legacy empty-GUID corruption is reported without attempting unsafe recovery.')

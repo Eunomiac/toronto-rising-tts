@@ -10,8 +10,11 @@ local U={Type=type,clone=clone,Val=function(_,_,ok,msg) assert(ok,msg) end,
  setClass=function() end,cancel=function() end,await=function(f) scheduled[#scheduled+1]=f end}
 local C={RollType=enum(),ResultClass=enum(),ResultClassLabel=enum(),RollTypeLabel=enum(),PlayerColors={'Red'}}
 local history={}
+local liveComplications,liveRoll
 package.loaded['core.state']={getPlayerID=function() return 'pc' end,getStateVal=function(...)
  local keys={...};if keys[#keys]=='history' then return history end
+ if keys[1]=='complications' then return liveComplications end
+ if keys[#keys]=='active' then return liveRoll end
  if #keys==2 then return {charName='Test character',charKey='test'} end
 end}
 package.loaded['lib.constants']=C;package.loaded['lib.util']=U
@@ -44,3 +47,21 @@ assert(shown[#shown-1].rollRes_difficulty=='7')
 assert(shown[#shown].rollRes_difficulty=='9')
 assert(shown[#shown].rollRes_resultDisplay=='WIN +0')
 print('Broadcast: original difficulty, adjusted margin, unchanged successes and legacy fallback passed.')
+
+-- The exact target is hidden before normal panel rendering; other rolls and
+-- seats still reach the ordinary renderer, as does the target after cleanup.
+local ordinaryRefreshes=0
+package.loaded['lib.pc_roll_tray_lower'].isIdleBagAutoRouse=function()
+ ordinaryRefreshes=ordinaryRefreshes+1;return true
+end
+liveRoll={id='target'}
+liveComplications={target={color='Red',rollId='target'}}
+RUI.refreshPlayerRollPanel('Red')
+assert(ordinaryRefreshes==0 and attributes.rollControl_root_Red.active=='false')
+liveComplications.hidden=true
+RUI.refreshPlayerRollPanel('Red');assert(ordinaryRefreshes==0)
+RUI.refreshPlayerRollPanel('Pink');assert(ordinaryRefreshes==1)
+liveRoll.id='other';RUI.refreshPlayerRollPanel('Red');assert(ordinaryRefreshes==2)
+liveRoll.id='target';liveComplications=nil
+RUI.refreshPlayerRollPanel('Red');assert(ordinaryRefreshes==3)
+print('Roll controls: exact Complications target hidden, other rolls unaffected, normal refresh restored afterward.')

@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications card GUIDs and player roll controls — direct author request
+
+**How to verify:** Build and Save & Play, then start a fresh Complications game from a save before the broken setup. The old empty-GUID game has overwritten card records and cannot be safely resumed. All ten dealt cards should have distinct nonempty GUIDs, unlock, and respond to flips. The targeted player’s roll controls should hide when the game starts and remain hidden if the board is temporarily hidden or the game is reloaded. Other players and different roll IDs should retain normal controls. Ending the game should restore normal roll-panel behavior. Check Impending Doom copies and save/reload during dealing too.
+
 #### Complications stored pile GUIDs — direct author request
 
 **How to verify:** Build and Save & Play with the one-card game still saved. The remaining nine cards should deal and unlock. In a fresh game, move the gameplay deck away from its snap; dealing, category transfers and replacements should continue using that same deck. Check a nearly exhausted deck through its final two cards, then stop the game. Both masters should remain unchanged.
