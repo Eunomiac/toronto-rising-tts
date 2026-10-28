@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications fixed staggered dealing — direct author request
+
+**How to verify:** Build and Save & Play, then start a game. Ten face-down cards should deal to randomized slots at fixed short intervals, with no per-card readiness wait. After the last deal, cards should unlock and flips should select them. Save & Play with the previously stalled game: the remaining nine should deal without duplicating the first. This replaces the readiness checks and card-loading timeout expectations in the earlier setup entries below.
+
 #### Complications first-card readiness timeout — direct author request
 
 **How to verify:** Build and Save & Play, then start Complications. All ten cards should deal even while custom images are loading; each card should be held locked until setup finishes. Confirm the cards unlock afterward and a flip selects the card. Retry the saved stalled game too. If it still times out, copy the complete warning: it now includes the card GUID and spawning/loading flags, or says the card is missing from the world.

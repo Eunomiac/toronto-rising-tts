@@ -349,21 +349,26 @@ local function stopGame()
 end
 stopGame()
 
--- A card that never finishes loading must identify the stalled operation instead
--- of leaving an unexplained live/locked game. Reload then resumes the same deal.
+-- Permanently true engine readiness flags must not gate any of the ten deals.
+-- Save after the first extraction, replaying its recorded intent as an older
+-- stalled save would, and ensure the remaining nine are dealt exactly once.
 holdTaken=true;takeCount=0
-assert(not D.start('Red','roll1'));drain();g=state.complications
-assert(takeCount==1 and g.error and g.error:find('drawTop',1,true) and g.error:find('slot',1,true))
-local pending=g.operations[g.operationIndex];local firstGuid=pending.guid
-assert(g.slots[pending.slot]==firstGuid)
-scheduled={};state.complications=clone(g);holdTaken=false
-objects[firstGuid].spawning=false;objects[firstGuid].loading_custom=false
--- Old builds saved completed jobs and a second full-deck template; reclaim both.
-state.complications.operations[1].job={parts={{data={ContainedObjects={{GUID='obsolete'}}}}}}
+assert(not D.start('Red','roll1'))
+steps=0
+while takeCount==0 and steps<200 do drain(1);steps=steps+1 end
+assert(takeCount==1)
+g=state.complications
+local first=g.operations[g.operationIndex-1]
+assert(first.kind=='drawTop' and first.guid)
+g.operationIndex=g.operationIndex-1
+scheduled={};state.complications=clone(g)
 state.complications.deckTemplate.ContainedObjects={{GUID='obsolete'}}
 package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain();g=state.complications
 assert(not g.error and takeCount==10,'reload duplicated the first card or failed to resume the remaining nine')
 assert(not g.deckTemplate.ContainedObjects)
-for _,guid in pairs(g.slots) do assert(not objects[guid].locked) end
+for _,guid in pairs(g.slots) do
+ assert(objects[guid].spawning and objects[guid].loading_custom,'fixture must retain true readiness flags')
+ assert(not objects[guid].locked)
+end
 stopGame()
-print('Setup recovery: loading timeout names the deal; reload resumes nine remaining cards without duplicating the first.')
+print('Staggered dealing: persistent readiness flags do not block ten deals; interrupted first deal resumes without duplication.')
