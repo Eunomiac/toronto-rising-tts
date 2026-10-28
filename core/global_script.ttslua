@@ -7127,3 +7127,8 @@ function HUD_toggleComplications(player)
     if not U.isStorytellerSteamPlayer(player) then return end
     require("core.complications").toggle(player)
 end
+
+function HUD_sortMasterDecks(player)
+    if not requireStorytellerForMutation(player, "HUD_sortMasterDecks") then return end
+    DEBUG.SortMasterDecks()
+end

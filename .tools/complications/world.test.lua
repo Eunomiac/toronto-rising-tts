@@ -5,6 +5,7 @@ local function clone(v) if type(v)~='table' then return v end local o={} for k,x
 local state,scheduled,objects,seq={}, {}, {}, 0
 local takeCount,spawnCount=0,0
 local warnings,deferSpawn,allowMasterMutation={},false,false
+local deferDestroy=false
 local function drain(limit)
  local n=0
  while #scheduled>0 and n<(limit or 2000) do n=n+1; table.remove(scheduled,1)() end
@@ -30,7 +31,7 @@ make=function(id,tag,notes,tags,children)
  o.highlightOn=function(v) o.highlight=v end
  o.highlightOff=function() o.highlight=nil end
  o.shuffle=function() assert(not o.hasTag('masterDeck'),'master shuffled');local reversed={} for i=#o.children,1,-1 do reversed[#reversed+1]=o.children[i] end;o.children=reversed end
- o.destruct=function() assert(allowMasterMutation or not o.hasTag('masterDeck'),'master destroyed by gameplay');objects[id]=nil end
+ o.destruct=function() assert(allowMasterMutation or not o.hasTag('masterDeck'),'master destroyed by gameplay');if deferDestroy then scheduled[#scheduled+1]=function() objects[id]=nil end else objects[id]=nil end end
  o.getObjects=function()
   local a={} for _,v in ipairs(o.children or {}) do a[#a+1]={guid=v.id,gm_notes=v.notes,tags=v.tags,index=#a} end return a
  end
@@ -39,6 +40,8 @@ make=function(id,tag,notes,tags,children)
  end
  o.takeObject=function(p)
   takeCount=takeCount+1;assert(not o.hasTag('masterDeck'),'master drawn from')
+  local live=state.complications;local op=live and live.operations[live.operationIndex]
+  if op and op.kind=='drawTop' then assert(p.guid==o.children[1].id,'replacement must come from the physical top') end
   for i,v in ipairs(o.children) do if v.id==p.guid or (not p.guid and i==1) then
    table.remove(o.children,i)
    local c=make(v.id,'Card',v.notes,v.tags); c.setPosition(p.position)
@@ -98,7 +101,7 @@ package.loaded['core.main']={resolveCameraPreset=function(player,key)
  return {position={x=20,y=18,z=20},pitch=58,distance=11}
 end}
 local S={getStateVal=function(k) return state[k] end,setStateVal=function(v,k) state[k]=v end}
-local U={clone=clone,await=function(f) scheduled[#scheduled+1]=f end,chain=function(fs) for _,f in ipairs(fs) do scheduled[#scheduled+1]=f end end,isStorytellerSteamPlayer=function(p) return (type(p)=='table' and p.color or p)=='Black' end,AlertGM=function(s) warnings[#warnings+1]=s;if s:match('^Complications:') then error(s) end end}
+local U={clone=clone,await=function(f,test) local poll;poll=function() if type(test)=='function' and not test() then scheduled[#scheduled+1]=poll else f() end end;scheduled[#scheduled+1]=poll end,chain=function(fs) for _,f in ipairs(fs) do scheduled[#scheduled+1]=f end end,isStorytellerSteamPlayer=function(p) return (type(p)=='table' and p.color or p)=='Black' end,AlertGM=function(s) warnings[#warnings+1]=s;if s:match('^Complications:') then error(s) end end}
 local O={isHiddenObject=function(o) return o.hidden end,hideObject=function(o) if not o.hidden then o.previous={p=o.getPosition(),r=o.getRotation(),l=o.locked};o.hidden=true;o.position.y=-200 end end,restoreObject=function(o,p)
  p=p or {}; if o.hidden then o.position=o.previous.p;o.rotation=o.previous.r;o.locked=o.previous.l;o.hidden=false end
  if p.position then o.setPosition(p.position) end;if p.rotation then o.setRotation(p.rotation) end;if p.locked~=nil then o.setLock(p.locked) end
@@ -215,3 +218,40 @@ print('Complications world: Rare cloning, retained face-up copies, enhanced coun
 
 assert(same(mastersBefore.base,objects.base.getData()) and same(mastersBefore.source,objects.source.getData()),'gameplay changed a master deck')
 print('Master decks: missing/duplicate/order warnings, sorting, unchanged templates, top-ten-only extraction and interrupted clone recovery passed.')
+
+-- Category transfers recover halfway through spawning two replacement piles and
+-- never extract piled cards individually. Only board replacements use takeObject.
+assert(not D.start('Red','roll1'));drain();g=state.complications
+local categorized=placeIndex(11,1);placeIndex(17,2)
+local category=g.cards[categorized].category
+local replaced=0;for _,guid in pairs(g.slots) do
+ if guid~=categorized and g.cards[guid].category==category then replaced=replaced+1 end
+end
+local beforeTakes=takeCount;deferDestroy=true
+assert(D.onPlayerAction({color='Red'},'flip',{objects[categorized]}))
+deferSpawn=true;drain(1)
+assert(g.operations[g.operationIndex].kind=='batchMove' and g.operations[g.operationIndex].job)
+scheduled={};state.complications=clone(g);deferSpawn=false
+package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain();g=state.complications
+assert(takeCount-beforeTakes==replaced,'pile restriction must not extract individual cards')
+for guid,c in pairs(g.cards) do
+ if guid~=categorized and c.category==category then assert(c.zone=='discard') end
+end
+beforeTakes=takeCount;D.button({color='Black'},'-1','button_ToggleCategoryDiscard');drain()
+assert(takeCount-beforeTakes==9,'restoration must redeal all nine face-down cards from the top')
+assert(g.slots[1]==categorized and g.cards[categorized].up)
+D.button({color='Black'},'-2','button_StopSelect');drain()
+D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
+-- Filtering to one card (then to none) must survive deck collapse and allow Stop.
+local flags={};for index,def in pairs(catalog) do flags[index]=def.rollTypes.standard;def.rollTypes.standard=index==40 end
+for _,oneCard in ipairs({true,false}) do
+ catalog[40].rollTypes.standard=oneCard
+ assert(not D.start('Red','roll1'));drain();g=state.complications
+ local slots=0;for _ in pairs(g.slots) do slots=slots+1 end
+ assert(slots==(oneCard and 1 or 0) and g.exhausted)
+ D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
+ assert(not state.complications)
+end
+for index,flag in pairs(flags) do catalog[index].rollTypes.standard=flag end
+assert(same(mastersBefore.base,objects.base.getData()) and same(mastersBefore.source,objects.source.getData()))
+print('Bulk piles: interrupted replacement recovery, no per-card pile extraction, top-card redeals, one-card and empty pools passed.')

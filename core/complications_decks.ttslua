@@ -3,6 +3,7 @@ local B={}
 local U=require('lib.util')
 local S=require('core.state')
 local Model=require('lib.complications_model')
+local sorting=false
 local function tagsWithoutMaster(tags)
  local out={};for _,tag in ipairs(tags or {}) do if tag~='masterDeck' then out[#out+1]=tag end end;return out
 end
@@ -86,6 +87,9 @@ function B.replace(job,save,done)
   local existing=part.guid and getObjectFromGUID(part.guid)
   if not existing then existing=getObjectsWithTag(tag)[1] end
   local function complete(o)
+   if part.data.GUID and part.data.GUID~='' then
+    assert(o.getGUID()==part.data.GUID,'Complications pile replacement did not preserve its GUID')
+   end
    part.guid=o.getGUID();save()
    if part.invisibleTo then o.setInvisibleTo(part.invisibleTo) end
    nextPart(i+1)
@@ -96,12 +100,21 @@ function B.replace(job,save,done)
    spawnObjectData({data=data,callback_function=complete})
   end
  end
- nextPart(1)
+ local function removed()
+  for _,guid in ipairs(job.remove) do
+   local o=getObjectFromGUID(guid)
+   if o and not o.hasTag(job.tag) then return false end
+  end
+  return true
+ end
+ -- TTS destruction may finish next frame. Never reuse a still-occupied GUID.
+ if removed() then nextPart(1) else U.await(function() nextPart(1) end,removed) end
 end
 function B.restoreSort()
- local job=S.getStateVal('complicationsMasterSort');if not job then return end
+ local job=S.getStateVal('complicationsMasterSort');if not job or sorting then return end
+ sorting=true
  B.replace(job,function() S.setStateVal(job,'complicationsMasterSort') end,function()
-  S.setStateVal(nil,'complicationsMasterSort');B.verify()
+  sorting=false;S.setStateVal(nil,'complicationsMasterSort');B.verify()
  end)
 end
 function B.sortMasters()

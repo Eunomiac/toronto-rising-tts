@@ -29,6 +29,10 @@ LightTest = require("core.light_test")
 -- and can be omitted from Save & Play bundles → a late require there fails in-game. Keep one top-level require.
 require("lib.workspace_ndjson_log")
 
+function DEBUG.SortMasterDecks()
+    return require("core.complications_decks").sortMasters()
+end
+
 --- Keep debug-side hunger writes aligned with runtime sync behavior.
 --- @param color string
 --- @param value number
