@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications first-card readiness timeout — direct author request
+
+**How to verify:** Build and Save & Play, then start Complications. All ten cards should deal even while custom images are loading; each card should be held locked until setup finishes. Confirm the cards unlock afterward and a flip selects the card. Retry the saved stalled game too. If it still times out, copy the complete warning: it now includes the card GUID and spawning/loading flags, or says the card is missing from the world.
+
 #### Complications setup lag and first-card stall — direct author request
 
 **How to verify:** Build and Save & Play, then start Complications with the full master decks. The board and disposable deck should move into position, and all ten cards should deal with short gaps, without the previous long freezes. Once dealing finishes, face-down cards should unlock; flipping one should select and resolve it as usual. Save & Play during a deal (or with the previously stalled game still saved): the remaining cards should deal without duplicating the first card. If an object fails to load for 30 seconds, a Storyteller warning should name the unfinished operation and slot instead of leaving the game silently stuck. Save & Play retries that saved operation. Also check a category replacement and Impending Doom redeal, then end the game; both masters should remain unchanged.
