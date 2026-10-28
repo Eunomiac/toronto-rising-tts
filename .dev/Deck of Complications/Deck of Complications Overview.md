@@ -100,11 +100,11 @@ The two source decks are immutable templates during gameplay. On save load, chec
 ### Start-Up Automation Sequence
 
 1. Validate and capture the specific target roll; locate the board, participating player's drawer anchor, two unique masters, ten untagged card snaps, and two `deckOfComplications` pile snaps. Save the board's home pose. The greater-x tagged snap is the draw pile; the other is the discard pile.
-2. Clone both masters with new object/card GUIDs and remove `masterDeck` from the copies. The enhanced gameplay copy remains unfiltered in hidden storage; the masters remain untouched.
+2. Clone both masters with explicitly assigned unique six-character hexadecimal GUIDs on the root, every contained card, and alternate states; never supply empty contained-card GUIDs. Remove `masterDeck` from the copies. Validate card GUIDs are nonempty and unique before building saved card records. The enhanced gameplay copy remains unfiltered in hidden storage; the masters remain untouched.
 3. Filter the ordinary gameplay copy in one immediate container operation, destroying copies whose roll-type checkbox is unchecked (or whose identity is not imported). There is no recoverable exclusion pile: the originals remain in the master.
 4. Instantly move the board to the participating player's drawer anchor, shifted seven world units toward the table origin, at `y = 7.75`, with an extra 180-degree y rotation. Make it visible to everyone.
 5. Instantly move the filtered gameplay deck face-down to the draw snap plus two world units in y. Make it visible, unlock it, and shuffle it. If no eligible cards remain, retain an empty game that the Storyteller can end.
-6. Set connected players' cameras to `diceTray<Color>` for the participating seat, shifted by the same seven-unit offset. Initialize controls and totals.
+6. Hide the participating player’s roll control panel while this exact roll is targeted by the live game, including while the board is hidden. Other players’ controls and other roll IDs remain unaffected. Refresh normal panel visibility when the game ends and after reload. Set connected players' cameras to `diceTray<Color>` for the participating seat, shifted by the same seven-unit offset. Initialize controls and totals.
 7. Deal the physical top ten cards face-down to the ten board snaps in a randomized slot order, with brief stepped delays. Draw only when each deal executes, after the shuffle. An exhausted deck leaves empty slots. Finish by unlocking eligible face-down cards; revealed cards stay locked.
 
 Saved operations make cloning, filtering and dealing resumable without duplicating a gameplay deck. Fixed pauses are limited to a small number of setup operations and visible card steps, not one operation per master-deck card.
