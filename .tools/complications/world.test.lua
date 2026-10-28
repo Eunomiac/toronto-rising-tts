@@ -21,7 +21,7 @@ make=function(id,tag,notes,tags,children)
  o.getGMNotes=function() return notes end
  o.hasTag=function(t) for _,v in ipairs(o.tags) do if v==t then return true end end return false end
  o.addTag=function(t) o.tags[#o.tags+1]=t end
- o.setLock=function(v) o.locked=v end
+ o.setLock=function(v) assert(type(v)=='boolean','TTS SetLock requires a boolean');o.locked=v end
  o.setInvisibleTo=function(v) o.invisible=v end
  o.highlightOn=function(v) o.highlight=v end
  o.highlightOff=function() o.highlight=nil end
@@ -64,7 +64,16 @@ function getObjectFromGUID(id) return objects[id] end
 function getObjectsWithTag(t) local a={} for _,o in pairs(objects) do if o.hasTag(t) then a[#a+1]=o end end return a end
 function spawnObjectData(p) local o=make(nextGuid(),'Card',p.data.GMNotes,p.data.Tags);o.setPosition(p.position);p.callback_function(o);return o end
 UI={setAttributes=function() end}
-Player={Action={FlipOver='flip'},getAvailableColors=function() return {'Black','Red','Pink'} end,getPlayers=function() return {} end}
+local cameras={}
+Player={Action={FlipOver='flip'},getAvailableColors=function() return {'Black','Red','Pink'} end,getPlayers=function()
+ local players={};for _,color in ipairs({'Black','Red','Pink'}) do
+  players[#players+1]={color=color,lookAt=function(preset) cameras[color]=preset end}
+ end;return players
+end}
+package.loaded['core.main']={resolveCameraPreset=function(player,key)
+ assert(key=='diceTrayRed','camera must use the participating seat diceTray preset')
+ return {position={x=20,y=18,z=20},pitch=58,distance=11}
+end}
 local S={getStateVal=function(k) return state[k] end,setStateVal=function(v,k) state[k]=v end}
 local U={clone=clone,await=function(f) scheduled[#scheduled+1]=f end,chain=function(fs) for _,f in ipairs(fs) do scheduled[#scheduled+1]=f end end,isStorytellerSteamPlayer=function(p) return (type(p)=='table' and p.color or p)=='Black' end,AlertGM=function(s) error(s) end}
 local O={isHiddenObject=function(o) return o.hidden end,hideObject=function(o) if not o.hidden then o.previous={p=o.getPosition(),r=o.getRotation(),l=o.locked};o.hidden=true;o.position.y=-200 end end,restoreObject=function(o,p)
@@ -89,6 +98,10 @@ for i=1,66 do enh[#enh+1]={id='e'..i,notes=i..':'..catalog[i].name..':Enhanced',
 make('base','Deck','',{'deckOfComplications'},base);make('source','Deck','',{'deckOfComplications','enhancedComplication'},enh)
 local D=require('core.complications');assert(not D.start('Red','roll1'));drain()
 local g=state.complications;assert(g and not g.error)
+for _,color in ipairs({'Black','Red','Pink'}) do
+ assert(cameras[color] and math.abs(cameras[color].position.x-(20-7/math.sqrt(2)))<0.001)
+ assert(cameras[color].pitch==58 and cameras[color].distance==11)
+end
 local count=0;for _,id in pairs(g.slots) do count=count+1;assert(objects[id]);assert(Model.available(g,g.cards[id]));assert(not objects[id].locked) end;assert(count==10)
 local id=g.slots[1]
 assert(not D.onPlayerAction({color='Pink'},'flip',{objects[id]}));assert(D.onPlayerAction({color='Red'},'flip',{objects[id]}));drain();assert(g.cards[id].up and objects[id].locked)

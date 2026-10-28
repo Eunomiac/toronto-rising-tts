@@ -108,7 +108,7 @@ For an already-confirmed roll, update its margin, outcome, existing history entr
 #### The Setup Sequence
 This sequence should be run with comfortable sequencing delays within a `U.chain` function:
 
-1. All players cameras should be set to the `dice<Color>` mode, with the position modified by the same 7-unit shift in the direction of the table origin.
+1. All players cameras should be set to the `diceTray<Color>` mode, with the position modified by the same 7-unit shift in the direction of the table origin.
 2. The deck should be shuffled.
 3. Cards should be dealt, quickly but one-at-a-time, facedown to the ten snap point locations on the Complications board that are _not_ tagged `"deckOfComplications"`, in a random order.
 4. In the board's display UI, `id="text_originalMargin"` should have its `text` attribute set to the margin on the target roll; `id="text_complicationsTotal"` should be set to `"+0"`, and `id="text_adjustedMargin"` should be set to the margin on the target roll (again).
