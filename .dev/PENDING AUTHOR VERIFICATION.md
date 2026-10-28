@@ -33,7 +33,7 @@ Try Enhance, Negate, Random, Adjust, category restoration, and right-click Negat
 
 For Blood Rush, reverse once while the four choices are visible and once after choosing the Clan Compulsion. Repeat after saving/reloading during the choice; another Compulsion must never be removed. For Impending Doom, reveal one of its copies before reversal: it must remain, while other copies disappear and face-down holes refill. Reverse the base application before applying enhanced; retained copies count toward the four-per-original limit. At Cross Purposes must affect another PC's active Project and reverse that same change. Buzzkill's displayed capped margin must match the final roll result. Select an external face-up Complication with the Spotlight hotkey and Enhance it; its value must not enter the total.
 
-_Last populated: 2026-10-22 (shared Memoriam panels and token backs; spotlight figurines use the same portraits as the seat figurines). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
+_Last populated: 2026-10-27 (Complications deck assembly during Full build). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
 
 ### Storyteller Dashboard pins from 2026-10-21
 
@@ -842,6 +842,17 @@ Older Toronto Rising saves and autosaves still point at those deleted Cloud file
 3. Blood Potency icons, and the Sylvain and Robin companion toggles, should look the same as before.
 
 The extra copies are still on Cloud until the next full build with Tabletop Simulator closed. Older saves may still point at those copies.
+
+#### Complications deck assembly during Full build — direct author request
+
+**Context:** Implemented on `feat/complications-deck-build`. The eight private PNGs were installed under `assets/Deck of Complications/` in the implementation checkout; the sidecars are checked in under `.tools/complications/decks/settings/`. The image ZIP can be extracted at your build checkout's root if these files are not already present. Automated checks also used the actual Drive save and all eight real PNGs, with isolated test URLs. The live save and Steam Cloud were not changed in this environment. Automatic approval review rejected the required Linear issue creation because sending implementation details to Linear lacked explicit authorization; no Linear issue was created.
+
+**How to verify:** Finish any active Complications game, return loose Complications cards to their source decks, and save in TTS. Close TTS, leave Steam running, and run `npm run build:full` on this branch. The build should upload eight sheets and report 257 Standard cards and 66 Enhanced cards. Load the patched save from TTS's Games menu; Save & Play alone does not reload the disk objects.
+
+1. Check that both decks remain at their original positions and sizes, with the existing shared card back. Standard should contain twelve Powderkegs, six of each Common card, three of each Uncommon card, and one of each Rare card. Enhanced should contain one of each of the 66 identities.
+2. Inspect a Powderkeg and cards from each other rarity. Their faces must match their GM Notes; Standard uses `<index>:<name>`, and Enhanced adds `:Enhanced`. Both variants carry `deckOfComplications`; Enhanced also carries `enhancedComplication`.
+3. Start a Complications game and enhance a revealed card. Its Enhanced clone should show the matching artwork and still work with the existing game controls. Finish the game and save.
+4. Close TTS and repeat the Full build without changing images or sidecars. The deck step should report unchanged inputs and leave the decks alone. A changed image must wait for its new Cloud upload before rebuilding; changed inputs during an active saved game must produce a clear error instead of replacing cards.
 
 ## Cleared
 
