@@ -13,13 +13,17 @@ local SRI = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 
+--- Strip whitespace at the two ends only.
+--- Two anchored replacements, not one capture. MoonSharp rejects
+--- "^%s*(.-)%s*$" with "pattern too complex" once the string is long
+--- (GM Notes on a scanned object are long enough).
 --- @param s string|nil
 --- @return string
 local function trim(s)
   if U.Type(s) ~= "string" then
     return ""
   end
-  return string.match(s, "^%s*(.-)%s*$") or ""
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
 --- True if string matches ROLE_UPPERPATTERN (suffix is uppercase alphanumeric seat id).

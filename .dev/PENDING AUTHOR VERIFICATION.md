@@ -20,6 +20,14 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### TOR-749 — Startup crashes when a GM Note is long
+
+**Context:** While the table was syncing on load, the game trimmed every object's GM Notes with one Lua pattern. That pattern only removes spaces at the start and end, but Tabletop Simulator gives up once a note is long and reports `pattern too complex`. The trim now does the same job as two simple end-trims.
+
+**How to verify:** Save & Play on the save that just failed. Startup should finish without a console error that says `pattern too complex` while it is reading seat role notes. Seat lights and chairs should still line up with their role notes, the same as before this error started.
+
+_Last populated: 2026-10-28 (startup GM Notes trim). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
+
 #### Deck of Complications base system — direct author request
 
 **Context:** Implemented on `feat/deck-of-complications`; the ten reviewed automation requirements are now implemented. Automate toggles the recorded application; enhancing the card first still reverses its previous variant on the next click. Linear could not be updated because the connector requires reauthentication.
@@ -33,7 +41,6 @@ Try Enhance, Negate, Random, Adjust, category restoration, and right-click Negat
 
 For Blood Rush, reverse once while the four choices are visible and once after choosing the Clan Compulsion. Repeat after saving/reloading during the choice; another Compulsion must never be removed. For Impending Doom, reveal one of its copies before reversal: it must remain, while other copies disappear and face-down holes refill. Reverse the base application before applying enhanced; retained copies count toward the four-per-original limit. At Cross Purposes must affect another PC's active Project and reverse that same change. Buzzkill's displayed capped margin must match the final roll result. Select an external face-up Complication with the Spotlight hotkey and Enhance it; its value must not enter the total.
 
-_Last populated: 2026-10-27 (Complications deck assembly during Full build). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`), then reload the Toronto Rising save and Save & Play._
 
 ### Storyteller Dashboard pins from 2026-10-21
 
