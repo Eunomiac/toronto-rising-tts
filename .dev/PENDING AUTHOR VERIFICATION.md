@@ -20,6 +20,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications master decks and fast transfers — direct author request
+
+**How to verify:** Finish any older Complications game before updating the save. Run Full build and reload the save from TTS’s Games menu to load the two masterDeck tags and sorted decks; alternatively add masterDeck to each source Deck and use Debug → Sort Master Decks. On loading, a missing/duplicate master or descending index among its first five cards should warn only the Storyteller. Sorting should preserve both masters’ GUIDs, positions and card counts, with duplicate indices adjacent.
+
+Start a game and verify that both masters remain unchanged. A disposable ordinary deck should appear two units above its board snap, shuffle, then deal ten cards from its top in brief steps. Unchecked card types must be absent from that copy. Reveal a categorized card: matching cards already in piles should transfer together, while face-down board cards move in steps; shuffle before replacements. Disable category restrictions and apply/reverse Impending Doom to check that all face-down cards are returned and redealt. Save/reload during setup and a category transfer, then finish: all disposable decks and loose tagged cards should disappear immediately and the board should return home, preserving both masters and the final roll result. External manually drawn Complications are intentionally included in cleanup.
+
 #### Complications camera and card unlocking — direct author request
 
 **How to verify:** Start Complications with another player connected. Everyone should look toward the participating player’s dice tray, shifted toward the board. Once dealing finishes, face-down cards should unlock without a SetLock error. Reveal a card, then right-click Select: the remaining face-down cards should unlock while the revealed card stays locked. Repeat after saving and reloading an unfinished game.

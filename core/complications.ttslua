@@ -8,6 +8,7 @@ local G = require('lib.guids')
 local O = require('core.objects')
 local Model = require('lib.complications_model')
 local Catalog = require('lib.complications_catalog')
+local Decks = require('core.complications_decks')
 local Automations = require('lib.complications_automations')
 local Effects=require('core.complications_effects')
 Effects.register()
@@ -99,9 +100,9 @@ end
 local function locations(g)
     local out={}
     for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
-        if o.tag=='Deck' then
+        if not o.hasTag('masterDeck') and o.tag=='Deck' then
             for _,c in ipairs(o.getObjects()) do if g.cards[c.guid] then out[c.guid]={container=o} end end
-        elseif g.cards[o.getGUID()] then out[o.getGUID()]={object=o} end
+        elseif not o.hasTag('masterDeck') and g.cards[o.getGUID()] then out[o.getGUID()]={object=o} end
     end
     return out
 end
@@ -120,7 +121,7 @@ local function pile(g,zone,exclude)
             local candidate=map[guid].container or map[guid].object
             -- A future journal operation may still be moving this card out of another pile.
             local p=candidate.getPosition(); local target=g.piles[zone]
-            if target and math.abs(p.x-target.x)<1 and math.abs(p.z-target.z)<1 then return candidate end
+            if candidate.getGUID()~=exclude and target and math.abs(p.x-target.x)<1 and math.abs(p.z-target.z)<1 then return candidate end
         end
     end
     return nil
@@ -172,8 +173,194 @@ local function applyHidden(g)
     end)
     if not g.hidden then D.refresh() end
 end
+-- Snapshot each affected physical pile once. Rebuild the selected group and its
+-- remainder together; no per-card extraction/animation for cards already in piles.
+local function batchMove(g,op,done)
+    if not op.job then
+        local map=locations(g);local selected,containers={},{}
+        for _,guid in ipairs(op.guids) do
+            selected[guid]=true
+            local loc=map[guid]
+            if loc then local o=loc.container or loc.object;containers[o.getGUID()]=o end
+        end
+        local dest=op.zone~='retired' and pile(g,op.zone)
+        if dest then containers[dest.getGUID()]=dest end
+        local groups,templates,ids={deck={},discard={}},{},{}
+        for id,o in pairs(containers) do
+            assert(not o.hasTag('masterDeck'),'Master deck cannot enter a gameplay transaction')
+            local p=o.getPosition()
+            local zone=math.abs(p.x-g.piles.deck.x)<1 and math.abs(p.z-g.piles.deck.z)<1 and 'deck' or 'discard'
+            local data=o.getData();templates[zone]=data;ids[zone]=id
+            for _,row in ipairs(o.tag=='Deck' and data.ContainedObjects or {data}) do
+                local to=selected[row.GUID] and op.zone or zone
+                if to~='retired' then
+                    -- Moving cards go on top; a shuffle follows before replacement deals.
+                    if selected[row.GUID] then table.insert(groups[to],1,row) else groups[to][#groups[to]+1]=row end
+                end
+            end
+        end
+        g.batchSerial=(g.batchSerial or 0)+1
+        local job={remove={},parts={},tag='complicationsBatch_'..g.id..'_'..g.batchSerial}
+        for id in pairs(containers) do job.remove[#job.remove+1]=id end
+        for _,zone in ipairs({'deck','discard'}) do
+            if #groups[zone]>0 then
+                local template=U.clone(templates[zone] or templates.deck or templates.discard,true)
+                template.GUID=ids[zone] or ''
+                local p=U.clone(g.piles[zone],true);p.y=p.y+2
+                local data=Decks.pileData(template,groups[zone],p,{x=0,y=g.rotation.y,z=zone=='discard' and 0 or 180})
+                job.parts[#job.parts+1]={data=data,invisibleTo={}}
+            end
+        end
+        op.job=job;save(g)
+    end
+    Decks.replace(op.job,function() save(g) end,function()
+        if op.zone=='retired' then for _,guid in ipairs(op.guids) do g.cards[guid]=nil end end
+        done()
+    end)
+end
+local function drawTop(g,op,done)
+    if not op.guid then
+        local deck=pile(g,'deck')
+        if not deck then g.exhausted=true;g.slots[op.slot]=nil;done();return end
+        local entries=deck.tag=='Deck' and deck.getObjects() or {{guid=deck.getGUID()}}
+        op.guid=entries[1].guid
+        local c=assert(g.cards[op.guid],'Top card is not registered to this game')
+        assert(Model.available(g,c),'Ineligible card reached the playable deck')
+        c.zone,c.up,c.enhanced,c.negated='slot',false,false,false
+        g.slots[op.slot]=op.guid;g.exhausted=#entries==1;save(g)
+    end
+    local function placed(o) poseCard(g,o,op.slot,false);done() end
+    local direct=obj(op.guid)
+    if direct then placed(direct);return end
+    local loc=locations(g)[op.guid]
+    if not loc then fail(g,'Top card '..op.guid..' is missing.');return end
+    loc.container.takeObject({guid=op.guid,position=g.positions[op.slot],rotation={0,g.rotation.y,180},smooth=false,callback_function=placed})
+end
+local function cloneMaster(g,op,done)
+    if not op.job then
+        local master=obj(g.masters[op.role]);if not master then fail(g,'Complications master is missing.');return end
+        local data=Decks.cloneData(master.getData());data.Locked=true
+        data.Transform.posY=data.Transform.posY+3
+        op.job={remove={},parts={{data=data}},tag='complicationsGame_'..g.id..'_'..op.role}
+        save(g)
+    end
+    Decks.replace(op.job,function() save(g) end,function()
+        local copy=obj(op.job.parts[1].guid)
+        if op.role=='enhanced' then
+            g.source=copy.getGUID();g.templates={}
+            for _,data in ipairs(copy.getData().ContainedObjects or {}) do
+                local index=Model.identity(data.GMNotes)
+                if index then g.templates[tostring(index)]=data end
+            end
+            O.hideObject(copy)
+        else g.playClone=copy.getGUID() end
+        done()
+    end)
+end
+local function filterClone(g,op,done)
+    if not op.job then
+        local copy=obj(g.playClone);local data=copy.getData();local kept={}
+        for _,row in ipairs(data.ContainedObjects or {}) do
+            local index,name=Model.identity(row.GMNotes);local def=Catalog[index]
+            if def and def.name==name and Model.available(g,def) then kept[#kept+1]=row end
+        end
+        g.deckTemplate=U.clone(data,true)
+        local filtered=Decks.pileData(data,kept,copy.getPosition(),copy.getRotation())
+        op.job={remove={copy.getGUID()},parts=filtered and {{data=filtered}} or {},tag='complicationsFilter_'..g.id}
+        save(g)
+    end
+    Decks.replace(op.job,function() save(g) end,function()
+        g.cards={}
+        for _,part in ipairs(op.job.parts) do
+            local o=obj(part.guid);g.playClone=part.guid
+            local data=o.getData()
+            for _,row in ipairs(o.tag=='Deck' and data.ContainedObjects or {data}) do
+                local index,name=Model.identity(row.GMNotes);local def=Catalog[index]
+                g.cards[row.GUID]={index=index,name=name,value=def.value,category=def.category,
+                    rarity=def.rarity,rollTypes=U.clone(def.rollTypes,true),zone='deck',up=false,
+                    data=def.rarity=='Rare' and row or nil}
+            end
+        end
+        done()
+    end)
+end
+local function moveToPlayer(g,done)
+    local b=board();local anchor=obj(g.anchor);local p=anchor.getPosition()
+    local length=math.sqrt(p.x*p.x+p.z*p.z);local dx,dz=-7*p.x/length,-7*p.z/length
+    g.rotation={x=0,y=anchor.getRotation().y+180,z=0}
+    O.restoreObject(b,{position={x=p.x+dx,y=7.75,z=p.z+dz},rotation=g.rotation,locked=true})
+    b.setInvisibleTo({})
+    g.positions={};for i,localPos in ipairs(g.localSlots) do g.positions[i]=vector(b.positionToWorld(localPos)) end
+    g.piles={deck=vector(b.positionToWorld(g.localPiles[2])),discard=vector(b.positionToWorld(g.localPiles[1]))}
+    local deck=obj(g.playClone)
+    if deck then
+        local pos=U.clone(g.piles.deck,true);pos.y=pos.y+2
+        O.restoreObject(deck,{position=pos,rotation={0,g.rotation.y,180},locked=false,interactable=true})
+        deck.setInvisibleTo({})
+    end
+    for _,player in ipairs(Player.getPlayers()) do
+        local preset=require('core.main').resolveCameraPreset(player,'diceTray'..g.target.color)
+        if preset then preset.position.x=preset.position.x+dx;preset.position.z=preset.position.z+dz;player.lookAt(preset) end
+    end
+    done()
+end
+
+local function retireDoomCopies(g,source)
+    local piles={}
+    for guid,c in pairs(g.cards) do
+        if c.doomSource==source and not (c.zone=='slot' and c.up) then
+            local wasPile=c.zone=='deck' or c.zone=='discard'
+            for i,v in pairs(g.slots) do if v==guid then g.slots[i]=nil end end
+            c.zone='retired'
+            if g.version>=2 and wasPile then piles[#piles+1]=guid
+            else Model.queue(g,{kind='destroyCard',guid=guid}) end
+        end
+    end
+    if #piles>0 then Model.queue(g,{kind='batchMove',guids=piles,zone='retired'}) end
+end
+local function doomBatch(g,op,done)
+    if not op.job then
+        local rows={}
+        for _,entry in ipairs(op.roots) do
+            local c=assert(g.cards[entry.guid],'Rare root disappeared')
+            for i=1,entry.count do
+                local row=Decks.cloneData(c.data);row.Tags=row.Tags or {}
+                row.Tags[#row.Tags+1]='complicationsRoot_'..entry.guid
+                rows[#rows+1]=row
+            end
+        end
+        if #rows==0 then done();return end
+        local template=U.clone(g.deckTemplate,true);template.GUID=''
+        local p=U.clone(g.piles.deck,true);p.y=p.y+4
+        local data=Decks.pileData(template,rows,p,{x=0,y=g.rotation.y,z=180})
+        g.batchSerial=(g.batchSerial or 0)+1
+        op.job={remove={},parts={{data=data,invisibleTo={}}},tag='complicationsDoom_'..g.id..'_'..g.batchSerial}
+        save(g)
+    end
+    Decks.replace(op.job,function() save(g) end,function()
+        local o=obj(op.job.parts[1].guid);local data=o.getData()
+        for _,row in ipairs(o.tag=='Deck' and data.ContainedObjects or {data}) do
+            local root;for _,tag in ipairs(row.Tags or {}) do root=tag:match('^complicationsRoot_(.+)$') or root end
+            local c=U.clone(assert(g.cards[root],'Rare source disappeared'),true)
+            c.zone,c.up,c.enhanced,c.negated,c.clone='deck',false,false,false,nil
+            c.doomSource,c.doomRoot=op.source,root;g.cards[row.GUID]=c
+        end
+        save(g);collect(g,o,'deck',done)
+    end)
+end
+
 local function execute(g,op,done)
-    if op.kind=='collect' then
+    if op.kind=='cloneMaster' then cloneMaster(g,op,done)
+    elseif op.kind=='filterClone' then filterClone(g,op,done)
+    elseif op.kind=='moveToPlayer' then moveToPlayer(g,done)
+    elseif op.kind=='drawTop' then drawTop(g,op,done)
+    elseif op.kind=='batchMove' then batchMove(g,op,done)
+    elseif op.kind=='cleanupClones' then
+        for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
+            if not o.hasTag('masterDeck') and (o.tag=='Card' or o.tag=='Deck') then o.destruct() end
+        end
+        done()
+    elseif op.kind=='collect' then
         local loc=locations(g)[op.guid]
         local physical=loc and (loc.container or loc.object)
         local p=physical and physical.getPosition()
@@ -182,7 +369,7 @@ local function execute(g,op,done)
         else card(g,op.guid,function(o) collect(g,o,op.zone,done) end) end
     elseif op.kind=='place' then card(g,op.guid,function(o) poseCard(g,o,op.slot,false); done() end)
     elseif op.kind=='shuffle' then
-        local deck=pile(g,'deck'); if deck and deck.tag=='Deck' then deck.shuffle() end; done()
+        local deck=pile(g,'deck'); if deck then deck.setLock(false);if deck.tag=='Deck' then deck.shuffle() end end; done()
     elseif op.kind=='unenhance' then
         local c=g.cards[op.guid]; local clone=obj(c.clone)
         if clone then clone.destruct() end; c.clone=nil
@@ -217,28 +404,28 @@ local function execute(g,op,done)
     elseif op.kind=='effect' then Effects.execute(op); done()
     elseif op.kind=='doomPlan' then
         if not op.planned then
+            retireDoomCopies(g,op.guid)
             local roots={}
             for guid,c in pairs(g.cards) do
-                -- A copy retained by reversal may since have been discarded or turned down.
-                -- Only still-revealed copies count toward this fresh application.
-                if c.doomSource==op.guid and not (c.zone=='slot' and c.up) then
-                    for i,v in pairs(g.slots) do if v==guid then g.slots[i]=nil end end
-                    c.zone='retired';Model.queue(g,{kind='destroyCard',guid=guid})
-                end
                 if c.rarity=='Rare' and c.zone~='excluded' and c.zone~='external' and c.zone~='retired' and c.doomSource~=op.guid then roots[#roots+1]=guid end
             end
             table.sort(roots)
+            local batchRoots={}
             for _,root in ipairs(roots) do
                 local retained=0
                 for _,c in pairs(g.cards) do if c.doomSource==op.guid and c.doomRoot==root and c.zone=='slot' and c.up then retained=retained+1 end end
-                for i=1,math.max(0,op.copies-retained) do
+                local needed=math.max(0,op.copies-retained)
+                if g.version>=2 then batchRoots[#batchRoots+1]={guid=root,count=needed}
+                else for i=1,needed do
                     g.cloneSerial=(g.cloneSerial or 0)+1
                     Model.queue(g,{kind='doomClone',root=root,source=op.guid,tag='complicationsDoom_'..g.id..'_'..g.cloneSerial})
-                end
+                end end
             end
+            if g.version>=2 then Model.queue(g,{kind='doomBatch',roots=batchRoots,source=op.guid}) end
             Model.queue(g,{kind='doomRedeal'});op.planned=true;save(g)
         end
         done()
+    elseif op.kind=='doomBatch' then doomBatch(g,op,done)
     elseif op.kind=='doomClone' then
         local existing=op.actualGuid and locations(g)[op.actualGuid]
         if existing then
@@ -266,13 +453,8 @@ local function execute(g,op,done)
         end
     elseif op.kind=='doomReverse' then
         if not op.planned then
-            for guid,c in pairs(g.cards) do
-                if c.doomSource==op.guid and not (c.zone=='slot' and c.up) then
-                    for i,v in pairs(g.slots) do if v==guid then g.slots[i]=nil end end
-                    c.zone='retired';Model.queue(g,{kind='destroyCard',guid=guid})
-                end
-            end
-            Model.queue(g,{kind='doomRefill'});op.planned=true;save(g)
+            retireDoomCopies(g,op.guid)
+            Model.queue(g,{kind=g.version>=2 and 'doomRedeal' or 'doomRefill'});op.planned=true;save(g)
         end
         done()
     elseif op.kind=='destroyCard' then
@@ -288,11 +470,11 @@ local function execute(g,op,done)
         done()
     elseif op.kind=='home' then
         local b=board(); O.restoreObject(b,{position=g.home.position,rotation=g.home.rotation,locked=true})
-        local deck=pile(g,'deck')
+        local deck=g.version<2 and pile(g,'deck')
         if deck then O.restoreObject(deck,{position=g.home.deck,rotation=g.home.rotation,locked=true}) end
         local invisible={}; for _,color in ipairs(Player.getAvailableColors()) do if color~='Black' then invisible[#invisible+1]=color end end
         b.setInvisibleTo(invisible); if deck then deck.setInvisibleTo(invisible) end
-        local source=obj(g.source); if source then source.setInvisibleTo(invisible) end
+        local source=g.version<2 and obj(g.source); if source then source.setInvisibleTo(invisible) end
         done()
     else fail(g,'Unknown saved operation '..tostring(op.kind)) end
 end
@@ -323,33 +505,9 @@ function D.start(color,rollId)
     local b=board(); if not b then return 'Complications Board is missing.' end
     local anchor=obj(G.GUIDS['CSHEET_DICE_DRAWER_ANCHOR_ON_'..string.upper(color)])
     if not anchor then return 'The player drawer anchor is missing.' end
-    local cards,templates,source={},{},nil
-    for _,o in ipairs(getObjectsWithTag('deckOfComplications')) do
-        local enhanced=o.hasTag('enhancedComplication')
-        if enhanced and o.tag=='Deck' then
-            source=o.getGUID()
-            for _,data in ipairs(o.getData().ContainedObjects or {}) do
-                local index=Model.identity(data.GMNotes)
-                if index then templates[tostring(index)]=data end
-            end
-        elseif not enhanced then
-            local dataByGuid={}
-            if o.tag=='Deck' then for _,data in ipairs(o.getData().ContainedObjects or {}) do dataByGuid[data.GUID]=data end end
-            local entries=o.tag=='Deck' and o.getObjects() or {{guid=o.getGUID(),gm_notes=o.getGMNotes()}}
-            for _,entry in ipairs(entries) do
-                local index,name=Model.identity(entry.gm_notes)
-                local def=Catalog[index]
-                if not def or def.name~=name then return 'Unknown card GM Notes: '..tostring(entry.gm_notes) end
-                cards[entry.guid]={index=index,name=name,value=def.value,category=def.category,rarity=def.rarity,rollTypes=U.clone(def.rollTypes,true),zone='deck',up=false}
-                if def.rarity=='Rare' then
-                    if o.tag=='Deck' then
-                        cards[entry.guid].data=dataByGuid[entry.guid]
-                    else cards[entry.guid].data=o.getData() end
-                end
-            end
-        end
-    end
-    if not source or not next(cards) then return 'Both Complications decks must be present.' end
+    local masters,errors=Decks.masters()
+    if #errors>0 then return table.concat(errors,' ') end
+    if S.getStateVal('complicationsMasterSort') then return 'Wait for master-deck sorting to finish.' end
     local slots,tagged={},{}
     for _,snap in ipairs(b.getSnapPoints()) do
         local isPile=false; for _,tag in ipairs(snap.tags or {}) do if tag=='deckOfComplications' then isPile=true end end
@@ -357,28 +515,20 @@ function D.start(color,rollId)
     end
     if #slots~=10 or #tagged~=2 then return 'Board requires ten card snaps and two tagged pile snaps.' end
     table.sort(tagged,function(a,b2) return a.x<b2.x end)
-    local g=Model.new(target,cards); g.id=tostring(os.time())..':'..rollId; g.templates=templates; g.source=source
-    g.home={position=vector(b.getPosition()),rotation=vector(b.getRotation()),deck=vector(b.positionToWorld(tagged[2]))}
-    local p=anchor.getPosition(); local length=math.sqrt(p.x*p.x+p.z*p.z)
-    if length==0 then return 'Drawer anchor cannot be at table origin.' end
-    local dx,dz=-7*p.x/length,-7*p.z/length
-    g.rotation={x=0,y=anchor.getRotation().y+180,z=0}
-    O.restoreObject(b,{position={x=p.x+dx,y=7.75,z=p.z+dz},rotation=g.rotation,locked=true})
-    b.setInvisibleTo({})
-    g.positions={}; for i,localPos in ipairs(slots) do g.positions[i]=vector(b.positionToWorld(localPos)) end
-    g.piles={deck=vector(b.positionToWorld(tagged[2])),discard=vector(b.positionToWorld(tagged[1])),excluded={x=g.home.position.x+30,y=g.home.position.y,z=g.home.position.z}}
-    local guids={}; for guid in pairs(cards) do guids[#guids+1]=guid end; table.sort(guids)
-    for _,guid in ipairs(guids) do
-        local c=cards[guid]; c.zone=Model.available(g,c) and 'deck' or 'excluded'
-        Model.queue(g,{kind='collect',guid=guid,zone=c.zone})
-    end
+    local p=anchor.getPosition()
+    if p.x*p.x+p.z*p.z==0 then return 'Drawer anchor cannot be at table origin.' end
+    local g=Model.new(target,{})
+    g.version=2;g.id=tostring(os.time())..':'..rollId;g.templates={}
+    g.home={position=vector(b.getPosition()),rotation=vector(b.getRotation())}
+    g.anchor=anchor.getGUID();g.localSlots=slots;g.localPiles=tagged;g.positions={};g.piles={}
+    g.masters={standard=masters.standard[1].getGUID(),enhanced=masters.enhanced[1].getGUID()}
+    Model.queue(g,{kind='cloneMaster',role='standard'})
+    Model.queue(g,{kind='cloneMaster',role='enhanced'})
+    Model.queue(g,{kind='filterClone'})
+    Model.queue(g,{kind='moveToPlayer'})
     Model.queue(g,{kind='shuffle'})
-    local order={1,2,3,4,5,6,7,8,9,10}; for i=10,2,-1 do local j=math.random(i); order[i],order[j]=order[j],order[i] end
+    local order={1,2,3,4,5,6,7,8,9,10};for i=10,2,-1 do local j=math.random(i);order[i],order[j]=order[j],order[i] end
     for _,i in ipairs(order) do Model.draw(g,i) end
-    for _,player in ipairs(Player.getPlayers()) do
-        local preset=require('core.main').resolveCameraPreset(player,'diceTray'..color)
-        if preset then preset.position.x=preset.position.x+dx; preset.position.z=preset.position.z+dz; player.lookAt(preset) end
-    end
     mountAutomationButton(); begin(g); return nil
 end
 function D.onPlayerAction(player,action,targets)
@@ -410,6 +560,9 @@ end
 local function finish(g)
     local _,margin=Model.totals(g)
     g.finalTotal=margin-g.target.result.margin; g.ending=true; g.hidden=false; applyHidden(g)
+    if g.version>=2 then
+        Model.queue(g,{kind='cleanupClones'});Model.queue(g,{kind='home'});begin(g);return
+    end
     for guid,c in pairs(g.cards) do
         if c.enhanced or c.clone then Model.queue(g,{kind='unenhance',guid=guid}); c.enhanced=false end
         if c.doomSource then c.zone='retired';Model.queue(g,{kind='destroyCard',guid=guid})
@@ -490,6 +643,8 @@ function D.toggle(player)
     save(g); applyHidden(g); announce(g)
 end
 function D.restore()
+    Decks.restoreSort()
+    if not S.getStateVal('complicationsMasterSort') then Decks.verify() end
     running=false; selectArmed=false
     mountAutomationButton()
     require('core.compulsions').restoreClanSources()
