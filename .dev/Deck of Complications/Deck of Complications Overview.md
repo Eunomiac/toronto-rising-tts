@@ -109,6 +109,8 @@ The two source decks are immutable templates during gameplay. On save load, chec
 
 Saved operations make cloning, filtering and dealing resumable without duplicating a gameplay deck. Fixed pauses are limited to a small number of setup operations and visible card steps, not one operation per master-deck card.
 
+The playable deck and discard pile are tracked by saved object GUIDs, updated when merging, replacing, or collapsing a deck changes its identity. Moving a pile away from its snap must not prevent dealing or transfers. If eligible cards remain but their deck cannot be found, report a missing-deck error rather than silently treating it as exhausted. Reload repairs older falsely exhausted setups with empty slots when the saved gameplay deck still exists.
+
 Each deal records the chosen top-card GUID before extraction and takes it directly to its assigned snap, face-down and locked. Advance to the next deal after a fixed 0.12-second stagger; do not wait for spawn callbacks, spawning flags, custom-image loading, or physics readiness. After the final stagger, refresh controls and unlock eligible face-down cards. Saved intent still allows an interrupted deal to resume without duplicating a card. Other asynchronous container operations retain their bounded timeout/recovery behavior. Completed container snapshots are discarded immediately, and the reusable deck template stores only container settings. Advancing/dealing updates the relevant saved fields rather than repeatedly validating every saved card and template.
 
 ### Accelerated Deck Modification

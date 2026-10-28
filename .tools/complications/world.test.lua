@@ -77,6 +77,9 @@ make=function(id,tag,notes,tags,children)
   elseif op then assertStaged(p.position) end
   for i,v in ipairs(o.children) do if v.id==p.guid or (not p.guid and i==1) then
    table.remove(o.children,i)
+   -- An unlocked gameplay deck can snap/slide away from its authored position.
+   -- Its identity must survive that movement, including subsequent transfers.
+   if op and op.kind=='drawTop' then o.position.x=o.position.x+2;o.position.z=o.position.z+3 end
    local c=make(v.id,'Card',v.notes,v.tags); c.setPosition(p.position)
    if #o.children==1 then
     local last=o.children[1];local single=make(last.id,'Card',last.notes,last.tags);single.position=clone(o.position);objects[id]=nil
@@ -311,11 +314,12 @@ D.button({color='Black'},'-2','button_StopSelect');drain()
 D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
 -- Filtering to one card (then to none) must survive deck collapse and allow Stop.
 local flags={};for index,def in pairs(catalog) do flags[index]=def.rollTypes.standard;def.rollTypes.standard=index==40 end
-for _,oneCard in ipairs({true,false}) do
- catalog[40].rollTypes.standard=oneCard
+for _,cardCount in ipairs({2,1,0}) do
+ catalog[40].rollTypes.standard=cardCount>=1
+ catalog[41].rollTypes.standard=cardCount==2
  assert(not D.start('Red','roll1'));drain();g=state.complications
  local slots=0;for _ in pairs(g.slots) do slots=slots+1 end
- assert(slots==(oneCard and 1 or 0) and g.exhausted)
+ assert(slots==cardCount and g.exhausted)
  D.button({color='Black'},'-1','button_StopSelect');D.button({color='Black'},'-1','button_StopSelect');drain()
  assert(not state.complications)
 end
@@ -372,3 +376,13 @@ for _,guid in pairs(g.slots) do
 end
 stopGame()
 print('Staggered dealing: persistent readiness flags do not block ten deals; interrupted first deal resumes without duplication.')
+-- Reproduce the author's saved state: one card, empty queue, false exhaustion.
+takeCount=0;assert(not D.start('Red','roll1'));steps=0
+while takeCount==0 and steps<200 do drain(1);steps=steps+1 end
+g=state.complications;g.operations={};g.operationIndex=1;g.exhausted=true
+scheduled={};state.complications=clone(g)
+package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain();g=state.complications
+assert(takeCount==10 and not g.exhausted and not g.error)
+for _,guid in pairs(g.slots) do assert(not objects[guid].locked) end
+stopGame()
+print('Pile identity: moved decks still deal/transfer; reload repairs a completed queue with false exhaustion.')

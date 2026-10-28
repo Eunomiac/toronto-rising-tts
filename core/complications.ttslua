@@ -132,9 +132,23 @@ local function card(g,guid,done)
     if direct then done(direct); return end
     local loc=locations(g)[guid]
     if not loc then fail(g,'Card '..guid..' is missing.'); return end
+    local entries=loc.container.getObjects()
+    if #entries<=2 then
+        g.pileGuids=g.pileGuids or {deck=g.playClone}
+        for zone,id in pairs(g.pileGuids) do
+            if id==loc.container.getGUID() then
+                local remaining
+                for _,entry in ipairs(entries) do if entry.guid~=guid then remaining=entry.guid end end
+                g.pileGuids[zone]=remaining
+                if zone=='deck' then g.playClone=remaining end
+            end
+        end
+    end
     loc.container.takeObject({guid=guid,position=stagingPosition(g),smooth=false,callback_function=done})
 end
 local function pile(g,zone,exclude)
+    local known=obj(g.pileGuids and g.pileGuids[zone] or (zone=='deck' and g.playClone))
+    if known and known.getGUID()~=exclude and not known.hasTag('masterDeck') then return known end
     local map=locations(g)
     for guid,c in pairs(g.cards) do
         if guid~=exclude and c.zone==zone and map[guid] then
@@ -145,6 +159,11 @@ local function pile(g,zone,exclude)
         end
     end
     return nil
+end
+local function rememberPile(g,zone,o)
+    g.pileGuids=g.pileGuids or {}
+    g.pileGuids[zone]=o and o.getGUID() or nil
+    if zone=='deck' then g.playClone=g.pileGuids[zone] end
 end
 local function poseCard(g,o,slot,up,buried)
     local p=U.clone(g.positions[slot], true); p.y=p.y-(buried and 0.5 or 0)
@@ -160,6 +179,10 @@ local function poseLogicalCard(g,o,guid,slot,buried)
     else poseCard(g,o,slot,true,buried) end
 end
 local function collect(g,o,zone,done)
+    -- Moving the sole Card out of a pile consumes that pile's old identity.
+    for source,id in pairs(g.pileGuids or {}) do
+        if source~=zone and id==o.getGUID() then rememberPile(g,source,nil) end
+    end
     o.highlightOff(); o.setLock(false)
     if zone~='excluded' then o.setInvisibleTo({}) end
     if O.isHiddenObject(o) then O.restoreObject(o,{locked=false,interactable=true}) end
@@ -167,10 +190,11 @@ local function collect(g,o,zone,done)
     if dest then
         dest.setLock(false)
         local merged=dest.putObject(o)
-        if merged then merged.setLock(true); if zone~='excluded' then merged.setInvisibleTo({}) end end
+        if merged then rememberPile(g,zone,merged);merged.setLock(true); if zone~='excluded' then merged.setInvisibleTo({}) end end
     else
         local p=g.piles[zone]
         o.setPosition(p); o.setRotation({0,g.rotation.y,zone=='discard' and 0 or 180}); o.setLock(true)
+        rememberPile(g,zone,o)
     end
     if zone=='excluded' then
         local physical=pile(g,zone) or obj(o.getGUID())
@@ -209,7 +233,8 @@ local function batchMove(g,op,done)
         for id,o in pairs(containers) do
             assert(not o.hasTag('masterDeck'),'Master deck cannot enter a gameplay transaction')
             local p=o.getPosition()
-            local zone=math.abs(p.x-g.piles.deck.x)<1 and math.abs(p.z-g.piles.deck.z)<1 and 'deck' or 'discard'
+            local deckGuid=g.pileGuids and g.pileGuids.deck or g.playClone
+            local zone=(id==deckGuid or (not obj(deckGuid) and math.abs(p.x-g.piles.deck.x)<1 and math.abs(p.z-g.piles.deck.z)<1)) and 'deck' or 'discard'
             local data=o.getData();templates[zone]=data;ids[zone]=id
             for _,row in ipairs(o.tag=='Deck' and data.ContainedObjects or {data}) do
                 local to=selected[row.GUID] and op.zone or zone
@@ -228,12 +253,23 @@ local function batchMove(g,op,done)
                 template.GUID=ids[zone] or ''
                 local p=U.clone(g.piles[zone],true);p.y=p.y+2
                 local data=Decks.pileData(template,groups[zone],p,{x=0,y=g.rotation.y,z=zone=='discard' and 0 or 180})
-                job.parts[#job.parts+1]={data=data,invisibleTo={}}
+                job.parts[#job.parts+1]={data=data,invisibleTo={},zone=zone}
             end
         end
         op.job=job;save(g)
     end
     Decks.replace(op.job,function() save(g) end,function()
+        g.pileGuids=g.pileGuids or {deck=g.playClone}
+        for _,id in ipairs(op.job.remove) do
+            for zone,guid in pairs(g.pileGuids) do
+                if guid==id then g.pileGuids[zone]=nil;if zone=='deck' then g.playClone=nil end end
+            end
+        end
+        for _,part in ipairs(op.job.parts) do
+            local o=obj(part.guid)
+            local zone=part.zone or (math.abs(o.getPosition().x-g.piles.deck.x)<1 and 'deck' or 'discard')
+            rememberPile(g,zone,o)
+        end
         if op.zone=='retired' then for _,guid in ipairs(op.guids) do g.cards[guid]=nil end end
         done()
     end)
@@ -241,13 +277,22 @@ end
 local function drawTop(g,op,done)
     if not op.guid then
         local deck=pile(g,'deck')
-        if not deck then g.exhausted=true;g.slots[op.slot]=nil;done();return end
+        if not deck then
+            if #Model.deck(g)>0 then fail(g,'Playable deck is missing; cards remain in the saved deck.');return end
+            g.exhausted=true;g.slots[op.slot]=nil;done();return
+        end
         local entries=deck.tag=='Deck' and deck.getObjects() or {{guid=deck.getGUID()}}
+        rememberPile(g,'deck',deck)
         op.guid=entries[1].guid
         local c=assert(g.cards[op.guid],'Top card is not registered to this game')
         assert(Model.available(g,c),'Ineligible card reached the playable deck')
         c.zone,c.up,c.enhanced,c.negated='slot',false,false,false
         g.slots[op.slot]=op.guid;g.exhausted=#entries==1
+        -- Removing the penultimate card replaces the Deck with its last Card.
+        if #entries<=2 then
+            g.pileGuids.deck=#entries==2 and entries[2].guid or nil
+            g.playClone=g.pileGuids.deck
+        end
         -- These tables already belong to gameState. Validate only the changed
         -- deal intent, not all saved card art/templates on each of ten deals.
         S.setStateVal(op,'complications','operations',g.operationIndex)
@@ -717,6 +762,12 @@ function D.restore()
     for k,v in pairs(g.slots) do slots[tonumber(k)]=v end
     for k,v in pairs(g.positions) do positions[tonumber(k)]=v end
     g.slots,g.positions=slots,positions
+    -- Earlier builds silently completed setup as "exhausted" when the unlocked
+    -- deck moved away from its snap. Resume its empty slots using the saved GUID.
+    if g.version>=2 and g.exhausted and g.operationIndex>#g.operations and #Model.deck(g)>0 and obj(g.playClone) then
+        g.exhausted=false
+        for i=1,10 do if not g.slots[i] then Model.draw(g,i) end end
+    end
     if g.mode=='confirm' then g.mode='stop' end
     -- Rebuild active card poses after a save made during a flip or enhancement.
     if not g.hidden and not busy(g) then
