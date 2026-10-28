@@ -115,7 +115,7 @@ Each deal records the chosen top-card GUID before extraction and takes it direct
 
 ### Accelerated Deck Modification
 
-Cards already inside the gameplay deck or discard pile move as one group, in a single pile transaction, to their destination: face-down on top of the deck when restored, or face-up on top of the discard pile when excluded by category. Preserve their logical card GUIDs. Face-down playmat cards still return in brief stepped sequence.
+Cards already inside the gameplay deck or discard pile move as one group, in a single pile transaction, to their destination: face-down on top of the deck when restored, or face-up on top of the discard pile when excluded by category. Preserve their logical card GUIDs. The visible discard pile must remain unlocked, including after bulk replacement, single-card collection, merges, reload, and hide/show restoration, so it settles onto the board instead of floating above it. Face-down playmat cards still return in brief stepped sequence.
 
 After all required removals/returns, shuffle the gameplay deck and deal physical top cards face-down into empty slots. Category removal replaces only affected face-down slots. Category restoration and Impending Doom changes return **all** face-down board cards before shuffling and redealing. This applies to both application and reversal of Impending Doom; revealed retained copies remain in place. The same roll-type eligibility filter always applies. No operation modifies the masters. Any temporary extraction or spawned card/deck awaiting placement uses a staging position outside the world-space envelope of all board snaps, with additional vertical clearance; never stage above the board centre or another card slot.
 

@@ -320,8 +320,16 @@ scheduled={};state.complications=clone(g);deferSpawn=false
 package.loaded['core.complications']=nil;D=require('core.complications');D.restore();drain();g=state.complications
 assert(takeCount-beforeTakes==replaced,'pile restriction must not extract individual cards')
 for guid,c in pairs(g.cards) do
- if guid~=categorized and c.category==category then assert(c.zone=='discard') end
+ if guid~=categorized and c.category==category then
+  assert(c.zone=='discard')
+  local discard=assert(objects[g.pileGuids.discard]);local found=discard.getGUID()==guid
+  for _,entry in ipairs(discard.getObjects()) do if entry.guid==guid then found=true end end
+  assert(found,'matching category card not physically in discard: '..guid)
+ end
 end
+assert(not objects[g.pileGuids.discard].locked,'discard must settle unlocked')
+objects[g.pileGuids.discard].setLock(true);D.restore();drain();g=state.complications
+assert(not objects[g.pileGuids.discard].locked,'reload must unlock older discard piles')
 beforeTakes=takeCount;D.button({color='Black'},'-1','button_ToggleCategoryDiscard');drain()
 assert(takeCount-beforeTakes==9,'restoration must redeal all nine face-down cards from the top')
 assert(g.slots[1]==categorized and g.cards[categorized].up)
@@ -401,6 +409,24 @@ assert(takeCount==10 and not g.exhausted and not g.error)
 for _,guid in pairs(g.slots) do assert(not objects[guid].locked) end
 stopGame()
 print('Pile identity: moved decks still deal/transfer; reload repairs a completed queue with false exhaustion.')
+-- Multiple reveals must remove all physical copies of every restricted category.
+dropTakeCallbacks=false;holdTaken=false
+assert(not D.start('Red','roll1'));drain();g=state.complications
+local restricted={}
+for _,index in ipairs({11,7,4,12}) do
+ local guid=placeIndex(index,1+#Model.candidates(g,'all'))
+ assert(D.onPlayerAction({color='Red'},'flip',{objects[guid]}));drain()
+ restricted[g.cards[guid].category]=true
+ local draw=assert(objects[g.playClone])
+ for _,entry in ipairs(draw.getObjects()) do
+  assert(not restricted[g.cards[entry.guid].category],'restricted category remains physically in draw pile')
+ end
+ assert(not objects[g.pileGuids.discard].locked)
+ D.button({color='Black'},'-2','button_StopSelect');drain()
+end
+stopGame()
+print('Sequential categories: Debilitation, Beast, Benefit and Humanity removed from physical draw pile.')
+
 -- Do not silently resume a legacy save whose ten records overwrote the empty key.
 local broken=Model.new(clone(target),{['']={zone='slot',up=false}})
 state.complications=broken;D.restore()
