@@ -7,14 +7,39 @@ local sorting=false
 local function tagsWithoutMaster(tags)
  local out={};for _,tag in ipairs(tags or {}) do if tag~='masterDeck' then out[#out+1]=tag end end;return out
 end
-function B.cloneData(source)
+-- Cold allocation pass per clone transaction. Include contained Deck/Bag GUIDs:
+-- getObjectFromGUID alone cannot find objects still inside containers.
+function B.cloneIds()
+ local used={}
+ for _,o in ipairs(getAllObjects()) do
+  used[o.getGUID()]=true
+  if o.tag=='Deck' or o.tag=='Bag' then
+   for _,entry in ipairs(o.getObjects()) do if entry.guid then used[entry.guid]=true end end
+  end
+ end
+ return function()
+  local guid
+  repeat guid=string.format('%06x',math.random(1,16777215)) until not used[guid] and not getObjectFromGUID(guid)
+  used[guid]=true;return guid
+ end
+end
+function B.cloneData(source,allocate)
+ allocate=allocate or B.cloneIds()
  local data=U.clone(source,true)
  local function clear(o)
-  o.GUID='';o.Tags=tagsWithoutMaster(o.Tags)
+  o.GUID=allocate();o.Tags=tagsWithoutMaster(o.Tags)
   for _,child in ipairs(o.ContainedObjects or {}) do clear(child) end
   for _,child in pairs(o.States or {}) do clear(child) end
  end
  clear(data);return data
+end
+function B.assertCardIds(data)
+ local seen={}
+ for _,row in ipairs(data.ContainedObjects or {data}) do
+  assert(type(row.GUID)=='string' and row.GUID~='','Complications card has an empty GUID')
+  assert(not seen[row.GUID],'Complications cards share GUID '..row.GUID)
+  seen[row.GUID]=true
+ end
 end
 -- A future pile needs the container settings, not another saved copy of every card.
 function B.templateData(source)

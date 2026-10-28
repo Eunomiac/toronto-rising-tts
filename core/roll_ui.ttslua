@@ -1392,6 +1392,13 @@ local function refreshPcRollControlPanel(color, active)
         return
     end
 
+    local complications = S.getStateVal("complications")
+    local target = complications and complications.target
+    if target and target.color == color and target.rollId == active.id then
+        uiSetActive(panelId, false)
+        return
+    end
+
     -- Idle Rouse / Oblivion-Rouse bag shortcut: toss + broadcast only (TOR-500).
     if PRTL.isIdleBagAutoRouse(active) then
         uiSetActive(panelId, false)
