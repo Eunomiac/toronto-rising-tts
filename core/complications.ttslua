@@ -256,26 +256,18 @@ local function drawTop(g,op,done)
         S.setStateVal(g.exhausted,'complications','exhausted')
     end
     local direct=obj(op.guid)
-    if not direct then
+    if direct then poseCard(g,direct,op.slot,false) else
         local loc=locations(g)[op.guid]
         if not loc then fail(g,'Top card '..op.guid..' is missing.');return end
         direct=loc.container.takeObject({guid=op.guid,position=g.positions[op.slot],rotation={0,g.rotation.y,180},smooth=false})
     end
-    -- Hold the card immediately: while custom textures load an unlocked card
-    -- can fall into the board or merge back into a pile and lose its world GUID.
-    if direct then direct.setLock(true) end
-    -- GUID was saved before extraction. It also recovers an interrupted take
-    -- without relying on the engine delivering a spawn callback. The journal
-    -- runner bounds this wait and reports the operation if the card never loads.
-    return {
-        ready=function()
-            local o=obj(op.guid)
-            -- Texture loading is independent of spawn/physics readiness. It may
-            -- remain true for a visible custom card and must not gate the deal.
-            return o~=nil and o.spawning~=true
-        end,
-        complete=function() poseCard(g,assert(obj(op.guid),'Dealt card disappeared'),op.slot,false);done() end,
-    }
+    -- takeObject supplies the destination pose. Keep the card still during
+    -- setup, then advance on the journal's fixed stagger without polling it.
+    if direct then
+        direct.setLock(true)
+        direct.setInvisibleTo({})
+    end
+    done()
 end
 local function cloneMaster(g,op,done)
     if not op.job then
@@ -535,20 +527,19 @@ pump=function()
         announce(g); return
     end
     running=true; g.error=nil
-    local completed,detail,pending=false,nil,nil
+    local completed,detail=false,nil
     -- Use coroutine-based inter-step waits: advancing the journal must not
     -- schedule a numeric engine timer inside a spawn/condition callback.
     U.chain({
         function()
-            pending=execute(g,op,function() completed=true end)
+            execute(g,op,function() completed=true end)
             return function()
                 if game()~=g or g.error then return true end
-                return completed or (pending~=nil and pending.ready())
+                return completed
             end
         end,
         function()
             if game()~=g or g.error then return 0 end
-            if pending and not completed then pending.complete() end
             assert(completed,'Operation wait ended before completion')
             op.job=nil -- completed snapshots are no longer recovery state
             g.operationIndex=g.operationIndex+1
@@ -563,11 +554,6 @@ pump=function()
         onStepEnd=function(_,_,ok,err) if not ok then detail=tostring(err) end end,
         onComplete=function(ok,reason)
             if not ok and game()==g and not g.error then
-                if op.kind=='drawTop' and op.guid then
-                    local o=obj(op.guid)
-                    detail=(detail or reason)..'; card '..op.guid..(o and
-                        (' spawning='..tostring(o.spawning)..', loading_custom='..tostring(o.loading_custom)) or ' is missing from the world')
-                end
                 fail(g,op.kind..(op.slot and ' (slot '..op.slot..')' or '')..' did not finish: '..(detail or reason))
             end
         end})
