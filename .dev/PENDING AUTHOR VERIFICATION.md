@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### Complications camera and card unlocking — direct author request
+
+**How to verify:** Start Complications with another player connected. Everyone should look toward the participating player’s dice tray, shifted toward the board. Once dealing finishes, face-down cards should unlock without a SetLock error. Reveal a card, then right-click Select: the remaining face-down cards should unlock while the revealed card stays locked. Repeat after saving and reloading an unfinished game.
+
 #### Deck of Complications base system — direct author request
 
 **Context:** Implemented on `feat/deck-of-complications`; the ten reviewed automation requirements are now implemented. Automate toggles the recorded application; enhancing the card first still reverses its previous variant on the next click. Linear could not be updated because the connector requires reauthentication.

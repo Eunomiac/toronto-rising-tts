@@ -17,7 +17,7 @@ local function game() return S.getStateVal('complications') end
 local function save(g) S.setStateVal(g,'complications') end
 local function obj(guid) return guid and getObjectFromGUID(guid) or nil end
 local function vector(v) return {x=v.x,y=v.y,z=v.z} end
-local function busy(g) return running or g.operationIndex <= #g.operations or g.ending end
+local function busy(g) return running or g.operationIndex <= #g.operations or g.ending == true end
 local function signed(n) return string.format('%+d',n) end
 local function fail(g, message)
     running=false; g.error=message; save(g)
@@ -376,7 +376,7 @@ function D.start(color,rollId)
     local order={1,2,3,4,5,6,7,8,9,10}; for i=10,2,-1 do local j=math.random(i); order[i],order[j]=order[j],order[i] end
     for _,i in ipairs(order) do Model.draw(g,i) end
     for _,player in ipairs(Player.getPlayers()) do
-        local preset=require('core.main').resolveCameraPreset(player,'dice'..color)
+        local preset=require('core.main').resolveCameraPreset(player,'diceTray'..color)
         if preset then preset.position.x=preset.position.x+dx; preset.position.z=preset.position.z+dz; player.lookAt(preset) end
     end
     mountAutomationButton(); begin(g); return nil
