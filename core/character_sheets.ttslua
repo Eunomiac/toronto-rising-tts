@@ -9,6 +9,7 @@ local CharacterSheets = {}
 local C = require("lib.constants")
 local S = require("core.state")
 local Sync = require("core.sync")
+local U = require("lib.util")
 local CI = require("lib.csheet_identity")
 local CSL = require("core.csheet_slices")
 local HUDP = require("core.hud_player")
@@ -97,14 +98,7 @@ end
 --- @param raw any
 --- @return string
 function CharacterSheets.normalizeDesire(raw)
-  if type(raw) ~= "string" then
-    return ""
-  end
-  local trimmed = string.match(raw, "^%s*(.-)%s*$") or ""
-  if trimmed == "" then
-    return ""
-  end
-  return trimmed
+  return U.trim(raw)
 end
 
 --- Full class list for page1 Desire InputField (passed to UI.setClass as the names arg).

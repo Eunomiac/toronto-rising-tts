@@ -54,15 +54,6 @@ local DEFAULT_GUID_FOLLOWER_TRANSFORMS_VAR = "SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSF
 
 local WRITE_RESULTS_TO_FILE = false
 
---- @param s string
---- @return string
-local function trim(s)
-  if U.Type(s) ~= "string" then
-    return ""
-  end
-  return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
-end
-
 local function assertSendExternalMessage()
   if sendExternalMessage == nil then
     error("rotational-seat-layout: sendExternalMessage is nil; TTS Tools extension is required to write workspace files")
@@ -180,7 +171,7 @@ local function resolveFrameTemplateDisplayName(frame, index)
   }
   for _, c in ipairs(candidates) do
     if U.Type(c) == "string" then
-      local t = trim(c)
+      local t = U.trim(c)
       if t ~= "" and SRI.matchesRoleColorPattern(t) then
         return t
       end
@@ -673,7 +664,7 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label,
   if U.Type(ref) ~= "string" then
     return nil
   end
-  local refTrim = trim(ref)
+  local refTrim = U.trim(ref)
   local refUpperColor = string.upper(referencePlayerColor or "")
   if refTrim == "" then
     return nil
@@ -701,7 +692,7 @@ local function collectCameraModeKeys(sourceGroups)
 
   for i = 1, #bySeatSource do
     local key = bySeatSource[i]
-    if U.Type(key) ~= "string" or trim(key) == "" then
+    if U.Type(key) ~= "string" or U.trim(key) == "" then
       error("rotational-seat-layout: sourceObjects.cameraModes.bySeat entries must be non-empty strings")
     end
     if not seenBySeat[key] then

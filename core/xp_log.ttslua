@@ -251,7 +251,7 @@ function XpLog.validateEntry(amount, description)
   if n == 0 then
     return false, "XP amount must be a non-zero integer", nil, nil
   end
-  local desc = type(description) == "string" and description:match("^%s*(.-)%s*$") or ""
+  local desc = U.trim(description)
   if desc == "" then
     return false, "XP description is required", nil, nil
   end

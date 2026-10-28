@@ -136,13 +136,14 @@ local function sheetHasAlignmentDoneTag()
   return self.hasTag(CSHEET_ALIGNMENT_DONE_TAG) == true
 end
 
+--- Same end-trim as `U.trim`. Object scripts cannot require `lib.util`.
 --- @param s string|nil
 --- @return string
 local function trim(s)
   if type(s) ~= "string" then
     return ""
   end
-  return string.match(s, "^%s*(.-)%s*$") or ""
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
 --- Last Desire `setClass` mode for this object: true = unset, false = set, nil = unknown.

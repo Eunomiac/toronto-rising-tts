@@ -155,6 +155,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.split(inputstr, sep)` | Split string by delimiter | Parse CSV |
+| `U.trim(s)` | Strip whitespace from both ends. Non-strings become `""`. Do not trim with one `"^%s*(.-)%s*$"` capture — MoonSharp raises "pattern too complex" on long GM Notes | `U.trim(obj.getGMNotes())` |
 | `U.GetHex(color, newAlpha)` | Convert Color to hex string | UI color strings |
 
 ### 1.8 Tag Utilities

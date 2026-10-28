@@ -6,6 +6,8 @@
     .dev/Game State Data.jsonc (instance examples).
 ]]
 
+local U = require("lib.util")
+
 local D = {}
 
 D.lights = {
@@ -613,7 +615,7 @@ function D.resolveCharacterKeyByDisplayName(displayName)
     if type(displayName) ~= "string" then
         return nil
     end
-    local needle = displayName:match("^%s*(.-)%s*$")
+    local needle = U.trim(displayName)
     if needle == "" then
         return nil
     end

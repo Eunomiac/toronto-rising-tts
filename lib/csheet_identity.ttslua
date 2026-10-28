@@ -6,13 +6,14 @@
 
 local CI = {}
 
+--- Same end-trim as `U.trim`. This module is bundled into character-sheet object scripts, so it cannot require `lib.util`.
 --- @param s string|nil
 --- @return string
 local function trim(s)
   if type(s) ~= "string" then
     return ""
   end
-  return string.match(s, "^%s*(.-)%s*$") or ""
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
 --- @param identity string

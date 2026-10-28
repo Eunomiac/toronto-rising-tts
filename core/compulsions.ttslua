@@ -40,15 +40,6 @@ local opTokenByColor = {}
 
 local deckInteractableSynced = false
 
---- @param notes string|nil
---- @return string
-local function trimNotes(notes)
-    if type(notes) ~= "string" then
-        return ""
-    end
-    return string.match(notes, "^%s*(.-)%s*$") or ""
-end
-
 --- @param kind string|number `"DRAWN"` | `"SELECTED"` | slot index 1–4
 --- @param color string
 --- @return string
@@ -734,7 +725,7 @@ end
 --- @param notes string|nil
 --- @return { type: string, playerKey: string, suffix: string }|nil
 function Compulsions.parseNotes(notes)
-    local trimmed = trimNotes(notes)
+    local trimmed = U.trim(notes)
     if trimmed == "" then
         return nil
     end
@@ -745,7 +736,7 @@ function Compulsions.parseNotes(notes)
     if compulsionType == nil or playerKey == nil or suffix == nil then
         return nil
     end
-    suffix = string.lower(trimNotes(suffix))
+    suffix = string.lower(U.trim(suffix))
     if suffix == "generic" then
         suffix = "generic"
     elseif suffix ~= "1" and suffix ~= "2" and suffix ~= "3" and suffix ~= "4" then
@@ -765,7 +756,7 @@ function Compulsions.colorFromPlayerDeckContainer(container)
     if container == nil or container.getGMNotes == nil then
         return nil
     end
-    local identity = trimNotes(container.getGMNotes())
+    local identity = U.trim(container.getGMNotes())
     local suffix = string.match(string.upper(identity), "^COMPULSION_DECK_([%u%d]+)$")
     if suffix == nil then
         return nil
@@ -861,7 +852,7 @@ function Compulsions.onGenericDrawn(container, card)
     end
 
     local rawNotes = card.getGMNotes()
-    local notes = trimNotes(rawNotes)
+    local notes = U.trim(rawNotes)
     local deckColor = Compulsions.colorFromPlayerDeckContainer(container)
     local parsed = Compulsions.parseNotes(notes)
 
@@ -1100,7 +1091,7 @@ end
 --- @param notes string|nil
 --- @return boolean
 function Compulsions.notesLookLikeCompulsion(notes)
-    return string.sub(trimNotes(notes), 1, 11) == "Compulsion:"
+    return string.sub(U.trim(notes), 1, 11) == "Compulsion:"
 end
 
 --- O(1)-friendly: true when container GM Notes start with COMPULSION_DECK_.

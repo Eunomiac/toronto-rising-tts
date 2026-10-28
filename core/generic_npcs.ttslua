@@ -66,7 +66,7 @@ function GenericNpcs.parseImportKeys(keysString)
     end
     local membership = getMembership()
     for raw in string.gmatch(keysString, "[^,]+") do
-        local key = string.match(raw, "^%s*(.-)%s*$") or ""
+        local key = U.trim(raw)
         if key ~= "" and not seen[key] then
             seen[key] = true
             local entry = DATA.resolveGenericNpcEntry(key)
@@ -187,7 +187,7 @@ function GenericNpcs.importNamed(keys, labels, tiers, kept)
         if type(displayName) ~= "string" or string.match(displayName, "^%s*$") then
             displayName = valid[i].label or key
         end
-        displayName = string.match(displayName, "^%s*(.-)%s*$") or displayName
+        displayName = U.trim(displayName)
         NPCS.registerGenericCharacter(key, displayName)
         local keptId = kept[key]
         membership[key] = { key = key, displayName = displayName, tier = keptId == nil and tiers[key] or nil, keptId = keptId }
@@ -208,7 +208,7 @@ function GenericNpcs.rename(characterKey, displayName)
     if type(row) ~= "table" then
         return "No generic NPC `" .. tostring(characterKey) .. "` in this scene."
     end
-    local name = type(displayName) == "string" and string.match(displayName, "^%s*(.-)%s*$") or ""
+    local name = U.trim(displayName)
     if name == "" then
         return "A generic NPC needs a name."
     end

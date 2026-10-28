@@ -5523,12 +5523,12 @@ function onObjectLeaveContainer(container, obj)
     if isCard then
         local fromCompulsionDeck = false
         if container ~= nil and container.getGMNotes ~= nil then
-            local cn = string.upper(string.match(container.getGMNotes() or "", "^%s*(.-)%s*$") or "")
+            local cn = string.upper(U.trim(container.getGMNotes() or ""))
             fromCompulsionDeck = string.sub(cn, 1, 16) == "COMPULSION_DECK_"
         end
         local notes = ""
         if obj.getGMNotes ~= nil then
-            notes = string.match(obj.getGMNotes() or "", "^%s*(.-)%s*$") or ""
+            notes = U.trim(obj.getGMNotes() or "")
         end
         local notesLook = string.sub(notes, 1, 11) == "Compulsion:"
         -- Enter Compulsions only for known player decks or notes payload (skip Tarot/etc.).
@@ -5581,7 +5581,7 @@ function onObjectEnterZone(zone, object)
     if object.getGMNotes == nil then
         return
     end
-    local notes = string.match(object.getGMNotes() or "", "^%s*(.-)%s*$") or ""
+    local notes = U.trim(object.getGMNotes() or "")
     if string.sub(notes, 1, 11) ~= "Compulsion:" then
         return
     end
