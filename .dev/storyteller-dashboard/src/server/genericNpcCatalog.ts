@@ -6,6 +6,8 @@ export type GenericNpc = {
   readonly label: string;
   readonly key: string;
   readonly tags: string;
+  readonly catalog?: boolean;
+  readonly tiers?: readonly string[];
 };
 
 export type GenericNpcCatalog = {
@@ -30,7 +32,7 @@ const parseNpc = (value: unknown, index: number): GenericNpc => {
   if (typeof filename !== "string" || typeof label !== "string" || typeof key !== "string" || typeof tags !== "string") {
     throw new Error(`generic-npcs.json npc[${index}] is missing filename/label/key/tags.`);
   }
-  return { filename, label, key, tags };
+  return { filename, label, key, tags, ...(typeof value.catalog === "boolean" ? { catalog: value.catalog } : {}), ...(Array.isArray(value.tiers) ? { tiers: value.tiers.filter((tier): tier is string => typeof tier === "string") } : {}) };
 };
 
 export const parseGenericNpcCatalog = (payload: unknown): GenericNpcCatalog => {

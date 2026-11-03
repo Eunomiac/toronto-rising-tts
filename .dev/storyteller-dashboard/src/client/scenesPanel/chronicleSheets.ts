@@ -1,47 +1,11 @@
 import { useEffect, useState } from "react";
-import { parseCsv, type CsvRows } from "../../shared/csv";
-
-/**
- * Lab-only reads of the author's chronicle Google Sheets (see `.dev/Chronicle Data/Google Sheets.md`). The
- * sheets are link-viewable and Google allows this origin, so the browser fetches one tab at a time as CSV.
- * Nothing here is written to disk or committed.
- */
-
-const SHEETS = {
-  torontoRising: "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs",
-  api: "1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4"
-} as const;
-
-type Rows = CsvRows;
-
-const tabCache = new Map<string, Promise<Rows>>();
-
-const fetchTab = (sheet: keyof typeof SHEETS, tab: string): Promise<Rows> => {
-  const key = `${sheet}/${tab}`;
-  const cached = tabCache.get(key);
-  if (cached) {
-    return cached;
-  }
-  const url = `https://docs.google.com/spreadsheets/d/${SHEETS[sheet]}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(tab)}`;
-  const pending = fetch(url).then(async (response) => {
-    if (!response.ok) {
-      throw new Error(`Sheet tab "${tab}" failed to load (${response.status}).`);
-    }
-    return parseCsv(await response.text());
-  });
-  tabCache.set(key, pending);
-  pending.catch(() => tabCache.delete(key));
-  return pending;
-};
-
-/** Rows of a header-first tab as objects keyed by the header cells. */
-const asRecords = (rows: Rows): readonly Readonly<Record<string, string>>[] => {
-  const [header, ...body] = rows;
-  if (!header) {
-    return [];
-  }
-  return body.map((row) => Object.fromEntries(header.map((name, index) => [name.trim(), (row[index] ?? "").trim()])));
-};
+type ExportRecord = Readonly<Record<string, string>>;
+type ChronicleExports = { districts: readonly ExportRecord[]; sites: readonly ExportRecord[]; weather: readonly ExportRecord[] };
+let request: Promise<ChronicleExports> | null = null;
+const loadExports = (): Promise<ChronicleExports> => request ??= fetch("/api/chronicle-exports").then(async response => {
+  if (!response.ok) throw new Error(`Chronicle exports failed to load (${response.status}).`);
+  return await response.json() as ChronicleExports;
+}).catch(error => { request = null; throw error; });
 
 /* ---------- locations (API sheet exports) ---------- */
 
@@ -80,33 +44,17 @@ const resonances = (...cells: readonly (string | undefined)[]): readonly Resonan
 const titleCase = (name: string): string => name.charAt(0).toUpperCase() + name.slice(1);
 
 const loadLocations = async (): Promise<ChronicleLocations> => {
-  const [districtRows, uniqueRows, genericRows] = await Promise.all([
-    fetchTab("api", "Districts.csv"),
-    fetchTab("api", "Sites_Unique.csv"),
-    fetchTab("api", "Sites_Generic.csv")
-  ]);
-  const districts = asRecords(districtRows)
-    .filter((row) => row.key)
-    .map((row): SheetDistrict => ({
-      key: row.key ?? "",
-      name: titleCase(row.NAME ?? ""),
-      resonances: resonances(row["Resonance Plus"], row["Resonance Minus"]),
-      aspects: [1, 2, 3].map((n) => ({ title: row[`Aspect Title ${n}`] ?? "", text: row[`Aspect Content ${n}`] ?? "" }))
-    }));
-  const site = (unique: boolean) => (row: Readonly<Record<string, string>>): SheetSite => ({
-    key: row.Key ?? "",
-    title: row.Title ?? "",
-    subtitle: row.Subtitle ?? "",
-    unique,
+  const data = await loadExports();
+  const districts = data.districts.map((row): SheetDistrict => ({
+    key: row.Key ?? "", name: titleCase(row.Name ?? ""),
+    resonances: resonances(row["Resonance Plus"], row["Resonance Minus"]),
+    aspects: [1, 2, 3].map(n => ({ title: row[`Aspect Title ${n}`] ?? "", text: row[`Aspect Content ${n}`] ?? "" }))
+  }));
+  const sites = data.sites.map((row): SheetSite => ({
+    key: row.Key ?? "", title: row.Title ?? "", subtitle: row.Subtitle ?? "", unique: row["Unique?"] === "TRUE",
     resonances: resonances(row["Resonance Plus"], row["Resonance Minus"]),
     aspect: { title: row["Aspect Title"] ?? "", text: row["Aspect Content"] ?? "" }
-  });
-  /** The export tabs repeat their header row partway down; skip it along with blank rows. */
-  const isSiteRow = (row: Readonly<Record<string, string>>): boolean => Boolean(row.Key) && row.Key !== "Key";
-  const sites = [
-    ...asRecords(uniqueRows).filter(isSiteRow).map(site(true)),
-    ...asRecords(genericRows).filter(isSiteRow).map(site(false))
-  ];
+  }));
   return { districts, sites };
 };
 
@@ -122,21 +70,21 @@ export type WeatherCalendar = {
 };
 
 const loadWeather = async (): Promise<WeatherCalendar> => {
-  const rows = await fetchTab("torontoRising", "WEATHER");
+  const rows = (await loadExports()).weather;
   const avgTemp = new Map<number, number>();
   const codes = new Map<string, readonly string[]>();
   for (const row of rows) {
-    const month = Number(row[19]);
-    const day = Number(row[21]);
-    const list = row[22] ?? "";
+    const month = Number(row.Month);
+    const day = Number(row.Day);
+    const list = row.DayCodes ?? "";
     if (!Number.isInteger(month) || month < 1 || !Number.isInteger(day) || day < 1 || !list.includes('"')) {
       continue;
     }
-    avgTemp.set(month, Number(row[20]));
+    avgTemp.set(month, Number(row["Average Temperature"]));
     codes.set(`${month}-${day}`, [...list.matchAll(/"([^"]{5})"/g)].map((match) => match[1] ?? ""));
   }
   if (codes.size === 0) {
-    throw new Error("WEATHER tab: no day codes found (columns T–W moved?).");
+    throw new Error("EXPORT_WEATHER: no day codes found.");
   }
   return { avgTemp, codes };
 };

@@ -15,33 +15,48 @@
   ],
   "pcs": [
     {
-      "characterKey": "lordLucien",
-      "fullName": "Lord Lucien",
-      "isPC": true,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "rashid",
-      "fullName": "Rashid Abdulrahman",
-      "isPC": true,
-      "pickerGroups": []
-    },
-    {
       "characterKey": "aishe",
       "fullName": "Aishe Tache",
       "isPC": true,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "fomorach",
-      "fullName": "Fomórach",
-      "isPC": true,
+      "catalog": true,
+      "filename": "npc_aishe.webp",
+      "canonicalKey": null,
       "pickerGroups": []
     },
     {
       "characterKey": "blackCaesar",
       "fullName": "Black Caesar",
       "isPC": true,
+      "catalog": true,
+      "filename": "npc_blackCaesar.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "fomorach",
+      "fullName": "Fomórach",
+      "isPC": true,
+      "catalog": true,
+      "filename": "npc_fomorach.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "lordLucien",
+      "fullName": "Lord Lucien",
+      "isPC": true,
+      "catalog": true,
+      "filename": "npc_lordLucien.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "rashid",
+      "fullName": "Rashid Abdulrahman",
+      "isPC": true,
+      "catalog": true,
+      "filename": "npc_rashid.webp",
+      "canonicalKey": null,
       "pickerGroups": []
     }
   ],
@@ -50,22 +65,240 @@
       "characterKey": "abbasFaruk",
       "fullName": "Abbas Faruk",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_abbasFaruk.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "touchstone"
+      ]
+    },
+    {
+      "characterKey": "adrianGerrard",
+      "fullName": "Adrian Gerrard",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_adrianGerrard.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "adrianVarga",
+      "fullName": "Adrian Varga",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_adrianVarga.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "fiveKeys"
+      ]
+    },
+    {
+      "characterKey": "agnesBellanger",
+      "fullName": "Agnes Bellanger",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_agnesBellanger.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "alexander",
+      "fullName": "Alexander",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_alexander.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "alexandra",
+      "fullName": "Alexandra",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_alexandra.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "redeemers"
+      ]
+    },
+    {
+      "characterKey": "alexisHoltt",
+      "fullName": "Alexis Hoitt",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_alexisHoltt.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "petitioners"
+      ]
+    },
+    {
+      "characterKey": "aliRamsoon",
+      "fullName": "Ali Ramsoon",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_aliRamsoon.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "alistairEtrata",
+      "fullName": "Alistair Etrata",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_alistairEtrata.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "alyaWang",
+      "fullName": "Alya Wang",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_alyaWang.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "anitaMorris",
+      "fullName": "Anita Morris",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_anitaMorris.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "freeChantry"
+      ]
+    },
+    {
+      "characterKey": "anitaMorrisDaeva",
+      "fullName": "Daeva: Anita Morris",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_daevaAnitaMorris.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "antoineRustovich",
+      "fullName": "Antoine Rustovich",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_antoineRustovich.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "artemis",
+      "fullName": "Artemis",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_artemis.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "aryanaMortazavi",
+      "fullName": "Aryana Mortazavi",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_aryanaMortazavi.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "averyInnis",
+      "fullName": "Avery Innis",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_averyInnis.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "petitioners"
+      ]
+    },
+    {
+      "characterKey": "bacchusGiovanni",
+      "fullName": "Bacchus Giovanni",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_bacchusGiovanni.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "wychwoodHecata"
+      ]
+    },
+    {
+      "characterKey": "bee",
+      "fullName": "Bee",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_bee.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "beesHive"
+      ]
+    },
+    {
+      "characterKey": "benBlinker",
+      "fullName": "Ben Blinker",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_benBlinker.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "benedictKincaid",
+      "fullName": "Benedict Kincaid",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_benedictKincaid.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "petitioners"
       ]
     },
     {
       "characterKey": "bertrice",
       "fullName": "Bertrice",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_bertrice.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "autarkis"
+      ]
+    },
+    {
+      "characterKey": "calvinWallace",
+      "fullName": "Calvin Wallace",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_calvinWallace.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "redFlag"
+      ]
+    },
+    {
+      "characterKey": "carol",
+      "fullName": "Carol",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_carol.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "beesHive"
       ]
     },
     {
       "characterKey": "chokesOnMoonlight",
       "fullName": "Chokes-On-Moonlight",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_chokesOnMoonlight.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -74,62 +307,221 @@
       "characterKey": "chokesOnMoonlightGarou",
       "fullName": "Chokes-On-Moonlight",
       "isPC": false,
+      "catalog": false,
+      "filename": "npc_chokesOnMoonlightGarou.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
+      ]
+    },
+    {
+      "characterKey": "christianne",
+      "fullName": "Christianne",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_christianne.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "harpies"
       ]
     },
     {
       "characterKey": "christopherGiovanniJr",
       "fullName": "Christopher Giovanni Jr.",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_christopherGiovanniJr.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "wychwoodHecata"
       ]
     },
     {
       "characterKey": "daevaAnitaMorris",
-      "fullName": "Daeva (Anita Morris)",
+      "fullName": "Daeva: Anita Morris",
       "isPC": false,
+      "catalog": false,
+      "filename": "npc_daevaAnitaMorris.webp",
+      "canonicalKey": "anitaMorrisDaeva",
       "pickerGroups": [
         "aapilu"
       ]
     },
     {
       "characterKey": "daevaGabrielCollard",
-      "fullName": "Daeva (Gabriel Collard)",
+      "fullName": "Daeva: Gabriel Collard",
       "isPC": false,
+      "catalog": false,
+      "filename": "npc_daevaGabrielCollard.webp",
+      "canonicalKey": "gabrielCollardDaeva",
       "pickerGroups": [
         "aapilu"
       ]
     },
     {
       "characterKey": "daevaNasirKhan",
-      "fullName": "Daeva (Nasir Khan)",
+      "fullName": "Daeva: Nasir Khan",
       "isPC": false,
+      "catalog": false,
+      "filename": "npc_daevaNasirKhan.webp",
+      "canonicalKey": "nasirKhanDaeva",
       "pickerGroups": [
         "aapilu"
       ]
     },
     {
+      "characterKey": "damienAbanda",
+      "fullName": "Damien Abanda",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_damienAbanda.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "redFlag"
+      ]
+    },
+    {
+      "characterKey": "damienKline",
+      "fullName": "Damien Kline",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_damienKline.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "regencyUniversityChantry"
+      ]
+    },
+    {
+      "characterKey": "danielGable",
+      "fullName": "Daniel Gable",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_danielGable.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "deaconReal",
+      "fullName": "Deacon Lucenzo Reál",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_deaconReal.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "midnightMass"
+      ]
+    },
+    {
+      "characterKey": "dragomirIlyan",
+      "fullName": "Dragomir Ilyan",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_dragomirIlyan.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
       "characterKey": "drake",
       "fullName": "Drake",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_drake.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "autarkis"
       ]
     },
     {
-      "characterKey": "enzoCaruso",
-      "fullName": "Vincenzo \"Enzo\" Caruso",
+      "characterKey": "drArthurRoy",
+      "fullName": "Dr. Arthur Roy",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_drArthurRoy.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "drIrenaVoss",
+      "fullName": "Dr. Irena Voss",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_drIrenaVoss.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "regencyUniversityChantry"
+      ]
+    },
+    {
+      "characterKey": "eddie",
+      "fullName": "Eddie",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_eddie.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "petitioners"
+      ]
+    },
+    {
+      "characterKey": "emilyTheDuskRose",
+      "fullName": "Emily, the Dusk Rose",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_emilyTheDuskRose.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "ironGuard"
+      ]
+    },
+    {
+      "characterKey": "enzoCaruso",
+      "fullName": "Enzo Caruso",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_enzoCaruso.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "touchstone"
+      ]
+    },
+    {
+      "characterKey": "evaBates",
+      "fullName": "Eva Bates",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_evaBates.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "evanescentBlue",
+      "fullName": "Evanescent Blue",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_evanescentBlue.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "colorBlitz"
+      ]
+    },
+    {
+      "characterKey": "evangelineDupont",
+      "fullName": "Evangeline Dupont",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_evangelineDupont.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "regencyUniversityChantry"
       ]
     },
     {
       "characterKey": "fangsAtTheCradle",
       "fullName": "Fangs-at-the-Cradle",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_fangsAtTheCradle.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -138,46 +530,251 @@
       "characterKey": "fangsAtTheCradleGarou",
       "fullName": "Fangs-at-the-Cradle",
       "isPC": false,
+      "catalog": false,
+      "filename": "npc_fangsAtTheCradleGarou.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
     },
     {
-      "characterKey": "jeanDucheskiI",
-      "fullName": "Jean Ducheski I",
+      "characterKey": "fatherDiaz",
+      "fullName": "Father Emiliano Diaz",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_fatherDiaz.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "midnightMass"
+      ]
+    },
+    {
+      "characterKey": "flagellantDawson",
+      "fullName": "Flagellant Dawson",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_flagellantDawson.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "flagellantRebecca",
+      "fullName": "Flagellant Rebecca",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_flagellantRebecca.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "frederikScheer",
+      "fullName": "Frederik Scheer",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_frederikScheer.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "gabrielCollard",
+      "fullName": "Gabriel Collard",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_gabrielCollard.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "freeChantry"
+      ]
+    },
+    {
+      "characterKey": "gabrielCollardDaeva",
+      "fullName": "Daeva: Gabriel Collard",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_daevaGabrielCollard.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "georgieStJames",
+      "fullName": "Georgie St. James",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_georgieStJames.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "moonClub"
+      ]
+    },
+    {
+      "characterKey": "hellwroughtMask",
+      "fullName": "Hell-Wrought Mask of Blackened Iron",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_hellwroughtMask.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "ianRammond",
+      "fullName": "Ian Rammond",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_ianRammond.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "beesHive"
+      ]
+    },
+    {
+      "characterKey": "iantheSarkophylax",
+      "fullName": "Ianthe Sarkophylax",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_iantheSarkophylax.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "iq",
+      "fullName": "I.Q.",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_iq.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "beesHive"
+      ]
+    },
+    {
+      "characterKey": "j",
+      "fullName": "J",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_j.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "jackBeNimble",
+      "fullName": "Jack-be-Nimble",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_jackBeNimble.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "theLine"
+      ]
+    },
+    {
+      "characterKey": "janeDoe",
+      "fullName": "Jane 'JD' Doe",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_janeDoe.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "jason",
+      "fullName": "Jason",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_jason.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "jeanDucheskiI",
+      "fullName": "Jean Ducheski-Francois I",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_jeanDucheskiI.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "criseDeLwa"
       ]
     },
     {
       "characterKey": "jeanDucheskiIII",
-      "fullName": "Jean Ducheski III",
+      "fullName": "Jean Ducheski-Francois III",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_jeanDucheskiIII.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "ducheskiRevenant"
+      ]
+    },
+    {
+      "characterKey": "jervaisDeLaCroix",
+      "fullName": "Jervais de la Croix",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_jervaisDeLaCroix.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "jesseSharp",
+      "fullName": "Jesse Sharp",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_jesseSharp.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "fiveKeys"
       ]
     },
     {
       "characterKey": "jezdimirDucheski",
       "fullName": "Jezdimir Ducheski",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_jezdimirDucheski.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "ducheskiRevenant"
       ]
     },
     {
+      "characterKey": "johannesNapier",
+      "fullName": "Johannes Napier",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_johannesNapier.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
       "characterKey": "kadePhillips",
       "fullName": "Kade Phillips",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_kadePhillips.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "touchstone"
+      ]
+    },
+    {
+      "characterKey": "kai",
+      "fullName": "Kai",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_kai.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "redeemers"
       ]
     },
     {
       "characterKey": "kieraVaughan",
       "fullName": "Kiera Vaughan",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_kieraVaughan.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "touchstone"
       ]
@@ -186,14 +783,118 @@
       "characterKey": "kingstonBlack",
       "fullName": "Kingston Black",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_kingstonBlack.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "jarvisJacks"
       ]
     },
     {
+      "characterKey": "kitEdwards",
+      "fullName": "Kit Edwards",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_kitEdwards.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "ladyAvelineDubois",
+      "fullName": "Lady Aveline Dubois",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_ladyAvelineDubois.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "laz",
+      "fullName": "Laz",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_laz.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "ironGuard"
+      ]
+    },
+    {
+      "characterKey": "leahHawk",
+      "fullName": "Leah Hawk",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_leahHawk.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "lemon",
+      "fullName": "Lemon",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_lemon.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "lexiMadi",
+      "fullName": "Lexi Madi",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_lexiMadi.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "petitioners"
+      ]
+    },
+    {
+      "characterKey": "lockeUlrich",
+      "fullName": "Locke Ulrich",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_lockeUlrich.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "lorenzaGiovanni",
+      "fullName": "Lorenza Giovanni",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_lorenzaGiovanni.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "wychwoodHecata"
+      ]
+    },
+    {
+      "characterKey": "lucasMerrow",
+      "fullName": "Lucas Merrow",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_lucasMerrow.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "regencyUniversityChantry"
+      ]
+    },
+    {
+      "characterKey": "maeve",
+      "fullName": "Maeve",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_maeve.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
       "characterKey": "mamboAbigail",
       "fullName": "Mambo Abigail",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_mamboAbigail.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -202,30 +903,523 @@
       "characterKey": "mara",
       "fullName": "Mara",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_mara.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "deepSix"
       ]
     },
     {
+      "characterKey": "mariaNorris",
+      "fullName": "Maria Norris",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_mariaNorris.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
       "characterKey": "marieBouschard",
       "fullName": "Marie Bouschard",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_marieBouschard.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "civilian"
       ]
     },
     {
-      "characterKey": "maxFloyd",
-      "fullName": "Maxwell \"Max\" Floyd",
+      "characterKey": "masonSchmidt",
+      "fullName": "Mason Schmidt",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_masonSchmidt.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "theLine"
+      ]
+    },
+    {
+      "characterKey": "maxFloyd",
+      "fullName": "Maxwell 'Max' Floyd",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_maxFloyd.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "jarvisJacks"
+      ]
+    },
+    {
+      "characterKey": "maximillianSteele",
+      "fullName": "Maximillian Steele",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_maximillianSteele.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_adrianGerrard",
+      "fullName": "Adrian Gerrard",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_adrianGerrard.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_adrianGerrard1800",
+      "fullName": "Adrian Gerrard",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_adrianGerrard1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_adrianGerrard1900",
+      "fullName": "Adrian Gerrard",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_adrianGerrard1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_agnesBellanger",
+      "fullName": "Agnes Bellanger",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_agnesBellanger.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_agnesBellanger1900",
+      "fullName": "Agnes Bellanger",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_agnesBellanger1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_alistairEtrata",
+      "fullName": "Alistair Etrata",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_alistairEtrata.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_andreiStrandza",
+      "fullName": "Andrei Strandza",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_andreiStrandza.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_bertrice1800",
+      "fullName": "Bertrice",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_bertrice1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_bertrice1900",
+      "fullName": "Bertrice",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_bertrice1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_carna",
+      "fullName": "Carna",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_carna.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_damienAbanda1800",
+      "fullName": "Damien Abanda",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_damienAbanda1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_damienAbanda1900",
+      "fullName": "Damien Abanda",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_damienAbanda1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_fomorachPreEmbrace",
+      "fullName": "Pre-Embrace Fomórach",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_fomorachPreEmbrace.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_frederikScheer",
+      "fullName": "Frederik Scheer",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_frederikScheer.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_frederikScheer1900",
+      "fullName": "Frederik Scheer",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_frederikScheer1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_ibrahimKethuda",
+      "fullName": "Ibrahim Kethüda",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_ibrahimKethuda.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_jeanDucheskiIPreDeath",
+      "fullName": "Pre-Death Jean Ducheski Francois I",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_jeanDucheskiIPreDeath.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_jervaisDeLaCroix",
+      "fullName": "Jervais de la Croix",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_jervaisDeLaCroix.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_jervaisDeLaCroix1800",
+      "fullName": "Jervais de la Croix",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_jervaisDeLaCroix1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_jervaisDeLaCroix1900",
+      "fullName": "Jervais de la Croix",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_jervaisDeLaCroix1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_ladyAvelineDubois",
+      "fullName": "Lady Aveline Dubois",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_ladyAvelineDubois.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_lalehBintSaif",
+      "fullName": "Laleh bint Saif",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_lalehBintSaif.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_lockeUlrich",
+      "fullName": "Locke Ulrich",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_lockeUlrich.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_lordOswald",
+      "fullName": "Lord Oswald",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_lordOswald.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_lordOswald1800",
+      "fullName": "Lord Oswald",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_lordOswald1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_lordOswald1900",
+      "fullName": "Lord Oswald",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_lordOswald1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_mamboAbigail1800",
+      "fullName": "Mambo Abigail",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_mamboAbigail1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_maraPreEmbrace",
+      "fullName": "Pre-Embrace Oksana Mara Ziva",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_maraPreEmbrace.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_marcelGuilbeau",
+      "fullName": "Marcel Guilbeau",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_marcelGuilbeau.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_maximillianSteele",
+      "fullName": "Maximillian Steele",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_maximillianSteele.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_maximillianSteele1800",
+      "fullName": "Maximillian Steele",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_maximillianSteele1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_maximillianSteele1900",
+      "fullName": "Maximillian Steele",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_maximillianSteele1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_michaelTheArchangel",
+      "fullName": "Michael the Archangel",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_michaelTheArchangel.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_monikaEulenberg",
+      "fullName": "Monika Eulenberg",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_monikaEulenberg.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_mortius",
+      "fullName": "Mortius",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_mortius.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_mortius1900",
+      "fullName": "Mortius",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_mortius1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_oldQuentin",
+      "fullName": "Old Quentin",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_oldQuentin.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_oldQuentin1800",
+      "fullName": "Old Quentin",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_oldQuentin1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_oldQuentin1900",
+      "fullName": "Old Quentin",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_oldQuentin1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_oliverGagnon1800",
+      "fullName": "Oliver Gagnon",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_oliverGagnon1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_palisPreEmbrace",
+      "fullName": "Pre-Embrace Yusuf bin Yafa",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_palisPreEmbrace.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_princeDoran",
+      "fullName": "Prince Doran",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_princeDoran.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_raphaelBishop",
+      "fullName": "Raphael Bishop",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_raphaelBishop.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_raphaelBishop1900",
+      "fullName": "Raphael Bishop",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_raphaelBishop1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_sofiaMavridi",
+      "fullName": "Sofia Mavridi",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_sofiaMavridi.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_terenceMerik",
+      "fullName": "Terence Merik",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_terenceMerik.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_terenceMerik1900",
+      "fullName": "Terence Merik",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_terenceMerik1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_theBleakBokor1800",
+      "fullName": "The Baron's Bleak Bokor",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_theBleakBokor1800.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "mem_victorVex1900",
+      "fullName": "Victor Vex",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_mem_victorVex1900.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "merrickSingh",
+      "fullName": "Merrick Singh",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_merrickSingh.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "scarlettAndTheBoys"
       ]
     },
     {
       "characterKey": "miriamRavenscroft",
       "fullName": "Miriam Ravenscroft",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_miriamRavenscroft.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "touchstone"
       ]
@@ -234,6 +1428,9 @@
       "characterKey": "moltsInShadow",
       "fullName": "Molts-in-Shadow",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_moltsInShadow.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -242,286 +1439,40 @@
       "characterKey": "moltsInShadowGarou",
       "fullName": "Molts-in-Shadow",
       "isPC": false,
+      "catalog": false,
+      "filename": "npc_moltsInShadowGarou.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
+    },
+    {
+      "characterKey": "monikaEulenberg",
+      "fullName": "Monika Eulenberg",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_monikaEulenberg.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
     },
     {
       "characterKey": "mrEasy",
       "fullName": "Mr. Easy",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_mrEasy.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "jarvisJacks"
-      ]
-    },
-    {
-      "characterKey": "palis",
-      "fullName": "Palis",
-      "isPC": false,
-      "pickerGroups": [
-        "beesHive"
-      ]
-    },
-    {
-      "characterKey": "percivalCavendish",
-      "fullName": "Percival Cavendish",
-      "isPC": false,
-      "pickerGroups": [
-        "civilian"
-      ]
-    },
-    {
-      "characterKey": "ponticulus",
-      "fullName": "Ponticulus",
-      "isPC": false,
-      "pickerGroups": [
-        "criseDeLwa"
-      ]
-    },
-    {
-      "characterKey": "rebeccaRossellini",
-      "fullName": "Rebecca Rossellini",
-      "isPC": false,
-      "pickerGroups": [
-        "criseDeLwa"
-      ]
-    },
-    {
-      "characterKey": "rotInTheRiver",
-      "fullName": "Rot-in-the-River",
-      "isPC": false,
-      "pickerGroups": [
-        "friendlyNeighborhoodSpiders"
-      ]
-    },
-    {
-      "characterKey": "rotInTheRiverGarou",
-      "fullName": "Rot-in-the-River",
-      "isPC": false,
-      "pickerGroups": [
-        "friendlyNeighborhoodSpidersGarou"
-      ]
-    },
-    {
-      "characterKey": "severinKoslov",
-      "fullName": "Severin Koslov",
-      "isPC": false,
-      "pickerGroups": [
-        "wychwoodHecata"
-      ]
-    },
-    {
-      "characterKey": "stalksTheTangle",
-      "fullName": "Stalks-the-Tangle",
-      "isPC": false,
-      "pickerGroups": [
-        "friendlyNeighborhoodSpiders"
-      ]
-    },
-    {
-      "characterKey": "stalksTheTangleGarou",
-      "fullName": "Stalks-the-Tangle",
-      "isPC": false,
-      "pickerGroups": [
-        "friendlyNeighborhoodSpidersGarou"
-      ]
-    },
-    {
-      "characterKey": "theIslandDevil",
-      "fullName": "The Island Devil",
-      "isPC": false,
-      "pickerGroups": [
-        "autarkis"
-      ]
-    },
-    {
-      "characterKey": "theUnshadowedThrone",
-      "fullName": "The Unshadowed Throne",
-      "isPC": false,
-      "pickerGroups": [
-        "aapilu"
-      ]
-    },
-    {
-      "characterKey": "twist",
-      "fullName": "Twist",
-      "isPC": false,
-      "pickerGroups": [
-        "jarvisJacks"
-      ]
-    },
-    {
-      "characterKey": "uwuByteMe",
-      "fullName": "uwu_byte_me",
-      "isPC": false,
-      "pickerGroups": [
-        "civilian"
-      ]
-    },
-    {
-      "characterKey": "bee",
-      "fullName": "Bee",
-      "isPC": false,
-      "pickerGroups": [
-        "beesHive"
-      ]
-    },
-    {
-      "characterKey": "carol",
-      "fullName": "Carol",
-      "isPC": false,
-      "pickerGroups": [
-        "beesHive"
-      ]
-    },
-    {
-      "characterKey": "ianRammond",
-      "fullName": "Ian Rammond",
-      "isPC": false,
-      "pickerGroups": [
-        "beesHive"
-      ]
-    },
-    {
-      "characterKey": "terry",
-      "fullName": "Terry",
-      "isPC": false,
-      "pickerGroups": [
-        "beesHive"
-      ]
-    },
-    {
-      "characterKey": "tommy",
-      "fullName": "Tommy",
-      "isPC": false,
-      "pickerGroups": [
-        "beesHive"
-      ]
-    },
-    {
-      "characterKey": "iq",
-      "fullName": "I.Q.",
-      "isPC": false,
-      "pickerGroups": [
-        "beesHive"
-      ]
-    },
-    {
-      "characterKey": "rubyRouge",
-      "fullName": "Ruby Rouge",
-      "isPC": false,
-      "pickerGroups": [
-        "colorBlitz"
-      ]
-    },
-    {
-      "characterKey": "evanescentBlue",
-      "fullName": "Evanescent Blue",
-      "isPC": false,
-      "pickerGroups": [
-        "colorBlitz"
-      ]
-    },
-    {
-      "characterKey": "rosie",
-      "fullName": "Rosie",
-      "isPC": false,
-      "pickerGroups": [
-        "redFlag"
-      ]
-    },
-    {
-      "characterKey": "damienAbanda",
-      "fullName": "Damien Abanda",
-      "isPC": false,
-      "pickerGroups": [
-        "redFlag"
-      ]
-    },
-    {
-      "characterKey": "profEthanKeen",
-      "fullName": "Professor Ethan Keen",
-      "isPC": false,
-      "pickerGroups": [
-        "redFlag"
-      ]
-    },
-    {
-      "characterKey": "calvinWallace",
-      "fullName": "Calvin Wallace",
-      "isPC": false,
-      "pickerGroups": [
-        "redFlag"
-      ]
-    },
-    {
-      "characterKey": "oliverGagnon",
-      "fullName": "Oliver Gagnon",
-      "isPC": false,
-      "pickerGroups": [
-        "scarlettAndTheBoys"
-      ]
-    },
-    {
-      "characterKey": "scarlett",
-      "fullName": "Scarlett",
-      "isPC": false,
-      "pickerGroups": [
-        "scarlettAndTheBoys"
-      ]
-    },
-    {
-      "characterKey": "razorWhit",
-      "fullName": "Razor Whit",
-      "isPC": false,
-      "pickerGroups": [
-        "scarlettAndTheBoys"
-      ]
-    },
-    {
-      "characterKey": "merrickSingh",
-      "fullName": "Merrick Singh",
-      "isPC": false,
-      "pickerGroups": [
-        "scarlettAndTheBoys"
       ]
     },
     {
       "characterKey": "myleneHamelin",
       "fullName": "Mylene 'the Puck' Hamelin",
       "isPC": false,
-      "pickerGroups": [
-        "fiveKeys"
-      ]
-    },
-    {
-      "characterKey": "zuriOluwusi",
-      "fullName": "Zuri Oluwusi",
-      "isPC": false,
-      "pickerGroups": [
-        "fiveKeys"
-      ]
-    },
-    {
-      "characterKey": "adrianVarga",
-      "fullName": "Adrian Varga",
-      "isPC": false,
-      "pickerGroups": [
-        "fiveKeys"
-      ]
-    },
-    {
-      "characterKey": "stirlingSiskin",
-      "fullName": "Stirling Siskin",
-      "isPC": false,
-      "pickerGroups": [
-        "fiveKeys"
-      ]
-    },
-    {
-      "characterKey": "jesseSharp",
-      "fullName": "Jesse Sharp",
-      "isPC": false,
+      "catalog": true,
+      "filename": "npc_myleneHamelin.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -530,320 +1481,620 @@
       "characterKey": "nasirKhan",
       "fullName": "Nasir Khan",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_nasirKhan.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "freeChantry"
       ]
     },
     {
-      "characterKey": "gabrielCollard",
-      "fullName": "Gabriel Collard",
+      "characterKey": "nasirKhanDaeva",
+      "fullName": "Daeva: Nasir Khan",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_daevaNasirKhan.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "niccoloGiovanni",
+      "fullName": "Niccolo Giovanni",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_niccoloGiovanni.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "freeChantry"
+        "wychwoodHecata"
       ]
     },
     {
-      "characterKey": "anitaMorris",
-      "fullName": "Anita Morris",
+      "characterKey": "oldQuentin",
+      "fullName": "Old Quentin",
       "isPC": false,
+      "catalog": false,
+      "filename": "npc_oldQuentin.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "oliverGagnon",
+      "fullName": "Oliver Gagnon",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_oliverGagnon.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "freeChantry"
+        "scarlettAndTheBoys"
       ]
     },
     {
-      "characterKey": "ulyssesCelaj",
-      "fullName": "Ulysses Celaj",
+      "characterKey": "opalMask",
+      "fullName": "Opal Mask of Memories Scorned",
       "isPC": false,
-      "pickerGroups": [
-        "freeChantry"
-      ]
-    },
-    {
-      "characterKey": "theAristocrat",
-      "fullName": "The Aristocrat",
-      "isPC": false,
-      "pickerGroups": [
-        "harpies"
-      ]
-    },
-    {
-      "characterKey": "xavierWhitchurch",
-      "fullName": "Xavier Whitchurch",
-      "isPC": false,
-      "pickerGroups": [
-        "harpies"
-      ]
-    },
-    {
-      "characterKey": "christianne",
-      "fullName": "Christianne",
-      "isPC": false,
-      "pickerGroups": [
-        "harpies"
-      ]
-    },
-    {
-      "characterKey": "laz",
-      "fullName": "Laz",
-      "isPC": false,
-      "pickerGroups": [
-        "ironGuard"
-      ]
+      "catalog": true,
+      "filename": "npc_opalMask.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
     },
     {
       "characterKey": "osborneLowell",
       "fullName": "Osborne Lowell",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_osborneLowell.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "ironGuard"
       ]
     },
     {
-      "characterKey": "emilyTheDuskRose",
-      "fullName": "Emily, the Dusk Rose",
+      "characterKey": "palis",
+      "fullName": "Palis",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_palis.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "ironGuard"
+        "beesHive"
       ]
     },
     {
-      "characterKey": "sageSam",
-      "fullName": "Sage Sam",
+      "characterKey": "percivalCavendish",
+      "fullName": "Percival Cavendish",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_percivalCavendish.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "theLine"
+        "civilian"
       ]
     },
     {
-      "characterKey": "masonSchmidt",
-      "fullName": "Mason Schmidt",
+      "characterKey": "ponticulus",
+      "fullName": "Ponticulus",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_ponticulus.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "theLine"
+        "criseDeLwa"
       ]
     },
     {
-      "characterKey": "jackBeNimble",
-      "fullName": "Jack-be-Nimble",
+      "characterKey": "profEthanKeen",
+      "fullName": "Professor Ethan Keen",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_profEthanKeen.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "theLine"
-      ]
-    },
-    {
-      "characterKey": "yusefShamsin",
-      "fullName": "Yusef Shamsin",
-      "isPC": false,
-      "pickerGroups": [
-        "theLine"
-      ]
-    },
-    {
-      "characterKey": "suyin",
-      "fullName": "Suyin",
-      "isPC": false,
-      "pickerGroups": [
-        "theLine"
-      ]
-    },
-    {
-      "characterKey": "fatherDiaz",
-      "fullName": "Father Emiliano Diaz",
-      "isPC": false,
-      "pickerGroups": [
-        "midnightMass"
-      ]
-    },
-    {
-      "characterKey": "deaconReal",
-      "fullName": "Deacon Lucenzo Reál",
-      "isPC": false,
-      "pickerGroups": [
-        "midnightMass"
-      ]
-    },
-    {
-      "characterKey": "sisterCicione",
-      "fullName": "Sister Genoveva Cicione",
-      "isPC": false,
-      "pickerGroups": [
-        "midnightMass"
-      ]
-    },
-    {
-      "characterKey": "victorVex",
-      "fullName": "Victor Vex",
-      "isPC": false,
-      "pickerGroups": [
-        "moonClub"
-      ]
-    },
-    {
-      "characterKey": "georgieStJames",
-      "fullName": "Georgie St. James",
-      "isPC": false,
-      "pickerGroups": [
-        "moonClub"
-      ]
-    },
-    {
-      "characterKey": "vanceVogel",
-      "fullName": "Vance Vogel",
-      "isPC": false,
-      "pickerGroups": [
-        "moonClub"
-      ]
-    },
-    {
-      "characterKey": "scottTempo",
-      "fullName": "Scott Tempo",
-      "isPC": false,
-      "pickerGroups": [
-        "moonClub"
-      ]
-    },
-    {
-      "characterKey": "ren",
-      "fullName": "Ren",
-      "isPC": false,
-      "pickerGroups": [
-        "redeemers"
-      ]
-    },
-    {
-      "characterKey": "alexandra",
-      "fullName": "Alexandra",
-      "isPC": false,
-      "pickerGroups": [
-        "redeemers"
-      ]
-    },
-    {
-      "characterKey": "kai",
-      "fullName": "Kai",
-      "isPC": false,
-      "pickerGroups": [
-        "redeemers"
-      ]
-    },
-    {
-      "characterKey": "tyler",
-      "fullName": "Tyler",
-      "isPC": false,
-      "pickerGroups": [
-        "redeemers"
-      ]
-    },
-    {
-      "characterKey": "evangelineDupont",
-      "fullName": "Evangeline Dupont",
-      "isPC": false,
-      "pickerGroups": [
-        "regencyUniversityChantry"
-      ]
-    },
-    {
-      "characterKey": "drIrenaVoss",
-      "fullName": "Dr. Irena Voss",
-      "isPC": false,
-      "pickerGroups": [
-        "regencyUniversityChantry"
+        "redFlag"
       ]
     },
     {
       "characterKey": "raduIancu",
       "fullName": "Radu Iancu",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_raduIancu.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
     },
     {
-      "characterKey": "damienKline",
-      "fullName": "Damien Kline",
+      "characterKey": "raduRustovich",
+      "fullName": "Radu Milovan syn Rustovich",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_raduRustovich.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "raphaelBishop",
+      "fullName": "Raphael Bishop",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_raphaelBishop.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "razorWhit",
+      "fullName": "Razor Whit",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_razorWhit.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "regencyUniversityChantry"
+        "scarlettAndTheBoys"
       ]
     },
     {
-      "characterKey": "lucasMerrow",
-      "fullName": "Lucas Merrow",
+      "characterKey": "reaper",
+      "fullName": "Reaper",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_reaper.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "rebeccaRossellini",
+      "fullName": "Rebecca Rossellini",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_rebeccaRossellini.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "regencyUniversityChantry"
+        "criseDeLwa"
       ]
     },
     {
-      "characterKey": "bacchusGiovanni",
-      "fullName": "Bacchus Giovanni",
+      "characterKey": "ren",
+      "fullName": "Ren",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_ren.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "redeemers"
+      ]
+    },
+    {
+      "characterKey": "robin",
+      "fullName": "Robin",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_robin.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "rosie",
+      "fullName": "Rosie",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_rosie.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "redFlag"
+      ]
+    },
+    {
+      "characterKey": "rotInTheRiver",
+      "fullName": "Rot-in-the-River",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_rotInTheRiver.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "friendlyNeighborhoodSpiders"
+      ]
+    },
+    {
+      "characterKey": "rotInTheRiverGarou",
+      "fullName": "Rot-in-the-River",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_rotInTheRiverGarou.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "friendlyNeighborhoodSpidersGarou"
+      ]
+    },
+    {
+      "characterKey": "rubyRouge",
+      "fullName": "Ruby Rouge",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_rubyRouge.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "colorBlitz"
+      ]
+    },
+    {
+      "characterKey": "sageSam",
+      "fullName": "Sage Sam",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_sageSam.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "theLine"
+      ]
+    },
+    {
+      "characterKey": "sangFroid",
+      "fullName": "Sang-Froid",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_sangFroid.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "scarlett",
+      "fullName": "Scarlett",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_scarlett.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "scarlettAndTheBoys"
+      ]
+    },
+    {
+      "characterKey": "scottTempo",
+      "fullName": "Scott Tempo",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_scottTempo.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "moonClub"
+      ]
+    },
+    {
+      "characterKey": "severinKoslov",
+      "fullName": "Severin Koslov",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_severinKoslov.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "wychwoodHecata"
       ]
     },
     {
-      "characterKey": "lorenzaGiovanni",
-      "fullName": "Lorenza Giovanni",
+      "characterKey": "sisterCicione",
+      "fullName": "Sister Genoveva Cicione",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_sisterCicione.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "wychwoodHecata"
+        "midnightMass"
       ]
     },
     {
-      "characterKey": "niccoloGiovanni",
-      "fullName": "Niccolo Giovanni",
+      "characterKey": "slit",
+      "fullName": "Slit",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_slit.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "sonnySlater",
+      "fullName": "Sonny Slater",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_sonnySlater.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "stalkerTodd",
+      "fullName": "Stalker Todd",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_stalkerTodd.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "stalksTheTangle",
+      "fullName": "Stalks-The-Tangle",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_stalksTheTangle.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "wychwoodHecata"
+        "friendlyNeighborhoodSpiders"
+      ]
+    },
+    {
+      "characterKey": "stalksTheTangleGarou",
+      "fullName": "Stalks-The-Tangle",
+      "isPC": false,
+      "catalog": false,
+      "filename": "npc_stalksTheTangleGarou.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "friendlyNeighborhoodSpidersGarou"
+      ]
+    },
+    {
+      "characterKey": "stephanieHill",
+      "fullName": "Stephanie Hill",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_stephanieHill.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "stirlingSiskin",
+      "fullName": "Stirling Siskin",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_stirlingSiskin.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "fiveKeys"
+      ]
+    },
+    {
+      "characterKey": "suyin",
+      "fullName": "Suyin",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_suyin.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "theLine"
+      ]
+    },
+    {
+      "characterKey": "sydney",
+      "fullName": "Sydney",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_sydney.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "sylvain",
+      "fullName": "Sylvain",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_sylvain.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "symeonRustovich",
+      "fullName": "Symeon Rustovich",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_symeonRustovich.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "terry",
+      "fullName": "Terry",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_terry.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "beesHive"
+      ]
+    },
+    {
+      "characterKey": "theAristocrat",
+      "fullName": "The Aristocrat",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_theAristocrat.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "harpies"
       ]
     },
     {
       "characterKey": "theBleakBokor",
       "fullName": "The Baron's Bleak Bokor",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_theBleakBokor.webp",
+      "canonicalKey": null,
       "pickerGroups": [
         "wychwoodHecata"
       ]
     },
     {
-      "characterKey": "eddie",
-      "fullName": "Eddie",
+      "characterKey": "theIslandDevil",
+      "fullName": "The Island Devil",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_theIslandDevil.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "petitioners"
+        "autarkis"
       ]
     },
     {
-      "characterKey": "alexisHoltt",
-      "fullName": "Alexis Holtt",
+      "characterKey": "thePieceTaker",
+      "fullName": "The Piece-Taker",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_thePieceTaker.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "theUnshadowedThrone",
+      "fullName": "The Unshadowed Throne",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_theUnshadowedThrone.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "petitioners"
+        "aapilu"
       ]
     },
     {
-      "characterKey": "lexiMadi",
-      "fullName": "Lexie Madi",
+      "characterKey": "theWretch",
+      "fullName": "The Wretch",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_theWretch.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "tommy",
+      "fullName": "Tommy",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_tommy.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "petitioners"
+        "beesHive"
       ]
     },
     {
-      "characterKey": "averyInnis",
-      "fullName": "Avery Innis",
+      "characterKey": "twist",
+      "fullName": "Twist",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_twist.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "petitioners"
+        "jarvisJacks"
       ]
     },
     {
-      "characterKey": "benedictKincaid",
-      "fullName": "Benedict Kincaid",
+      "characterKey": "tyler",
+      "fullName": "Tyler",
       "isPC": false,
+      "catalog": true,
+      "filename": "npc_tyler.webp",
+      "canonicalKey": null,
       "pickerGroups": [
-        "petitioners"
+        "redeemers"
+      ]
+    },
+    {
+      "characterKey": "ulyssesCelaj",
+      "fullName": "Ulysses Celaj",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_ulyssesCelaj.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "freeChantry"
+      ]
+    },
+    {
+      "characterKey": "uwuByteMe",
+      "fullName": "UwU_byte_me",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_uwuByteMe.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "civilian"
+      ]
+    },
+    {
+      "characterKey": "vanceVogel",
+      "fullName": "Vance Vogel",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_vanceVogel.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "moonClub"
+      ]
+    },
+    {
+      "characterKey": "vegaGold",
+      "fullName": "Vega Gold",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_vegaGold.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "victorVex",
+      "fullName": "Victor Vex",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_victorVex.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "moonClub"
+      ]
+    },
+    {
+      "characterKey": "wallflower",
+      "fullName": "Wallflower",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_wallflower.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "wesleyRichardson",
+      "fullName": "Wesley Richardson",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_wesleyRichardson.webp",
+      "canonicalKey": null,
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "xavierWhitchurch",
+      "fullName": "Xavier Whitchurch",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_xavierWhitchurch.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "harpies"
+      ]
+    },
+    {
+      "characterKey": "yusefShamsin",
+      "fullName": "Yusef Shamsin",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_yusefShamsin.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "theLine"
+      ]
+    },
+    {
+      "characterKey": "zuriOluwusi",
+      "fullName": "Zuri Oluwusi",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_zuriOluwusi.webp",
+      "canonicalKey": null,
+      "pickerGroups": [
+        "fiveKeys"
       ]
     }
   ],
@@ -1108,7 +2359,7 @@
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "AptStreetside",
+      "skybox": null,
       "locationTrack": "softIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11899005525681881950/CE7007C7B6767E1B773A3E4C19041F220406CDF9/"
@@ -1119,7 +2370,7 @@
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "AptStreetside",
+      "skybox": null,
       "locationTrack": "softIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16292318194054898666/A716550142801578359219C5AD124AF16E0E4607/"
@@ -1161,7 +2412,7 @@
     },
     {
       "key": "BackAlley1",
-      "name": "Back Alley",
+      "name": "Back Alley [1]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
@@ -1172,7 +2423,7 @@
     },
     {
       "key": "BackAlley2",
-      "name": "Back Alley",
+      "name": "Back Alley [2]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
@@ -1183,11 +2434,11 @@
     },
     {
       "key": "BackAlley3",
-      "name": "Back Alley",
+      "name": "Back Alley [3]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "BackAlley1",
+      "skybox": null,
       "locationTrack": "cityTraffic",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18270647391065450410/EA8F1638BF5F6B3754C6C503F8A3CDC6B9506956/"
@@ -1242,7 +2493,7 @@
       "districtKey": "Cabbagetown",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "PenthouseApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11394935671203850518/B398A94AEF15EB02560C0361B6533C3FA70183B7/"
@@ -1376,7 +2627,7 @@
       "districtKey": "HarbordVillage",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "SickKids",
+      "skybox": null,
       "locationTrack": "hospital",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17909098177749843982/BECB5781B5263369D1986D3D5E5DB208C4E778E7/"
@@ -1398,14 +2649,14 @@
       "districtKey": "Wychwood",
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "CityPark",
+      "skybox": null,
       "locationTrack": "cityPark",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12464326614644399114/F0FDF19ADE88E6E69A8B7E2416C12E38878AD509/"
     },
     {
       "key": "CityApt1",
-      "name": "City Apartment",
+      "name": "City Apartment [1]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
@@ -1416,22 +2667,22 @@
     },
     {
       "key": "CityApt2",
-      "name": "City Apartment",
+      "name": "City Apartment [2]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "CityApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12491132454462837305/F7BC5A83CE1663BF1C18AA42055820DE0495B3AB/"
     },
     {
       "key": "CityApt3",
-      "name": "City Apartment",
+      "name": "City Apartment [3]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "CityApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12935644312595223084/906EDFFE8CCAB918204CF6676136804D879A01C9/"
@@ -1470,12 +2721,23 @@
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15490975255095807323/C5DEC2A42BE2460EF1B90EF2803158181F9948D0/"
     },
     {
+      "key": "CoachHouseEmbassy",
+      "name": "Coach House Embassy, the",
+      "districtKey": "Rosedale",
+      "isTopFogActive": false,
+      "isIndoors": true,
+      "skybox": "CoachHouseEmbassy",
+      "locationTrack": "softHum",
+      "conditions": [],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13803742249216436414/1E62BAF9CC5CAE1E0902190D9083F7BE2A465DF5/"
+    },
+    {
       "key": "CorktownCommon",
       "name": "Corktown Common",
       "districtKey": "DonRavine",
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "CityPark",
+      "skybox": null,
       "locationTrack": "eerieForest",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9596763468887882248/7907B5A9F3C5C95C3718D08DDF3FADF0C1C1E824/"
@@ -1514,12 +2776,25 @@
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15533509063347832460/FEE940085DDE7D134A9F26E563819ED6C30091C5/"
     },
     {
+      "key": "Docks",
+      "name": "Docks, the",
+      "districtKey": "DistilleryDist",
+      "isTopFogActive": true,
+      "isIndoors": false,
+      "skybox": "Docks",
+      "locationTrack": "waterside",
+      "conditions": [
+        "setHungerWPReroll"
+      ],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12949344677566950941/6EEE071E5BB6F04584D969DDF62C3FC27E78A779/"
+    },
+    {
       "key": "DogPark",
       "name": "Dog Park",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "CityPark",
+      "skybox": null,
       "locationTrack": "cityPark",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17611669730352432455/599E56690432A84E6F88F94F9696578BCE305882/"
@@ -1536,9 +2811,20 @@
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11526092837025265717/2DA5F11ED72C2F80D7E282F7C34C4EA1B14DC431/"
     },
     {
+      "key": "Drake",
+      "name": "Drake Hotel, the",
+      "districtKey": "LittlePortugal",
+      "isTopFogActive": false,
+      "isIndoors": true,
+      "skybox": null,
+      "locationTrack": "softIndoor",
+      "conditions": [],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9626748842416581390/C81AD6452D75719E34A2D539A6FCC82EE675F2BE/"
+    },
+    {
       "key": "LuxuryDriving",
       "name": "Driving",
-      "districtKey": null,
+      "districtKey": "Streets",
       "isTopFogActive": false,
       "isIndoors": false,
       "skybox": null,
@@ -1664,7 +2950,7 @@
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "Nightclub1",
+      "skybox": null,
       "locationTrack": "nightclub",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17734062777612295927/AE5AAD805E54336225630F16A04AEB7A3009C7D3/"
@@ -1705,13 +2991,24 @@
     {
       "key": "Highway",
       "name": "Highway",
-      "districtKey": null,
+      "districtKey": "Streets",
       "isTopFogActive": false,
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13137525619749689859/9BADF5AD3CE53685A5DD2F95D2EAF039F2AA435E/"
+    },
+    {
+      "key": "Distillery",
+      "name": "Historic Distillery, the",
+      "districtKey": "DistilleryDist",
+      "isTopFogActive": true,
+      "isIndoors": true,
+      "skybox": "Distillery",
+      "locationTrack": "industry",
+      "conditions": [],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12942382513551156024/7798BA049557DBAD13993212E51C96257240E8E8/"
     },
     {
       "key": "HockeyHallOfFame",
@@ -1741,7 +3038,7 @@
       "districtKey": "Discovery",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "Library",
+      "skybox": null,
       "locationTrack": "library",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11315640431095276860/B3F181B43DBD284D3BE755BF05F85C9B27758AA9/"
@@ -1815,7 +3112,7 @@
     {
       "key": "Limousine",
       "name": "Limousine",
-      "districtKey": null,
+      "districtKey": "Streets",
       "isTopFogActive": false,
       "isIndoors": false,
       "skybox": "Limousine",
@@ -1829,7 +3126,7 @@
       "districtKey": "DonRavine",
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "CityPark",
+      "skybox": null,
       "locationTrack": "eerieForest",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16989978139346546012/D049BA0B970C401866528DB2F7737B86DE28FF67/"
@@ -1837,7 +3134,7 @@
     {
       "key": "Yacht",
       "name": "Luxury Yacht",
-      "districtKey": null,
+      "districtKey": "Waterfront",
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": "Yacht",
@@ -1870,7 +3167,7 @@
     {
       "key": "MiddleOfRoad",
       "name": "Middle of the Road",
-      "districtKey": null,
+      "districtKey": "Streets",
       "isTopFogActive": false,
       "isIndoors": false,
       "skybox": null,
@@ -1895,14 +3192,14 @@
       "districtKey": "YongeDundasHospital",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "SickKids",
+      "skybox": null,
       "locationTrack": "hospital",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13748850427382532930/ADFC750ABEEC066796B271DF1D94C91982F3343A/"
     },
     {
       "key": "Nightclub1",
-      "name": "Nightclub",
+      "name": "Nightclub [1]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
@@ -1913,22 +3210,22 @@
     },
     {
       "key": "Nightclub2",
-      "name": "Nightclub",
+      "name": "Nightclub [2]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "Nightclub1",
+      "skybox": null,
       "locationTrack": "nightclub",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10988769992453285752/1F484EAEDB3C30B478F14E45A8E27C77F20A13D3/"
     },
     {
       "key": "Nightclub3",
-      "name": "Nightclub",
+      "name": "Nightclub [3]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "Nightclub1",
+      "skybox": null,
       "locationTrack": "nightclub",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17757472164715000666/06E672D96C43907B8282616C3FF5216B03A9FC96/"
@@ -1983,7 +3280,7 @@
       "districtKey": "DonRavine",
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "CityPark",
+      "skybox": null,
       "locationTrack": "eerieForest",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14756707218981611720/EAD09E2C1F56011E46170387C0272F6BC984D806/"
@@ -2001,7 +3298,7 @@
     },
     {
       "key": "PenthouseApt1",
-      "name": "Penthouse Apartment",
+      "name": "Penthouse Apartment [1]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
@@ -2012,22 +3309,22 @@
     },
     {
       "key": "PenthouseApt2",
-      "name": "Penthouse Apartment",
+      "name": "Penthouse Apartment [2]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "PenthouseApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10513521913142787167/9744B79280A411CC92D8A7A581235420DFCBFB5C/"
     },
     {
       "key": "PenthouseApt3",
-      "name": "Penthouse Apartment",
+      "name": "Penthouse Apartment [3]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "PenthouseApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16533088309429188687/D2734653E13109F949B0815E914BB86C341A3D99/"
@@ -2049,7 +3346,7 @@
       "districtKey": "YongeDundasHospital",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "SickKids",
+      "skybox": null,
       "locationTrack": "hospital",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9879078174787502959/BDB700159767E0CD9704E6C35A6447D794B1CA3A/"
@@ -2060,7 +3357,7 @@
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "Office",
+      "skybox": null,
       "locationTrack": "softIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14721196193095727996/310F4A575B3F7861AABDE545C1E66A526509F283/"
@@ -2212,7 +3509,7 @@
     },
     {
       "key": "RunDownApt1",
-      "name": "Run-Down Apartment",
+      "name": "Run-Down Apartment [1]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
@@ -2223,22 +3520,22 @@
     },
     {
       "key": "RunDownApt2",
-      "name": "Run-Down Apartment",
+      "name": "Run-Down Apartment [2]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "RunDownApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17433885112226833412/E76FDCD003505F889673A929B6FAD370BF297A16/"
     },
     {
       "key": "RunDownApt3",
-      "name": "Run-Down Apartment",
+      "name": "Run-Down Apartment [3]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "RunDownApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [
         "bestialReset"
@@ -2280,8 +3577,8 @@
     },
     {
       "key": "SewerTunnel1",
-      "name": "Sewer Tunnel",
-      "districtKey": null,
+      "name": "Sewer Tunnel [1]",
+      "districtKey": "Sewers",
       "isTopFogActive": true,
       "isIndoors": true,
       "skybox": "SewerTunnel1",
@@ -2291,8 +3588,8 @@
     },
     {
       "key": "SewerTunnel2",
-      "name": "Sewer Tunnel",
-      "districtKey": null,
+      "name": "Sewer Tunnel [2]",
+      "districtKey": "Sewers",
       "isTopFogActive": true,
       "isIndoors": true,
       "skybox": "SewerTunnel2",
@@ -2313,7 +3610,7 @@
     },
     {
       "key": "Sidewalk1",
-      "name": "Sidewalk",
+      "name": "Sidewalk [1]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
@@ -2324,22 +3621,22 @@
     },
     {
       "key": "Sidewalk2",
-      "name": "Sidewalk",
+      "name": "Sidewalk [2]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "Sidewalk1",
+      "skybox": null,
       "locationTrack": "quietCity",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11609285782076018935/86DF0D173D2386BE1B4F700DFB430366A6AF0505/"
     },
     {
       "key": "Sidewalk3",
-      "name": "Sidewalk",
+      "name": "Sidewalk [3]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "Sidewalk1",
+      "skybox": null,
       "locationTrack": "quietCity",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15243360005963914423/6C461D0D6303266436037C954D0FAFC38CBEE6D5/"
@@ -2396,7 +3693,7 @@
       "districtKey": "Cabbagetown",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "SickKids",
+      "skybox": null,
       "locationTrack": "hospital",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13970615863891033868/85865BE4725EFCA08FF52FF41E173039B3504FA2/"
@@ -2414,7 +3711,7 @@
     },
     {
       "key": "StreetCorner1",
-      "name": "Street Corner",
+      "name": "Street Corner [1]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
@@ -2427,22 +3724,22 @@
     },
     {
       "key": "StreetCorner2",
-      "name": "Street Corner",
+      "name": "Street Corner [2]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "StreetCorner1",
+      "skybox": null,
       "locationTrack": "quietCity",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13589095342485016342/9F92ACCE53528646F1C74D5858809AF5D6720CBF/"
     },
     {
       "key": "StreetCorner3",
-      "name": "Street Corner",
+      "name": "Street Corner [3]",
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "StreetCorner1",
+      "skybox": null,
       "locationTrack": "quietCity",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17320286991384317353/03998ADF93E06A2242B929DBB82E593EF6C24D3B/"
@@ -2453,7 +3750,7 @@
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "Nightclub1",
+      "skybox": null,
       "locationTrack": "nightclub",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11884099304278046645/8D4A46823B9370D3D05D77B80DAC1F9405D0F042/"
@@ -2471,7 +3768,7 @@
     },
     {
       "key": "SuburbanHouse1",
-      "name": "Suburban House",
+      "name": "Suburban House [1]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
@@ -2482,22 +3779,22 @@
     },
     {
       "key": "SuburbanHouse2",
-      "name": "Suburban House",
+      "name": "Suburban House [2]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "SuburbanHouse1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17273894745469963666/AB5D828DFB37B5BB603EA6BB9F6CCCE9C35EFC1F/"
     },
     {
       "key": "SuburbanHouse3",
-      "name": "Suburban House",
+      "name": "Suburban House [3]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "SuburbanHouse1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14351440981249654499/F88730EE2F577FEEDEFD2DB788614BB9772BCC0B/"
@@ -2505,7 +3802,7 @@
     {
       "key": "SubwayStation",
       "name": "Subway Station",
-      "districtKey": null,
+      "districtKey": "Subway",
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": "SubwayStation",
@@ -2516,7 +3813,7 @@
     {
       "key": "SubwayTunnels",
       "name": "Subway Tunnels",
-      "districtKey": null,
+      "districtKey": "Subway",
       "isTopFogActive": true,
       "isIndoors": true,
       "skybox": "SubwayTunnels",
@@ -2527,10 +3824,10 @@
     {
       "key": "SUV",
       "name": "SUV",
-      "districtKey": null,
+      "districtKey": "Streets",
       "isTopFogActive": false,
       "isIndoors": false,
-      "skybox": "Limousine",
+      "skybox": null,
       "locationTrack": "cityTraffic",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11987179685705051944/8628863423B6ABCDE713F4B766786AEB481F8E77/"
@@ -2538,7 +3835,7 @@
     {
       "key": "Taxi",
       "name": "Taxi",
-      "districtKey": null,
+      "districtKey": "Streets",
       "isTopFogActive": false,
       "isIndoors": false,
       "skybox": "Taxi",
@@ -2558,47 +3855,12 @@
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9498269625351500166/A9F8E498EFC4A7EABDDE0B5B24AAB782BCA99E4C/"
     },
     {
-      "key": "CoachHouseEmbassy",
-      "name": "The Coach House Embassy",
-      "districtKey": "Rosedale",
-      "isTopFogActive": false,
-      "isIndoors": true,
-      "skybox": "CoachHouseEmbassy",
-      "locationTrack": "softHum",
-      "conditions": [],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13803742249216436414/1E62BAF9CC5CAE1E0902190D9083F7BE2A465DF5/"
-    },
-    {
-      "key": "Docks",
-      "name": "The Docks",
-      "districtKey": "DistilleryDist",
-      "isTopFogActive": true,
-      "isIndoors": false,
-      "skybox": "Docks",
-      "locationTrack": "waterside",
-      "conditions": [
-        "setHungerWPReroll"
-      ],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12949344677566950941/6EEE071E5BB6F04584D969DDF62C3FC27E78A779/"
-    },
-    {
-      "key": "Drake",
-      "name": "The Drake Hotel",
-      "districtKey": "LittlePortugal",
-      "isTopFogActive": false,
-      "isIndoors": true,
-      "skybox": null,
-      "locationTrack": "softIndoor",
-      "conditions": [],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9626748842416581390/C81AD6452D75719E34A2D539A6FCC82EE675F2BE/"
-    },
-    {
       "key": "GECatacombs",
       "name": "The Giovanni Estate: Catacombs",
       "districtKey": "Wychwood",
       "isTopFogActive": true,
       "isIndoors": true,
-      "skybox": "GEEstateGrounds",
+      "skybox": null,
       "locationTrack": "whisperGhosts",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10936568131459997368/36780E3583BDE0599799E650B5C28480B5FD4F6E/"
@@ -2631,7 +3893,7 @@
       "districtKey": "Wychwood",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "GEEstateGrounds",
+      "skybox": null,
       "locationTrack": "laboratory",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14468254550938219096/912586379A3BFA7EFC1F358CD474369900CB564E/"
@@ -2646,17 +3908,6 @@
       "locationTrack": "softHum",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13416015049278600314/A72E80CB40E6D5C3BFFA58B5E7EED1A6DE0579B3/"
-    },
-    {
-      "key": "Distillery",
-      "name": "The Historic Distillery",
-      "districtKey": "DistilleryDist",
-      "isTopFogActive": true,
-      "isIndoors": true,
-      "skybox": "Distillery",
-      "locationTrack": "industry",
-      "conditions": [],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12942382513551156024/7798BA049557DBAD13993212E51C96257240E8E8/"
     },
     {
       "key": "WarrensAntechamber",
@@ -2686,7 +3937,7 @@
       "districtKey": "Sewers",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "WarrensLabyrinth",
+      "skybox": null,
       "locationTrack": "warrens",
       "conditions": [],
       "cardUrl": null
@@ -2697,7 +3948,7 @@
       "districtKey": "Sewers",
       "isTopFogActive": true,
       "isIndoors": true,
-      "skybox": "WarrensLabyrinth",
+      "skybox": null,
       "locationTrack": "warrens",
       "conditions": [],
       "cardUrl": null
@@ -2719,7 +3970,7 @@
       "districtKey": "Sewers",
       "isTopFogActive": true,
       "isIndoors": true,
-      "skybox": "WarrensLabyrinth",
+      "skybox": null,
       "locationTrack": "warrens",
       "conditions": [],
       "cardUrl": null
@@ -2752,7 +4003,7 @@
       "districtKey": "BayStFinancial",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "StRegisCouncilChamber",
+      "skybox": null,
       "locationTrack": "softHum",
       "conditions": [],
       "cardUrl": null
@@ -2763,7 +4014,7 @@
       "districtKey": "BayStFinancial",
       "isTopFogActive": true,
       "isIndoors": true,
-      "skybox": "StRegisCouncilChamber",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": null
@@ -2785,7 +4036,7 @@
       "districtKey": "BayStFinancial",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "StRegisCouncilChamber",
+      "skybox": null,
       "locationTrack": "softHum",
       "conditions": [],
       "cardUrl": null
@@ -2818,7 +4069,7 @@
       "districtKey": "BayStFinancial",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "StRegisCouncilChamber",
+      "skybox": null,
       "locationTrack": "softHum",
       "conditions": [],
       "cardUrl": null
@@ -2829,7 +4080,7 @@
       "districtKey": "BayStFinancial",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "StRegisCouncilChamber",
+      "skybox": null,
       "locationTrack": "softHum",
       "conditions": [],
       "cardUrl": null
@@ -2844,17 +4095,6 @@
       "locationTrack": "computerLab",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10603813245369786115/57CB1F93CC82602E9B950D60DDFE38EC5F279088/"
-    },
-    {
-      "key": "ThreefoldExchange",
-      "name": "The Threefold Exchange",
-      "districtKey": "Chinatown",
-      "isTopFogActive": true,
-      "isIndoors": true,
-      "skybox": "ThreefoldExchange",
-      "locationTrack": "apothecary",
-      "conditions": [],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11540381103291212074/35555FB693FF932B816C157688DBA355786C0CDB/"
     },
     {
       "key": "ChantryLibrary",
@@ -2884,7 +4124,7 @@
       "districtKey": "Discovery",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "ChantryLibrary",
+      "skybox": null,
       "locationTrack": "church",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18445113144936191350/D2DBBC710E27B0C3ACF32A5277DAB45883AAE789/"
@@ -2901,17 +4141,15 @@
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9876149790782513651/E60136AAEA17978BA31DA320F4910CAB8AF30527/"
     },
     {
-      "key": "WeepingCairn",
-      "name": "The Weeping Cairn",
-      "districtKey": "DonRavine",
+      "key": "ThreefoldExchange",
+      "name": "Threefold Exchange, the",
+      "districtKey": "Chinatown",
       "isTopFogActive": true,
-      "isIndoors": false,
-      "skybox": null,
-      "locationTrack": "eerieForest",
-      "conditions": [
-        "toxicRouse"
-      ],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10826935590880878584/1F13199E208F43E8035C91DA2F99205C0747B605/"
+      "isIndoors": true,
+      "skybox": "ThreefoldExchange",
+      "locationTrack": "apothecary",
+      "conditions": [],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11540381103291212074/35555FB693FF932B816C157688DBA355786C0CDB/"
     },
     {
       "key": "TIFFLightbox",
@@ -2930,7 +4168,7 @@
       "districtKey": "YongeDundasHospital",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "SickKids",
+      "skybox": null,
       "locationTrack": "hospital",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17369080632210566336/7741AEB9220EF33FFD957EC6B794C53C9A2094C5/"
@@ -3059,10 +4297,10 @@
     {
       "key": "BackseatSedan",
       "name": "Vehicle",
-      "districtKey": null,
+      "districtKey": "Streets",
       "isTopFogActive": false,
       "isIndoors": false,
-      "skybox": "Limousine",
+      "skybox": null,
       "locationTrack": "cityTraffic",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10423609886137802708/30FC218D16431848299717742D37815B306804CB/"
@@ -3073,14 +4311,14 @@
       "districtKey": null,
       "isTopFogActive": true,
       "isIndoors": false,
-      "skybox": "CityPark",
+      "skybox": null,
       "locationTrack": "cityPark",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18314413779972594353/0210E7BF7B744989FCFEFEEDAA1B26ADA21DA897/"
     },
     {
       "key": "WealthyEstate1",
-      "name": "Wealthy Estate",
+      "name": "Wealthy Estate [1]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
@@ -3091,7 +4329,7 @@
     },
     {
       "key": "WealthyEstate2",
-      "name": "Wealthy Estate",
+      "name": "Wealthy Estate [2]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
@@ -3102,19 +4340,32 @@
     },
     {
       "key": "WealthyEstate3",
-      "name": "Wealthy Estate",
+      "name": "Wealthy Estate [3]",
       "districtKey": null,
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "WealthyEstate1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16361198734486336021/0C52269234A8846A3CF0D9A158DC65FFCBD6DFFC/"
     },
     {
+      "key": "WeepingCairn",
+      "name": "Weeping Cairn, the",
+      "districtKey": "DonRavine",
+      "isTopFogActive": true,
+      "isIndoors": false,
+      "skybox": null,
+      "locationTrack": "eerieForest",
+      "conditions": [
+        "toxicRouse"
+      ],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10826935590880878584/1F13199E208F43E8035C91DA2F99205C0747B605/"
+    },
+    {
       "key": "WychwoodPub",
       "name": "Wychwood Pub",
-      "districtKey": null,
+      "districtKey": "Wychwood",
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
@@ -3139,7 +4390,7 @@
       "districtKey": "Yorkville",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": "PenthouseApt1",
+      "skybox": null,
       "locationTrack": "silent",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12259123898403925074/95610F1647A5D88171648C8AA9F953BC3B15E72C/"
@@ -3229,11 +4480,11 @@
     },
     {
       "key": "BackAlley1",
-      "display": "Back Alley"
+      "display": "Back Alley [1]"
     },
     {
       "key": "BackAlley2",
-      "display": "Back Alley"
+      "display": "Back Alley [2]"
     },
     {
       "key": "BayTower",
@@ -3269,7 +4520,7 @@
     },
     {
       "key": "CityApt1",
-      "display": "City Apartment"
+      "display": "City Apartment [1]"
     },
     {
       "key": "CityHall",
@@ -3313,15 +4564,15 @@
     },
     {
       "key": "CoachHouseEmbassy",
-      "display": "The Coach House Embassy"
+      "display": "Coach House Embassy, the"
     },
     {
       "key": "Distillery",
-      "display": "The Historic Distillery"
+      "display": "Historic Distillery, the"
     },
     {
       "key": "Docks",
-      "display": "The Docks"
+      "display": "Docks, the"
     },
     {
       "key": "EatonCentre",
@@ -3381,7 +4632,7 @@
     },
     {
       "key": "Nightclub1",
-      "display": "Nightclub"
+      "display": "Nightclub [1]"
     },
     {
       "key": "Office",
@@ -3393,7 +4644,7 @@
     },
     {
       "key": "PenthouseApt1",
-      "display": "Penthouse Apartment"
+      "display": "Penthouse Apartment [1]"
     },
     {
       "key": "Ravenwing",
@@ -3445,7 +4696,7 @@
     },
     {
       "key": "RunDownApt1",
-      "display": "Run-Down Apartment"
+      "display": "Run-Down Apartment [1]"
     },
     {
       "key": "SecludedDeadEnd",
@@ -3453,11 +4704,11 @@
     },
     {
       "key": "SewerTunnel1",
-      "display": "Sewer Tunnel"
+      "display": "Sewer Tunnel [1]"
     },
     {
       "key": "SewerTunnel2",
-      "display": "Sewer Tunnel"
+      "display": "Sewer Tunnel [2]"
     },
     {
       "key": "SickKids",
@@ -3465,7 +4716,7 @@
     },
     {
       "key": "Sidewalk1",
-      "display": "Sidewalk"
+      "display": "Sidewalk [1]"
     },
     {
       "key": "StLawrenceMarket",
@@ -3477,7 +4728,7 @@
     },
     {
       "key": "StreetCorner1",
-      "display": "Street Corner"
+      "display": "Street Corner [1]"
     },
     {
       "key": "StRegisCouncilChamber",
@@ -3497,7 +4748,7 @@
     },
     {
       "key": "SuburbanHouse1",
-      "display": "Suburban House"
+      "display": "Suburban House [1]"
     },
     {
       "key": "SubwayStation",
@@ -3517,7 +4768,7 @@
     },
     {
       "key": "ThreefoldExchange",
-      "display": "The Threefold Exchange"
+      "display": "Threefold Exchange, the"
     },
     {
       "key": "TPSHQ",
@@ -3549,31 +4800,31 @@
     },
     {
       "key": "WarrensAntechamber",
-      "display": "#N/A"
+      "display": "The Nosferatu Warrens: Antechamber"
     },
     {
       "key": "WarrensDrakes",
-      "display": "#N/A"
+      "display": "The Nosferatu Warrens: Drake's"
     },
     {
       "key": "WarrensLabyrinth",
-      "display": "#N/A"
+      "display": "The Nosferatu Warrens: Labyrinth"
     },
     {
       "key": "WarrensSpawningPool",
-      "display": "#N/A"
+      "display": "The Nosferatu Warrens: Spawning Pool"
     },
     {
       "key": "WarrensTunnelJunction",
-      "display": "#N/A"
+      "display": "The Nosferatu Warrens: Tunnel Junction"
     },
     {
       "key": "WealthyEstate1",
-      "display": "Wealthy Estate"
+      "display": "Wealthy Estate [1]"
     },
     {
       "key": "WealthyEstate2",
-      "display": "Wealthy Estate"
+      "display": "Wealthy Estate [2]"
     },
     {
       "key": "Yacht",

@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,7 +20,7 @@ type ImportModule = {
 };
 
 /**
- * Refresh `.dev/storyteller-dashboard/data/memoriam-npcs.json` from the Memoriam NPC Export sheet.
+ * Refresh `.dev/storyteller-dashboard/data/memoriam-npcs.json` from the consolidated character exports.
  * Called on Storyteller Dashboard server startup (the full build also runs the same import).
  */
 export const refreshMemoriamNpcCatalogOnStartup = async (catalogPath: string): Promise<void> => {
@@ -35,15 +34,6 @@ export const refreshMemoriamNpcCatalogOnStartup = async (catalogPath: string): P
   );
   const { importMemoriamNpcs } = require(importScriptPath) as ImportModule;
 
-  try {
-    const result = await importMemoriamNpcs({ outPath: catalogPath });
-    console.log(`[memoriam-npcs] Catalog refreshed on startup (${result.npcCount} NPCs).`);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (existsSync(catalogPath)) {
-      console.error(`[memoriam-npcs] Sheet refresh failed; using existing catalog. ${message}`);
-      return;
-    }
-    throw new Error(`Could not refresh Memoriam NPC catalog and no existing file at ${catalogPath}: ${message}`);
-  }
+  const result = await importMemoriamNpcs({ outPath: catalogPath });
+  console.log(`[exports] Catalog refreshed (${result.npcCount} NPCs).`);
 };
