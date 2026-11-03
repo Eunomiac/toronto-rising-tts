@@ -37,7 +37,8 @@ const stats = normalizeNpcStatsFile(JSON.parse(await readFile(path.join(dataDir,
 const rows = new Map<string, Readonly<Record<string, string>>>();
 for (const row of sheetRecords(await fetchCharactersRows(), "CHARACTERS")) {
   const key = (row["API key"] ?? "").trim();
-  if (key !== "" && !rows.has(key)) {
+  if (key !== "") {
+    if (rows.has(key)) throw new Error(`Duplicate authoring key ${key}`);
     rows.set(key, row);
     for (const alias of (row["Legacy API Keys"] ?? "").split(",").map(s => s.trim()).filter(Boolean)) {
       if (rows.has(alias)) throw new Error(`Duplicate authoring alias ${alias}`);

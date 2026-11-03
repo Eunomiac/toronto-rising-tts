@@ -8,7 +8,7 @@ import { getConfig } from "./config.js";
 import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
-import { refreshSheetExports, exportRecords, characterDefinitions } from "./sheetExports.js";
+import { refreshSheetExports, exportRecords, characterDefinitions, figureFilename } from "./sheetExports.js";
 import { loadMemoriamNpcCatalog } from "./memoriamNpcCatalog.js";
 import { applyMemoriamFields, sheetMemoriamLists } from "../shared/memoriamNpc.js";
 import {
@@ -665,7 +665,7 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   if (request.method === "GET" && pathname.startsWith("/figurine-images/")) {
     const requested = decodeURIComponent(pathname.slice("/figurine-images/".length));
     const key = requested.replace(/\.webp$/, "");
-    const filename = characterDefinitions()[key]?.filename ?? `npc_${requested}`;
+    const filename = figureFilename(key) ?? `npc_${requested}`;
     await serveSafeWebp(response, [cataloguedNpcImageDir, genericNpcImageDir, memoriamNpcImageDir], filename, "Invalid NPC figurine image filename.");
     return true;
   }
