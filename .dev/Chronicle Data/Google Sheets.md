@@ -1,5 +1,11 @@
 # Chronicle Google Sheets
 
+## Export consolidation status — 2026-11-02
+
+Nine generated `EXPORT_*` packages are now prepared on Toronto Rising → `(exports)`. Read [Spreadsheet Exports.md](Spreadsheet%20Exports.md) and the [exact schema](Spreadsheet%20Export%20Contract.json) before changing importers. The existing code still uses the legacy paths documented below; it has not been switched to the new ranges. Named-range CSV downloads work with `gid=1673786468` as well as the range name. Several old API location imports are broken, so use the verified consolidated exports for finished location values.
+
+The character availability field is now `Catalog?`; it means inclusion in the roster's main Catalog tab. Complications and Compulsions authoring now share **Toronto Rising Decks** (`11kcsl9vAqWeEBEFFmadMs65xpDqMNV8SkCaCNM_09bU`), on `[CPL] Cards` and `[COM] Cards` respectively. Review items and the boundary before consumer migration are recorded in the export audit.
+
 ## Agent Routing
 
 Read this when:

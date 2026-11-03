@@ -1,0 +1,401 @@
+{
+  "status": "sheet-preparation-complete; consumer migration pending",
+  "verifiedDate": "2026-11-02",
+  "spreadsheetId": "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs",
+  "sheetTitle": "(exports)",
+  "sheetId": 1673786468,
+  "headerRow": 4,
+  "firstDataRow": 5,
+  "rangeEndRow": 3001,
+  "exports": [
+    {
+      "name": "EXPORT_CHARACTERS_UNIQUE",
+      "rangeAtVerification": "C4:BK3001",
+      "headers": [
+        "API Key",
+        "Type",
+        "Name",
+        "Catalog?",
+        "Kind",
+        "Subkind",
+        "Clan",
+        "Bloodline / Subfaction",
+        "Sect",
+        "Tier",
+        "Generation",
+        "Rank",
+        "Title",
+        "Sire",
+        "Childer",
+        "Domitor",
+        "Coterie / Pack",
+        "Boss?",
+        "Deferred?",
+        "PC Relation PC",
+        "PC Relation Type",
+        "PC Relation",
+        "Portrait Asset",
+        "Portrait Review",
+        "Sect Status",
+        "Clan Status",
+        "Blood Potency",
+        "Humanity",
+        "Difficulty",
+        "Health",
+        "Willpower",
+        "Phy",
+        "Soc",
+        "Men",
+        "Pow",
+        "Exceptional Pools",
+        "Attacks",
+        "Powers",
+        "Discipline Expression",
+        "Ancilla Power(s)",
+        "Elder Power(s)",
+        "Methuselah Power(s)",
+        "Advantages",
+        "Special Abilities",
+        "Personal Domain",
+        "Quote",
+        "Bio",
+        "Notes",
+        "Tags",
+        "Stat Tags",
+        "Locations",
+        "Time Periods",
+        "Variant Of",
+        "Inherits From",
+        "Memoriam Periods",
+        "Filename",
+        "Legacy API Keys",
+        "IsCanon?",
+        "Description",
+        "Authoring Tab",
+        "Authoring Key"
+      ],
+      "source": "CHARACTERS + MEM NAMED STATS + Memoriam NPC Export",
+      "verifiedRows": 206,
+      "currentImporters": [
+        ".dev/storyteller-dashboard/scripts/npc-stats/import.ts",
+        ".dev/scripts/import_memoriam_npcs_from_sheet.js",
+        ".dev/scripts/generate_dashboard_scene_catalogs.js"
+      ],
+      "currentDataFiles": [
+        ".dev/storyteller-dashboard/data/npc-stats.json",
+        "lib/memoriam_npc_catalog.ttslua",
+        "lib/npcs_data.ttslua"
+      ],
+      "runtimeConsumers": [
+        "core/npcs.ttslua",
+        "core/npc_spawn.ttslua",
+        "dashboard/rolls.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_CHARACTERS_GENERIC",
+      "rangeAtVerification": "BO4:CY3001",
+      "headers": [
+        "API Key",
+        "Tier",
+        "Label",
+        "Stat Profile",
+        "Kind",
+        "Subkind",
+        "Clan",
+        "Bloodline / Subfaction",
+        "Sect",
+        "Rank",
+        "Blood Potency",
+        "Humanity",
+        "Difficulty",
+        "Health",
+        "Willpower",
+        "Phy",
+        "Soc",
+        "Men",
+        "Pow",
+        "Exceptional Pools",
+        "Attacks",
+        "Powers",
+        "Discipline Expression",
+        "Ancilla Power(s)",
+        "Elder Power(s)",
+        "Special Abilities",
+        "Catalog?",
+        "Locations",
+        "Time Periods",
+        "Memoriam Periods",
+        "Tags",
+        "Filename",
+        "Stat Key",
+        "Figurine Filename",
+        "Source Group",
+        "Authoring Tab",
+        "Authoring Key"
+      ],
+      "source": "GENERICS \u00d7 STAT PROFILES; one row per figure and supplied tier",
+      "verifiedRows": 2070,
+      "currentImporters": [
+        ".dev/scripts/import_generic_npcs_from_sheet.js",
+        ".dev/storyteller-dashboard/scripts/npc-stats/import.ts",
+        ".dev/storyteller-dashboard/scripts/npc-art/generate.ts"
+      ],
+      "currentDataFiles": [
+        ".dev/storyteller-dashboard/data/generic-npcs.json",
+        ".dev/storyteller-dashboard/data/npc-stats.json",
+        "lib/npc_art_urls.ttslua"
+      ],
+      "runtimeConsumers": [
+        "lib/npcs_data.ttslua",
+        "core/generic_npcs.ttslua",
+        "core/npcs.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_LOCATIONS_DISTRICTS",
+      "rangeAtVerification": "DB4:DV3001",
+      "headers": [
+        "Key",
+        "Name",
+        "Hunting Difficulty",
+        "Affair",
+        "Association",
+        "Clout",
+        "Utility",
+        "Resonance Plus",
+        "Resonance Minus",
+        "Domain Control: Minor",
+        "Domain Control: Major",
+        "Domain Control: Full",
+        "Aspect Title 1",
+        "Aspect Content 1",
+        "Aspect Title 2",
+        "Aspect Content 2",
+        "Aspect Title 3",
+        "Aspect Content 3",
+        "Conditions",
+        "Soundscape",
+        "Is Outdoors"
+      ],
+      "source": "Districts & Sites: DISTRICTS authored projection",
+      "verifiedRows": 36,
+      "currentImporters": [
+        ".dev/scripts/import_locations_from_sheet.js",
+        ".dev/storyteller-dashboard/src/client/scenesPanel/chronicleSheets.ts"
+      ],
+      "currentDataFiles": [
+        "lib/locations_catalog.ttslua",
+        ".dev/storyteller-dashboard/data/scene-catalogs.json"
+      ],
+      "runtimeConsumers": [
+        "lib/constants.ttslua",
+        "core/conditions.ttslua",
+        "core/scenes.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_LOCATIONS_SITES",
+      "rangeAtVerification": "DX4:EX3001",
+      "headers": [
+        "Key",
+        "Name",
+        "Title",
+        "Subtitle",
+        "Subtitle Tag",
+        "District",
+        "Map Offset XY",
+        "Resonance Plus",
+        "Resonance Minus",
+        "Aspect Title",
+        "Aspect Content",
+        "Conditions",
+        "Sound - Location",
+        "Sound - Music",
+        "Is Outdoors",
+        "Weather Ducking",
+        "Light Mode",
+        "Top Fog",
+        "Skybox Key",
+        "Unique?",
+        "Elysium?",
+        "Has Skybox?",
+        "Needs Skybox?",
+        "Requested Skybox Key",
+        "Source Location Audio",
+        "Source Music Key",
+        "Is Silent?"
+      ],
+      "source": "Districts & Sites: authored SITES plus environment rules",
+      "verifiedRows": 186,
+      "currentImporters": [
+        ".dev/scripts/import_locations_from_sheet.js",
+        ".dev/storyteller-dashboard/src/client/scenesPanel/chronicleSheets.ts"
+      ],
+      "currentDataFiles": [
+        "lib/locations_catalog.ttslua",
+        ".dev/storyteller-dashboard/data/scene-catalogs.json"
+      ],
+      "runtimeConsumers": [
+        "core/scenes.ttslua",
+        "core/scene_library.ttslua",
+        "core/soundscape.ttslua",
+        "core/map_pins.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_MEMORIAM",
+      "rangeAtVerification": "EZ4:FY3001",
+      "headers": [
+        "Key",
+        "Characters",
+        "Start Year",
+        "End Year",
+        "Location",
+        "Panel A Display",
+        "Panel A isOutdoors",
+        "Panel A isDaytime",
+        "Panel A Weather",
+        "Panel A Location Audio",
+        "Panel B Display",
+        "Panel B isOutdoors",
+        "Panel B isDaytime",
+        "Panel B Weather",
+        "Panel B Location Audio",
+        "Panel C Display",
+        "Panel C isOutdoors",
+        "Panel C isDaytime",
+        "Panel C Weather",
+        "Panel C Location Audio",
+        "Panel D Display",
+        "Panel D isOutdoors",
+        "Panel D isDaytime",
+        "Panel D Weather",
+        "Panel D Location Audio",
+        "Splash Text"
+      ],
+      "source": "MEMORIAMS: approved records, existing runtime keys",
+      "verifiedRows": 50,
+      "currentImporters": [
+        ".dev/scripts/import_skyboxes_from_sheet.js"
+      ],
+      "currentDataFiles": [
+        "lib/skyboxes_catalog.ttslua"
+      ],
+      "runtimeConsumers": [
+        "lib/constants.ttslua",
+        "core/memoriam.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_WEATHER",
+      "rangeAtVerification": "GA4:GD3001",
+      "headers": [
+        "Month",
+        "Average Temperature",
+        "Day",
+        "DayCodes"
+      ],
+      "source": "WEATHER: one day per row, 24 hourly codes",
+      "verifiedRows": 366,
+      "currentImporters": [
+        ".dev/scripts/import_weather_from_sheet.js",
+        ".dev/storyteller-dashboard/src/client/scenesPanel/chronicleSheets.ts"
+      ],
+      "currentDataFiles": [
+        "lib/tr_weather_schedule.ttslua"
+      ],
+      "runtimeConsumers": [
+        "lib/chronicle_weather.ttslua",
+        "core/soundscape.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_SKYBOXES",
+      "rangeAtVerification": "GQ4:GT3001",
+      "headers": [
+        "Key",
+        "Display",
+        "isShown",
+        "Filename"
+      ],
+      "source": "Authored site labels + non-site keyed metadata; URLs from cloud",
+      "verifiedRows": 95,
+      "currentImporters": [
+        ".dev/scripts/import_skyboxes_from_sheet.js"
+      ],
+      "currentDataFiles": [
+        "lib/skyboxes_catalog.ttslua"
+      ],
+      "runtimeConsumers": [
+        "lib/constants.ttslua",
+        "core/scenes.ttslua",
+        "core/storyteller_scenes_panel.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_COMPLICATIONS",
+      "rangeAtVerification": "HG4:HU3001",
+      "headers": [
+        "Index",
+        "Name",
+        "Category",
+        "Rarity",
+        "Value",
+        "Standard Text",
+        "Enhanced Text",
+        "Active Enhanced Text",
+        "Standard",
+        "Discipline",
+        "Willpower",
+        "Launch",
+        "Goal",
+        "DESIGN COMPLETE?",
+        "Necessary Automations"
+      ],
+      "source": "Toronto Rising Decks: completed [CPL] Cards",
+      "verifiedRows": 66,
+      "currentImporters": [
+        ".dev/scripts/import_complications_from_sheet.js"
+      ],
+      "currentDataFiles": [
+        "lib/complications_catalog.ttslua"
+      ],
+      "runtimeConsumers": [
+        "core/complications.ttslua",
+        "lib/complications_model.ttslua",
+        "core/complications_effects.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_COMPULSIONS",
+      "rangeAtVerification": "HW4:IG3001",
+      "headers": [
+        "Compulsion Key",
+        "Name",
+        "Clan",
+        "Card",
+        "Influence Title",
+        "Influence Description",
+        "Burden Title",
+        "Burden Flavor",
+        "Burden Description",
+        "Catharsis Title",
+        "Catharsis Description"
+      ],
+      "source": "Toronto Rising Decks: COM_DEFINITIONS joined to COM_VARIANTS",
+      "verifiedRows": 36,
+      "currentImporters": [
+        ".dev/storyteller-dashboard/src/server/index.ts",
+        ".dev/storyteller-dashboard/src/shared/compulsionText.ts"
+      ],
+      "currentDataFiles": [
+        ".dev/storyteller-dashboard/data/compulsions.jsonc"
+      ],
+      "runtimeConsumers": [
+        "core/compulsions.ttslua",
+        "lib/compulsion_objects.ttslua"
+      ]
+    }
+  ]
+}

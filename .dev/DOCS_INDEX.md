@@ -87,6 +87,7 @@ Always verify important claims against code before changing behavior.
 
 | Area | Path | Notes |
 |---|---|---|
+| Consolidated named spreadsheet exports and consumer migration | [`Chronicle Data/Spreadsheet Exports.md`](Chronicle%20Data/Spreadsheet%20Exports.md), [`schema`](Chronicle%20Data/Spreadsheet%20Export%20Contract.json) | Nine prepared `EXPORT_*` packages, exact headers, current importer/runtime routes, validation, review items, and the boundary before switching FULL/Dashboard readers |
 | Chronicle Google Sheets (source of truth for aspects, resonance, characters, weather, V5 rules) | [`Chronicle Data/Google Sheets.md`](Chronicle%20Data/Google%20Sheets.md) | Sheet ids, tab map, Drive MCP and public CSV access, privacy rule; `C.Districts` / `C.Sites` (`npm run locations:import` → `lib/locations_catalog.ttslua`) and the weather schedule (`npm run weather:import`) are generated from the sheets |
 | Chronicle/campaign material | [`Chronicle Data/`](Chronicle%20Data/) | Human review preferred; not engineering source of truth unless code explicitly consumes generated data |
 | TTS API reference | [`tts-api/`](tts-api/) and [`TTS-Scripting-Guide.htm`](TTS-Scripting-Guide.htm) | Vendored/reference material |
