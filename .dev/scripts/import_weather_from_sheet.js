@@ -9,7 +9,7 @@
 const fs = require("fs");
 const path = require("path");
 const { parseCsv } = require("./lib/skyboxes_sheet_csv.js");
-const { SHEET_IDS, fetchTabCsv, writeAtomic } = require("./lib/google_sheet_fetch.js");
+const { loadSnapshot, rowsOf, writeAtomic } = require("./lib/sheet_exports.js");
 const {
   loadWeatherValidationSets,
   parseWeatherSheetRows,
@@ -20,10 +20,9 @@ const root = path.resolve(__dirname, "..", "..");
 const outPath = path.join(root, "lib", "tr_weather_schedule.ttslua");
 
 async function main() {
-  console.log("[weather:import] Fetching Toronto Rising › WEATHER …");
-  const csv = await fetchTabCsv(SHEET_IDS.torontoRising, "WEATHER", "toronto-rising-tts-weather-import/1.0");
+  const snapshot = await loadSnapshot();
   const keys = loadWeatherValidationSets(fs.readFileSync(path.join(root, "lib", "constants.ttslua"), "utf8"));
-  const months = parseWeatherSheetRows(parseCsv(csv), keys);
+  const months = parseWeatherSheetRows(rowsOf(snapshot, "WEATHER"), keys);
   writeAtomic(outPath, renderWeatherScheduleLua(months));
   const dayCount = months.reduce((n, m) => n + m.days.length, 0);
   console.log(`[weather:import] Wrote ${path.relative(root, outPath)} (${months.length} months, ${dayCount} days)`);

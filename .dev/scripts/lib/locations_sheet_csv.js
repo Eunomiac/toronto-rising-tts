@@ -284,6 +284,7 @@ function renderLocationsCatalogLua({ districts, sites }) {
     out.push(`  ${s.key} = {`, `    name = ${q(s.name)},`);
     if (s.skybox !== null) out.push(`    skybox = ${q(s.skybox)},`);
     if (s.districtKey !== null) out.push(`    district = Districts.${s.districtKey},`);
+    if (s.isSilent === true) out.push("    isSilent = true,");
     out.push("    soundscape = {");
     if (s.backgroundMusic !== null) out.push(`      backgroundMusic = { playlist = ${q(s.backgroundMusic)} },`);
     out.push(`      location = { playlist = "location", track = ${q(s.locationTrack)} },`, "    },");

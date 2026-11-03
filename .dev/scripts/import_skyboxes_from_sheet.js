@@ -127,12 +127,10 @@ function writeAtomic(filePath, contents) {
 }
 
 async function main() {
-  const { sheetId, catalogRange, memoriamRange } = parseArgs(process.argv.slice(2));
-
-  console.log(`[skyboxes:import] Fetching ${catalogRange} …`);
-  const catalogCsv = await fetchCsv(exportCsvUrl(sheetId, catalogRange), catalogRange);
-  console.log(`[skyboxes:import] Fetching ${memoriamRange} …`);
-  const memoriamCsv = await fetchCsv(exportCsvUrl(sheetId, memoriamRange), memoriamRange);
+  const { loadSnapshot, csvOf, contract } = require("./lib/sheet_exports.js");
+  const snapshot = await loadSnapshot();
+  const sheetId = contract.spreadsheetId, catalogRange = "EXPORT_SKYBOXES", memoriamRange = "EXPORT_MEMORIAM";
+  const catalogCsv = csvOf(snapshot, "SKYBOXES"), memoriamCsv = csvOf(snapshot, "MEMORIAM");
 
   const skyboxes = attachSkyboxUrls(parseSkyboxCatalogRows(catalogCsv), cloudRows("skyboxes"));
   const generics = genericSkyboxUrls(cloudRows("genericSkyboxes"));

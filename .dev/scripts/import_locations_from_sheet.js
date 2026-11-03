@@ -55,19 +55,10 @@ function loadCatalogs() {
 }
 
 async function main() {
-  const opts = parseArgs(process.argv.slice(2));
-  const catalogs = loadCatalogs();
-  const districtRows = parseCsv(await loadTab(opts.districtsCsv, "DISTRICTS"));
-  const siteRows = parseCsv(await loadTab(opts.sitesCsv, "SITES"));
-
-  const { districts, warnings: districtWarnings } = parseDistrictRows(districtRows, catalogs);
-  const { sites, warnings: siteWarnings } = parseSiteRows(siteRows, {
-    ...catalogs,
-    districtKeys: new Set(districts.map((d) => d.key)),
-  });
-  for (const w of [...districtWarnings, ...siteWarnings]) {
-    console.warn(`[locations:import] WARN ${w}`);
-  }
+  const { loadSnapshot } = require("./lib/sheet_exports.js");
+  const { locations } = require("./lib/export_locations.js");
+  const { districts, sites, warnings } = locations(await loadSnapshot(), loadCatalogs());
+  for (const warning of warnings) console.warn(`[locations:import] ${warning}`);
 
   writeAtomic(outPath, renderLocationsCatalogLua({ districts, sites }));
   console.log(`[locations:import] Wrote ${path.relative(root, outPath)} (${districts.length} districts, ${sites.length} sites)`);

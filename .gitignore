@@ -30,6 +30,10 @@ tts-assets.config.json
 # *.swo
 # *~
 
+# Private snapshots and derived character metadata from Sheets.
+.dev/storyteller-dashboard/data/sheet-exports.json
+.dev/storyteller-dashboard/data/unique-characters.json
+
 # OS
 .DS_Store
 Thumbs.db
