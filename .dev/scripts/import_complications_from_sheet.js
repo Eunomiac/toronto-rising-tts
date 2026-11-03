@@ -2,7 +2,6 @@
 // Import only runtime metadata; effect text and function columns are deliberately not executed.
 const fs = require('node:fs');
 const path = require('node:path');
-const { parseCsv } = require('./lib/skyboxes_sheet_csv.js');
 const { loadSnapshot, rowsOf, writeAtomic } = require('./lib/sheet_exports.js');
 const ROLL_COLUMNS = {Standard:'standard', Discipline:'discipline', Willpower:'willpowerRoll', Launch:'launch', Goal:'goal'};
 function parseCards(rows) {

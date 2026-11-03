@@ -3,22 +3,21 @@ import { copyFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { isDeepStrictEqual } from "node:util";
 import path from "node:path";
 import { backupName, resolveDashboardBackupDir } from "../../src/server/dataFileStore.ts";
-import { loadMemoriamNpcCatalog, type MemoriamNpc } from "../../src/server/memoriamNpcCatalog.ts";
 import { PENDING_FILE_NAME, readPending } from "../../src/server/npcStatsPending.ts";
 import {
   genericStatsKey, normalizeNpcStatsFile, normalizeStatBlock, preserveNpcRollMetadata,
   type KeptNpc, type NpcStatBlock, type NpcStats, type NpcStatSlot
 } from "../../src/shared/npcStats.ts";
 import { memoriamStem } from "../../src/shared/memoriamNpc.ts";
-import { blank, parseStatRecord, parseTier, sheetRecords, type SheetRecord } from "./sheet.ts";
+import { blank, parseStatRecord, parseTier, type SheetRecord } from "./sheet.ts";
 
 
 const scriptDir = import.meta.dirname;
 const dashboardDir = path.resolve(scriptDir, "..", "..");
 const repoRoot = path.resolve(dashboardDir, "..", "..");
-const statsPath = path.join(dashboardDir, "data", "npc-stats.json");
-const pendingPath = path.join(dashboardDir, "data", PENDING_FILE_NAME);
-const memoriamPath = path.join(dashboardDir, "data", "memoriam-npcs.json");
+const dataDir = process.env.TR_DASHBOARD_DATA_DIR || path.join(dashboardDir, "data");
+const statsPath = path.join(dataDir, "npc-stats.json");
+const pendingPath = path.join(dataDir, PENDING_FILE_NAME);
 
 type Imported = Map<string, Partial<Record<NpcStatSlot, NpcStatBlock>>>;
 // The shared loader is CommonJS because the TTS build scripts also consume it.

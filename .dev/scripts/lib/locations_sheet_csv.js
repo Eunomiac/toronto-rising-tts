@@ -265,7 +265,7 @@ function renderLocationsCatalogLua({ districts, sites }) {
   const out = [
     "--[[",
     "    Toronto Rising — districts and sites (C.Districts / C.Sites).",
-    "    AUTO-GENERATED from the Districts & Sites of Toronto Rising Google Sheet (DISTRICTS + SITES tabs) — DO NOT EDIT BY HAND.",
+    "    AUTO-GENERATED from EXPORT_LOCATIONS_DISTRICTS + EXPORT_LOCATIONS_SITES — DO NOT EDIT BY HAND.",
     "    Regenerate: npm run locations:import",
     "    Field reference: `-- #region Sites` in lib/constants.ttslua.",
     "]]",

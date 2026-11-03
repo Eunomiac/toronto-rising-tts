@@ -6,7 +6,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { parseCsv, escapeLuaString } = require("./skyboxes_sheet_csv.js");
 const contract = require("../../Chronicle Data/Spreadsheet Export Contract.json");
-const { writeAtomic } = require("./google_sheet_fetch.js");
+const { writeAtomic: replaceAtomic } = require("./google_sheet_fetch.js");
+function writeAtomic(file, contents) { fs.mkdirSync(path.dirname(file), { recursive: true }); replaceAtomic(file, contents); }
 const root = path.resolve(__dirname, "../../..");
 const defaultSnapshotPath = path.join(root, ".dev/storyteller-dashboard/data/sheet-exports.json");
 const identifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
@@ -57,6 +58,7 @@ function validateSnapshot(snapshot) {
   }
   for (const row of unique) for (const alias of list(row["Legacy API Keys"])) addKey(alias, "Legacy API Keys", row);
   for (const row of unique) {
+    if (row["Inherits From"] && !all.has(row["Inherits From"])) throw new Error(`${row["API Key"]}: unknown Inherits From ${row["Inherits From"]}`);
     const seen = new Set([row["API Key"]]);
     let next = row["Variant Of"];
     while (next) {
@@ -92,6 +94,7 @@ function validateSnapshot(snapshot) {
       seen.add(row.Key);
     }
   }
+  for (const row of dataOf(snapshot, "SKYBOXES")) if (row.Filename !== `skybox_${row.Key}.jpg`) throw new Error(`${row.Key}: Filename must match the keyed cloud job (skybox_${row.Key}.jpg)`);
   const districts = new Set(dataOf(snapshot, "LOCATIONS_DISTRICTS").map(r => r.Key));
   const skyboxes = new Set(dataOf(snapshot, "SKYBOXES").map(r => r.Key));
   for (const row of dataOf(snapshot, "LOCATIONS_SITES")) {
@@ -116,7 +119,7 @@ async function fetchSnapshot() {
     let csv;
     if (process.env.TR_EXPORT_CSV_DIR) csv = fs.readFileSync(path.join(process.env.TR_EXPORT_CSV_DIR, `${spec.name}.csv`), "utf8");
     else {
-      const response = await fetch(exportUrl(spec.name), { signal: AbortSignal.timeout(60000), redirect: "follow" });
+      const response = await fetch(exportUrl(spec.name), { cache: "no-store", signal: AbortSignal.timeout(60000), redirect: "follow" });
       if (!response.ok) throw new Error(`${spec.name}: HTTP ${response.status}`);
       csv = await response.text();
     }

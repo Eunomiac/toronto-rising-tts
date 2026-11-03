@@ -189,7 +189,7 @@ function renderWeatherScheduleLua(months) {
   const out = [];
   out.push(`--[[
     Toronto Rising — chronicle hourly weather schedule (month / day / hour codes).
-    AUTO-GENERATED from the WEATHER tab of the Toronto Rising Google Sheet — DO NOT EDIT BY HAND.
+    AUTO-GENERATED from EXPORT_WEATHER in the Toronto Rising Google Sheet — DO NOT EDIT BY HAND.
     Regenerate: npm run weather:import
     Code format: see C.WEATHER in lib/constants.ttslua.
 ]]
