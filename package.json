@@ -109,7 +109,8 @@
     "exports:build": "node .dev/scripts/run_export_build.js",
     "exports:fetch": "node .dev/scripts/fetch_sheet_exports.js",
     "exports:test": "node --test .dev/scripts/sheet_exports.test.js",
-    "characters:import": "node .dev/scripts/import_character_exports.js"
+    "characters:import": "node .dev/scripts/import_character_exports.js",
+    "exports:verify-lua": "fengari .tools/complications/run.lua .dev/scripts/verify_export_lua.lua"
   },
   "keywords": [
     "tabletop-simulator",

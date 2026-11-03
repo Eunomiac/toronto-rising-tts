@@ -100,24 +100,16 @@ function D.resolveGenericNpcEntry(fullKey)
   return D.genericNpcs[fullKey]
 end
 
---- Generic NPCs available to import: every generated `lib.npc_art_urls` row with a `genericLabel` (a Generics Export
---- sheet row whose figurine has art; `npm run npc-art:draw` reports sheet rows without one).
+--- Every exported generic figure, independent of its tier count or Catalog visibility.
+--- Asset availability is checked by the art pipeline and when spawning a figure.
 function D.initGenericNPCs()
   local genericNpcs = {}
-  for key, art in pairs(require("lib.npc_art_urls")) do
-    if art.genericLabel ~= nil then
-      local override = D.overrides[key]
-      genericNpcs[key] = { key = key, label = (override and override.name) or art.genericLabel }
-    end
-  end
-  for key, row in pairs(require("lib.memoriam_npc_catalog")) do
-    if type(row) == "table" and row.isGeneric == true and genericNpcs[key] == nil then
-      local override = D.overrides[key]
-      genericNpcs[key] = { key = key, label = (type(override) == "table" and override.name) or row.label or key }
-    end
+  for key, row in pairs(require("lib.generic_character_catalog")) do
+    local override = D.overrides[key]
+    genericNpcs[key] = { key = key, label = (override and override.name) or row.label }
   end
   if next(genericNpcs) == nil then
-    error("lib.npc_art_urls has no generic NPC rows (genericLabel) — run npm run build:full")
+    error("lib.generic_character_catalog is empty — run npm run characters:import")
   end
   D.genericNpcs = genericNpcs
 end

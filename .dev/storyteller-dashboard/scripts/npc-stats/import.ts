@@ -80,6 +80,10 @@ const main = async (): Promise<void> => {
   const raw = await readStatsFile();
   const current = normalizeNpcStatsFile(raw);
   const next: Record<string, NpcStats> = { ...current };
+  for (const keys of aliasGroups) {
+    const waiting = keys.find(key => key in pending && current[key]);
+    if (waiting) for (const key of keys) next[key] = current[waiting]!;
+  }
   let added = 0;
   let changed = 0;
   const waiting: string[] = [];
@@ -89,7 +93,8 @@ const main = async (): Promise<void> => {
     // otherwise a tier removed from the Sheet would survive forever as a stale dashboard-only block.
     const merged = (current[key]?.kept ? { kept: current[key].kept } : {}) as Partial<Record<NpcStatSlot, NpcStatBlock>> & { kept?: KeptNpc };
     for (const [slot, block] of Object.entries(slots) as [NpcStatSlot, NpcStatBlock][]) {
-      const before = current[key]?.[slot];
+      const siblings = aliasGroups.find(keys => keys.includes(key)) ?? [];
+      const before = current[key]?.[slot] ?? siblings.map(k => current[k]?.[slot]).find(Boolean);
       const value = preserveNpcRollMetadata(block, before);
       if (!before) added++; else if (!isDeepStrictEqual(before, value)) changed++;
       merged[slot] = value;

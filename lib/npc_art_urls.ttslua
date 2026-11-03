@@ -5,7 +5,7 @@
 
 local FIGURINE_BACK = "https://steamusercontent-a.akamaihd.net/ugc/17725977964076644387/2DD80A434DB0656E59FE6D56CD9150D3F9446732/"
 
-return {
+local Art = {
   TremereApprentice_01 = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/9625540457632447087/96DA6332349CCBFA623FD6F2147D888CC37F02C2/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/18197689228125383869/54424A456A6773A6DBC0D725DF754825233C4EF5/", back = "https://steamusercontent-a.akamaihd.net/ugc/15425639404144885654/07E9D8FB83AB484AB8CFB47C9831F2735DF39F81/" },
@@ -3073,3 +3073,14 @@ return {
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/18225590143095180209/21B96F2DCA11CFB6D947299013CE3BA59297AF38/", back = "https://steamusercontent-a.akamaihd.net/ugc/17661195442508895909/54D4CBA79C9B03A672C30FF59819CD49EDEB32FE/" },
   },
 }
+
+-- Authored filenames keep saved keys and canonical identities on the same uploaded art.
+for _, catalog in ipairs({ require("lib.unique_character_catalog"), require("lib.generic_character_catalog") }) do
+  for key, row in pairs(catalog) do
+    local assetKey = type(row.filename) == "string" and row.filename:match("^npc_(.+)%.webp$") or nil
+    if assetKey ~= nil and Art[assetKey] ~= nil then
+      Art[key] = Art[assetKey]
+    end
+  end
+end
+return Art

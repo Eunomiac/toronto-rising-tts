@@ -22,9 +22,12 @@ async function main() {
   writeAtomic(file, JSON.stringify(snapshot));
   const env = { ...process.env, TR_EXPORT_SNAPSHOT: file };
   try {
-    for (const script of ["import_character_exports.js", "import_weather_from_sheet.js", "import_complications_from_sheet.js", "import_skyboxes_from_sheet.js", "import_locations_from_sheet.js"]) run(`.dev/scripts/${script}`, env);
+    const scripts = ["import_character_exports.js", "import_weather_from_sheet.js", "import_complications_from_sheet.js"];
+    // FULL joins asset URLs after its upload job; a newly authored skybox may not exist in the manifest yet.
+    if (!full) scripts.push("import_skyboxes_from_sheet.js", "import_locations_from_sheet.js");
+    for (const script of scripts) run(`.dev/scripts/${script}`, env);
     run(".dev/storyteller-dashboard/scripts/npc-stats/import.ts", env);
-    console.log("[exports] All nine exports generated successfully:", counts);
+    console.log(full ? "[exports] All nine exports validated; asset joins follow cloud sync:" : "[exports] All nine exports generated successfully:", counts);
     if (full) {
       const child = spawnSync(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "build:tooling-after-exports"], { cwd: root, env, stdio: "inherit", shell: process.platform === "win32" });
       if (child.error) throw child.error;
