@@ -1,6 +1,6 @@
 {
-  "status": "sheet-preparation-complete; consumer migration pending",
-  "verifiedDate": "2026-11-02",
+  "status": "consumer migration implemented; pending local FULL and Save & Play",
+  "verifiedDate": "2026-11-03",
   "spreadsheetId": "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs",
   "sheetTitle": "(exports)",
   "sheetId": 1673786468,
@@ -84,7 +84,8 @@
       "currentDataFiles": [
         ".dev/storyteller-dashboard/data/npc-stats.json",
         "lib/memoriam_npc_catalog.ttslua",
-        "lib/npcs_data.ttslua"
+        "lib/npcs_data.ttslua",
+        "lib/unique_character_catalog.ttslua"
       ],
       "runtimeConsumers": [
         "core/npcs.ttslua",
@@ -144,7 +145,8 @@
       "currentDataFiles": [
         ".dev/storyteller-dashboard/data/generic-npcs.json",
         ".dev/storyteller-dashboard/data/npc-stats.json",
-        "lib/npc_art_urls.ttslua"
+        "lib/npc_art_urls.ttslua",
+        "lib/generic_character_catalog.ttslua"
       ],
       "runtimeConsumers": [
         "lib/npcs_data.ttslua",
@@ -397,5 +399,7 @@
         "lib/compulsion_objects.ttslua"
       ]
     }
-  ]
+  ],
+  "snapshotLoader": ".dev/scripts/lib/sheet_exports.js",
+  "buildEntryPoint": ".dev/scripts/run_export_build.js"
 }

@@ -25,6 +25,10 @@ It lives in **this same git repo and GitHub remote** as the TTS mod. Do not spli
 
 The GitHub remote is public. Never commit `.env`, API keys, or private chronicle dumps.
 
+## Consolidated spreadsheet imports
+
+FULL and Dashboard startup now read the nine named EXPORT_ packages through the shared validated loader. `Catalog?` controls Main roster visibility; historical entries stay available to Memoriam and saved references. Weather/location details are served by `/api/chronicle-exports`; Compulsion text is regenerated from Toronto Rising Decks. Run `npm run test:exports:browser` against a fresh dev server for the focused API/visibility checks. Commands, output routes and local asset requirements: [Spreadsheet Exports](../Chronicle%20Data/Spreadsheet%20Exports.md).
+
 ## Architecture
 
 - **Vite + React** render the tab shell, Scenes, PCs and the dev-only note pins. The Lua and Generate NPC tab bodies still boot as plain DOM through `initLuaTab` and `initGenerateNpc`. Do **not** wrap the app in React StrictMode while those inits run (it would bind listeners twice).

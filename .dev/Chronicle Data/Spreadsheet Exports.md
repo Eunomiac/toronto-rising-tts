@@ -14,7 +14,18 @@ Verification:
 - Validate headers, keys, references, mixed values, and normalized records before changing consumers.
 - Follow the repository's browser and in-game verification requirements when implementing the consumer migration.
 
-Status: spreadsheet preparation completed and verified on 2026-11-02. Existing build and Dashboard consumers have **not** been switched. This document describes the prepared contract and the remaining migration work; it does not claim FULL currently consumes these names.
+Status: consumer migration implemented on 2026-11-03. All nine live ranges pass preflight and generate their existing consumer shapes. FULL, manual import commands and Dashboard startup use the shared loader. Local Steam upload, write-back credentials and Save & Play remain author checks (TOR-750).
+
+## Running the aligned imports
+
+- `npm run exports:build`: fetch and validate all nine packages, then generate character catalogs, weather, locations, skyboxes, Complications metadata, Compulsion text and private NPC stats. Uses the current cloud manifest; no Steam upload or save mutation.
+- `npm run exports:test`: synthetic contracts and an isolated real stats-import regression covering pending aliases and kept NPCs.
+- `npm run exports:verify-lua`: execute the generated modules through `lib.npcs_data` and check identities, PC exclusion, Garou flags, generic figure counts, art associations, site skyboxes and weather.
+- `npm run build:full`: existing backup/silence wrapper, then pending stat write-back, one validated snapshot, metadata/stats generation, other tooling, artwork/cloud jobs, and finally URL-dependent skybox/location generation. Every later importer inherits the same snapshot. New skybox files are joined after cloud sync.
+- Dashboard `npm run dev` starts a fresh server, validates one batch and refreshes its character/Compulsion caches. `/api/chronicle-exports` serves weather/location detail from that batch; browser gviz reads have been removed. Refresh failures stop startup instead of using a stale file. NPC stats still refresh during the build.
+
+For explicit offline replay, set `TR_EXPORT_SNAPSHOT` to the JSON written by `npm run exports:fetch`, or use `TR_EXPORT_CSV_DIR` with nine files named `EXPORT_<ID>.csv`. These private snapshots are ignored. A normal run fetches current data rather than loading the last cache. In this proxy-managed cloud session, live Node fetches required `NODE_USE_ENV_PROXY=1`.
+
 
 ## Location and transport
 
@@ -53,32 +64,30 @@ There are no manually maintained image URL fields in these export contracts. The
 ### Unique characters
 
 Current routes:
-- `.dev/storyteller-dashboard/scripts/npc-stats/sheetFetch.ts` fetches four whole stat tabs.
-- `npc-stats/import.ts` parses named blocks into private Dashboard `data/npc-stats.json`.
-- `.dev/scripts/import_memoriam_npcs_from_sheet.js` imports historical identities into Dashboard JSON and `lib/memoriam_npc_catalog.ttslua`.
-- Present-day names, PC flags, and werewolf flags are currently authored in `lib/npcs_data.ttslua`, rather than refreshed from the unique export.
-- `core/npcs.ttslua`, `core/npc_spawn.ttslua`, and `dashboard/rolls.ttslua` use those identities and flags. Art comes from `lib/npc_art_urls.ttslua`.
-- Named NPC stat blocks currently belong to the Dashboard roll/stat workflow. They are not all baked into a new Lua stats catalog by the existing pipeline.
+- `lib/sheet_exports.js` validates the named ranges and groups generic figure/tier rows.
+- `import_character_exports.js` generates `lib/unique_character_catalog.ttslua`, `lib/generic_character_catalog.ttslua`, the compatibility Memoriam module and Dashboard identity catalogs.
+- `npc-stats/import.ts` reads the two character exports into private Dashboard stats, preserving existing label/stem stat keys and rejecting conflicting profile blocks.
+- `lib/npcs_data.ttslua` loads generated identities; existing NPC spawn/roll consumers retain their entry points. Named stat blocks remain part of the Dashboard roll workflow, rather than a new Lua stats system.
 
 The prepared table includes all 152 original CHARACTERS identities, 49 named historical identities, and five existing Garou figure forms migrated into CHARACTERS. The form rows preserve existing runtime keys, filenames, kind, and a Variant Of link; they have no invented stat values and start with Catalog? false.
 
-Three existing possession aliases are retained in `Legacy API Keys`. Their canonical records retain the existing artwork filenames. The future importer must emit aliases or explicitly migrate saved references; removing an alias or renaming a file is not an incidental cleanup.
+Three existing possession aliases are retained in `Legacy API Keys`. Their canonical records retain the existing artwork filenames. The importer emits these aliases; removing an alias or renaming a file is not an incidental cleanup.
 
 `Catalog?` is an author choice for the roster's main Catalog tab. It is not scene/session presence. CHARACTERS retains its existing values. MEM NAMED STATS now has an editable Catalog? checkbox; historical records initially remain excluded. Locations, Time Periods, and Memoriam Periods are independent metadata. Historical Variant Of links come from the current catalog; the separate Inherits From field is retained rather than conflated with that link.
 
 Shared stat headers preserve the existing notation consumed by `scripts/npc-stats/sheet.ts`: Kind, Clan, Generation, Rank, Blood Potency, Humanity, Difficulty, Health, Willpower, Phy/Soc/Men/Pow, Exceptional Pools, Attacks, Powers, Advantages, and higher-tier/special-ability note sections. Discipline Expression, descriptions, tags, and identity metadata are also retained. Bio prose is not flattened.
 
-`Authoring Tab` and `Authoring Key` identify the source record. Write-back must continue targeting authoring cells through its deliberate field mapping, never a formula-generated export or an assumed export row number. Keep pending edits, audit logs, stable roll IDs, and existing roll metadata when switching readers.
+`Authoring Tab` and `Authoring Key` identify the source record. Write-back must continue targeting authoring cells through its deliberate field mapping, never a formula-generated export or an assumed export row number. Keep pending edits, audit logs, stable roll IDs, and existing roll metadata during imports.
 
 Portrait identifiers were resolved by managed file content hash when possible. Six legacy images differ from the currently managed portraits. Their original links remain untouched in CHARACTERS and their candidate managed identifiers are marked for review in Portrait Review.
 
 ### Generic characters
 
 Current routes:
-- `import_generic_npcs_from_sheet.js` reads Generics Export for the Dashboard catalog.
-- `npc-stats/import.ts` separately reads generic compatibility stat tabs.
-- `scripts/npc-art/generate.ts` combines catalog identities and artwork; cloud sync and `npc-art:urls` generate `lib/npc_art_urls.ttslua`.
-- `lib/npcs_data.ttslua` builds the generic roster from generated art metadata. `core/generic_npcs.ttslua` and `core/npcs.ttslua` resolve/spawn it.
+- The generic export groups into one Dashboard/runtime figure per API key, retaining only its supplied tiers.
+- `npc-stats/import.ts` validates shared profile/tier blocks and keeps the existing generic label/stem storage keys so local edits and saved references continue to resolve.
+- `scripts/npc-art/generate.ts` resolves authored filenames; the generated art module associates canonical and saved identities with those uploaded files.
+- `lib/npcs_data.ttslua` builds the generic roster from `lib/generic_character_catalog.ttslua`. It no longer uses artwork rows as its identity source.
 
 The contract joins one editable figure definition to the tier rows actually supplied by its Stat Profile. Repeated figure keys across tiers are intentional. Group by figure key, then store separate tier blocks; do not duplicate roster figures. Figure/tier pairs and profile/tier pairs must be unique, references must exist, and Kind/Tier combinations must match the rule table.
 
@@ -89,10 +98,9 @@ The original Filename field is preserved. Figurine Filename provides the actual 
 ### Districts and sites
 
 Current routes:
-- `import_locations_from_sheet.js` and `lib/locations_sheet_csv.js` read authoring tabs and generate `lib/locations_catalog.ttslua`.
-- `lib/constants.ttslua` exposes C.Districts/C.Sites.
-- `core/scenes.ttslua`, `core/scene_library.ttslua`, `core/soundscape.ttslua`, `core/map_pins.ttslua`, and conditions use those records.
-- The Dashboard browser independently reads API district and unique/generic site tabs for aspects and resonance; scene catalog generation also reads generated Lua.
+- `import_locations_from_sheet.js` and `lib/export_locations.js` read the two location exports and generate `lib/locations_catalog.ttslua`.
+- `lib/constants.ttslua` exposes C.Districts/C.Sites for scenes, soundscape, map pins and conditions.
+- The Dashboard reads aspects/resonance from `/api/chronicle-exports`; scene catalog generation also reads generated Lua.
 
 The district schema retains its key/name/conditions plus authored domain values, resonance, and three aspect pairs. The site schema is the union of existing consumer needs: full runtime Name and card Title/Subtitle, district, map offset, resonance signs, aspect text, conditions, normalized location/music keys, outdoors state, numeric weather ducking, lighting, fog, skybox association, uniqueness, Elysium, and source audio labels. Is Silent? explicitly preserves the existing module's full ambient-silence setting from the authored TOTALSILENCE selection; the old generator did not emit that field.
 
@@ -102,11 +110,11 @@ Source map offsets are unquoted and Unicode minus signs normalized. A Skybox Key
 
 The source requests for CarusoResidence, CrimeScene, and ParkingLot currently have no corresponding managed skybox file. They continue to use the existing generic skybox behavior until their assets are supplied.
 
-The old parsers expect section titles that the author has changed. The API workbook also has broken DISTRICTCSVDATA/SITECSVDATA imports. The prepared exports bypass those broken chains and read the authoring source directly; the old readers still need their coordinated migration.
+Production readers now use the prepared exports and bypass the broken API DISTRICTCSVDATA/SITECSVDATA chains. Old section-title parsers remain only for legacy parser fixtures.
 
 ### Memoriam
 
-Current `skyboxes:import` reads API SKYBOXMEMORIAMCSV into `lib/skyboxes_catalog.ttslua`. Constants build per-character chronology, and `core/memoriam.ttslua` uses dates, location, panels, weather, audio, and splash text.
+Current `skyboxes:import` reads EXPORT_MEMORIAM into `lib/skyboxes_catalog.ttslua`. Constants build per-character chronology, and `core/memoriam.ttslua` uses dates, location, panels, weather, audio, and splash text.
 
 EXPORT_MEMORIAM preserves the exact current 26-field runtime schema: Key, Characters, Start/End Year, Location; Display/isOutdoors/isDaytime/Weather/Location Audio for each panel A–D; Splash Text. The 50 selected/approved records reproduce the old parser output exactly.
 
@@ -118,7 +126,7 @@ Two existing assignments on mem_jeanDucheskiIPreDeath refer to blackCaesar11 and
 
 ### Weather
 
-`import_weather_from_sheet.js` generates `lib/tr_weather_schedule.ttslua`. `lib/chronicle_weather.ttslua` decodes five-character hourly codes through C.WEATHER and applies/exposes weather. The Dashboard browser has an independent reader.
+`import_weather_from_sheet.js` generates `lib/tr_weather_schedule.ttslua`. `lib/chronicle_weather.ttslua` decodes five-character hourly codes through C.WEATHER and applies/exposes weather. The Dashboard receives the same four export fields through its server.
 
 The four headers are Month, Average Temperature, Day, and DayCodes. One row contains all 24 quoted hourly codes. All 366 days and 8,784 hours reproduce the old parser output exactly, including its existing temperature handling.
 
@@ -140,13 +148,15 @@ Physical deck sheets, image quantities, ordered settings sidecars, cloud sync, a
 
 ### Compulsions
 
-The Dashboard currently reads its private local compulsions.jsonc for names/clan associations, Influence, and four numbered variants with Burden and Catharsis. TTS currently identifies physical cards by GM Notes type/variant in `core/compulsions.ttslua`; it does not consume a new Lua text catalog.
+The Dashboard reads its generated private compulsions.jsonc cache for names/clan associations, Influence, and four numbered variants with Burden and Catharsis. TTS currently identifies physical cards by GM Notes type/variant in `core/compulsions.ttslua`; it does not consume a new Lua text catalog.
 
 The authoring source is now Toronto Rising Decks → [COM] Cards, with COM_DEFINITIONS and COM_VARIANTS. The export joins those into 11 fields with one row per Compulsion/card number. All nine Compulsions and 36 variants reproduce the existing parser output from the uploaded JSONC exactly. Source row order is not card identity; use the explicit key and Card number.
 
-Generate the existing Dashboard shape from this package during the next reader migration. Do not introduce new Compulsion mechanics or a new Lua text system as part of source consolidation.
+The shared importer generates the existing Dashboard shape from this package at build time and server startup. Do not introduce new Compulsion mechanics or a new Lua text system as part of source consolidation.
 
 ## Validation performed
+
+### Sheet preparation (2026-11-02)
 
 - Downloaded and parsed all nine gid-qualified named-range CSVs.
 - Checked exact, unique, nonblank headers and scanned exported cells for spreadsheet errors.
@@ -160,10 +170,16 @@ Generate the existing Dashboard shape from this package during the next reader m
 
 The visible review area begins at IN1. Counts, duplicate/profile/tier checks, and export formula errors are live. Six portrait reviews and two assignments to unavailable periods remain. A separate table shows the eleven collisions that would result from removing mem_; no such key renames were made.
 
-## Next implementation boundary
+## Implementation verification and remaining local checks
 
-Migrate FULL and Dashboard startup/browser/runtime readers together to one fetched and validated snapshot. Preserve write-back to authoring records. Include generic refresh in FULL and refresh historical identities before stats that depend on them. Remove stale-cache fallback behavior deliberately rather than accepting partially refreshed catalogs. Compatibility tabs can be flagged unused only after their readers and formula dependencies are gone.
+Live downloads and data generation pass for 206 unique source identities plus three aliases, 531 generic figures, 196 named stat blocks, 613 profile tiers, 36 districts, 186 sites, 50 Memoriam periods, 8,784 weather hours, 95 keyed skyboxes, 66 Complications and 36 Compulsion variants. The Lua routing smoke, eight export regressions, existing parser suites, Complications Lua tests, Dashboard type checks, production Dashboard build and 401 Dashboard tests pass. The production build reports unresolved local fonts/textures and its existing large client bundle warning; these require the local asset setup. A fresh dev server passed the drag/drop smoke and focused real-API/Catalog visibility checks at 1920×1080, with TTS replies mocked in the browser.
 
-These nine packages do not replace every existing local input. FULL still embeds PCS.json, Coterie.json, and PC_Relationships.json; the complete PC attributes/skills/Disciplines/XP model is larger than the roster/stat projection. Soundscape definitions and several layout/override inputs also remain code/local-data owned. Keep those existing paths until their own explicit source migration is designed; do not claim the character export already replaces the full PC bootstrap model.
+The existing `check:pcall-gate` fails because the local baseline allows zero `setXmlTable` sites while current code has one. The same failure and counts reproduce at base commit b0822ae7 with the same baseline file. No baseline was increased. Other bundle/local-limit/stub/effective-stat gates pass. This prevents a clean end-to-end FULL result in this environment, independently of the missing assets.
 
-End-to-end FULL, Steam Cloud reconciliation, original-vs-managed portrait review, current-save reference migration, and game/browser verification of changed consumers require the author's local asset/configuration/private data. This spreadsheet preparation used only the available repo, connected sheets, uploaded Compulsions JSONC, and checked-in manifest.
+Your local checkout still needs its existing `assets/` tree (figurines, tokens, panoramas and deck image/settings files), `tts-assets.config.json`, Steam cloud state and current TTS save. Retain private Dashboard roster/layout/overrides/stats/pending/log files and its `.env` write-back URL/secret. This session used the checked-in cloud manifest, an older `.dev/TS_Save_230.json` snapshot, and reconstructed only the existing public roster groups for cloud browser verification. Those private test inputs are not committed. Actual Steam uploads, live Apps Script writes and Save & Play were not run.
+
+For local verification (TOR-750), run FULL with TTS closed, reopen TTS and Save & Play. Check a named NPC, an old Daeva key, a Garou form, a multi-tier generic, a district/site's skybox/audio/fog/weather, a Complication and the Compulsion badge text; save/reload and confirm existing references remain valid. In the Dashboard, check that Catalog? false excludes an identity from Main while historical records remain available in Memoriam.
+
+Six portrait differences and the two unapproved `blackCaesar11`/`blackCaesar12` assignments remain visible for author review. The build warns about unexported period assignments and preserves them. No mem_ keys, saved state or asset filenames were renamed. Compatibility tabs still feed sheet formulas and have not been deleted.
+
+These nine packages do not replace every local input. FULL still embeds PCS.json, Coterie.json and PC_Relationships.json; the complete PC attributes/skills/Disciplines/XP model is larger than this roster/stat projection. Soundscape definitions and layout/override inputs also remain code/local-data owned. Compulsion card artwork and GM Notes keep their existing TTS workflow; text is generated for the existing Dashboard consumer, without adding new mechanics or a Lua text catalog.
