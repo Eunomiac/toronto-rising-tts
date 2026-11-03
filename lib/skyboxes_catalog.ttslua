@@ -1,8 +1,8 @@
 --[[
     Toronto Rising — skybox catalog (keyed assets + generic URL pool).
     AUTO-GENERATED from Google Sheet + Steam Cloud — DO NOT EDIT BY HAND.
-    Sheet id: 1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4
-    Ranges: SKYBOXCSV (Key,Display,isShown), SKYBOXMEMORIAMCSV (Key,Characters,Start Year,End Year,Location,Panel A–D,Splash Text)
+    Sheet id: 10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs
+    Ranges: EXPORT_SKYBOXES (Key,Display,isShown), EXPORT_MEMORIAM (Key,Characters,Start Year,End Year,Location,Panel A–D,Splash Text)
     URLs: lib/json/cloud-assets.json jobs skyboxes (assets/Skyboxes/skybox_<key>.jpg) and genericSkyboxes (GenericSkybox_<n>.jpg)
     Regenerate: npm run skyboxes:import
     Script: .dev/scripts/import_skyboxes_from_sheet.js
@@ -25,13 +25,13 @@ SkyboxesCatalog.Skyboxes = {
   },
   BackAlley1 = {
     key = "BackAlley1",
-    display = "Back Alley",
+    display = "Back Alley [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/9526388766925344501/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/"
   },
   BackAlley2 = {
     key = "BackAlley2",
-    display = "Back Alley",
+    display = "Back Alley [2]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/13139153292892028139/2DD2E0C4170168A68C8502C9DD1D1234A3E689CA/"
   },
@@ -85,7 +85,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   CityApt1 = {
     key = "CityApt1",
-    display = "City Apartment",
+    display = "City Apartment [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/10785518049899895367/937631B39405DA21DCDF6D584FDCE05004E87549/"
   },
@@ -151,19 +151,19 @@ SkyboxesCatalog.Skyboxes = {
   },
   CoachHouseEmbassy = {
     key = "CoachHouseEmbassy",
-    display = "The Coach House Embassy",
+    display = "Coach House Embassy, the",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/10247389527010960849/6852DFBBF96A77E3738F349BBCC8E5411E39C968/"
   },
   Distillery = {
     key = "Distillery",
-    display = "The Historic Distillery",
+    display = "Historic Distillery, the",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/16407173069971687520/5DACE18D7CC7D5F8E1AB97CFA4DA09703457FB9C/"
   },
   Docks = {
     key = "Docks",
-    display = "The Docks",
+    display = "Docks, the",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/14889119452629551090/0B6B509C76D5EBFF38E85F5BFB5E39BBE5E1570C/"
   },
@@ -253,7 +253,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   Nightclub1 = {
     key = "Nightclub1",
-    display = "Nightclub",
+    display = "Nightclub [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/17539053066751124640/5611F3230FF55F5C83E2E2F5A4B855087341BFCE/"
   },
@@ -271,7 +271,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   PenthouseApt1 = {
     key = "PenthouseApt1",
-    display = "Penthouse Apartment",
+    display = "Penthouse Apartment [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/16528483928414833784/9C79476509D76DCE6DA89C74D2CB9E4FE6374802/"
   },
@@ -349,7 +349,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   RunDownApt1 = {
     key = "RunDownApt1",
-    display = "Run-Down Apartment",
+    display = "Run-Down Apartment [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/17865179562746183046/077C49384896BE68D4E6ACA07D72F67F8B717E1C/"
   },
@@ -361,13 +361,13 @@ SkyboxesCatalog.Skyboxes = {
   },
   SewerTunnel1 = {
     key = "SewerTunnel1",
-    display = "Sewer Tunnel",
+    display = "Sewer Tunnel [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/15235198085720783216/28209BC005309B6CE3CFD6690A1893137520CE97/"
   },
   SewerTunnel2 = {
     key = "SewerTunnel2",
-    display = "Sewer Tunnel",
+    display = "Sewer Tunnel [2]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/11073952721862336646/7C5BE3C0090195E237A8D00E2A543E95AD2F9AA7/"
   },
@@ -379,7 +379,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   Sidewalk1 = {
     key = "Sidewalk1",
-    display = "Sidewalk",
+    display = "Sidewalk [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/10815819097634088785/CBFF9E4B470CA2B1AA7D689B2C4B780383D4E25C/"
   },
@@ -397,7 +397,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   StreetCorner1 = {
     key = "StreetCorner1",
-    display = "Street Corner",
+    display = "Street Corner [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/11145152521759196274/7DC71BEE1156C7A4E5864A2F44C55F432B2226E3/"
   },
@@ -427,7 +427,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   SuburbanHouse1 = {
     key = "SuburbanHouse1",
-    display = "Suburban House",
+    display = "Suburban House [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/14336069688232975248/C96B5E2C7F7706F0DD072DA96585DEDF3E88C1DE/"
   },
@@ -457,7 +457,7 @@ SkyboxesCatalog.Skyboxes = {
   },
   ThreefoldExchange = {
     key = "ThreefoldExchange",
-    display = "The Threefold Exchange",
+    display = "Threefold Exchange, the",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/11929384350214027682/87BE9110B8080EE6918BF4CEC0F4E1742E1B4D25/"
   },
@@ -505,43 +505,43 @@ SkyboxesCatalog.Skyboxes = {
   },
   WarrensAntechamber = {
     key = "WarrensAntechamber",
-    display = "#N/A",
+    display = "The Nosferatu Warrens: Antechamber",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/16001877032221261495/7AC25B00AFE8B2F5767101D00AF6AEACC69F2A65/"
   },
   WarrensDrakes = {
     key = "WarrensDrakes",
-    display = "#N/A",
+    display = "The Nosferatu Warrens: Drake's",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/9512599164282087183/CF673DABB0E144F941D31DBDA53409C9B6F6ABED/"
   },
   WarrensLabyrinth = {
     key = "WarrensLabyrinth",
-    display = "#N/A",
+    display = "The Nosferatu Warrens: Labyrinth",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/9518117994236754961/5A8F9F3F926AADA4F4CADD1E1416100C610483F4/"
   },
   WarrensSpawningPool = {
     key = "WarrensSpawningPool",
-    display = "#N/A",
+    display = "The Nosferatu Warrens: Spawning Pool",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/18142744914336877636/8293AF8A3CA4657BF14CDF525CE60D5A1D532959/"
   },
   WarrensTunnelJunction = {
     key = "WarrensTunnelJunction",
-    display = "#N/A",
+    display = "The Nosferatu Warrens: Tunnel Junction",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/16769029024731098457/3A4FE7F0E73170C5EA6B3861A05286E36249624B/"
   },
   WealthyEstate1 = {
     key = "WealthyEstate1",
-    display = "Wealthy Estate",
+    display = "Wealthy Estate [1]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/11392653365466564175/A78F79BE74DB80DFB2A75889590CA5C63C584C81/"
   },
   WealthyEstate2 = {
     key = "WealthyEstate2",
-    display = "Wealthy Estate",
+    display = "Wealthy Estate [2]",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/9459616373390454460/12176C18B3D8BAC06F77D857AD8D5A757660303E/"
   },

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 /** One numbered generic figurine: its catalog key and the type label it shares with the rest of its group. */
-export type GenericEntry = { readonly key: string; readonly label: string; readonly tags: string };
+export type GenericEntry = { readonly key: string; readonly label: string; readonly tags: string; readonly catalog?: boolean; readonly tiers?: readonly string[] };
 
 let catalog: Promise<readonly GenericEntry[]> | null = null;
 

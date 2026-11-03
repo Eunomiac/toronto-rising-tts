@@ -22,6 +22,8 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 **Note:** You have full authority to make changes to settings and imports on the app while testing -- none of the data is important to retain at this point in testing. (E.g. you shouldn't hesitate to move tokens around, even tokens that were placed by me, or make changes to the top controls to test things.)
 
+✔️ Consolidated spreadsheet imports — pending local FULL and Save & Play for Lua changes (TOR-750). All nine packages use one validated snapshot; Main respects Catalog?, historical identities and old keys remain available, generic tiers do not duplicate figures, and the browser uses server-backed weather/location exports. Compulsion text now comes from Toronto Rising Decks. Browser API/visibility and drag/drop checks pass.
+
 ## General Guidelines
 
 ✔️ NPC custom roll associations and difficulties — pending Save & Play for bridge changes.

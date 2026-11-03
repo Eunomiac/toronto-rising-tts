@@ -1052,20 +1052,20 @@ export const MasonryRoster = (): ReactElement => {
       return [];
     }
     const byKey = new Map<string, RosterMember[]>();
-    for (const npc of catalogs.namedNpcs) {
-      for (const key of npc.pickerGroups) {
+    for (const npc of catalogs.namedNpcs.filter(npc => npc.catalog !== false)) {
+      for (const key of npc.pickerGroups.length ? npc.pickerGroups : ["catalogUngrouped"]) {
         byKey.set(key, [...(byKey.get(key) ?? []), { characterKey: npc.characterKey, name: npc.fullName }]);
       }
     }
     return [...byKey].map(([key, members]) => {
-      const label = catalogs.pickerGroupLabels[key] ?? key;
+      const label = catalogs.pickerGroupLabels[key] ?? (key === "catalogUngrouped" ? "Ungrouped" : key);
       return { key, label, labelWidth: groupLabelWidth(label), members };
     });
   }, [catalogs]);
   const spawnedKey = [...inScene.map((npc) => npc.characterKey), ...Object.keys(queuedGenerics)].join(",");
   const spawned = useMemo(() => new Set(spawnedKey.split(",")), [spawnedKey]);
   const genGroups = useMemo(
-    () => (genericCatalog ? genericGroups(genericCatalog, spawned, overrides) : []),
+    () => (genericCatalog ? genericGroups(genericCatalog.filter(npc => npc.catalog !== false), spawned, overrides) : []),
     [genericCatalog, spawned, overrides]
   );
   const periodKey = phase?.phase === "Play" && phase.subPhase === "Memoriam" ? phase.memoriamSkyboxKey : undefined;
@@ -1338,6 +1338,7 @@ export const MasonryRoster = (): ReactElement => {
   const mainFound = (): readonly ReactElement[] | null => terms.length === 0 || !catalogs
     ? null
     : catalogs.namedNpcs
+      .filter(npc => npc.catalog !== false)
       .filter((npc) => terms.every((term) => npc.fullName.toLowerCase().includes(term)))
       .sort((a, b) => a.fullName.localeCompare(b.fullName))
       .map((npc) => (
@@ -1353,6 +1354,7 @@ export const MasonryRoster = (): ReactElement => {
   const genericFound = (): readonly ReactElement[] | null => terms.length === 0 || !genericCatalog
     ? null
     : genericCatalog
+      .filter(npc => npc.catalog !== false)
       .filter((npc) => !spawned.has(npc.key))
       .filter((npc) => terms.every((term) => `${npc.label} ${npc.tags} ${npc.key}`.toLowerCase().includes(term)))
       .slice(0, GENERIC_MATCH_LIMIT)

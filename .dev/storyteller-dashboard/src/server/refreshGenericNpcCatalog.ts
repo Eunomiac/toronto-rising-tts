@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,7 +20,7 @@ type ImportModule = {
 };
 
 /**
- * Refresh `.dev/storyteller-dashboard/data/generic-npcs.json` from the public Generics Export sheet.
+ * Refresh `.dev/storyteller-dashboard/data/generic-npcs.json` from EXPORT_CHARACTERS_GENERIC.
  * Called on Storyteller Dashboard server startup (not during npm build).
  */
 export const refreshGenericNpcCatalogOnStartup = async (catalogPath: string): Promise<void> => {
@@ -35,15 +34,6 @@ export const refreshGenericNpcCatalogOnStartup = async (catalogPath: string): Pr
   );
   const { importGenericNpcs } = require(importScriptPath) as ImportModule;
 
-  try {
-    const result = await importGenericNpcs({ outPath: catalogPath });
-    console.log(`[generic-npcs] Catalog refreshed on startup (${result.npcCount} NPCs).`);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (existsSync(catalogPath)) {
-      console.error(`[generic-npcs] Sheet refresh failed; using existing catalog. ${message}`);
-      return;
-    }
-    throw new Error(`Could not refresh generic NPC catalog and no existing file at ${catalogPath}: ${message}`);
-  }
+  const result = await importGenericNpcs({ outPath: catalogPath });
+  console.log(`[exports] Catalog refreshed (${result.npcCount} NPCs).`);
 };

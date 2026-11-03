@@ -1,5 +1,11 @@
 # Chronicle Google Sheets
 
+## Export consolidation status — 2026-11-03
+
+All nine `EXPORT_*` ranges on Toronto Rising → `(exports)` now feed FULL and Dashboard readers through the validated loader in `.dev/scripts/lib/sheet_exports.js`. Read [Spreadsheet Exports.md](Spreadsheet%20Exports.md) for commands, runtime routes and local verification requirements, and the [exact schema](Spreadsheet%20Export%20Contract.json) before changing importers. Regular named-range CSV requires both `gid=1673786468` and the range name; gviz loses mixed values.
+
+`Catalog?` controls the main roster catalog, independently of scene/session presence or historical applicability. Complications and Compulsions authoring share **Toronto Rising Decks** (`11kcsl9vAqWeEBEFFmadMs65xpDqMNV8SkCaCNM_09bU`) on `[CPL] Cards` and `[COM] Cards`.
+
 ## Agent Routing
 
 Read this when:
@@ -16,38 +22,22 @@ Verification:
 Status:
 - current (2026-10-11)
 
-## The five sheets
+## Chronicle workbooks
 
 All five are owned by the author and shared as **anyone with the link can view**.
 
 | Sheet | Id | What lives there |
 | --- | --- | --- |
-| **Toronto Rising** | `10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs` | The chronicle workbook: `CHARACTERS` (named present-day NPC stats and character data), `GENERICS STATS`, `MEM NAMED STATS`, `MEM GENERIC STATS` (the four sources imported by `npm run npc-stats:import`), `COTERIES`, `PCs`, `PREY`, `GM TIPS`, `SESSION ZERO`, `RUMORS`, `QUIZZES`, `MEMORIAMS` / `(memoriam export)`, `GENERICS` / `Generics Export` (generic NPC catalog import), `Memoriam NPC Export` (named range `MEMORIAMNPCCSV`), per-PC `… XP` ledgers, plus hidden tabs `WEATHER` (daily weather calendar: per month average temperature and per-day weather codes, with a JSON assembly column), `SITES`, `CBN STATS`. `AGENDAs (ignore)` and `AGENDA Randomizer (ignore)` are retired. |
+| **Toronto Rising** | `10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs` | The chronicle workbook: `CHARACTERS` (named present-day NPC stats and character data), `GENERICS STATS`, `MEM NAMED STATS`, `MEM GENERIC STATS` (compatibility views), `STAT PROFILES`, `(exports)` (the nine production named ranges), `COTERIES`, `PCs`, `PREY`, `GM TIPS`, `SESSION ZERO`, `RUMORS`, `QUIZZES`, `MEMORIAMS` / `(memoriam export)`, `GENERICS` / `Generics Export` (figure authoring and compatibility view), `Memoriam NPC Export` (named range `MEMORIAMNPCCSV`), per-PC `… XP` ledgers, plus hidden tabs `WEATHER` (daily weather calendar: per month average temperature and per-day weather codes, with a JSON assembly column), `SITES`, `CBN STATS`. `AGENDAs (ignore)` and `AGENDA Randomizer (ignore)` are retired. |
 | **Toronto Rising API** | `1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4` | Export-shaped tabs that feed TTS: `Districts.csv`, `Sites_Unique.csv`, `Sites_Generic.csv` (clean one-row-per-card exports, below), `SOUNDSCAPE` (track definitions with Lua assembly lines), `SCENES` (scene lookups and snap-group data), `PCs`, `PREY`, `GM TIPS`, `SESSION ZERO`, `DecadeRP`, `(data)` (very wide lookup tab, ~2 MB), hidden `(characters)`. The skybox import reads named ranges here (site-card links come from `assets/Sites` via `npm run cloud-asset-sync`, not the sheet). |
-| **Districts & Sites of Toronto Rising** | `1ol1JOQNZER7QGsmBoeVXbKFNmCjYvKc-xibXtS3sFKk` | Authoring workbook for locations: `DISTRICTS`, `SITES` (aspects, resonance, soundscape, ambience, conditions, map positioning, validation), `RESONANCE` (resonance types, emotions, disciplines, district / site tallies), `SUGGESTIONS` (player-suggested aspects), `(data)` lookups, `(export)`, hidden `(songlist)`. Prefer the API sheet's `*.csv` tabs for reading finished values. |
+| **Districts & Sites of Toronto Rising** | `1ol1JOQNZER7QGsmBoeVXbKFNmCjYvKc-xibXtS3sFKk` | Authoring workbook for locations: `DISTRICTS`, `SITES` (aspects, resonance, soundscape, ambience, conditions, map positioning, validation), `RESONANCE` (resonance types, emotions, disciplines, district / site tallies), `SUGGESTIONS` (player-suggested aspects), `(data)` lookups, `(export)`, hidden `(songlist)`. Read finished location values from Toronto Rising `(exports)`. |
+| **Toronto Rising Decks** | `11kcsl9vAqWeEBEFFmadMs65xpDqMNV8SkCaCNM_09bU` | `[CPL] Cards` owns Complications; `[COM] Cards` owns the shared Compulsion definitions and numbered variants. |
 | **V5: ADVANTAGES** | `1UNGiRe8n2sqj6uCm6Zv69fKD3wGDwZGpubzBQJx-fPE` | `RULES`, `BACKGROUNDS`, `MERITS`, `LORESHEETS`, `BLOODLINES`, `FLAWS`, `PREDATOR TYPES`, `DERANGEMENTS`. |
 | **V5: DISCIPLINES** | `1U8Ktl4iHOwqldvikCKtEdXd56Mgt6LGukP4P_sjC0ME` | One tab per Discipline (`ANIMALISM`, `AUSPEX`, `BLOOD SORCERY`, `RITUALS`, `CELERITY`, `DOMINATE`, `FORTITUDE`, `OBFUSCATE`, `OBLIVION`, `CEREMONIES`, `POTENCE`, `PRESENCE`, `PROTEAN`) plus `RULES` and hidden `ALCHEMY`. |
 
-### Location exports (API sheet)
+### Finished location data
 
-| Tab | Columns |
-| --- | --- |
-| `Districts.csv` (36 rows) | `key`, `NAME`, `Domain Control: Minor / Major / Full`, `Resonance Plus`, `Resonance Minus` (e.g. `phlegmatic +`, `melancholic -`), Affair / Association / Clout / Utility (number + word), `Aspect Title 1–3`, `Aspect Content 1–3`, `Hunting Difficulties`, `Backgrounds`, `Minimaps` |
-| `Sites_Unique.csv` | `Key`, `Title`, `Subtitle`, `Elysium`, `Resonance Plus`, `Resonance Minus`, `Resonance Frame`, `Aspect Title`, `Aspect Content`, `Backgrounds`, `Minimaps` |
-| `Sites_Generic.csv` | `Key`, `Title`, `Subtitle`, `Resonance Plus`, `Resonance Minus`, `Resonance Frame`, `Aspect Title`, `Aspect Content`, `Backgrounds` |
-
-Keys match the repo's district / site keys (`DupontByTheCastle`, `CLGreatHall`, …) and the card art file names `assets/HUD/CorePanel_Map/District Cards/districtCard_<key>.webp` and `assets/Sites/siteCard_<key>.webp`. Sites without an aspect are left out of these exports (16 today: `CarusoResidence`, `CrimeScene`, `HockeyHallOfFame`, eight `Warrens*`, five `StRegis*`), so the dashboard's location picker cannot offer them until they get aspects. `Sites_Unique.csv` repeats its header row partway down; readers skip rows whose `Key` is `Key`.
-
-### Districts and sites for TTS (`npm run locations:import`)
-
-`.dev/scripts/import_locations_from_sheet.js` reads the **Districts & Sites** workbook directly (not the API exports, so every site is included) and writes `lib/locations_catalog.ttslua`; `lib/constants.ttslua` points `C.Districts` / `C.Sites` at it. The npm script then regenerates the Scenes location modals, the dashboard scene catalogs and the Global XmlUI. Both tabs put section titles in row 1 and headers in row 2; the importer finds columns by header inside a section.
-
-| Tab | Columns read |
-| --- | --- |
-| `DISTRICTS` | `key` and `NAME` in "Export Range for Toronto Rising API .csv Files" (name gets a capital first letter); `Condition` (header in row 1) |
-| `SITES` | `Key` in "Data Processing for CSV Export"; `Condition` in "Conditions"; in "Parsing for TTS Output": `name`, `Skybox`, `district`, `soundscape music`, `soundscape location`, `is indoors`, `Weather Ducking`, `Top Fog`, `map location` (each cell is a Lua fragment such as `isIndoors = true,`) |
-
-Validation fails the import for unknown skybox, district, background-music or location-track keys. Warnings (import continues): accented keys are folded to ASCII (`WarrensFomórach` → `WarrensFomorach`); condition ids that are not implemented manual conditions are skipped; a few stale track keys from the sheet's `(data)` tab and the missing `nosWarrens` playlist are mapped in `TRACK_ALIASES` / `MUSIC_GAPS` (`.dev/scripts/lib/locations_sheet_csv.js`) until the sheet or soundscape catalog is fixed.
+Use EXPORT_LOCATIONS_DISTRICTS and EXPORT_LOCATIONS_SITES in the active Toronto Rising workbook. They include every site and the union of runtime settings, card/aspect/resonance fields and source audio metadata. The old API location tabs have broken import references and are no longer production inputs. `npm run locations:import` generates Lua, modals, Dashboard catalogs and embedded XML from these ranges.
 
 ## How to read them
 
@@ -66,20 +56,20 @@ https://docs.google.com/spreadsheets/d/<SHEET_ID>/gviz/tq?tqx=out:csv&headers=0&
 ```
 
 - Returns one tab as CSV with no sign-in. Pass `headers=0`, or Google merges the first rows into one header row.
-- Hidden tabs work if you know the name. Named ranges also work via `/export?format=csv&range=<RANGE>` on the API sheet (used by the skybox and site-card imports). On the Toronto Rising sheet the named-range export returns HTTP 400 (`CHARACTERS`); read the tab instead.
+- Hidden tabs work if you know the name. Named ranges also work via `/export?format=csv&range=<RANGE>` on the API sheet (used by the skybox and site-card imports). For the consolidated Toronto Rising ranges, always include `gid=1673786468` as well as `range=EXPORT_<ID>`.
 - **gviz drops text in number columns.** In a column Google types as numeric, text cells come back empty, including the header label (CHARACTERS `Blood Potency`, `Health`, … read as blank headers). When you need every cell exactly as typed, use `/export?format=csv&gid=<gid>`.
 - Visible tab names: `https://docs.google.com/spreadsheets/d/<SHEET_ID>/htmlview` (look for `items.push({name: "…"`, which also carries each tab's `gid`); hidden tabs are not listed there.
 - Decode as UTF-8 (Node `fetch` does). PowerShell `Invoke-WebRequest` mangles accents such as "Fomórach".
 
-Existing importers: `.dev/scripts/import_skyboxes_from_sheet.js`, `import_generic_npcs_from_sheet.js` (Toronto Rising sheet), `import_memoriam_npcs_from_sheet.js` (Toronto Rising tab **Memoriam NPC Export**, named range `MEMORIAMNPCCSV` → `.dev/storyteller-dashboard/data/memoriam-npcs.json`; gid export because gviz returns HTTP 500 on that tab; `npm run memoriam-npcs:import`, also dashboard startup and `build:all-tooling`; `variantOfUnique` may point only to another Memoriam key or an API key whose `CHARACTERS` row is currently active), `import_weather_from_sheet.js` (Toronto Rising `WEATHER` → `lib/tr_weather_schedule.ttslua`, `npm run weather:import`), `import_locations_from_sheet.js` (Districts & Sites → `lib/locations_catalog.ttslua`, `npm run locations:import`), `.dev/storyteller-dashboard/scripts/npc-stats/import.ts` (Toronto Rising's four NPC-stat tabs → the git-ignored dashboard `data/npc-stats.json`, `npm run npc-stats:import`; see [NPC stats from the sheet](#npc-stats-four-tabs-toronto-rising-sheet)). Shared fetch helper: `.dev/scripts/lib/google_sheet_fetch.js` (sheet ids + whole-tab CSV). See [`Storyteller Dashboard Docs/Generic NPCs.md`](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
+Production importers use `.dev/scripts/lib/sheet_exports.js` with the exact nine header contracts. Whole-tab reads are reserved for authoring inspection and the controlled CHARACTERS write-back channel. Variant links resolve against the full unique roster, including Catalog? false records.
 
 ### Weather calendar (`WEATHER`, Toronto Rising sheet)
 
-One row per day. The header row has `DayCodes` above the column of quoted hourly codes (column W); the three columns to its left are month, the month's average temperature in °C, and day. Each day holds 24 five-character codes decoded by `C.WEATHER` in `lib/constants.ttslua`. `npm run weather:import` validates every code and writes `lib/tr_weather_schedule.ttslua`; the dashboard reads the same columns live (`chronicleSheets.ts`). There is no repo-side JSON or CSV copy.
+One row per day. The header row has `DayCodes` above the column of quoted hourly codes (column W); the three columns to its left are month, the month's average temperature in °C, and day. Each day holds 24 five-character codes decoded by `C.WEATHER` in `lib/constants.ttslua`. `npm run weather:import` validates every code and writes `lib/tr_weather_schedule.ttslua`; the Dashboard reads EXPORT_WEATHER through `/api/chronicle-exports`. Explicit replay snapshots are private and git-ignored.
 
-### NPC stats (four tabs, Toronto Rising sheet)
+### NPC stats (the two character exports)
 
-The Sheet is the source of truth for imported NPC stat blocks. `npm run npc-stats:import` reads `CHARACTERS`, `GENERICS STATS`, `MEM NAMED STATS`, and `MEM GENERIC STATS`, then atomically replaces their blocks in `.dev/storyteller-dashboard/data/npc-stats.json` (git-ignored, backed up to `<backupDir>/Dashboard Data/npc-stats-import-*.json`). `CHARACTERS` excludes rows marked `IS PC?`; generics map by Label and Tier; named Memoriam rows map by Memoriam Key; generic Memoriam rows resolve to catalog stems using Label, Location, Year and Tags. Kept characters and stats for keys absent from all four tabs remain local. Any invalid or unmatched row stops the whole import before the file is replaced. Reload the dashboard page afterwards.
+`npm run npc-stats:import` reads EXPORT_CHARACTERS_UNIQUE and EXPORT_CHARACTERS_GENERIC into private Dashboard `data/npc-stats.json`. It excludes PCs and metadata-only forms, groups repeated figures by supplied profile/tier, preserves existing generic label/stem keys, keeps pending edits and kept characters, and carries roll metadata across imports. Canonical identities and legacy aliases share pending-edit protection. Domain preflight rejects invalid/conflicting records before replacing outputs. Source snapshots, bulk stats and bios remain git-ignored.
 
 Columns are found by their row-1 header (first occurrence; `*` ignored). Common stat fields are `Kind`, `Clan`, `Generation`, `Rank`, `Blood Potency`, `Humanity`, `Difficulty`, `Health`, `Willpower`, `Phy`, `Soc`, `Men`, `Pow`, `Exceptional Pools`, `Attacks`, `Powers`, and, on the named tabs, `Advantages`, `Ancilla Power(s)`, `Elder Power(s)`, `Methuselah Power(s)`, and `Special Abilities`. Blank and `~` cells are empty. Parser and exact validation: `.dev/storyteller-dashboard/scripts/npc-stats/sheet.ts` (tests in `sheet.test.ts`).
 
@@ -92,7 +82,7 @@ Columns are found by their row-1 header (first occurrence; `*` ignored). Common 
 - **Notes:** Ancilla, Elder and Methuselah powers and Special Abilities become separate rich-text lines with bold names. Discipline Expression is ignored.
 - Ids for pools, attacks and Advantages are stable hashes of their names. When a Sheet metadata field is blank, an existing local trait association or roll Difficulty is preserved for the matching roll.
 
-**Write-back (dashboard edits → `CHARACTERS`, at build time only).** When a Stats-window save changes a present-day named NPC, the dashboard server records the key in `data/npc-stats-pending.json` (git-ignored, `src/server/npcStatsPending.ts`); nothing is sent during play. `npm run npc-stats:push` (in `build:all-tooling` just before `npc-stats:import`) re-reads the Sheet, computes only the changed writable cells, and proves every edited block imports back identically. If any pending edit fails that check, the entire push aborts before sending any rows. A successful push appends every changed cell and its old value to `data/npc-stats-sheet-log.jsonl`, then clears the pending key. `--dry-run` performs the checks without writing. Notes are not written because their source is the Sheet's higher-tier power and Special Abilities columns. With nothing pending the push makes no network call.
+**Write-back (dashboard edits → `CHARACTERS`, at build time only).** When a Stats-window save changes a present-day named NPC, the dashboard server records the key in `data/npc-stats-pending.json` (git-ignored, `src/server/npcStatsPending.ts`); nothing is sent during play. `npm run npc-stats:push` (before FULL takes its export snapshot) re-reads the Sheet, computes only the changed writable cells, and proves every edited block imports back identically. If any pending edit fails that check, the entire push aborts before sending any rows. A successful push appends every changed cell and its old value to `data/npc-stats-sheet-log.jsonl`, then clears the pending key. `--dry-run` performs the checks without writing. Notes are not written because their source is the Sheet's higher-tier power and Special Abilities columns. With nothing pending the push makes no network call.
 
 **Write-back channel (setup done once by the author, 2026-10-13).** The writer is an Apps Script web app bound to the sheet: source `.dev/storyteller-dashboard/scripts/npc-stats/apps-script/Code.gs`, pasted into the sheet's **Extensions → Apps Script**, with a script property `SECRET` equal to `NPC_SHEET_WRITE_SECRET` in the dashboard's git-ignored `.env`, deployed as a web app (Execute as: Me; Who has access: Anyone). Its `/exec` URL goes in `.env` as `NPC_SHEET_WRITE_URL`. It accepts only requests carrying the secret, writes only the stat columns it lists, only on rows whose API key exists, and sets written text cells to plain-text format (so `6/4` never becomes a date). `npm run npc-stats:check-sheet` pings it without writing. After editing `Code.gs`, paste it again and use **Deploy → Manage deployments → Edit → New version** so the URL stays the same.
 

@@ -4,6 +4,7 @@ export type CatalogCharacter = {
   readonly characterKey: string;
   readonly fullName: string;
   readonly isPC: boolean;
+  readonly catalog?: boolean;
   /** Roster groups from `data/npc-roster.json` `members`, primary first; empty for PCs and ungrouped NPCs. */
   readonly pickerGroups: readonly string[];
 };

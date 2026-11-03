@@ -20,6 +20,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### TOR-750 — Consolidated spreadsheet imports and runtime catalogs
+
+**How to verify:** On your configured local checkout, close TTS and run FULL with your existing assets, save path and Dashboard files. Reopen TTS and Save & Play. Check a named NPC, an old Daeva key, a Garou form and a generic with several supplied tiers. In the Dashboard, confirm a character with Catalog? false is excluded from Main while historical entries remain in Memoriam. Choose a district/site and date; confirm its skybox, sound, fog and weather. Check a Complication and each PC's Compulsion badge text, then save/reload to confirm existing keys still work.
+
+Cloud checks passed for the live exports, generated Lua, Dashboard tests and browser interactions. Steam upload, live write-back and Save & Play still require your local setup. The existing setXmlTable gate baseline also fails on the unchanged base branch; the export implementation does not raise that baseline.
+
 #### Complications discard pile stays unlocked — direct author request
 
 **How to verify:** Build and Save & Play with the existing discard pile present; it should unlock and settle onto the board. Reveal a categorized card, discard a selected card, and hide/show the board: the discard pile should remain unlocked when visible, including after it merges or is replaced. Category-removal consistency is still under investigation; this change fixes the discard lock only.

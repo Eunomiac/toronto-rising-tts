@@ -1,8 +1,6 @@
-/**
- * Compulsion card text for the dashboard's seat badges. The author's git-ignored `data/compulsions.jsonc` is the only
- * copy: one entry per Compulsion (keyed by its lower-case name) with its Influence and four variants, each variant's
- * `card` the N its GM Notes carry (`Compulsion:<Type>-<charKey>:<N>`). A clan Compulsion names its `clan`; that clan's
- * PCs draw it as `Clan` cards.
+/** Compulsion text is derived from EXPORT_COMPULSIONS on the Toronto Rising Decks sheet.
+ * The ignored data/compulsions.jsonc file is a generated cache, refreshed with the
+ * same snapshot as the other catalogs. Card numbers retain their TTS GM Notes identity.
  */
 
 /** A seat's selected Compulsion as TTS pushes it: the GM Notes type (`Clan` for the clan card) and variant. */

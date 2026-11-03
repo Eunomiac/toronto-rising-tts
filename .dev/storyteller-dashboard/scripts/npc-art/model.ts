@@ -224,7 +224,7 @@ export const renderLuaModule = (figurineBackUrl: string, links: ReadonlyMap<stri
     "",
     `local FIGURINE_BACK = ${luaString(figurineBackUrl)}`,
     "",
-    "return {"
+    "local Art = {"
   ];
   for (const key of [...links.keys()].sort()) {
     const art = links.get(key)!;
@@ -236,7 +236,17 @@ export const renderLuaModule = (figurineBackUrl: string, links: ReadonlyMap<stri
       "  },"
     );
   }
-  lines.push("}", "");
+  lines.push("}", "", `-- Authored filenames keep saved keys and canonical identities on the same uploaded art.
+for _, catalog in ipairs({ require("lib.unique_character_catalog"), require("lib.generic_character_catalog") }) do
+  for key, row in pairs(catalog) do
+    local assetKey = type(row.filename) == "string" and row.filename:match("^npc_(.+)%.webp$") or nil
+    if assetKey ~= nil and Art[assetKey] ~= nil then
+      Art[key] = Art[assetKey]
+    end
+  end
+end
+return Art
+`);
   return lines.join("\n");
 };
 

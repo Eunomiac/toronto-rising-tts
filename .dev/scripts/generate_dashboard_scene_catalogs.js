@@ -26,7 +26,7 @@ const skyboxesPath = path.join(root, "lib", "skyboxes_catalog.ttslua");
 const locationsPath = path.join(root, "lib", "locations_catalog.ttslua");
 const soundscapePath = path.join(root, "lib", "soundscape_catalog.ttslua");
 const conditionDefsPath = path.join(root, "lib", "condition_defs.ttslua");
-const npcsDataPath = path.join(root, "lib", "npcs_data.ttslua");
+const npcsDataPath = path.join(root, "lib", "unique_character_catalog.ttslua");
 const gameboardDataPath = path.join(root, "lib", "npc_gameboard_data.ttslua");
 const guidsPath = path.join(root, "lib", "guids.ttslua");
 const bloodPotencyPath = path.join(root, "lib", "blood_potency_constants.ttslua");
@@ -884,10 +884,13 @@ function main() {
     }));
 
   const npcRoster = readNpcRoster();
-  const characters = parseTopLevelEntries(extractBlock(npcsSrc, "D.characters =")).map((entry) => ({
+  const characters = parseTopLevelEntries(extractBlock(npcsSrc, "local Characters =")).map((entry) => ({
     characterKey: entry.key,
     fullName: readStringField(entry.body, "fullName") || readStringField(entry.body, "name") || entry.key,
     isPC: readBooleanField(entry.body, "isPC") === true,
+    catalog: readBooleanField(entry.body, "catalog") === true,
+    filename: readStringField(entry.body, "filename"),
+    canonicalKey: readStringField(entry.body, "canonicalKey"),
     pickerGroups: npcRoster.members[entry.key] ?? [],
   }));
 

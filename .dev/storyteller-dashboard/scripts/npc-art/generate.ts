@@ -92,7 +92,8 @@ const readNamedCatalog = async (): Promise<Map<string, NamedCatalogEntry>> => {
   for (const row of [...catalogs.pcs, ...catalogs.namedNpcs] as unknown[]) {
     if (isRecord(row) && typeof row.characterKey === "string" && typeof row.fullName === "string") {
       const pickerGroups = Array.isArray(row.pickerGroups) ? row.pickerGroups.filter((group): group is string => typeof group === "string") : [];
-      named.set(row.characterKey, { characterKey: row.characterKey, fullName: row.fullName, pickerGroups });
+      const assetKey = typeof row.filename === "string" ? FIGURINE_FILE.exec(row.filename)?.[1] : undefined;
+      named.set(assetKey ?? row.characterKey, { characterKey: row.characterKey, fullName: row.fullName, pickerGroups });
     }
   }
   return named;
@@ -103,7 +104,7 @@ const readGenericLabels = async (): Promise<Map<string, string>> => {
   if (npcs.length === 0) {
     throw new Error("data/generic-npcs.json lists no generic NPCs. Run npm run generic-npcs:import.");
   }
-  return new Map(npcs.map((npc) => [npc.key, npc.label]));
+  return new Map(npcs.map((npc) => [FIGURINE_FILE.exec(npc.filename)?.[1] ?? npc.key, npc.label]));
 };
 
 const readMemoriamNames = async (): Promise<Map<string, MemoriamArtEntry>> => {
@@ -111,7 +112,7 @@ const readMemoriamNames = async (): Promise<Map<string, MemoriamArtEntry>> => {
   if (npcs.length === 0) {
     throw new Error("data/memoriam-npcs.json lists no Memoriam NPCs. Run npm run memoriam-npcs:import.");
   }
-  return new Map(npcs.map((npc) => [npc.key, { label: npc.label, isGeneric: npc.isGeneric }]));
+  return new Map(npcs.map((npc) => [FIGURINE_FILE.exec(npc.filename)?.[1] ?? npc.key, { label: npc.label, isGeneric: npc.isGeneric }]));
 };
 
 /** Ring colours come from the roster layout in data/npc-roster.json, which the dashboard's roster tab writes. */

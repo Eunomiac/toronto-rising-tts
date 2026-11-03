@@ -8,8 +8,7 @@ import { getConfig } from "./config.js";
 import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
-import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
-import { refreshMemoriamNpcCatalogOnStartup } from "./refreshMemoriamNpcCatalog.js";
+import { refreshSheetExports, exportRecords, characterDefinitions, figureFilename } from "./sheetExports.js";
 import { loadMemoriamNpcCatalog } from "./memoriamNpcCatalog.js";
 import { applyMemoriamFields, sheetMemoriamLists } from "../shared/memoriamNpc.js";
 import {
@@ -474,12 +473,18 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
+  if (request.method === "GET" && pathname === "/api/chronicle-exports") {
+    sendJson(response, 200, { districts: exportRecords("LOCATIONS_DISTRICTS"), sites: exportRecords("LOCATIONS_SITES"), weather: exportRecords("WEATHER") });
+    return;
+  }
+
   if (request.method === "GET" && pathname === "/api/scene-catalogs") {
-    await serveJsonFile(
-      response,
-      sceneCatalogsPath,
-      "scene-catalogs.json is missing. Run npm run dashboard:scene-catalogs from the repo root."
-    );
+    const base = JSON.parse(await readFile(sceneCatalogsPath, "utf8")) as { namedNpcs: { characterKey: string; pickerGroups: string[] }[]; pcs: unknown[] };
+    const byKey = new Map(base.namedNpcs.map(row => [row.characterKey, row]));
+    const characters = Object.entries(characterDefinitions()).map(([characterKey, row]) => ({
+      characterKey, ...row, pickerGroups: byKey.get(characterKey)?.pickerGroups ?? byKey.get(row.canonicalKey ?? "")?.pickerGroups ?? []
+    }));
+    sendJson(response, 200, { ...base, namedNpcs: characters.filter(row => !row.isPC), pcs: characters.filter(row => row.isPC) });
     return;
   }
 
@@ -658,12 +663,10 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   }
 
   if (request.method === "GET" && pathname.startsWith("/figurine-images/")) {
-    await serveSafeWebp(
-      response,
-      [cataloguedNpcImageDir, genericNpcImageDir, memoriamNpcImageDir],
-      `npc_${decodeURIComponent(pathname.slice("/figurine-images/".length))}`,
-      "Invalid NPC figurine image filename."
-    );
+    const requested = decodeURIComponent(pathname.slice("/figurine-images/".length));
+    const key = requested.replace(/\.webp$/, "");
+    const filename = figureFilename(key) ?? `npc_${requested}`;
+    await serveSafeWebp(response, [cataloguedNpcImageDir, genericNpcImageDir, memoriamNpcImageDir], filename, "Invalid NPC figurine image filename.");
     return true;
   }
 
@@ -713,8 +716,7 @@ const attachRequestHandler = (httpServer: ReturnType<typeof createServer>, handl
 };
 
 void (async () => {
-  await refreshGenericNpcCatalogOnStartup(genericNpcCatalogPath);
-  await refreshMemoriamNpcCatalogOnStartup(memoriamNpcCatalogPath);
+  await refreshSheetExports();
   const httpServer = createServer();
 
   if (isDev) {

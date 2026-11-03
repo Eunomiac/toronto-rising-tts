@@ -265,7 +265,7 @@ function renderLocationsCatalogLua({ districts, sites }) {
   const out = [
     "--[[",
     "    Toronto Rising — districts and sites (C.Districts / C.Sites).",
-    "    AUTO-GENERATED from the Districts & Sites of Toronto Rising Google Sheet (DISTRICTS + SITES tabs) — DO NOT EDIT BY HAND.",
+    "    AUTO-GENERATED from EXPORT_LOCATIONS_DISTRICTS + EXPORT_LOCATIONS_SITES — DO NOT EDIT BY HAND.",
     "    Regenerate: npm run locations:import",
     "    Field reference: `-- #region Sites` in lib/constants.ttslua.",
     "]]",
@@ -284,6 +284,7 @@ function renderLocationsCatalogLua({ districts, sites }) {
     out.push(`  ${s.key} = {`, `    name = ${q(s.name)},`);
     if (s.skybox !== null) out.push(`    skybox = ${q(s.skybox)},`);
     if (s.districtKey !== null) out.push(`    district = Districts.${s.districtKey},`);
+    if (s.isSilent === true) out.push("    isSilent = true,");
     out.push("    soundscape = {");
     if (s.backgroundMusic !== null) out.push(`      backgroundMusic = { playlist = ${q(s.backgroundMusic)} },`);
     out.push(`      location = { playlist = "location", track = ${q(s.locationTrack)} },`, "    },");
