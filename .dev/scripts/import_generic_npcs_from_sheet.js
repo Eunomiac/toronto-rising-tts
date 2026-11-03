@@ -4,7 +4,7 @@ const { renderGenericNpcCatalogJson } = require("./lib/generic_npcs_sheet_csv.js
 const path = require("node:path");
 async function importGenericNpcs(options = {}) {
   const snapshot = options.snapshot || await loadSnapshot();
-  const npcs = genericFigures(snapshot);
+  const npcs = genericFigures(snapshot).map(({ key, label, tags, filename, catalog, tiers, statProfile }) => ({ key, label, tags, filename, catalog, tiers, statProfile }));
   const outPath = options.outPath || path.resolve(__dirname, "../storyteller-dashboard/data/generic-npcs.json");
   writeAtomic(outPath, renderGenericNpcCatalogJson({ npcs, meta: { sheetId: contract.spreadsheetId, rangeName: "EXPORT_CHARACTERS_GENERIC", tabName: contract.sheetTitle } }));
   return { npcCount: npcs.length, outPath };

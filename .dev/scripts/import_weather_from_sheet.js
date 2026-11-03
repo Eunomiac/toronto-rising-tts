@@ -8,7 +8,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const { parseCsv } = require("./lib/skyboxes_sheet_csv.js");
 const { loadSnapshot, rowsOf, writeAtomic } = require("./lib/sheet_exports.js");
 const {
   loadWeatherValidationSets,

@@ -1,42 +1,21 @@
 "use strict";
 
 /**
- * Districts & Sites workbook (DISTRICTS + SITES tabs) → lib/locations_catalog.ttslua (C.Districts / C.Sites).
+ * EXPORT_LOCATIONS_DISTRICTS + EXPORT_LOCATIONS_SITES → lib/locations_catalog.ttslua (C.Districts / C.Sites).
  *
  * Run from repo root: node .dev/scripts/import_locations_from_sheet.js
  * Prefer: npm run locations:import (also regenerates the Scenes location modals, dashboard catalogs and Global XmlUI)
- * Offline: --sites-csv <file> --districts-csv <file> (whole-tab CSV exports)
+ * Replay a validated snapshot with TR_EXPORT_SNAPSHOT=<path>.
  */
 
 const fs = require("fs");
 const path = require("path");
-const { parseCsv } = require("./lib/skyboxes_sheet_csv.js");
-const { SHEET_IDS, fetchTabCsv, writeAtomic } = require("./lib/google_sheet_fetch.js");
+const { writeAtomic } = require("./lib/google_sheet_fetch.js");
 const { readLuaTable } = require("./lib/lua_table_reader.js");
-const { parseDistrictRows, parseSiteRows, renderLocationsCatalogLua } = require("./lib/locations_sheet_csv.js");
+const { renderLocationsCatalogLua } = require("./lib/locations_sheet_csv.js");
 
 const root = path.resolve(__dirname, "..", "..");
 const outPath = path.join(root, "lib", "locations_catalog.ttslua");
-const USER_AGENT = "toronto-rising-tts-locations-import/1.0";
-
-/** @param {string[]} argv @returns {{ sitesCsv: string|null, districtsCsv: string|null }} */
-function parseArgs(argv) {
-  const opts = { sitesCsv: null, districtsCsv: null };
-  for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i] === "--sites-csv" && argv[i + 1]) opts.sitesCsv = argv[++i];
-    else if (argv[i] === "--districts-csv" && argv[i + 1]) opts.districtsCsv = argv[++i];
-    else throw new Error(`Unknown argument: ${argv[i]}`);
-  }
-  return opts;
-}
-
-/** @param {string|null} file @param {string} tab @returns {Promise<string>} */
-async function loadTab(file, tab) {
-  if (file !== null) return fs.readFileSync(file, "utf8");
-  console.log(`[locations:import] Fetching Districts & Sites › ${tab} …`);
-  return fetchTabCsv(SHEET_IDS.districtsAndSites, tab, USER_AGENT);
-}
-
 function loadCatalogs() {
   const lib = (file) => path.join(root, "lib", file);
   const tracks = readLuaTable(lib("soundscape_catalog.ttslua"), "Catalog.TRACKS");

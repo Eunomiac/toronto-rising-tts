@@ -104,6 +104,7 @@ function validateSnapshot(snapshot) {
   // Retain these assignments and report them; never invent a playable period.
   const periods = new Set(dataOf(snapshot, "MEMORIAM").map(r => r.Key));
   snapshot.warnings = [...new Set([...unique, ...generic].flatMap(row => list(row["Memoriam Periods"]).filter(p => !periods.has(p)).map(p => `${row["API Key"]}: Memoriam period ${p} is not approved/exported; assignment retained`)))];
+  compulsions(snapshot);
   return snapshot;
 }
 
@@ -121,13 +122,15 @@ async function fetchSnapshot() {
     }
     return [spec.name, parseExport(csv, spec)];
   }));
-  return validateSnapshot({ version: 1, fetchedAt: new Date().toISOString(), spreadsheetId: contract.spreadsheetId, tables: Object.fromEntries(entries) });
+  const snapshot = validateSnapshot({ version: 1, fetchedAt: new Date().toISOString(), spreadsheetId: contract.spreadsheetId, tables: Object.fromEntries(entries) });
+  require("./validate_export_data.js").validateExportData(snapshot);
+  return snapshot;
 }
 let pending;
 function loadSnapshot() {
   return pending ||= (process.env.TR_EXPORT_SNAPSHOT
     ? Promise.resolve().then(() => validateSnapshot(JSON.parse(fs.readFileSync(process.env.TR_EXPORT_SNAPSHOT, "utf8"))))
-    : fetchSnapshot());
+    : fetchSnapshot()).then(snapshot => { require("./validate_export_data.js").validateExportData(snapshot); return snapshot; });
 }
 const q = value => `"${escapeLuaString(String(value))}"`;
 function uniqueCharacters(snapshot) {
@@ -155,7 +158,7 @@ function genericFigures(snapshot) {
   return [...figures.values()];
 }
 function memoriamFigures(snapshot) {
-  return [...dataOf(snapshot, "CHARACTERS_UNIQUE").filter(r => r["Memoriam Periods"]).map(r => ({ filename: r.Filename, key: r["API Key"], label: r.Name, location: r.Locations, year: r["Time Periods"], variantOfUnique: r["Variant Of"], isGeneric: false, tags: r.Tags, periods: list(r["Memoriam Periods"]), catalog: bool(r["Catalog?"], r["API Key"], true) })), ...genericFigures(snapshot).filter(r => r.periods.length).map(r => ({ ...r, variantOfUnique: "", isGeneric: true }))];
+  return [...dataOf(snapshot, "CHARACTERS_UNIQUE").filter(r => r["Memoriam Periods"]).map(r => ({ filename: r.Filename, key: r["API Key"], label: r.Name, location: r.Locations, year: r["Time Periods"], variantOfUnique: r["Variant Of"], isGeneric: false, tags: r.Tags, periods: list(r["Memoriam Periods"]), catalog: bool(r["Catalog?"], r["API Key"], true) })), ...genericFigures(snapshot).filter(r => r.periods.length).map(r => ({ filename: r.filename, key: r.key, label: r.label, location: r.location, year: r.year, variantOfUnique: "", isGeneric: true, tags: r.tags, periods: r.periods, catalog: r.catalog }))];
 }
 function compulsions(snapshot) {
   const out = {}, clans = new Set();

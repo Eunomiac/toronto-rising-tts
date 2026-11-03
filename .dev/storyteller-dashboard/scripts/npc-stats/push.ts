@@ -39,6 +39,10 @@ for (const row of sheetRecords(await fetchCharactersRows(), "CHARACTERS")) {
   const key = (row["API key"] ?? "").trim();
   if (key !== "" && !rows.has(key)) {
     rows.set(key, row);
+    for (const alias of (row["Legacy API Keys"] ?? "").split(",").map(s => s.trim()).filter(Boolean)) {
+      if (rows.has(alias)) throw new Error(`Duplicate authoring alias ${alias}`);
+      rows.set(alias, row);
+    }
   }
 }
 
@@ -70,7 +74,11 @@ for (const key of keys) {
   if (Object.keys(plan.cells).length === 0) {
     done[key] = pending[key]!;
   } else {
-    writes.push({ key, cells: plan.cells });
+    const authoringKey = row["API key"]!;
+    const existing = writes.find(write => write.key === authoringKey);
+    if (existing && JSON.stringify(existing.cells) !== JSON.stringify(plan.cells)) problems.push(`${key}: conflicting edits for ${authoringKey} and its legacy alias`);
+    else if (!existing) writes.push({ key: authoringKey, cells: plan.cells });
+    done[key] = pending[key]!;
   }
 }
 

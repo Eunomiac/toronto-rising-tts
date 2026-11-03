@@ -11,7 +11,7 @@ function writeCharacterExports(snapshot, { lua = true } = {}) {
   const compulsionText = JSON.stringify(compulsions(snapshot), null, 2) + "\n";
   const outputs = [
     [path.join(data, "unique-characters.json"), JSON.stringify(uniqueCharacters(snapshot), null, 2) + "\n"],
-    [path.join(data, "generic-npcs.json"), catalog("EXPORT_CHARACTERS_GENERIC", figures)],
+    [path.join(data, "generic-npcs.json"), catalog("EXPORT_CHARACTERS_GENERIC", figures.map(({ key, label, tags, filename, catalog, tiers, statProfile }) => ({ key, label, tags, filename, catalog, tiers, statProfile })))],
     [path.join(data, "memoriam-npcs.json"), catalog("EXPORT_CHARACTERS_UNIQUE + EXPORT_CHARACTERS_GENERIC", memoriam)],
     [path.join(data, "compulsions.jsonc"), compulsionText],
   ];

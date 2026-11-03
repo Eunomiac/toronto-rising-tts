@@ -144,7 +144,6 @@ LocationsCatalog.Sites = {
   },
   AptCorridor = {
     name = "Apartment Corridor",
-    skybox = "AptStreetside",
     soundscape = {
       location = { playlist = "location", track = "softIndoor" },
     },
@@ -154,7 +153,6 @@ LocationsCatalog.Sites = {
   },
   AptLobby = {
     name = "Apartment Lobby",
-    skybox = "AptStreetside",
     soundscape = {
       location = { playlist = "location", track = "softIndoor" },
     },
@@ -194,7 +192,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   BackAlley1 = {
-    name = "Back Alley",
+    name = "Back Alley [1]",
     skybox = "BackAlley1",
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
@@ -204,7 +202,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   BackAlley2 = {
-    name = "Back Alley",
+    name = "Back Alley [2]",
     skybox = "BackAlley2",
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
@@ -214,8 +212,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   BackAlley3 = {
-    name = "Back Alley",
-    skybox = "BackAlley1",
+    name = "Back Alley [3]",
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -225,7 +222,7 @@ LocationsCatalog.Sites = {
   },
   BackseatSedan = {
     name = "Vehicle",
-    skybox = "Limousine",
+    district = Districts.Streets,
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -294,7 +291,6 @@ LocationsCatalog.Sites = {
   },
   CAMH = {
     name = "Centre for Addiction & Mental Health",
-    skybox = "SickKids",
     district = Districts.HarbordVillage,
     soundscape = {
       location = { playlist = "location", track = "hospital" },
@@ -432,7 +428,6 @@ LocationsCatalog.Sites = {
   },
   CabbagetownPenthouse = {
     name = "Cabbagetown Penthouse",
-    skybox = "PenthouseApt1",
     district = Districts.Cabbagetown,
     soundscape = {
       location = { playlist = "location", track = "silent" },
@@ -512,7 +507,6 @@ LocationsCatalog.Sites = {
   },
   ChantryQuarters = {
     name = "The University Chantry: Quarters",
-    skybox = "ChantryLibrary",
     district = Districts.Discovery,
     soundscape = {
       location = { playlist = "location", track = "church" },
@@ -536,7 +530,6 @@ LocationsCatalog.Sites = {
   },
   ChristiePitsPark = {
     name = "Christie Pits Park",
-    skybox = "CityPark",
     district = Districts.Wychwood,
     soundscape = {
       location = { playlist = "location", track = "cityPark" },
@@ -547,7 +540,7 @@ LocationsCatalog.Sites = {
     offsetXY = "-405.69 204.57",
   },
   CityApt1 = {
-    name = "City Apartment",
+    name = "City Apartment [1]",
     skybox = "CityApt1",
     soundscape = {
       location = { playlist = "location", track = "silent" },
@@ -557,8 +550,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   CityApt2 = {
-    name = "City Apartment",
-    skybox = "CityApt1",
+    name = "City Apartment [2]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -567,8 +559,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   CityApt3 = {
-    name = "City Apartment",
-    skybox = "CityApt1",
+    name = "City Apartment [3]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -599,7 +590,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   CoachHouseEmbassy = {
-    name = "The Coach House Embassy",
+    name = "Coach House Embassy, the",
     skybox = "CoachHouseEmbassy",
     district = Districts.Rosedale,
     soundscape = {
@@ -612,7 +603,6 @@ LocationsCatalog.Sites = {
   },
   CorktownCommon = {
     name = "Corktown Common",
-    skybox = "CityPark",
     district = Districts.DonRavine,
     soundscape = {
       location = { playlist = "location", track = "eerieForest" },
@@ -653,7 +643,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   Distillery = {
-    name = "The Historic Distillery",
+    name = "Historic Distillery, the",
     skybox = "Distillery",
     district = Districts.DistilleryDist,
     soundscape = {
@@ -665,7 +655,7 @@ LocationsCatalog.Sites = {
     offsetXY = "448.95 -52.84",
   },
   Docks = {
-    name = "The Docks",
+    name = "Docks, the",
     skybox = "Docks",
     district = Districts.DistilleryDist,
     soundscape = {
@@ -679,7 +669,6 @@ LocationsCatalog.Sites = {
   },
   DogPark = {
     name = "Dog Park",
-    skybox = "CityPark",
     soundscape = {
       location = { playlist = "location", track = "cityPark" },
     },
@@ -688,7 +677,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   Drake = {
-    name = "The Drake Hotel",
+    name = "Drake Hotel, the",
     district = Districts.LittlePortugal,
     soundscape = {
       location = { playlist = "location", track = "softIndoor" },
@@ -777,7 +766,6 @@ LocationsCatalog.Sites = {
   },
   GECatacombs = {
     name = "The Giovanni Estate: Catacombs",
-    skybox = "GEEstateGrounds",
     district = Districts.Wychwood,
     soundscape = {
       backgroundMusic = { playlist = "gioCatacombs" },
@@ -816,7 +804,6 @@ LocationsCatalog.Sites = {
   },
   GEMortuary = {
     name = "The Giovanni Estate: Mortuary",
-    skybox = "GEEstateGrounds",
     district = Districts.Wychwood,
     soundscape = {
       backgroundMusic = { playlist = "gioEstate" },
@@ -851,7 +838,6 @@ LocationsCatalog.Sites = {
   },
   GayClub = {
     name = "Gay Nightclub",
-    skybox = "Nightclub1",
     soundscape = {
       backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "nightclub" },
@@ -908,6 +894,7 @@ LocationsCatalog.Sites = {
   },
   Highway = {
     name = "Highway",
+    district = Districts.Streets,
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -927,7 +914,6 @@ LocationsCatalog.Sites = {
   },
   JRRLibrary = {
     name = "John Roberts Research Library",
-    skybox = "Library",
     district = Districts.Discovery,
     soundscape = {
       location = { playlist = "location", track = "library" },
@@ -1002,6 +988,7 @@ LocationsCatalog.Sites = {
   Limousine = {
     name = "Limousine",
     skybox = "Limousine",
+    district = Districts.Streets,
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -1011,7 +998,6 @@ LocationsCatalog.Sites = {
   },
   LowerParklands = {
     name = "Lower Don Parklands",
-    skybox = "CityPark",
     district = Districts.DonRavine,
     soundscape = {
       location = { playlist = "location", track = "eerieForest" },
@@ -1023,6 +1009,7 @@ LocationsCatalog.Sites = {
   },
   LuxuryDriving = {
     name = "Driving",
+    district = Districts.Streets,
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -1056,6 +1043,7 @@ LocationsCatalog.Sites = {
   },
   MiddleOfRoad = {
     name = "Middle of the Road",
+    district = Districts.Streets,
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -1077,7 +1065,6 @@ LocationsCatalog.Sites = {
   },
   MountSinai = {
     name = "Mount Sinai Hospital",
-    skybox = "SickKids",
     district = Districts.YongeDundasHospital,
     soundscape = {
       location = { playlist = "location", track = "hospital" },
@@ -1088,7 +1075,7 @@ LocationsCatalog.Sites = {
     offsetXY = "0 36.83",
   },
   Nightclub1 = {
-    name = "Nightclub",
+    name = "Nightclub [1]",
     skybox = "Nightclub1",
     soundscape = {
       backgroundMusic = { playlist = "none" },
@@ -1099,8 +1086,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   Nightclub2 = {
-    name = "Nightclub",
-    skybox = "Nightclub1",
+    name = "Nightclub [2]",
     soundscape = {
       backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "nightclub" },
@@ -1110,8 +1096,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   Nightclub3 = {
-    name = "Nightclub",
-    skybox = "Nightclub1",
+    name = "Nightclub [3]",
     soundscape = {
       backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "nightclub" },
@@ -1166,7 +1151,6 @@ LocationsCatalog.Sites = {
   },
   PMHospital = {
     name = "Princess Margaret Hospital",
-    skybox = "SickKids",
     district = Districts.YongeDundasHospital,
     soundscape = {
       location = { playlist = "location", track = "hospital" },
@@ -1178,7 +1162,6 @@ LocationsCatalog.Sites = {
   },
   ParkDriveReservation = {
     name = "Park Drive Reservation Lands",
-    skybox = "CityPark",
     district = Districts.DonRavine,
     soundscape = {
       location = { playlist = "location", track = "eerieForest" },
@@ -1198,7 +1181,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   PenthouseApt1 = {
-    name = "Penthouse Apartment",
+    name = "Penthouse Apartment [1]",
     skybox = "PenthouseApt1",
     soundscape = {
       location = { playlist = "location", track = "silent" },
@@ -1208,8 +1191,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   PenthouseApt2 = {
-    name = "Penthouse Apartment",
-    skybox = "PenthouseApt1",
+    name = "Penthouse Apartment [2]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -1218,8 +1200,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   PenthouseApt3 = {
-    name = "Penthouse Apartment",
-    skybox = "PenthouseApt1",
+    name = "Penthouse Apartment [3]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -1241,7 +1222,6 @@ LocationsCatalog.Sites = {
   },
   ProfOffice = {
     name = "Professor's Office",
-    skybox = "Office",
     soundscape = {
       location = { playlist = "location", track = "softIndoor" },
     },
@@ -1253,8 +1233,8 @@ LocationsCatalog.Sites = {
     name = "REM/State Institute for Sleep Science",
     skybox = "REMState",
     district = Districts.DistilleryDist,
+    isSilent = true,
     soundscape = {
-      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "silent" },
     },
     isIndoors = true,
@@ -1407,7 +1387,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   RunDownApt1 = {
-    name = "Run-Down Apartment",
+    name = "Run-Down Apartment [1]",
     skybox = "RunDownApt1",
     soundscape = {
       location = { playlist = "location", track = "silent" },
@@ -1417,8 +1397,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   RunDownApt2 = {
-    name = "Run-Down Apartment",
-    skybox = "RunDownApt1",
+    name = "Run-Down Apartment [2]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -1427,8 +1406,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   RunDownApt3 = {
-    name = "Run-Down Apartment",
-    skybox = "RunDownApt1",
+    name = "Run-Down Apartment [3]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -1450,7 +1428,7 @@ LocationsCatalog.Sites = {
   },
   SUV = {
     name = "SUV",
-    skybox = "Limousine",
+    district = Districts.Streets,
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -1481,8 +1459,9 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   SewerTunnel1 = {
-    name = "Sewer Tunnel",
+    name = "Sewer Tunnel [1]",
     skybox = "SewerTunnel1",
+    district = Districts.Sewers,
     soundscape = {
       location = { playlist = "location", track = "sewers" },
     },
@@ -1491,8 +1470,9 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   SewerTunnel2 = {
-    name = "Sewer Tunnel",
+    name = "Sewer Tunnel [2]",
     skybox = "SewerTunnel2",
+    district = Districts.Sewers,
     soundscape = {
       location = { playlist = "location", track = "sewers" },
     },
@@ -1525,7 +1505,7 @@ LocationsCatalog.Sites = {
     offsetXY = "34.61 48.45",
   },
   Sidewalk1 = {
-    name = "Sidewalk",
+    name = "Sidewalk [1]",
     skybox = "Sidewalk1",
     soundscape = {
       location = { playlist = "location", track = "quietCity" },
@@ -1535,8 +1515,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   Sidewalk2 = {
-    name = "Sidewalk",
-    skybox = "Sidewalk1",
+    name = "Sidewalk [2]",
     soundscape = {
       location = { playlist = "location", track = "quietCity" },
     },
@@ -1545,8 +1524,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   Sidewalk3 = {
-    name = "Sidewalk",
-    skybox = "Sidewalk1",
+    name = "Sidewalk [3]",
     soundscape = {
       location = { playlist = "location", track = "quietCity" },
     },
@@ -1603,7 +1581,6 @@ LocationsCatalog.Sites = {
   },
   StMichaelsHospital = {
     name = "St. Michael's Hospital",
-    skybox = "SickKids",
     district = Districts.Cabbagetown,
     soundscape = {
       location = { playlist = "location", track = "hospital" },
@@ -1615,7 +1592,6 @@ LocationsCatalog.Sites = {
   },
   StRegisAishe = {
     name = "The St. Regis Toronto: Aishe's",
-    skybox = "StRegisCouncilChamber",
     district = Districts.BayStFinancial,
     soundscape = {
       location = { playlist = "location", track = "softHum" },
@@ -1627,10 +1603,9 @@ LocationsCatalog.Sites = {
   },
   StRegisBlackCaesar = {
     name = "The St. Regis Toronto: Black Caesar's",
-    skybox = "StRegisCouncilChamber",
     district = Districts.BayStFinancial,
+    isSilent = true,
     soundscape = {
-      backgroundMusic = { playlist = "none" },
       location = { playlist = "location", track = "silent" },
     },
     isIndoors = true,
@@ -1652,7 +1627,6 @@ LocationsCatalog.Sites = {
   },
   StRegisFomorach = {
     name = "The St. Regis Toronto: Fomórach's",
-    skybox = "StRegisCouncilChamber",
     district = Districts.BayStFinancial,
     soundscape = {
       location = { playlist = "location", track = "softHum" },
@@ -1688,7 +1662,6 @@ LocationsCatalog.Sites = {
   },
   StRegisLucien = {
     name = "The St. Regis Toronto: Lord Lucien's",
-    skybox = "StRegisCouncilChamber",
     district = Districts.BayStFinancial,
     soundscape = {
       location = { playlist = "location", track = "softHum" },
@@ -1700,7 +1673,6 @@ LocationsCatalog.Sites = {
   },
   StRegisRashid = {
     name = "The St. Regis Toronto: Rashid's",
-    skybox = "StRegisCouncilChamber",
     district = Districts.BayStFinancial,
     soundscape = {
       location = { playlist = "location", track = "softHum" },
@@ -1732,7 +1704,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   StreetCorner1 = {
-    name = "Street Corner",
+    name = "Street Corner [1]",
     skybox = "StreetCorner1",
     soundscape = {
       location = { playlist = "location", track = "quietCity" },
@@ -1743,8 +1715,7 @@ LocationsCatalog.Sites = {
     conditions = { "woundToCompulsion" },
   },
   StreetCorner2 = {
-    name = "Street Corner",
-    skybox = "StreetCorner1",
+    name = "Street Corner [2]",
     soundscape = {
       location = { playlist = "location", track = "quietCity" },
     },
@@ -1753,8 +1724,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   StreetCorner3 = {
-    name = "Street Corner",
-    skybox = "StreetCorner1",
+    name = "Street Corner [3]",
     soundscape = {
       location = { playlist = "location", track = "quietCity" },
     },
@@ -1764,7 +1734,6 @@ LocationsCatalog.Sites = {
   },
   StripClub = {
     name = "Strip Club",
-    skybox = "Nightclub1",
     soundscape = {
       location = { playlist = "location", track = "nightclub" },
     },
@@ -1784,7 +1753,7 @@ LocationsCatalog.Sites = {
     offsetXY = "-128.51 170.28",
   },
   SuburbanHouse1 = {
-    name = "Suburban House",
+    name = "Suburban House [1]",
     skybox = "SuburbanHouse1",
     soundscape = {
       location = { playlist = "location", track = "silent" },
@@ -1794,8 +1763,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   SuburbanHouse2 = {
-    name = "Suburban House",
-    skybox = "SuburbanHouse1",
+    name = "Suburban House [2]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -1804,8 +1772,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   SuburbanHouse3 = {
-    name = "Suburban House",
-    skybox = "SuburbanHouse1",
+    name = "Suburban House [3]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -1816,6 +1783,7 @@ LocationsCatalog.Sites = {
   SubwayStation = {
     name = "Subway Station",
     skybox = "SubwayStation",
+    district = Districts.Subway,
     soundscape = {
       location = { playlist = "location", track = "subway" },
     },
@@ -1826,6 +1794,7 @@ LocationsCatalog.Sites = {
   SubwayTunnels = {
     name = "Subway Tunnels",
     skybox = "SubwayTunnels",
+    district = Districts.Subway,
     soundscape = {
       location = { playlist = "location", track = "sewers" },
     },
@@ -1859,6 +1828,7 @@ LocationsCatalog.Sites = {
   Taxi = {
     name = "Taxi",
     skybox = "Taxi",
+    district = Districts.Streets,
     soundscape = {
       location = { playlist = "location", track = "cityTraffic" },
     },
@@ -1879,7 +1849,7 @@ LocationsCatalog.Sites = {
     offsetXY = "-28.51 337.31",
   },
   ThreefoldExchange = {
-    name = "The Threefold Exchange",
+    name = "Threefold Exchange, the",
     skybox = "ThreefoldExchange",
     district = Districts.Chinatown,
     soundscape = {
@@ -1892,7 +1862,6 @@ LocationsCatalog.Sites = {
   },
   TorontoGeneral = {
     name = "Toronto General Hospital",
-    skybox = "SickKids",
     district = Districts.YongeDundasHospital,
     soundscape = {
       location = { playlist = "location", track = "hospital" },
@@ -2014,7 +1983,6 @@ LocationsCatalog.Sites = {
   },
   WalkingPath = {
     name = "Walking Path",
-    skybox = "CityPark",
     soundscape = {
       location = { playlist = "location", track = "cityPark" },
     },
@@ -2048,7 +2016,6 @@ LocationsCatalog.Sites = {
   },
   WarrensFomorach = {
     name = "The Nosferatu Warrens: Fomórach's",
-    skybox = "WarrensLabyrinth",
     district = Districts.Sewers,
     soundscape = {
       backgroundMusic = { playlist = "none" },
@@ -2060,7 +2027,6 @@ LocationsCatalog.Sites = {
   },
   WarrensIQs = {
     name = "The Nosferatu Warrens: I.Q.'s",
-    skybox = "WarrensLabyrinth",
     district = Districts.Sewers,
     soundscape = {
       backgroundMusic = { playlist = "none" },
@@ -2084,7 +2050,6 @@ LocationsCatalog.Sites = {
   },
   WarrensPalis = {
     name = "The Nosferatu Warrens: Palis'",
-    skybox = "WarrensLabyrinth",
     district = Districts.Sewers,
     soundscape = {
       backgroundMusic = { playlist = "none" },
@@ -2119,7 +2084,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = true,
   },
   WealthyEstate1 = {
-    name = "Wealthy Estate",
+    name = "Wealthy Estate [1]",
     skybox = "WealthyEstate1",
     soundscape = {
       location = { playlist = "location", track = "silent" },
@@ -2129,7 +2094,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   WealthyEstate2 = {
-    name = "Wealthy Estate",
+    name = "Wealthy Estate [2]",
     skybox = "WealthyEstate2",
     soundscape = {
       location = { playlist = "location", track = "silent" },
@@ -2139,8 +2104,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   WealthyEstate3 = {
-    name = "Wealthy Estate",
-    skybox = "WealthyEstate1",
+    name = "Wealthy Estate [3]",
     soundscape = {
       location = { playlist = "location", track = "silent" },
     },
@@ -2149,7 +2113,7 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
   },
   WeepingCairn = {
-    name = "The Weeping Cairn",
+    name = "Weeping Cairn, the",
     district = Districts.DonRavine,
     soundscape = {
       location = { playlist = "location", track = "eerieForest" },
@@ -2162,6 +2126,7 @@ LocationsCatalog.Sites = {
   },
   WychwoodPub = {
     name = "Wychwood Pub",
+    district = Districts.Wychwood,
     soundscape = {
       location = { playlist = "location", track = "diveBar" },
     },
@@ -2172,6 +2137,7 @@ LocationsCatalog.Sites = {
   Yacht = {
     name = "Luxury Yacht",
     skybox = "Yacht",
+    district = Districts.Waterfront,
     soundscape = {
       location = { playlist = "location", track = "waterside" },
     },
@@ -2193,7 +2159,6 @@ LocationsCatalog.Sites = {
   },
   YorkvilleApt1 = {
     name = "Yorkville Apartment",
-    skybox = "PenthouseApt1",
     district = Districts.Yorkville,
     soundscape = {
       location = { playlist = "location", track = "silent" },

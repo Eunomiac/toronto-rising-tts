@@ -20,6 +20,7 @@ function locations(snapshot, catalogs) {
     if (offsetXY && !/^-?\d+(?:\.\d+)? -?\d+(?:\.\d+)?$/.test(offsetXY)) throw new Error(`${row.Key}: invalid map offset ${offsetXY}`);
     return { key: row.Key, name: row.Name, skybox: row["Skybox Key"] || null, districtKey: row.District || null, backgroundMusic: music || null, locationTrack, isIndoors: !bool(row["Is Outdoors"], row.Key), weatherDucking: Number(row["Weather Ducking"]), isTopFogActive: bool(row["Top Fog"], row.Key), isSilent: bool(row["Is Silent?"], row.Key), offsetXY, conditions: conditions(row) };
   });
-  return { districts, sites, warnings };
+  const order = (a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
+  return { districts: districts.sort(order), sites: sites.sort(order), warnings };
 }
 module.exports = { locations };
