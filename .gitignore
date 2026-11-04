@@ -9,6 +9,7 @@ yarn.lock
 
 # Local TTS assets tooling config + save backups (see tts-assets.config.example.json)
 tts-assets.config.json
+/.dev/session-start-decisions.local.csv
 **/tts-assets-backups/
 **/.last-daily-backup
 

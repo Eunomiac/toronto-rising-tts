@@ -3,8 +3,8 @@
 /**
  * `npm run build:full`
  *
- * Runs the Full pipeline (daily save backup, silence soundscape emitters, then
- * build:all-tooling) and, when any step printed something worth reading, writes
+ * Runs the Full pipeline (session-start preflight, daily save backup, silence
+ * soundscape emitters, then build:all-tooling) and writes
  * .dev/build-logs/full-build-review.txt and opens it.
  */
 
@@ -15,7 +15,7 @@ const { REPO_ROOT, reviewLogPath, beginReview, appendEntry, readEntries, publish
 
 const CAPTURE = path.join(__dirname, "capture.cjs").replace(/\\/g, "/");
 const PIPELINE =
-  "npm run tts-save:backup-daily && npm run tts-save:silence-emitters && npm run build:all-tooling";
+  "node .tools/tts-save/build-session-start.js --full-preflight && npm run tts-save:backup-daily && npm run tts-save:silence-emitters && npm run build:all-tooling";
 
 function childEnv() {
   const env = { ...process.env, TORONTO_RISING_BUILD_REVIEW: "1" };

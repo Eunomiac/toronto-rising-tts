@@ -15,14 +15,16 @@ Status:
 
 ## Between-session start save
 
-After FULL, save the source game in Intermission with the latest scripts. Download the **Integrated assets** tab as CSV. The command reads the static URL column beside **Manual decision**. Use a new TTS slot filename such as `TS_Save_9001.json`.
+Save the main game in Intermission with the latest scripts. Put a CSV export of the **Integrated assets** tab at `.dev/session-start-decisions.local.csv`, and update it whenever the review changes. FULL reads the static URL column beside **Manual decision** and, as its last step, regenerates `TS_Save_9001.json` in the configured Saves folder from the freshly built main save. The build replaces its own previous copy only after the new file is ready. It refuses to replace an unrelated save in slot 9001. The report is at `.dev/build-logs/session-start-report.json`.
+
+For a one-off preview or a different output file, run the generator directly. Use a new filename for a one-off save.
 
 ```powershell
 npm run tts-save:session-start -- --decisions "Integrated assets.csv" --dry-run
-npm run tts-save:session-start -- --decisions "Integrated assets.csv" --output "TS_Save_9001.json" --report "session-start-report.json"
+npm run tts-save:session-start -- --decisions "Integrated assets.csv" --output "TS_Save_9002.json" --report "session-start-report.json"
 ```
 
-The source defaults to the configured save. `--source` accepts a separate full save. The command writes only to new output paths. It defers reviewed top-level Unity bundle objects and preserves their GUIDs and data for restore. A `Prune` URL that moved, appears in another kind of field, or shares an object with an asset outside the prune list stops generation for review. `Purge`, `Investigate`, and URLs without a decision stay in the copy and are accounted for separately in the report.
+The source defaults to the configured save. `--source` accepts a separate full save. Generation defers reviewed top-level Unity bundle objects and preserves their GUIDs and data for restore. A `Prune` URL that moved, appears in another kind of field, or shares an object with an asset outside the prune list stops generation for review. `Purge`, `Investigate`, and URLs without a decision stay in the copy and are accounted for separately in the report.
 
 Load the new slot in TTS. The host sees the onboarding bar in the center of the screen, and players get their assigned colors as they join. Once they are connected, click **1 Load Bundles**, then **2 Refresh HUD**, then **3 Seat Players**. Each button becomes available when the preceding work finishes. The bar disappears after seating and the final game update. A saved copy can resume at the next unfinished step. Later connections seat normally with automatic full XML rebuilds deferred. The host can still use **Refresh XML** in Phase tools if needed.
 

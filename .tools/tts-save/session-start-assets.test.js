@@ -2,8 +2,11 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const { planSessionStart, readDecisions } = require("./session-start-assets.js");
-const { createSessionStart } = require("./build-session-start.js");
+const { assertSessionStartSlot, createSessionStart, writeJson } = require("./build-session-start.js");
 
 const bundle = "https://steamusercontent-a.akamaihd.net/ugc/42/0123456789ABCDEF0123456789ABCDEF01234567/";
 const keep = "https://example.test/keep.png";
@@ -55,4 +58,30 @@ test("preserves chronicle state and UI assets while staging exact restore data",
     { kind: "soundscape_emitter", guid: "abcdef", data: source.ObjectStates[0] },
   ]);
   assert.throws(() => createSessionStart(output, plan, "", ""), /Use a full save/);
+});
+
+test("FULL can replace its generated slot while one-off saves still refuse to overwrite", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "session-start-slot-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const source = path.join(dir, "TS_Save_230.json");
+  const slot = path.join(dir, "TS_Save_9001.json");
+  const save = fixture();
+  save.LuaScriptState = JSON.stringify({ currentPhase: "Intermission", sessionNum: 1 });
+  writeJson(source, save);
+  const before = fs.readFileSync(source, "utf8");
+  assert.throws(() => assertSessionStartSlot(source, source), /separate/);
+  assertSessionStartSlot(source, slot);
+  writeJson(slot, save);
+  assert.throws(() => assertSessionStartSlot(source, slot), /unrelated/);
+
+  const generated = createSessionStart(save, planSessionStart(save, review), "lua", "xml");
+  fs.unlinkSync(slot);
+  writeJson(slot, generated, true);
+  assertSessionStartSlot(source, slot);
+  assert.throws(() => writeJson(slot, save), { code: "EEXIST" });
+  assert.equal(JSON.parse(fs.readFileSync(slot)).SaveName, generated.SaveName);
+  writeJson(slot, { ...generated, SaveName: "Updated session start" }, true);
+  assert.equal(JSON.parse(fs.readFileSync(slot)).SaveName, "Updated session start");
+  assert.equal(fs.readFileSync(source, "utf8"), before);
+  assert.deepEqual(fs.readdirSync(dir), ["TS_Save_230.json", "TS_Save_9001.json"]);
 });
