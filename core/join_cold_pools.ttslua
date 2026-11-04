@@ -383,7 +383,7 @@ local function beginWarmFiltered(kindPredicate, label, afterWarm)
                     tostring(got)
                 ))
             end
-            if obj.spawning == true then
+            if obj.spawning == true or obj.loading_custom == true then
                 return false
             end
         end

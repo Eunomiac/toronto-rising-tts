@@ -665,7 +665,7 @@ end
     Unregistered Steam IDs default to White (TOR-345).
     Join clients typically connect as Grey — Grey is a valid *current* seat to leave, never a target (TOR-372).
     @param colorOrPlayer string|Player Current seat color or connected Player (TTS onPlayerConnect passes Player).
-    @param opts table|nil Optional: refreshIfAlreadySeated (default true) — UI refresh when already on target.
+    @param opts table|nil Optional: refreshIfAlreadySeated (default true), or colorOnly during session-start joins.
 ]]
 function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
     opts = opts or {}
@@ -691,7 +691,7 @@ function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
         return
     end
 
-    if U.isIn(targetColor, C.PlayerColors)
+    if opts.colorOnly ~= true and U.isIn(targetColor, C.PlayerColors)
         and S.getStateVal("connectionControls", "deferAutoSeatByColor", targetColor) == true
     then
         print(string.format(
@@ -702,6 +702,7 @@ function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
     end
 
     if color == targetColor then
+        if opts.colorOnly == true then return end
         M.onPlayerChangeColor(color)
         if refreshIfAlreadySeated and Global ~= nil and type(Global.call) == "function" then
             Global.call("GlobalRefreshUiAfterSeatAssignment", { color = targetColor })

@@ -9,16 +9,16 @@
         minWidth="170" preferredWidth="190" textColor="#FFFFFF">Quick Transition</Toggle>
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
-    <Text fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. Arm colds HUD/assets/pools; restore in order with the buttons below.</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+    <Text id="phase_diagnosticJoinHelp" fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. After Arm, restore Assets, HUD, then Emitters.</Text>
+    <Text id="phase_sessionStartJoinHelp" active="false" fontSize="12" color="#AAAAAA">Once players connect, load deferred bundles, then finish seating and refresh the HUD.</Text>
+    <HorizontalLayout id="phase_diagnosticJoinSwitches" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Toggle id="phase_deferSetXml" isOn="false" onValueChanged="HUD_phaseDeferSetXml"
         minWidth="160" preferredWidth="180" textColor="#FFFFFF">Defer setXML</Toggle>
       <Button id="phase_armJoinXml" text="Arm Join XML" minWidth="140" preferredWidth="140" onClick="HUD_phaseArmJoinXml"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <Text id="phase_joinXmlStatus" fontSize="11" color="#FFDD00" text="Join: hud:full | assets:full | pools:warm" />
-    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+    <HorizontalLayout id="phase_diagnosticJoinSteps" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_restoreJoinAssets" text="1 Assets" minWidth="90" preferredWidth="90" onClick="HUD_phaseRestoreJoinAssets"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
@@ -26,7 +26,13 @@
       <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+    <HorizontalLayout id="phase_sessionStartJoinSteps" active="false" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+      <Button id="phase_sessionStartLoadBundles" text="1 Load Bundles" minWidth="135" preferredWidth="135" onClick="HUD_phaseRestoreJoinEmitters"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Button id="phase_sessionStartFinishJoin" text="2 Finish Join" minWidth="120" preferredWidth="120" onClick="HUD_phaseRestoreJoinHud"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    </HorizontalLayout>
+    <HorizontalLayout id="phase_diagnosticJoinRefresh" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_refreshXml" text="Refresh XML (=2 HUD)" minWidth="180" preferredWidth="180" onClick="HUD_phaseRefreshXml"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>

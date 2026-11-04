@@ -1130,6 +1130,7 @@ function O.SetHungerSmokeState(color, state, duration)
 
     local smoke = G.getObject(guid)
     if not smoke then
+        if S.getStateVal("connectionControls", "sessionStartJoin") == true then return false end
         U.AlertGM("O.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
         return false
     end

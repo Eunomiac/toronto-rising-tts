@@ -45,6 +45,7 @@ function Scenes.applyFogEmitterLooping(guid, active, opts)
     end
     local obj = U.getObject(guid, true)
     if obj == nil then
+        if S.getStateVal("connectionControls", "sessionStartJoin") == true then return false end
         print("[Scenes] applyFogEmitterLooping: no object for " .. label .. " guid " .. guid)
         return false
     end

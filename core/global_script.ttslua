@@ -3889,7 +3889,16 @@ syncStorytellerPhaseButtons = function()
         and #(S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup") or {}) > 0
     local JoinColdPools = require("core.join_cold_pools")
     local joinStatus
-    if joinXmlArmed then
+    local sessionStartJoin = S.getStateVal("connectionControls", "sessionStartJoin") == true
+    U.setAttributes("phase_diagnosticJoinSwitches", { active = not sessionStartJoin })
+    U.setAttributes("phase_diagnosticJoinSteps", { active = not sessionStartJoin })
+    U.setAttributes("phase_diagnosticJoinRefresh", { active = not sessionStartJoin })
+    U.setAttributes("phase_sessionStartJoinHelp", { active = sessionStartJoin })
+    U.setAttributes("phase_sessionStartJoinSteps", { active = sessionStartJoin })
+    U.setAttributes("phase_diagnosticJoinHelp", { active = not sessionStartJoin })
+    if sessionStartJoin then
+        joinStatus = JoinColdPools.isActive() and "Joining: deferred bundles pending" or "Joining: bundles ready to finish"
+    elseif joinXmlArmed then
         joinStatus = string.format(
             "Join: ARMED | assets:%s | hud:min | %s",
             assetsSlim and "slim" or "full",
@@ -4258,6 +4267,32 @@ function HUD_phaseRefreshXml(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_phaseRefreshXml") then
         return
     end
+    if S.getStateVal("connectionControls", "sessionStartJoin") == true then
+        if startupCoverHeld or require("core.join_cold_pools").isActive() then
+            U.AlertGM("Finish Join: wait for startup and load the deferred bundles first.")
+            return
+        end
+        performJoinRestoreStep("Finish Join", {
+            function()
+                applyEmbeddedGlobalXml(resolveGlobalXmlDoc("full"))
+                return waitUiAssetsNotLoading()
+            end,
+            function()
+                local connection = require("core.player_connection")
+                connection.prepareSessionStartSeats()
+                for _, seated in ipairs(Player.getPlayers()) do
+                    if connection.chronicleSeatColorForPlayer(seated) ~= nil then M.setCamera(seated, "default") end
+                end
+                Sync.full({ force = true, reason = "finish_session_start_join" })
+                S.setStateVal(false, "connectionControls", "sessionStartJoin")
+                S.setStateVal(false, "connectionControls", "deferSetXml")
+                invalidateGlobalBlindfoldAppliedState()
+                applySessionBlindfoldImagesFromState()
+                applyGlobalBlindfoldFromPhase()
+            end,
+        }, { "refreshHud", "finishSeating" })
+        return
+    end
     S.setStateVal(false, "connectionControls", "joinXmlArmed")
     print("[JoinControls] Restore HUD — remounting full Global XmlUI (assets/pools unchanged).")
     performFullUiResync("Restore HUD / Refresh XML", { mode = "full" })
@@ -4303,6 +4338,14 @@ function HUD_phaseRestoreJoinEmitters(player, button, id)
         return
     end
     local JoinColdPools = require("core.join_cold_pools")
+    if S.getStateVal("connectionControls", "sessionStartJoin") == true then
+        if startupCoverHeld then
+            U.AlertGM("Load Bundles: wait for the table to finish starting first.")
+            return
+        end
+        performJoinRestoreStep("Load Bundles", { JoinColdPools.beginWarm }, { "warmBundles" })
+        return
+    end
     print("[JoinControls] Restore Emitters — spawnObjectData with GUID keep.")
     performJoinRestoreStep("Restore Emitters", {
         function()
@@ -6970,6 +7013,10 @@ function onPlayerChangeColor(color)
     end
 
     local seated = Player[color]
+    if S.getStateVal("connectionControls", "sessionStartJoin") == true then
+        if U.isPlayer(seated) then M.tryAutoAssignSeatFromChronicle(seated, { colorOnly = true }) end
+        return
+    end
     if U.isPlayer(seated) then
         local playerID = S.getStorageID(seated)
         if playerID == C.StorytellerID and CameraDebugFocus ~= nil
@@ -7024,6 +7071,11 @@ function onPlayerConnect(playerOrColor, forceRun)
         connected = playerOrColor
     elseif type(playerOrColor) == "string" and playerOrColor ~= "" then
         connected = Player[playerOrColor]
+    end
+
+    if S.getStateVal("connectionControls", "sessionStartJoin") == true then
+        if U.isPlayer(connected) then M.tryAutoAssignSeatFromChronicle(connected, { colorOnly = true }) end
+        return
     end
 
     -- TOR-430: O(1) gate — Steam → chronicle PC color → deferConnectByColor; skip all connect work.
@@ -7094,6 +7146,7 @@ end
 --- TTS: player disconnected — darken the chronicle seat only; the next connection checkpoint
 --- (blindfold transition) makes it unoccupied if they are still gone (TOR-293).
 function onPlayerDisconnect(player)
+    if S.getStateVal("connectionControls", "sessionStartJoin") == true then return end
     if not U.isPlayer(player) then
         return
     end
