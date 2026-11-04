@@ -414,6 +414,19 @@ local function reportTransitionFailure(errMsg)
   require("dashboard.push").notice(errMsg)
 end
 
+local function transitionChainOptions(cancel)
+  return {
+    cancelRegistry = cancel,
+    onComplete = function(ok, reason)
+      if ok or cancel ~= activeTransitionCancel then
+        return
+      end
+      HUDBF.scheduleEnd(0)
+      reportTransitionFailure("The transition stopped (" .. tostring(reason) .. "). Check the TTS console for details.")
+    end,
+  }
+end
+
 --- Blindfold on → wait for slide/FadeIn → connection checkpoint → work → settle delay → blindfold off (TOR-434).
 --- Work is deferred via `U.chain` so XmlUI animations are not hitch-frozen.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
@@ -449,7 +462,7 @@ function HUDBF.runTransition(workFn, opts)
       end
       HUDBF.scheduleEnd(settleDelaySec)
     end,
-  }, { cancelRegistry = cancel })
+  }, transitionChainOptions(cancel))
 end
 
 --- Staged scene transition (TOR-147 / TOR-434 / TOR-476): blindfold down → district-card lead-in →
@@ -554,7 +567,7 @@ function HUDBF.runStagedTransition(phases, opts)
       end
       HUDBF.scheduleEnd(0)
     end,
-  }, { cancelRegistry = cancel })
+  }, transitionChainOptions(cancel))
 end
 
 return HUDBF
