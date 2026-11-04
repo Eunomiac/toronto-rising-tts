@@ -20,7 +20,7 @@ async function main() {
   const counts = validateExportData(snapshot);
   for (const warning of snapshot.warnings) console.warn(`[exports] ${warning}`);
   if (check) {
-    console.log("[exports] All nine exports validated:", counts);
+    console.log("[exports] All exports validated:", counts);
     return;
   }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "toronto-rising-exports-"));
@@ -33,7 +33,7 @@ async function main() {
     if (!full) scripts.push("import_skyboxes_from_sheet.js", "import_locations_from_sheet.js");
     for (const script of scripts) run(`.dev/scripts/${script}`, env);
     run(".dev/storyteller-dashboard/scripts/npc-stats/import.ts", env);
-    console.log(full ? "[exports] All nine exports validated; asset joins follow cloud sync:" : "[exports] All nine exports generated successfully:", counts);
+    console.log(full ? "[exports] All exports validated; asset joins follow cloud sync:" : "[exports] All exports generated successfully:", counts);
     if (full) {
       const child = spawnSync(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "build:tooling-after-exports"], { cwd: root, env, stdio: "inherit", shell: process.platform === "win32" });
       if (child.error) throw child.error;

@@ -18,14 +18,14 @@ Status: the build import contract targets the Named, Generic, and Function Calls
 
 ## Running the aligned imports
 
-- `npm run exports:build`: fetch and validate all nine packages, then generate character catalogs, weather, locations, skyboxes, Complications metadata, Compulsion text and private NPC stats. Uses the current cloud manifest; no Steam upload or save mutation.
+- `npm run exports:build`: fetch and validate all ten packages, then generate character catalogs, weather, locations, skyboxes, Complications metadata, Compulsion text and private NPC stats. Uses the current cloud manifest; no Steam upload or save mutation.
 - `npm run exports:build -- --check`: run preflight against the live exports or an explicit snapshot without generating files.
 - `npm run exports:test`: test the export contracts and verify pending edits and kept NPCs in an isolated stats import.
 - `npm run exports:verify-lua`: execute the generated modules through `lib.npcs_data` and check identities, PC exclusion, Garou flags, generic figure counts, art associations, site skyboxes and weather.
 - `npm run build:full`: existing backup/silence wrapper, then pending stat write-back, one validated snapshot, metadata/stats generation, other tooling, artwork/cloud jobs, and finally URL-dependent skybox/location generation. Every later importer inherits the same snapshot. New skybox files are joined after cloud sync.
 - Dashboard `npm run dev` starts a fresh server, validates one batch and refreshes its character/Compulsion caches. `/api/chronicle-exports` serves weather/location detail from that batch; browser gviz reads have been removed. Refresh failures stop startup instead of using a stale file. NPC stats still refresh during the build.
 
-For explicit offline replay, set `TR_EXPORT_SNAPSHOT` to the JSON written by `npm run exports:fetch`, or use `TR_EXPORT_CSV_DIR` with nine files named `EXPORT_<ID>.csv`. These private snapshots are ignored. A normal run fetches current data rather than loading the last cache. In this proxy-managed cloud session, live Node fetches required `NODE_USE_ENV_PROXY=1`.
+For explicit offline replay, set `TR_EXPORT_SNAPSHOT` to the JSON written by `npm run exports:fetch`, or use `TR_EXPORT_CSV_DIR` with ten files named `EXPORT_<ID>.csv`. These private snapshots are ignored. A normal run fetches current data rather than loading the last cache. In this proxy-managed cloud session, live Node fetches required `NODE_USE_ENV_PROXY=1`.
 
 
 ## Location and transport
@@ -38,7 +38,7 @@ Each horizontal package has its own named range with one header row followed by 
 https://docs.google.com/spreadsheets/d/10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs/export?format=csv&gid=1673786468&range=EXPORT_CHARACTERS_NAMED
 ```
 
-Substitute the named package, not column letters. Omitting gid returned HTTP 400 for the character ranges. The gid-qualified endpoint succeeded for all nine packages.
+Substitute the named package, not column letters. Omitting gid returned HTTP 400 for the character ranges. The gid-qualified endpoint succeeded for all ten packages.
 
 Use the regular CSV export, not gviz's majority-column typing. Parse TRUE/FALSE deliberately, preserve numeric zero, negative numbers, `X`, `~`, Unicode, commas, quotes, and multiline prose. Reject spreadsheet errors before generating outputs. Blank optional fields and `~` must retain their current parser meaning; do not turn them into literal defaults.
 
@@ -57,6 +57,7 @@ The machine-readable contract contains every exact header and snapshot range. Th
 | EXPORT_SKYBOXES | 95 | 4 | Authored site names/availability and the API workbook's non-site keyed definitions |
 | EXPORT_COMPLICATIONS | 66 | 14 | Toronto Rising Decks → [CPL] Cards, completed designs and automation keys |
 | EXPORT_COMPULSIONS | 36 | 11 | Toronto Rising Decks → COM_DEFINITIONS joined to COM_VARIANTS |
+| EXPORT_DISCIPLINES | 382 | 15 | V5: DISCIPLINES → normalized in the Toronto Rising export |
 
 There are no manually maintained image URL fields in these export contracts. The legacy portrait URLs remain in the authoring source for review.
 
@@ -69,6 +70,8 @@ The Named export supplies the effective data for each row, including inherited f
 Named figurines use `npc_<key>.webp` when enabled. Portrait recipients and filenames come from the export. Variants can refer to an inherited portrait. The generated catalogs carry the filename or asset name used by each consumer.
 
 The Generic export supplies one resolved stats row per figure key and tier. Figure metadata must agree across the tiers for that key. The stats import uses the figure API key as its identity and writes the supplied tiers. The profile lookup happens in the sheet.
+
+Named power references resolve by Discipline and power name. The importer selects the first exact Exceptional Pool match in Discipline, power name, affinity 1, affinity 2 order, then uses POW. Explicit roll notation retains its own fields. Unknown references fail with the NPC, Discipline, and power names.
 
 The shared loader rejects obsolete headers and export tables. Write-back targets current `CHARACTERS` keys and rejects pending edits that cannot be attached to a current row.
 

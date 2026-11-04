@@ -383,6 +383,33 @@
         "core/compulsions.ttslua",
         "lib/compulsion_objects.ttslua"
       ]
+    },
+    {
+      "name": "EXPORT_DISCIPLINES",
+      "rangeAtVerification": "GV2:HJ3001",
+      "headers": [
+        "Discipline",
+        "Level",
+        "Name",
+        "Description",
+        "Rouse Checks",
+        "Activation Roll",
+        "Trait Affinity 1",
+        "Trait Affinity 2",
+        "Difficulty Range",
+        "Opposed By",
+        "Ingredients",
+        "Process",
+        "System",
+        "Duration",
+        "Source"
+      ],
+      "source": "V5: DISCIPLINES named range, normalized in Toronto Rising",
+      "verifiedRows": 382,
+      "currentImporters": [
+        ".dev/scripts/lib/validate_export_data.js",
+        ".dev/storyteller-dashboard/scripts/npc-stats/import.ts"
+      ]
     }
   ],
   "snapshotLoader": ".dev/scripts/lib/sheet_exports.js",

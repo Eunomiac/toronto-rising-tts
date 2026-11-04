@@ -11,11 +11,12 @@ const { locations } = require("./export_locations.js");
 // This runs before any derived file is replaced, including the snapshot cache.
 function validateExportData(snapshot) {
   const lib = file => path.join(root, "lib", file);
-  const { parseStatRecord, blank } = require("../../storyteller-dashboard/scripts/npc-stats/sheet.ts");
+  const { parseStatRecord, blank, disciplinePowerLookup } = require("../../storyteller-dashboard/scripts/npc-stats/sheet.ts");
+  const disciplines = disciplinePowerLookup(dataOf(snapshot, "DISCIPLINES"));
   let namedStats = 0;
   for (const row of namedRows(snapshot)) {
     if (bool(row["Is PC"], row["API Key"]) || !["Difficulty", "Health", "Willpower", "Phy", "Soc", "Men", "Pow", "Exceptional Pools", "Attacks", "Powers"].some(h => !blank(row[h]))) continue;
-    parseStatRecord(row, row["API Key"], true);
+    parseStatRecord(row, row["API Key"], true, disciplines);
     namedStats++;
   }
   const genericTiers = dataOf(snapshot, "CHARACTERS_GENERIC");
@@ -49,6 +50,6 @@ function validateExportData(snapshot) {
     conditionIds: new Set(Object.entries(defs).filter(([, d]) => d.canApplyManually === true).map(([k, d]) => typeof d.id === "string" ? d.id : k)),
   });
   snapshot.warnings = [...new Set([...snapshot.warnings, ...result.warnings, ...audioWarnings])];
-  return { unique: Object.keys(uniqueCharacters(snapshot)).length, genericFigures: genericFigures(snapshot).length, namedStats, genericTiers: genericTiers.length, weatherHours: weather.reduce((n, m) => n + m.days.length * 24, 0), districts: result.districts.length, sites: result.sites.length, skyboxes: skyboxes.length, memoriam: Object.keys(memoriam).length, complications: cards.length, compulsions: Object.keys(compulsions(snapshot)).length };
+  return { disciplinePowers: disciplines.size, unique: Object.keys(uniqueCharacters(snapshot)).length, genericFigures: genericFigures(snapshot).length, namedStats, genericTiers: genericTiers.length, weatherHours: weather.reduce((n, m) => n + m.days.length * 24, 0), districts: result.districts.length, sites: result.sites.length, skyboxes: skyboxes.length, memoriam: Object.keys(memoriam).length, complications: cards.length, compulsions: Object.keys(compulsions(snapshot)).length };
 }
 module.exports = { validateExportData };

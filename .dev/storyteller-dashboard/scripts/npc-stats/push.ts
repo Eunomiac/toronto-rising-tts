@@ -1,8 +1,9 @@
+import { createRequire } from "node:module";
 import { appendFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { clearPending, PENDING_FILE_NAME, readPending } from "../../src/server/npcStatsPending.ts";
 import { normalizeNpcStatsFile } from "../../src/shared/npcStats.ts";
-import { sheetRecords } from "./sheet.ts";
+import { disciplinePowerLookup, sheetRecords, type SheetRecord } from "./sheet.ts";
 import { fetchCharactersRows } from "./sheetFetch.ts";
 import { planRowWrite } from "./sheetWrite.ts";
 import { writeSheet, type SheetWriteRow } from "./sheetWriter.ts";
@@ -33,6 +34,11 @@ if (keys.length === 0) {
   process.exit(0);
 }
 
+const { loadSnapshot, dataOf } = createRequire(import.meta.url)("../../../scripts/lib/sheet_exports.js") as {
+  loadSnapshot: () => Promise<unknown>;
+  dataOf: (snapshot: unknown, name: string) => SheetRecord[];
+};
+const disciplines = disciplinePowerLookup(dataOf(await loadSnapshot(), "DISCIPLINES"));
 const stats = normalizeNpcStatsFile(JSON.parse(await readFile(path.join(dataDir, "npc-stats.json"), "utf8")));
 const rows = new Map<string, Readonly<Record<string, string>>>();
 for (const row of sheetRecords(await fetchCharactersRows(), "CHARACTERS")) {
@@ -54,7 +60,7 @@ for (const key of keys) {
     problems.push(`${key}: pending edit requires a current named stats block and CHARACTERS row`);
     continue;
   }
-  const plan = planRowWrite(key, block, row);
+  const plan = planRowWrite(key, block, row, disciplines);
   if (plan.problems.length > 0) {
     problems.push(...plan.problems.map((problem) => `${key}: ${problem}`));
     continue;

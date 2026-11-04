@@ -5,10 +5,10 @@ import path from "node:path";
 import { backupName, resolveDashboardBackupDir } from "../../src/server/dataFileStore.ts";
 import { PENDING_FILE_NAME, readPending } from "../../src/server/npcStatsPending.ts";
 import {
-  genericStatsKey, normalizeNpcStatsFile, normalizeStatBlock, preserveNpcRollMetadata,
+  genericStatsKey, normalizeNpcStatsFile, normalizeStatBlock,
   type KeptNpc, type NpcStatBlock, type NpcStats, type NpcStatSlot
 } from "../../src/shared/npcStats.ts";
-import { blank, parseStatRecord, parseTier, type SheetRecord } from "./sheet.ts";
+import { blank, disciplinePowerLookup, parseStatRecord, parseTier, type SheetRecord } from "./sheet.ts";
 
 
 const scriptDir = import.meta.dirname;
@@ -29,6 +29,7 @@ const { loadSnapshot, dataOf, namedRows } = require("../../../scripts/lib/sheet_
 const hasStats = (row: SheetRecord): boolean => ["Difficulty", "Health", "Willpower", "Phy", "Soc", "Men", "Pow", "Exceptional Pools", "Attacks", "Powers"].some(header => !blank(row[header]));
 const collectImports = async (): Promise<{ imported: Imported; skipped: string[]; errors: string[] }> => {
   const snapshot = await loadSnapshot();
+  const disciplines = disciplinePowerLookup(dataOf(snapshot, "DISCIPLINES"));
   const imported: Imported = new Map(), skipped: string[] = [], errors: string[] = [];
   const add = (key: string, slot: NpcStatSlot, block: NpcStatBlock): void => {
     const slots = imported.get(key) ?? {};
@@ -39,7 +40,7 @@ const collectImports = async (): Promise<{ imported: Imported; skipped: string[]
     const key = row["API Key"]!;
     if (row["Is PC"] === "TRUE" || !hasStats(row)) { skipped.push(key); continue; }
     try {
-      add(key, "named", parseStatRecord(row, key, true));
+      add(key, "named", parseStatRecord(row, key, true, disciplines));
     } catch (reason) { errors.push(`${key}: ${String(reason)}`); }
   }
   for (const row of dataOf(snapshot, "CHARACTERS_GENERIC")) {
@@ -81,9 +82,8 @@ const main = async (): Promise<void> => {
     const merged = (current[key]?.kept ? { kept: current[key].kept } : {}) as Partial<Record<NpcStatSlot, NpcStatBlock>> & { kept?: KeptNpc };
     for (const [slot, block] of Object.entries(slots) as [NpcStatSlot, NpcStatBlock][]) {
       const before = current[key]?.[slot];
-      const value = preserveNpcRollMetadata(block, before);
-      if (!before) added++; else if (!isDeepStrictEqual(before, value)) changed++;
-      merged[slot] = value;
+      if (!before) added++; else if (!isDeepStrictEqual(before, block)) changed++;
+      merged[slot] = block;
     }
     for (const slot of ["named", "weak", "average", "gifted", "deadly", "superhuman"] as const) {
       if (current[key]?.[slot] && !slots[slot]) changed++;

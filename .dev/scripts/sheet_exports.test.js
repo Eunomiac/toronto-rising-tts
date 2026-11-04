@@ -15,6 +15,7 @@ function fixture() {
   tables.EXPORT_LOCATIONS_SITES = table("LOCATIONS_SITES", [{ Key: "site", Name: "Site", "Sound - Location": "silent", District: "district", "Is Outdoors": "FALSE", "Top Fog": "FALSE", "Unique?": "TRUE", "Is Silent?": "TRUE", "Weather Ducking": "0" }]);
   tables.EXPORT_MEMORIAM = table("MEMORIAM", [{ Key: "period", Characters: "base", "Start Year": "1800", "End Year": "1801", Location: "Toronto", "Panel A Display": "A", "Panel A isOutdoors": "FALSE", "Panel A isDaytime": "FALSE", "Panel B Display": "B", "Panel B isOutdoors": "FALSE", "Panel B isDaytime": "FALSE" }]);
   tables.EXPORT_SKYBOXES = table("SKYBOXES", [{ Key: "skybox", Display: "Skybox", isShown: "TRUE", Filename: "skybox_skybox.jpg" }]);
+  tables.EXPORT_DISCIPLINES = table("DISCIPLINES", [{ Discipline: "Animalism", Level: "2", Name: "Feral Whispers", "Rouse Checks": "1", "Trait Affinity 1": "Charisma", "Trait Affinity 2": "Manipulation", "Difficulty Range": "3-6" }]);
   tables.EXPORT_COMPULSIONS = table("COMPULSIONS", [4, 2, 1, 3].map(Card => Object.fromEntries(spec("COMPULSIONS").headers.map(h => [h, h === "Compulsion Key" ? "hunger" : h === "Card" ? String(Card) : h === "Clan" ? "" : "Text"]))));
   const fs = require("node:fs");
   const { loadWeatherValidationSets } = require("./lib/weather_sheet_csv.js");
@@ -91,6 +92,31 @@ test("unapproved period assignments remain visible and generic metadata must agr
   const generic = fixture();
   generic.tables.EXPORT_CHARACTERS_GENERIC[2][spec("CHARACTERS_GENERIC").headers.indexOf("Label")] = "Different figure";
   assert.throws(() => validateSnapshot(generic), /inconsistent figure metadata/);
+});
+
+test("named Discipline references use exact pool precedence and retain explicit powers", () => {
+  const { disciplinePowerLookup, parseStatRecord } = require("../storyteller-dashboard/scripts/npc-stats/sheet.ts");
+  const catalogue = disciplinePowerLookup([
+    { Discipline: "Animalism", Level: "2", Name: "Feral Whispers", "Rouse Checks": "1", "Trait Affinity 1": "Charisma", "Trait Affinity 2": "Manipulation", "Difficulty Range": "3-6" },
+    { Discipline: "Rituals", Level: "1", Name: "Herd Ward (Minor)", "Rouse Checks": "1", "Difficulty Range": "0,3,4" },
+  ]);
+  const row = { Kind: "Vampire", Difficulty: "3/2", Powers: "Animalism 2 (Feral Whispers,2-1:One Voice)|Rituals 1 (Herd Ward (Minor))" };
+  const withPools = pools => parseStatRecord({ ...row, "Exceptional Pools": pools }, "example", true, catalogue);
+  for (const [pools, expected] of [
+    ["Manipulation|Feral Whispers|Charisma|Animalism", "Animalism"],
+    ["Manipulation|Feral Whispers|Charisma", "Feral Whispers"],
+    ["Manipulation|Charisma", "Charisma"],
+    ["Manipulation|animalism", "Manipulation"],
+    ["charisma|animalism", null],
+  ]) {
+    const block = withPools(pools);
+    const [resolved, explicit] = block.powers[0].powers;
+    const pool = block.exceptional.find(candidate => candidate.name === expected);
+    assert.deepEqual(resolved, { level: 2, name: "Feral Whispers", rouse: 1, difficulty: "3-6", traits: ["Charisma", "Manipulation"], pool: pool ? `ex:${pool.id}` : "supernatural" });
+    assert.deepEqual(explicit, { level: 2, name: "One Voice", rouse: 1, pool: "" });
+    assert.equal(block.powers[1].powers[0].difficulty, "0,3,4");
+  }
+  assert.throws(() => parseStatRecord({ ...row, Powers: "Animalism 2 (Unknown)" }, "example", true, catalogue), /example: Unknown catalogue power "Animalism \/ Unknown"/);
 });
 
 test("stats import preserves pending edits, kept NPCs and the pending file", () => {
