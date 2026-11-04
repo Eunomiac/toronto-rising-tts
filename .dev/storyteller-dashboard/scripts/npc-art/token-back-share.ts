@@ -3,7 +3,10 @@
  * Lives outside model.ts so a change here does not change the token cache key and redraw every token.
  * A later redraw that changes one name or silhouette gives that NPC its own file again.
  */
-export const tokenBackShareMap = (files: readonly { readonly key: string; readonly sha1: string }[]): Map<string, string> => {
+export const tokenBackShareMap = (
+  files: readonly { readonly key: string; readonly sha1: string }[],
+  retainedShares: ReadonlyMap<string, string> = new Map()
+): Map<string, string> => {
   const byHash = new Map<string, string[]>();
   for (const file of files) {
     const keys = byHash.get(file.sha1) ?? [];
@@ -18,5 +21,6 @@ export const tokenBackShareMap = (files: readonly { readonly key: string; readon
       if (key !== canonical) shares.set(key, canonical);
     }
   }
+  for (const [key, owner] of retainedShares) shares.set(key, shares.get(owner) ?? owner);
   return shares;
 };

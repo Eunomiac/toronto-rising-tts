@@ -166,7 +166,7 @@ const readBackShares = async (): Promise<Record<string, string>> => {
   return Object.fromEntries(Object.entries(file).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
 };
 
-const shareIdenticalTokenBacks = async (): Promise<number> => {
+const shareIdenticalTokenBacks = async (retainedShares: ReadonlyMap<string, string>): Promise<number> => {
   const files: { key: string; sha1: string }[] = [];
   for (const file of await readdir(tokenDir)) {
     const match = /^npcToken_([A-Za-z0-9_]+)\.back\.webp$/.exec(file);
@@ -174,13 +174,13 @@ const shareIdenticalTokenBacks = async (): Promise<number> => {
     const bytes = await readFile(path.join(tokenDir, file));
     files.push({ key: match[1]!, sha1: createHash("sha1").update(bytes).digest("hex") });
   }
-  const shares = tokenBackShareMap(files);
-  for (const key of shares.keys()) {
-    await rm(path.join(tokenDir, `npcToken_${key}.back.webp`));
-  }
+  const shares = tokenBackShareMap(files, retainedShares);
   const sorted = Object.fromEntries([...shares.entries()].sort(([a], [b]) => a.localeCompare(b)));
   await mkdir(path.dirname(backSharePath), { recursive: true });
   await writeFile(backSharePath, `${JSON.stringify(sorted, null, 2)}\n`);
+  for (const { key } of files) {
+    if (shares.has(key)) await rm(path.join(tokenDir, `npcToken_${key}.back.webp`));
+  }
   return shares.size;
 };
 
@@ -273,30 +273,39 @@ const draw = async (force: boolean): Promise<void> => {
 
   await mkdir(tokenDir, { recursive: true });
   const nextCache: TokenCache = {};
+  const cached = new Set<string>();
+  const localBacks = new Set<string>();
+  await runPool(subjects, async (subject) => {
+    const { key } = subject;
+    const figurine = await readFile(abs(figurineRel(subject.folder, key)));
+    const tokenHash = fingerprint(styleHash, fingerprint(figurine), subject.name, subject.color, JSON.stringify(subject.manualCrop));
+    nextCache[key] = tokenHash;
+    if (!force && cache[key] === tokenHash && existsSync(abs(tokenRel(key, "front")))) cached.add(key);
+    if (existsSync(abs(tokenRel(key, "back")))) localBacks.add(key);
+  });
+  const retainedShares = new Map<string, string>();
   let drawn = 0;
   const autoCropped: string[] = [];
   await runPool(subjects, async (subject) => {
-    const figurine = await readFile(abs(figurineRel(subject.folder, subject.key)));
-    const tokenHash = fingerprint(styleHash, fingerprint(figurine), subject.name, subject.color, JSON.stringify(subject.manualCrop));
-    const frontFile = abs(tokenRel(subject.key, "front"));
-    const sharedBack = backShares[subject.key];
-    const backReady = existsSync(abs(tokenRel(subject.key, "back")))
-      || (sharedBack !== undefined && existsSync(abs(tokenRel(sharedBack, "back"))));
-    const current = !force && cache[subject.key] === tokenHash && existsSync(frontFile) && backReady;
-    if (!current) {
-      const token = await drawToken(figurine, subject.name, subject.color, subject.manualCrop, assets).catch((error: unknown) => {
-        throw new Error(`Drawing the token for ${subject.folder}/${subject.key} failed: ${error instanceof Error ? error.message : String(error)}`);
-      });
-      await Promise.all([
-        writeFile(frontFile, token.front),
-        writeFile(abs(tokenRel(subject.key, "back")), token.back)
-      ]);
-      drawn += 1;
-      if (token.autoCrop) {
-        autoCropped.push(subject.key);
+    const { key } = subject;
+    if (cached.has(key)) {
+      if (localBacks.has(key)) return;
+      const owner = backShares[key];
+      if (owner !== undefined && cached.has(owner) && localBacks.has(owner)) {
+        retainedShares.set(key, owner);
+        return;
       }
     }
-    nextCache[subject.key] = tokenHash;
+    const figurine = await readFile(abs(figurineRel(subject.folder, key)));
+    const token = await drawToken(figurine, subject.name, subject.color, subject.manualCrop, assets).catch((error: unknown) => {
+      throw new Error(`Drawing the token for ${subject.folder}/${key} failed: ${error instanceof Error ? error.message : String(error)}`);
+    });
+    await Promise.all([
+      writeFile(abs(tokenRel(key, "front")), token.front),
+      writeFile(abs(tokenRel(key, "back")), token.back)
+    ]);
+    drawn += 1;
+    if (token.autoCrop) autoCropped.push(key);
   });
 
   const keys = new Set(subjects.map((subject) => subject.key));
@@ -309,7 +318,7 @@ const draw = async (force: boolean): Promise<void> => {
     }
   }
 
-  const sharedBacks = await shareIdenticalTokenBacks();
+  const sharedBacks = await shareIdenticalTokenBacks(retainedShares);
 
   await mkdir(path.dirname(tokenCachePath), { recursive: true });
   const sortedCache = Object.fromEntries(Object.entries(nextCache).sort(([a], [b]) => a.localeCompare(b)));
@@ -370,7 +379,6 @@ const urls = async (): Promise<void> => {
     throw new Error(`assets/${FIGURINE_BACK_REL} has no Steam Cloud link in lib/json/cloud-assets.json. Run npm run cloud-asset-sync (TTS closed).`);
   }
   const links = new Map<string, NpcArtLinks>();
-  const missingNpcs: string[] = [];
   await runPool(subjects, async (subject) => {
     const [figurineFront, tokenFront, tokenBack] = await Promise.all([
       link(figurineRel(subject.folder, subject.key)),
@@ -378,7 +386,6 @@ const urls = async (): Promise<void> => {
       link(tokenRel(backShares[subject.key] ?? subject.key, "back"))
     ]);
     if (figurineFront === null || tokenFront === null || tokenBack === null) {
-      missingNpcs.push(subject.key);
       return;
     }
     links.set(subject.key, {
@@ -389,8 +396,8 @@ const urls = async (): Promise<void> => {
     });
   });
 
-  if (missingNpcs.length > 0) {
-    throw new Error(`NPC art is missing from the Cloud manifest: ${missingNpcs.sort().join(", ")}`);
+  if (notInCloud.length > 0) {
+    throw new Error(`NPC art is missing from the Cloud manifest: ${[...new Set(notInCloud)].sort().join(", ")}`);
   }
   if (outdated.length) throw new Error(`NPC art changed since Cloud sync: ${outdated.sort().join(", ")}`);
   await writeFile(luaPath, renderLuaModule(back, links, GENERATED_BY));
