@@ -24,6 +24,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 **How to verify:** Load the session-start copy from the TTS main menu. Check that only the host sees the centered onboarding bar. Once the host table is ready, connect a player. Check that their assigned color appears while their chair, camera, and HUD update wait. Click **1 Load Bundles**, **2 Refresh HUD**, then **3 Seat Players**, checking that each button becomes available after the previous one finishes. The bar should disappear and the player's chair, camera, and HUD should be ready. Check the soundscape, table fog, weather particles, and Hunger smoke. Connect again after finishing and check that seating works without rebuilding the Global HUD.
 
+#### Character-sheet overlays after seating
+
+**How to verify:** Generate and load a fresh session-start save with **Assume Players Connected** off. Complete onboarding, turn it on, then switch from Intermission to Play. Check that all five opening spreads show their dots and page controls. Turn a spread forward and back. If a player is available, check that their sheet also returns when they reconnect with **Assume Players Connected** off.
+
 #### TOR-750 — Consolidated spreadsheet imports and runtime catalogs
 
 **How to verify:** After the cutover is merged, run `node .dev/scripts/migrate_npc_roster_keys.js` to preview the eight roster key changes. Run it with `--apply` to update the local roster and make a backup. Close TTS and run FULL on a copy of the save. In TTS, check Laleh's portrait on Rashid's Page 4, check one Named and one Generic figurine, and apply then reverse a Complication. In the Dashboard, check the Catalog and the two Memoriam panels, then open a Generic figurine's tier picker. Verify the live save only after the copy passes.
