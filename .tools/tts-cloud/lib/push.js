@@ -4,7 +4,7 @@
  * assets/ → Steam Cloud push (shared by npm run cloud:push and cloud-asset-sync).
  *
  * planPush: compare local files, ledger, and Cloud index (no writes).
- * applyPush: uploads + index-only moves; updates the ledger.
+ * applyPush: uploads, index-only moves and alias reconciliation; updates the ledger.
  * applyDeletes: delete Cloud copies of files removed locally, after outputs have
  *   dropped their references. Kept (with a warning) while a non-Toronto Rising save,
  *   the current save, or repo code still uses them.
@@ -21,7 +21,7 @@ const {
   saveLedger,
   scanAssets,
 } = require("./assets_tree.js");
-const { readIndex, rowsFromIndex, ugcMatchKey } = require("./cloud_index.js");
+const { editIndex, readIndex, remoteFilesByFoldedKey, rowsFromIndex, ugcMatchKey } = require("./cloud_index.js");
 const { uploadFiles, moveFiles, deleteFiles } = require("./cloud_ops.js");
 const { isTtsRunning, PROTECTED_CLOUD_FOLDER, SAVE_ONLY_FOLDER } = require("./cloud_config.js");
 const { buildInUseIndex } = require("./in_use.js");
@@ -171,6 +171,9 @@ function planPush(cfg, session) {
   }
 
   const liveKeys = new Set(firstByKey.keys());
+  const caseAliases = findCaseAliases(rows, inSync.map(({ row }) => row.key), liveKeys, session);
+  const aliasKeys = new Set(caseAliases.map(({ alias }) => alias.key));
+  const inSyncByCase = new Map(inSync.map(({ row }) => [row.key.toLowerCase(), row]));
   const deleteCandidates = [];
   const staleLedgerPaths = [];
   const candidateKeys = new Set();
@@ -180,7 +183,13 @@ function planPush(cfg, session) {
       continue;
     }
     const row = byKey.get(entry.key);
-    if (!row || candidateKeys.has(row.key)) continue;
+    // An interrupted index cleanup can leave its old ledger path behind.
+    if (!row && !localRel.has(rel)) {
+      const canonical = inSyncByCase.get(entry.key.toLowerCase());
+      const urlKey = ugcMatchKey(entry.url);
+      if (canonical && urlKey && urlKey === ugcMatchKey(canonical.url)) staleLedgerPaths.push(rel);
+    }
+    if (!row || aliasKeys.has(row.key) || candidateKeys.has(row.key)) continue;
     candidateKeys.add(row.key);
     deleteCandidates.push({ relPath: rel, row, reason: localRel.has(rel) ? "replaced locally" : "deleted locally" });
   }
@@ -189,10 +198,36 @@ function planPush(cfg, session) {
   const cloudOnly = rows.filter((r) => {
     const folder = localFolderFor(cfg.cloudRoot, r.folder);
     if (folder === null || isPushExcluded(folder) || folder.split("/")[0] === SAVE_ONLY_FOLDER) return false;
-    return !liveKeys.has(r.key) && !ledgerKeys.has(r.key);
+    return !liveKeys.has(r.key) && !ledgerKeys.has(r.key) && !aliasKeys.has(r.key);
   });
 
-  return { rows, ledger, local, inSync, uploads, moves, deleteCandidates, staleLedgerPaths, cloudOnly, localDuplicates };
+  return { rows, ledger, local, inSync, uploads, moves, caseAliases, liveKeys, deleteCandidates, staleLedgerPaths, cloudOnly, localDuplicates };
+}
+
+function findCaseAliases(rows, canonicalKeys, liveKeys, session) {
+  const byKey = new Map(rows.map(row => [row.key, row]));
+  const byCase = new Map();
+  for (const key of canonicalKeys) {
+    const folded = key.toLowerCase();
+    byCase.set(folded, byCase.has(folded) ? null : byKey.get(key));
+  }
+  const candidates = [];
+  for (const alias of rows) {
+    if (liveKeys.has(alias.key)) continue;
+    const canonical = byCase.get(alias.key.toLowerCase());
+    const urlKey = ugcMatchKey(alias.url);
+    if (canonical && canonical.folder === alias.folder && canonical.size === alias.size &&
+        urlKey && urlKey === ugcMatchKey(canonical.url)) {
+      candidates.push({ alias, canonical });
+    }
+  }
+  if (!candidates.length) return [];
+  const remote = remoteFilesByFoldedKey(session);
+  return candidates.filter(({ alias, canonical }) => {
+    const files = remote.get(alias.key.toLowerCase());
+    return files?.length === 1 && files[0].size === canonical.size &&
+      session.fileExists(alias.key) && session.fileExists(canonical.key);
+  });
 }
 
 /**
@@ -212,13 +247,32 @@ async function applyPush(cfg, session, plan, opts) {
   // retry can already see those files through plan.inSync; recording them here
   // keeps cleanup/audit tools from misclassifying them as Cloud-only strays.
   saveLedger(cfg.assetsDir, { cloudRoot: cfg.cloudRoot, files });
-  const writes = plan.uploads.length + plan.moves.length;
+  const writes = plan.uploads.length + plan.moves.length + plan.caseAliases.length;
   if (writes > 0 && isTtsRunning()) {
     opts.log(
-      `SKIP push: Tabletop Simulator is open. ${plan.uploads.length} file(s) waiting to upload, ${plan.moves.length} to move. Close TTS and run npm run cloud:push.`,
+      `SKIP push: Tabletop Simulator is open. ${plan.uploads.length} file(s) waiting to upload, ${plan.moves.length} to move, ${plan.caseAliases.length} case-only alias(es) to reconcile. Close TTS and run npm run cloud:push.`,
     );
     saveLedger(cfg.assetsDir, { cloudRoot: cfg.cloudRoot, files });
     return { skipped: true };
+  }
+  if (plan.caseAliases.length > 0) {
+    const canonicalKeys = [...new Set(plan.caseAliases.map(({ canonical }) => canonical.key))];
+    const aliasKeys = new Set(plan.caseAliases.map(({ alias }) => alias.key));
+    editIndex(session, cfg, `${opts.label}-case-aliases`, (doc, touched) => {
+      const current = findCaseAliases(rowsFromIndex(doc), canonicalKeys, plan.liveKeys, session);
+      const confirmed = new Map(current.map(({ alias, canonical }) => [alias.key, canonical]));
+      for (const { alias, canonical } of plan.caseAliases) {
+        const live = confirmed.get(alias.key);
+        if (!live || live.key !== canonical.key || live.url !== canonical.url || live.folder !== canonical.folder || live.size !== canonical.size) {
+          throw new Error(`Cloud case alias changed since planning: ${alias.key}. Run the sync again.`);
+        }
+        delete doc[alias.key];
+        touched.add(alias.key);
+      }
+    });
+    for (const [rel, entry] of Object.entries(files)) if (aliasKeys.has(entry.key)) delete files[rel];
+    saveLedger(cfg.assetsDir, { cloudRoot: cfg.cloudRoot, files });
+    opts.log(`Reconciled ${aliasKeys.size} case-only Cloud index alias(es); shared files and URLs kept.`);
   }
   if (plan.moves.length > 0) {
     moveFiles(session, cfg, plan.moves.map((m) => ({ key: m.row.key, folder: m.folder })), { label: `${opts.label}-move` });

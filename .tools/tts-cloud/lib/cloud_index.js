@@ -155,6 +155,16 @@ function readIndex(session) {
   return { bytes, doc: parseIndex(bytes) };
 }
 
+function remoteFilesByFoldedKey(session) {
+  const groups = new Map();
+  for (const file of session.listFiles()) {
+    const folded = file.name.toLowerCase();
+    if (!groups.has(folded)) groups.set(folded, []);
+    groups.get(folded).push(file);
+  }
+  return groups;
+}
+
 /**
  * @param {string} dir
  * @param {Buffer} bytes
@@ -247,6 +257,7 @@ module.exports = {
   rowsFromIndex,
   makeIndexEntry,
   readIndex,
+  remoteFilesByFoldedKey,
   writeSnapshot,
   editIndex,
 };

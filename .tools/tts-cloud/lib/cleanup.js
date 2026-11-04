@@ -18,7 +18,7 @@ const path = require("path");
 const readline = require("readline");
 
 const { LEGACY_ROOTS, SAVE_ONLY_FOLDER, REPO_ROOT, assertTtsClosed } = require("./cloud_config.js");
-const { readIndex, rowsFromIndex, ugcMatchKey } = require("./cloud_index.js");
+const { readIndex, remoteFilesByFoldedKey, rowsFromIndex, ugcMatchKey } = require("./cloud_index.js");
 const { loadLedger, localFolderFor } = require("./assets_tree.js");
 const { buildInUseIndex, classifySaveUses } = require("./in_use.js");
 
@@ -61,10 +61,15 @@ function survey(cfg, session, opts = {}) {
     return f === "" ? "top" : "other";
   };
 
-  const remote = new Set(session.listFiles().map((f) => f.name));
+  const remote = remoteFilesByFoldedKey(session);
+  const indexedRemote = new Set();
   const enriched = rows.map((row) => {
     const match = ugcMatchKey(row.url);
     const use = inUse.lookup(match);
+    const files = remote.get(row.key.toLowerCase()) ?? [];
+    const file = files.find(({ name }) => name === row.key) ??
+      (files.length === 1 && session.fileExists(row.key) ? files[0] : undefined);
+    if (file) indexedRemote.add(file.name);
     return {
       ...row,
       match,
@@ -73,11 +78,11 @@ function survey(cfg, session, opts = {}) {
       saveKind: (match && saveKinds.get(match)) || null,
       use,
       inUse: use.protectedBy.length > 0,
-      remoteMissing: !remote.has(row.key),
+      remoteMissing: !file,
     };
   });
-  const indexed = new Set(rows.map((r) => r.key));
-  const unindexedRemote = [...remote].filter((n) => !indexed.has(n) && n !== "CloudInfo.bson");
+  const unindexedRemote = [...remote.values()].flat().map(({ name }) => name)
+    .filter(name => !indexedRemote.has(name) && name !== "CloudInfo.bson");
   return { rows: enriched, ledger, inUse, saveKinds, unindexedRemote };
 }
 

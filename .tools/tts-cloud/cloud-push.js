@@ -19,6 +19,7 @@ function printPlan(plan) {
   for (const d of plan.localDuplicates) console.log(`DUPLICATE LOCAL ${d.file}: same file as ${d.sameAs}; Cloud keeps one copy`);
   for (const f of plan.uploads) console.log(`upload  ${f.relPath}`);
   for (const m of plan.moves) console.log(`move    ${m.row.folder}/${m.row.name} → ${m.folder}`);
+  for (const { alias, canonical } of plan.caseAliases) console.log(`alias   ${alias.name} → ${canonical.name} (index only)`);
   for (const c of plan.deleteCandidates) console.log(`delete  ${c.row.folder}/${c.row.name} (${c.reason})`);
   if (plan.cloudOnly.length > 0) {
     console.log(`${plan.cloudOnly.length} Cloud file(s) under the root were never synced from assets/ (see npm run cloud:strays).`);

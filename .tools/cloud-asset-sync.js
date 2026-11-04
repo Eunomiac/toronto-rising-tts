@@ -576,7 +576,7 @@ async function main() {
     if (session) {
       plan = planPush(cfg, session);
       log(
-        `Push: ${plan.inSync.length} in sync, ${plan.uploads.length} to upload, ${plan.moves.length} to move, ${plan.deleteCandidates.length} to delete; ${plan.cloudOnly.length} Cloud-only file(s) under the root (npm run cloud:strays).`,
+        `Push: ${plan.inSync.length} in sync, ${plan.uploads.length} to upload, ${plan.moves.length} to move, ${plan.caseAliases.length} case-only aliases to reconcile, ${plan.deleteCandidates.length} to delete; ${plan.cloudOnly.length} Cloud-only file(s) under the root (npm run cloud:strays).`,
       );
       for (const d of plan.localDuplicates) warn(`DUPLICATE LOCAL ${d.file}: same file as ${d.sameAs}`);
       if (!cli.dryRun) {

@@ -7,7 +7,49 @@ const path = require("path");
 const test = require("node:test");
 
 const { PROTECTED_CLOUD_FOLDER } = require("./cloud_config.js");
-const { refreshProtectedCloudFiles, safeProtectedRelPath } = require("./push.js");
+const { saveLedger } = require("./assets_tree.js");
+const { makeIndexEntry, serializeIndex } = require("./cloud_index.js");
+const { sha1Hex } = require("./cloud_ops.js");
+const { planPush, refreshProtectedCloudFiles, safeProtectedRelPath } = require("./push.js");
+
+test("plans index-only cleanup only for case aliases sharing one stored file and one URL", (t) => {
+  const assetsDir = fs.mkdtempSync(path.join(os.tmpdir(), "tr-cloud-case-alias-"));
+  t.after(() => fs.rmSync(assetsDir, { recursive: true, force: true }));
+  const bytes = Buffer.from("art with a case-only rename");
+  const sha1 = sha1Hex(bytes);
+  const cloudRoot = "Test Cloud";
+  const canonical = { key: `${sha1}_npc_tremere.webp`, name: "npc_tremere.webp" };
+  const alias = { key: `${sha1}_npc_Tremere.webp`, name: "npc_Tremere.webp" };
+  const url = `https://steamusercontent-a.akamaihd.net/ugc/42/${sha1}/`;
+  const makeEntry = (row, link) => makeIndexEntry({ name: row.name, url: link, folder: cloudRoot, size: bytes.length });
+  fs.writeFileSync(path.join(assetsDir, canonical.name), bytes);
+  saveLedger(assetsDir, { cloudRoot, files: { [alias.name]: { key: alias.key, url, size: bytes.length } } });
+  const stored = (row) => ({ name: row.key, size: bytes.length });
+  const planFor = (remote, aliasUrl = url, canonicalAccessible = true) => {
+    const index = serializeIndex({ [canonical.key]: makeEntry(canonical, url), [alias.key]: makeEntry(alias, aliasUrl) });
+    const session = {
+      readFile: () => index,
+      listFiles: () => remote,
+      fileExists: (key) => key === alias.key || canonicalAccessible,
+    };
+    return planPush({ assetsDir, cloudRoot }, session);
+  };
+
+  const plan = planFor([stored(alias)]);
+  assert.deepEqual(plan.caseAliases.map(({ alias, canonical }) => [alias.key, canonical.key]), [[alias.key, canonical.key]]);
+  assert.equal(plan.inSync[0].row.url, url);
+  assert.deepEqual(plan.uploads, []);
+  assert.deepEqual(plan.deleteCandidates, []);
+
+  for (const other of [
+    planFor([stored(alias), stored(canonical)]),
+    planFor([stored(alias)], url.replace("/42/", "/43/")),
+    planFor([stored(alias)], url, false),
+  ]) {
+    assert.deepEqual(other.caseAliases, []);
+    assert.equal(other.deleteCandidates[0].row.key, alias.key);
+  }
+});
 
 test("safeProtectedRelPath rejects paths that can escape the mirror", () => {
   assert.equal(safeProtectedRelPath("NPC Art/old.webp"), "NPC Art/old.webp");
