@@ -8,6 +8,7 @@ const { parseArgs } = require("node:util");
 const { bundleString } = require("luabundle");
 const { loadCloudConfig } = require("../tts-cloud/lib/cloud_config.js");
 const { expandXmlFile } = require("../../.dev/scripts/embed_ui_global_xml_docs.js");
+const { escapeLuaString } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
 const { planSessionStart, readDecisions } = require("./session-start-assets.js");
 
 const root = path.resolve(__dirname, "../..");
@@ -38,7 +39,6 @@ function createSessionStart(save, plan, lua, xml) {
       entries: plan.objects.map(object => ({
         kind: object.GMNotes?.startsWith("SOUNDSCAPE_") ? "soundscape_emitter" : "asset_bundle",
         guid: object.GUID,
-        data: object,
       })),
     },
   };
@@ -79,10 +79,38 @@ function writeJson(file, data, replace = false) {
   }
 }
 
-function bundleGlobal() {
+function renderRestoreProvider(objects) {
+  const scripts = new Map();
+  const quote = (value) => `"${escapeLuaString(value).replace(/[\x00-\x1f\x7f]/g, char => `\\${String(char.charCodeAt(0)).padStart(3, "0")}`)}"`;
+  const records = objects.map((object) => {
+    const data = { ...object };
+    const fields = [];
+    for (const field of ["LuaScript", "LuaScriptState", "XmlUI"]) {
+      if (typeof data[field] !== "string") continue;
+      if (!scripts.has(data[field])) scripts.set(data[field], scripts.size + 1);
+      fields.push(`${field} = ${scripts.get(data[field])}`);
+      delete data[field];
+    }
+    return `  [${quote(object.GUID)}] = { ${quote(JSON.stringify(data))}, { ${fields.join(", ")} } },`;
+  });
+  return [
+    "do", "local scripts = {",
+    ...[...scripts.keys()].map(script => `  ${quote(script)},`),
+    "}", "local records = {", ...records, "}",
+    "function GlobalSessionStartRestoreData(guid)",
+    "  local record = assert(records[guid], 'Missing deferred object data for ' .. tostring(guid))",
+    "  local data = JSON.decode(record[1])",
+    "  for field, index in pairs(record[2]) do data[field] = scripts[index] end",
+    "  return data",
+    "end", "end", "",
+  ].join("\n");
+}
+
+function bundleGlobal(objects) {
   const resolveModule = (name) => ["ttslua", "lua"]
     .map(ext => path.join(root, `${name.replaceAll(".", "/")}.${ext}`)).find(file => fs.existsSync(file)) ?? null;
-  return bundleString('require("core.global_script")\n', { rootModuleName: "__root", resolveModule, metadata: false });
+  const entry = renderRestoreProvider(objects) + 'require("core.global_script")\n';
+  return bundleString(entry, { rootModuleName: "__root", resolveModule, metadata: false });
 }
 
 function fullOptions() {
@@ -121,7 +149,7 @@ function main() {
   const plan = planSessionStart(save, decisions);
   const { report } = plan;
   const reportData = { source, ...report, restoredObjects: plan.objects.map(({ GUID, Nickname }) => ({ guid: GUID, name: Nickname })) };
-  const copy = values.output && createSessionStart(save, plan, bundleGlobal(),
+  const copy = values.output && createSessionStart(save, plan, bundleGlobal(plan.objects),
     expandXmlFile(root, path.join(root, "ui", "Global.xml"), new Set()));
   if (values.report) {
     if (replace) fs.mkdirSync(path.dirname(values.report), { recursive: true });
@@ -141,4 +169,4 @@ if (require.main === module) {
   try { main(); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
-module.exports = { assertSessionStartSlot, createSessionStart, writeJson };
+module.exports = { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson };

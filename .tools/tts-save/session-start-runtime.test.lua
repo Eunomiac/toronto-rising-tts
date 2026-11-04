@@ -4,12 +4,13 @@ local controls = {
     joinColdPoolsActive = true,
     joinColdPoolsBackup = { version = 1, entries = {
         { guid = "abcdef", kind = "soundscape_emitter", data = { GUID = "abcdef" } },
-        { guid = "012345", kind = "asset_bundle", data = { GUID = "012345" } },
+        { guid = "012345", kind = "asset_bundle" },
     } },
 }
 local objects = {}
 local spawnCount = 0
 local silenced = false
+local providerCalls = 0
 package.loaded["lib.util"] = { Type = type, clone = function(data) return { GUID = data.GUID } end }
 package.loaded["lib.guids"] = { getObject = function(guid) return objects[guid] end }
 package.loaded["lib.constants"] = { HIDDEN_OBJECT_WORLD_Y = -200, LockedObjects = { "012345", "fedcba" } }
@@ -21,9 +22,15 @@ package.loaded["core.state"] = {
 }
 package.loaded["core.soundscape"] = { bootstrapSilenceStrayEmitterLoops = function() silenced = true end }
 getObjectFromGUID = function(guid) return objects[guid] end
+function GlobalSessionStartRestoreData(guid)
+    assert(guid == "012345")
+    providerCalls = providerCalls + 1
+    return { GUID = guid, LuaScript = "restored script" }
+end
 spawnObjectData = function(params)
     local guid = params.data.GUID
     assert(objects[guid] == nil, "duplicate GUID")
+    if guid == "012345" then assert(params.data.LuaScript == "restored script") end
     local obj = { getGUID = function() return guid end, loading_custom = true }
     objects[guid] = obj
     spawnCount = spawnCount + 1
@@ -39,8 +46,9 @@ assert(not objectRules.areLockedObjectsReadyForInteractableLock(deferred), "unex
 objects.fedcba = {}
 assert(objectRules.areLockedObjectsReadyForInteractableLock(deferred), "deferred missing lock must not block startup")
 assert(pools.isActive() and pools.hasColdEmitters())
+assert(providerCalls == 0, "checking startup readiness must not decode object data")
 local ready = pools.beginWarm()
-assert(spawnCount == 2)
+assert(spawnCount == 2 and providerCalls == 1)
 assert(not ready() and not silenced and pools.isActive())
 assert(not objectRules.areLockedObjectsReadyForInteractableLock(deferred), "spawned but loading lock must block readiness")
 objects.abcdef.loading_custom = false

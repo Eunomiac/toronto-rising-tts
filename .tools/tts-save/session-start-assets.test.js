@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { planSessionStart, readDecisions } = require("./session-start-assets.js");
-const { assertSessionStartSlot, createSessionStart, writeJson } = require("./build-session-start.js");
+const { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson } = require("./build-session-start.js");
 
 const bundle = "https://steamusercontent-a.akamaihd.net/ugc/42/0123456789ABCDEF0123456789ABCDEF01234567/";
 const keep = "https://example.test/keep.png";
@@ -41,7 +41,7 @@ test("fails closed for drift, unsupported placements, and collateral assets", ()
   assert.throws(() => planSessionStart({ ObjectStates: [] }, review), /no longer occurs/);
 });
 
-test("preserves chronicle state and UI assets while staging exact restore data", () => {
+test("preserves chronicle state and UI assets while staging only restore metadata in saved state", () => {
   const source = fixture();
   source.LuaScriptState = JSON.stringify({ currentPhase: "Intermission", sessionNum: 42, debug: { assumeConnected: true } });
   source.ObjectStates[0].GMNotes = "SOUNDSCAPE_MUSIC_C";
@@ -55,9 +55,20 @@ test("preserves chronicle state and UI assets while staging exact restore data",
   assert.equal(state.debug.assumeConnected, false);
   assert.equal(state.connectionControls.sessionStartJoin, true);
   assert.deepEqual(state.connectionControls.joinColdPoolsBackup.entries, [
-    { kind: "soundscape_emitter", guid: "abcdef", data: source.ObjectStates[0] },
+    { kind: "soundscape_emitter", guid: "abcdef" },
   ]);
   assert.throws(() => createSessionStart(output, plan, "", ""), /Use a full save/);
+});
+
+test("bundles identical emitter scripts once, separately from the per-object JSON", () => {
+  const provider = renderRestoreProvider([
+    { GUID: "abcdef", LuaScript: "identical emitter script" },
+    { GUID: "012345", LuaScript: "identical emitter script", XmlUI: "custom UI" },
+  ]);
+  assert.equal(provider.split("identical emitter script").length, 2);
+  assert.match(provider, /\["abcdef"\].*LuaScript = 1/);
+  assert.match(provider, /\["012345"\].*LuaScript = 1, XmlUI = 2/);
+  assert.match(provider, /function GlobalSessionStartRestoreData\(guid\)\n[^\n]+\n  local data = JSON.decode/);
 });
 
 test("FULL can replace its generated slot while one-off saves still refuse to overwrite", (t) => {

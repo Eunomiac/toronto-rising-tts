@@ -283,18 +283,22 @@ local function spawnBackupEntry(entry)
         error("[JoinColdPools] Invalid backup entry")
     end
     local guid = entry.guid
-    local data = entry.data
     if type(guid) ~= "string" or guid == "" then
         error("[JoinColdPools] Backup entry missing guid")
-    end
-    if type(data) ~= "table" then
-        error("[JoinColdPools] Backup entry missing data for " .. guid)
     end
     local getObj = getGetObjectFromGUID()
     if getObj(guid) ~= nil then
         error("[JoinColdPools] Cannot warm GUID still occupied: " .. guid)
     end
-    local payload = cloneObjectDataKeepGuid(data, guid)
+    local payload
+    if entry.data ~= nil then
+        payload = cloneObjectDataKeepGuid(entry.data, guid)
+    else
+        -- Generated saves store only GUIDs in gameState. Decode a fresh object on demand.
+        local restoreData = assert(rawget(_G, "GlobalSessionStartRestoreData"), "[JoinColdPools] Missing bundled restore data for " .. guid)
+        payload = restoreData(guid)
+        assert(type(payload) == "table" and payload.GUID == guid, "[JoinColdPools] Invalid bundled restore data for " .. guid)
+    end
     local obj = getSpawnObjectData()({
         data = payload,
         callback_function = function(spawned)
