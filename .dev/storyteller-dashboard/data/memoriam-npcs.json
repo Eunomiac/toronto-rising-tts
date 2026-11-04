@@ -2,909 +2,26 @@
   "generatedBy": "npm run characters:import",
   "sheetId": "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs",
   "tabName": "(exports)",
-  "rangeName": "EXPORT_CHARACTERS_UNIQUE + EXPORT_CHARACTERS_GENERIC",
+  "rangeName": "EXPORT_CHARACTERS_NAMED + EXPORT_CHARACTERS_GENERIC",
   "npcs": [
     {
-      "filename": "npc_mem_adrianGerrard1800.webp",
-      "key": "mem_adrianGerrard1800",
-      "label": "Adrian Gerrard",
-      "location": "Toronto",
-      "year": "1800s",
-      "variantOfUnique": "mem_adrianGerrard",
-      "isGeneric": false,
-      "tags": "adrianGerrard gerrard camarilla vampire brujah primogen 1800s",
-      "periods": [
-        "fomorach8"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_adrianGerrard1900.webp",
-      "key": "mem_adrianGerrard1900",
-      "label": "Adrian Gerrard",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "mem_adrianGerrard",
-      "isGeneric": false,
-      "tags": "adrianGerrard gerrard camarilla vampire brujah primogen 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_adrianGerrard.webp",
-      "key": "mem_adrianGerrard",
-      "label": "Adrian Gerrard",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "adrianGerrard gerrard camarilla vampire brujah primogen 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_agnesBellanger1900.webp",
-      "key": "mem_agnesBellanger1900",
-      "label": "Agnes Bellanger",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "mem_agnesBellanger",
-      "isGeneric": false,
-      "tags": "agnesBellanger bellanger camarilla vampire toreador primogen 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_agnesBellanger.webp",
-      "key": "mem_agnesBellanger",
-      "label": "Agnes Bellanger",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "agnesBellanger bellanger camarilla vampire toreador primogen 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_alistairEtrata.webp",
-      "key": "mem_alistairEtrata",
-      "label": "Alistair Etrata",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "alistairEtrata etrata camarilla vampire banuHaqim primogen 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_andreiStrandza.webp",
-      "key": "mem_andreiStrandza",
-      "label": "Andrei Strandza",
-      "location": "New Orleans, Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "andreiStrandza strandza 1800s",
-      "periods": [
-        "aishe2",
-        "aishe7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_bertrice1800.webp",
-      "key": "mem_bertrice1800",
-      "label": "Bertrice",
-      "location": "Toronto",
-      "year": "1800s",
-      "variantOfUnique": "bertrice",
-      "isGeneric": false,
-      "tags": "bertrice camarilla vampire gangrel primogen 1800s",
-      "periods": [
-        "fomorach8"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_bertrice1900.webp",
-      "key": "mem_bertrice1900",
-      "label": "Bertrice",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "bertrice",
-      "isGeneric": false,
-      "tags": "bertrice camarilla vampire gangrel primogen 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_carna.webp",
-      "key": "mem_carna",
-      "label": "Carna",
-      "location": "Milwaukee",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "carna anarch vampire tremere 2000s 8th elder",
-      "periods": [
-        "blackCaesar27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_damienAbanda1800.webp",
-      "key": "mem_damienAbanda1800",
-      "label": "Damien Abanda",
-      "location": "Toronto",
-      "year": "1800s",
-      "variantOfUnique": "damienAbanda",
-      "isGeneric": false,
-      "tags": "preEmbraceDamienAbanda damienAbandaPreEmbrace damienAbanda abanda mortal 1800s",
-      "periods": [
-        "lucien6"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_damienAbanda1900.webp",
-      "key": "mem_damienAbanda1900",
-      "label": "Damien Abanda",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "damienAbanda",
-      "isGeneric": false,
-      "tags": "damienAbanda abanda anarch vampire toreador 1900s",
-      "periods": [
-        "lucien7",
-        "lucien11"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_frederikScheer1900.webp",
-      "key": "mem_frederikScheer1900",
-      "label": "Frederik Scheer",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "mem_frederikScheer",
-      "isGeneric": false,
-      "tags": "frederikScheer scheer camarilla regent seneschal prince tremere vampire 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_frederikScheer.webp",
-      "key": "mem_frederikScheer",
-      "label": "Frederik Scheer",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "frederikScheer scheer camarilla regent seneschal prince tremere vampire 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ibrahimKethuda.webp",
-      "key": "mem_ibrahimKethuda",
-      "label": "Ibrahim Kethüda",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "ibrahimKethuda kethuda prince vampire ventrue 1800s elder 6th camarilla",
-      "periods": [
-        "rashid6"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_jervaisDeLaCroix1800.webp",
-      "key": "mem_jervaisDeLaCroix1800",
-      "label": "Jervais de la Croix",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "mem_jervaisDeLaCroix",
-      "isGeneric": false,
-      "tags": "jervaisDeLaCroix croix deLaCroix camarilla vampire tremere 1800s",
-      "periods": [
-        "blackCaesar18",
-        "blackCaesar21"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_jervaisDeLaCroix1900.webp",
-      "key": "mem_jervaisDeLaCroix1900",
-      "label": "Jervais de la Croix",
+      "filename": "npc_archivist_1900_01.webp",
+      "key": "archivist_1900_01",
+      "label": "Archivist",
       "location": "Western",
       "year": "1900s",
-      "variantOfUnique": "mem_jervaisDeLaCroix",
-      "isGeneric": false,
-      "tags": "jervaisDeLaCroix croix deLaCroix camarilla vampire tremere 1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "archivist western 1900s",
       "periods": [
-        "blackCaesar23",
+        "rashid18",
         "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_jervaisDeLaCroix.webp",
-      "key": "mem_jervaisDeLaCroix",
-      "label": "Jervais de la Croix",
-      "location": "Western",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "jervaisDeLaCroix croix deLaCroix camarilla vampire tremere 2000s",
-      "periods": [
-        "blackCaesar8",
-        "blackCaesar9",
-        "blackCaesar10"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ladyAvelineDubois.webp",
-      "key": "mem_ladyAvelineDubois",
-      "label": "Lady Aveline Dubois",
-      "location": "New Orleans, Western",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "ladyAvelineDubois dubois anarch vampire malkavian 2000s",
-      "periods": [
-        "aishe7",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_lalehBintSaif.webp",
-      "key": "mem_lalehBintSaif",
-      "label": "Laleh bint Saif",
-      "location": "Arabia, Ottoman, Western",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "lalehBintSaif saif bintSaif vampire banuHaqim assamite 2000s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid21"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_lockeUlrich.webp",
-      "key": "mem_lockeUlrich",
-      "label": "Locke Ulrich",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "lockeUlrich ulrich camarilla anarch vampire ventrue 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_lordOswald1800.webp",
-      "key": "mem_lordOswald1800",
-      "label": "Lord Oswald",
-      "location": "Toronto",
-      "year": "1800s",
-      "variantOfUnique": "mem_lordOswald",
-      "isGeneric": false,
-      "tags": "lordOswald oswald camarilla vampire tremere primogen 1800s elder 8th",
-      "periods": [
-        "fomorach8"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_lordOswald1900.webp",
-      "key": "mem_lordOswald1900",
-      "label": "Lord Oswald",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "mem_lordOswald",
-      "isGeneric": false,
-      "tags": "lordOswald oswald camarilla vampire tremere primogen 1900s ancilla 8th",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_lordOswald.webp",
-      "key": "mem_lordOswald",
-      "label": "Lord Oswald",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "lordOswald oswald camarilla vampire tremere primogen 2000s elder 8th",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mamboAbigail1800.webp",
-      "key": "mem_mamboAbigail1800",
-      "label": "Mambo Abigail",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "mamboAbigail",
-      "isGeneric": false,
-      "tags": "mamboAbigail abigail hecata samedi vampire 1800s",
-      "periods": [
-        "blackCaesar18",
-        "blackCaesar21"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_marcelGuilbeau.webp",
-      "key": "mem_marcelGuilbeau",
-      "label": "Marcel Guilbeau",
-      "location": "New Orleans",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "marcelGuilbeau guilbeau camarilla prince vampire ventrue 2000s ancilla 8th",
-      "periods": [
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_maximillianSteele1800.webp",
-      "key": "mem_maximillianSteele1800",
-      "label": "Maximillian Steele",
-      "location": "Toronto",
-      "year": "1800s",
-      "variantOfUnique": "maximillianSteele",
-      "isGeneric": false,
-      "tags": "maximillianSteele steele camarilla prince ventrue vampire 1800s",
-      "periods": [
-        "fomorach8"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_maximillianSteele1900.webp",
-      "key": "mem_maximillianSteele1900",
-      "label": "Maximillian Steele",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "maximillianSteele",
-      "isGeneric": false,
-      "tags": "maximillianSteele steele camarilla prince ventrue vampire 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_maximillianSteele.webp",
-      "key": "mem_maximillianSteele",
-      "label": "Maximillian Steele",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "maximillianSteele",
-      "isGeneric": false,
-      "tags": "maximillianSteele steele camarilla prince ventrue vampire 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_michaelTheArchangel.webp",
-      "key": "mem_michaelTheArchangel",
-      "label": "Michael the Archangel",
-      "location": "Arabia, Ottoman, Western",
-      "year": "Modern, 1900s, 1800s,  1700s",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "michaelArchangel archangel bloodGod vampire toreador 2000s 4th independent",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_monikaEulenberg.webp",
-      "key": "mem_monikaEulenberg",
-      "label": "Monika Eulenberg",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "monikaEulenberg eulenberg anarch vampire malkavian 2000s",
-      "periods": [
-        "aishe30"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mortius1900.webp",
-      "key": "mem_mortius1900",
-      "label": "Mortius",
-      "location": "Milwaukee",
-      "year": "1900s",
-      "variantOfUnique": "mem_mortius",
-      "isGeneric": false,
-      "tags": "mortius camarilla vampire tremere 1900s 7th elder camarilla",
-      "periods": [
-        "blackCaesar27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mortius.webp",
-      "key": "mem_mortius",
-      "label": "Mortius",
-      "location": "Milwaukee",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "mortius camarilla vampire tremere 2000s 7th elder camarilla",
-      "periods": [
-        "blackCaesar37"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_oldQuentin1800.webp",
-      "key": "mem_oldQuentin1800",
-      "label": "Old Quentin",
-      "location": "Toronto",
-      "year": "1800s",
-      "variantOfUnique": "mem_oldQuentin",
-      "isGeneric": false,
-      "tags": "oldQuentin quentin anarch inconnu vampire malkavian 1800s",
-      "periods": [
-        "fomorach5",
-        "fomorach8"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_oldQuentin1900.webp",
-      "key": "mem_oldQuentin1900",
-      "label": "Old Quentin",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "mem_oldQuentin",
-      "isGeneric": false,
-      "tags": "oldQuentin quentin anarch inconnu vampire malkavian 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_oldQuentin.webp",
-      "key": "mem_oldQuentin",
-      "label": "Old Quentin",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "oldQuentin quentin anarch inconnu vampire malkavian 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_oliverGagnon1800.webp",
-      "key": "mem_oliverGagnon1800",
-      "label": "Oliver Gagnon",
-      "location": "Toronto",
-      "year": "1800s",
-      "variantOfUnique": "oliverGagnon",
-      "isGeneric": false,
-      "tags": "oliverGagnon gagnon camarilla vampire toreador 1800s",
-      "periods": [
-        "lucien2",
-        "lucien6"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_jeanDucheskiIPreDeath.webp",
-      "key": "mem_jeanDucheskiIPreDeath",
-      "label": "Pre-Death Jean Ducheski Francois I",
-      "location": "Haiti",
-      "year": "1700s",
-      "variantOfUnique": "jeanDucheskiI",
-      "isGeneric": false,
-      "tags": "preDeathJeanDucheskiFrancoisI jeanDucheskiIPreDeath 1700s",
-      "periods": [
-        "blackCaesar10",
-        "blackCaesar11",
-        "blackCaesar12",
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_fomorachPreEmbrace.webp",
-      "key": "mem_fomorachPreEmbrace",
-      "label": "Pre-Embrace Fomórach",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "fomorach",
-      "isGeneric": false,
-      "tags": "preEmbraceFomorach fomorachPreEmbrace 1800s",
-      "periods": [
-        "fomorach1",
-        "fomorach5"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_maraPreEmbrace.webp",
-      "key": "mem_maraPreEmbrace",
-      "label": "Pre-Embrace Oksana Mara Ziva",
-      "location": "Soviet",
-      "year": "1900s",
-      "variantOfUnique": "mara",
-      "isGeneric": false,
-      "tags": "preEmbraceOksanaMaraZiva ziva maraPreEmbrace 1900s",
-      "periods": [
-        "fomorach23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_palisPreEmbrace.webp",
-      "key": "mem_palisPreEmbrace",
-      "label": "Pre-Embrace Yusuf bin Yafa",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "palis",
-      "isGeneric": false,
-      "tags": "preEmbraceYusufBinYafa yafa palisPreEmbrace binYafa yusufBinYafa 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_princeDoran.webp",
-      "key": "mem_princeDoran",
-      "label": "Prince Doran",
-      "location": "New Orleans",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "princeDoran doran camarilla vampire ventrue 1900s elder 6th",
-      "periods": [
-        "aishe13",
-        "aishe18",
-        "aishe22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_raphaelBishop1900.webp",
-      "key": "mem_raphaelBishop1900",
-      "label": "Raphael Bishop",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "mem_raphaelBishop",
-      "isGeneric": false,
-      "tags": "raphaelBishop bishop camarilla vampire tremere 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_raphaelBishop.webp",
-      "key": "mem_raphaelBishop",
-      "label": "Raphael Bishop",
-      "location": "Toronto",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "raphaelBishop bishop camarilla vampire tremere 2000s",
-      "periods": [
-        "lucien17",
-        "rashid21",
-        "aishe30",
-        "fomorach27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sofiaMavridi.webp",
-      "key": "mem_sofiaMavridi",
-      "label": "Sofia Mavridi",
-      "location": "Ottoman ",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "sofiaMavridi mavridi nephilim vampire toreador 2000s 8th ancilla independent",
-      "periods": [
-        "rashid9",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_terenceMerik1900.webp",
-      "key": "mem_terenceMerik1900",
-      "label": "Terence Merik",
-      "location": "Milwaukee",
-      "year": "1900s",
-      "variantOfUnique": "mem_terenceMerik",
-      "isGeneric": false,
-      "tags": "terenceMerik merik prince camarilla vampire ventrue 1900s 8th elder",
-      "periods": [
-        "blackCaesar27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_terenceMerik.webp",
-      "key": "mem_terenceMerik",
-      "label": "Terence Merik",
-      "location": "Milwaukee",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": false,
-      "tags": "terenceMerik merik prince camarilla vampire ventrue 2000s 8th elder",
-      "periods": [
-        "blackCaesar37"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_theBleakBokor1800.webp",
-      "key": "mem_theBleakBokor1800",
-      "label": "The Baron's Bleak Bokor",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "theBleakBokor",
-      "isGeneric": false,
-      "tags": "baronBleakBokor bokor bleakBokor hecata samedi vampire 1800s",
-      "periods": [
-        "blackCaesar18",
-        "blackCaesar21"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_victorVex1900.webp",
-      "key": "mem_victorVex1900",
-      "label": "Victor Vex",
-      "location": "Toronto",
-      "year": "1900s",
-      "variantOfUnique": "victorVex",
-      "isGeneric": false,
-      "tags": "victorVex vex camarilla vampire malkavian 1900s",
-      "periods": [
-        "fomorach22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedAlamutCivilian_01.webp",
-      "key": "mem_displacedAlamutCivilian_01",
-      "label": "Civilian",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "alamut civilianDisplaced displaced prisoner 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedAlamutCivilian_02.webp",
-      "key": "mem_displacedAlamutCivilian_02",
-      "label": "Civilian",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "alamut civilianDisplaced displaced prisoner 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedAlamutCivilian_03.webp",
-      "key": "mem_displacedAlamutCivilian_03",
-      "label": "Civilian",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "alamut civilianDisplaced displaced prisoner 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_alamutHouseStaff_01.webp",
-      "key": "mem_alamutHouseStaff_01",
-      "label": "Servant",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "servant alamut houseStaff staff banuHaqim haqim assamite ghoul 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_alamutHouseStaff_02.webp",
-      "key": "mem_alamutHouseStaff_02",
-      "label": "Servant",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "servant alamut houseStaff staff banuHaqim haqim assamite ghoul 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_alamutLearnedMedia_01.webp",
-      "key": "mem_alamutLearnedMedia_01",
-      "label": "Scribe",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "scribe alamut banuHaqim haqim assamite ghoul 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_alamutMilitary_01.webp",
-      "key": "mem_alamutMilitary_01",
-      "label": "Warrior",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "warrior alamut military banuHaqim haqim assamite ghoul 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_alamutMilitary_02.webp",
-      "key": "mem_alamutMilitary_02",
-      "label": "Warrior",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "warrior alamut military banuHaqim haqim assamite ghoul 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_alamutSupernatural_01.webp",
-      "key": "mem_alamutSupernatural_01",
-      "label": "Sorcerer",
-      "location": "Alamut",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sorcerer alamut supernatural bloodSorcerer banuHaqim haqim assamite vampire 1800s",
-      "periods": [
-        "rashid4",
-        "rashid6",
-        "rashid7",
-        "rashid12",
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_assamiteVampire_01.webp",
-      "key": "mem_assamiteVampire_01",
+      "filename": "npc_assamiteVampire_alamut_1800_01.webp",
+      "key": "assamiteVampire_alamut_1800_01",
       "label": "Assamite",
       "location": "Alamut",
       "year": "1800s",
@@ -921,8 +38,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_assamiteVampire_02.webp",
-      "key": "mem_assamiteVampire_02",
+      "filename": "npc_assamiteVampire_alamut_1800_02.webp",
+      "key": "assamiteVampire_alamut_1800_02",
       "label": "Assamite",
       "location": "Alamut",
       "year": "1800s",
@@ -939,8 +56,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_assamiteVampire_03.webp",
-      "key": "mem_assamiteVampire_03",
+      "filename": "npc_assamiteVampire_alamut_1800_03.webp",
+      "key": "assamiteVampire_alamut_1800_03",
       "label": "Assamite",
       "location": "Alamut",
       "year": "1800s",
@@ -957,8 +74,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_assamiteVampire_04.webp",
-      "key": "mem_assamiteVampire_04",
+      "filename": "npc_assamiteVampire_alamut_1800_04.webp",
+      "key": "assamiteVampire_alamut_1800_04",
       "label": "Assamite",
       "location": "Alamut",
       "year": "1800s",
@@ -975,8 +92,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_assamiteVampire_05.webp",
-      "key": "mem_assamiteVampire_05",
+      "filename": "npc_assamiteVampire_alamut_1800_05.webp",
+      "key": "assamiteVampire_alamut_1800_05",
       "label": "Assamite",
       "location": "Alamut",
       "year": "1800s",
@@ -993,278 +110,10 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_arabiaEliteOfficial_01.webp",
-      "key": "mem_arabiaEliteOfficial_01",
-      "label": "Envoy",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "envoy arabia eliteOfficial official tribalEnvoy 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaEliteOfficial_02.webp",
-      "key": "mem_arabiaEliteOfficial_02",
-      "label": "Envoy",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "envoy arabia eliteOfficial official tribalEnvoy 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaFarmer_01.webp",
-      "key": "mem_arabiaFarmer_01",
-      "label": "Farmer",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "farmer arabia 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaFarmer_02.webp",
-      "key": "mem_arabiaFarmer_02",
-      "label": "Farmer",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "farmer arabia 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaLearnedMedia_01.webp",
-      "key": "mem_arabiaLearnedMedia_01",
-      "label": "Scholar",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "scholar arabia religiousScholar 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaMerchantVendor_01.webp",
-      "key": "mem_arabiaMerchantVendor_01",
-      "label": "Merchant",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "arabia merchantVendor vendor 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaMerchantVendor_02.webp",
-      "key": "mem_arabiaMerchantVendor_02",
-      "label": "Merchant",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "arabia merchantVendor vendor 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaMilitary_01.webp",
-      "key": "mem_arabiaMilitary_01",
-      "label": "Soldier",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier arabia military 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaMilitary_02.webp",
-      "key": "mem_arabiaMilitary_02",
-      "label": "Soldier",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier arabia military 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_arabiaMilitary_03.webp",
-      "key": "mem_arabiaMilitary_03",
-      "label": "Soldier",
-      "location": "Arabia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier arabia military 1800s",
-      "periods": [
-        "rashid1",
-        "rashid4",
-        "rashid6",
-        "rashid7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedAustraliaCivilian_01.webp",
-      "key": "mem_displacedAustraliaCivilian_01",
-      "label": "Colonist",
-      "location": "Australia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "colonist australia civilianDisplaced displaced convict settler 1800s",
-      "periods": [
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedAustraliaCivilian_02.webp",
-      "key": "mem_displacedAustraliaCivilian_02",
-      "label": "Colonist",
-      "location": "Australia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "colonist australia civilianDisplaced displaced convict settler 1800s",
-      "periods": [
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_australiaLaborer_01.webp",
-      "key": "mem_australiaLaborer_01",
-      "label": "Dockworker",
-      "location": "Australia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "dockworker australia laborer 1800s",
-      "periods": [
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_australiaLaborer_02.webp",
-      "key": "mem_australiaLaborer_02",
-      "label": "Dockworker",
-      "location": "Australia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "dockworker australia laborer 1800s",
-      "periods": [
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_australiaLawEnforcement_01.webp",
-      "key": "mem_australiaLawEnforcement_01",
-      "label": "Gaoler",
-      "location": "Australia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "gaoler australia lawEnforcement enforcement 1800s",
-      "periods": [
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_australiaMilitary_01.webp",
-      "key": "mem_australiaMilitary_01",
-      "label": "Soldier",
-      "location": "Australia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier australia military 1800s",
-      "periods": [
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_australiaMilitary_02.webp",
-      "key": "mem_australiaMilitary_02",
-      "label": "Soldier",
-      "location": "Australia",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier australia military 1800s",
-      "periods": [
-        "blackCaesar13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_camarillaCourtClerk_01.webp",
-      "key": "mem_camarillaCourtClerk_01",
+      "filename": "npc_camarillaCourtClerk_01.webp",
+      "key": "camarillaCourtClerk_01",
       "label": "Camarilla Court Clerk",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1281,13 +130,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaGhoulAttendant_01.webp",
-      "key": "mem_camarillaGhoulAttendant_01",
+      "filename": "npc_camarillaGhoulAttendant_01.webp",
+      "key": "camarillaGhoulAttendant_01",
       "label": "Camarilla Ghoul",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1304,13 +153,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaGhoulAttendant_02.webp",
-      "key": "mem_camarillaGhoulAttendant_02",
+      "filename": "npc_camarillaGhoulAttendant_02.webp",
+      "key": "camarillaGhoulAttendant_02",
       "label": "Camarilla Ghoul",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1327,13 +176,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaGhoulAttendant_03.webp",
-      "key": "mem_camarillaGhoulAttendant_03",
+      "filename": "npc_camarillaGhoulAttendant_03.webp",
+      "key": "camarillaGhoulAttendant_03",
       "label": "Camarilla Ghoul",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1350,13 +199,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaHarpy_01.webp",
-      "key": "mem_camarillaHarpy_01",
+      "filename": "npc_camarillaHarpy_01.webp",
+      "key": "camarillaHarpy_01",
       "label": "Camarilla Harpy",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1373,13 +222,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaHarpy_02.webp",
-      "key": "mem_camarillaHarpy_02",
+      "filename": "npc_camarillaHarpy_02.webp",
+      "key": "camarillaHarpy_02",
       "label": "Camarilla Harpy",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1396,13 +245,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaKindredCourtier_01.webp",
-      "key": "mem_camarillaKindredCourtier_01",
+      "filename": "npc_camarillaKindredCourtier_01.webp",
+      "key": "camarillaKindredCourtier_01",
       "label": "Camarilla Courtier",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1419,13 +268,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaKindredCourtier_02.webp",
-      "key": "mem_camarillaKindredCourtier_02",
+      "filename": "npc_camarillaKindredCourtier_02.webp",
+      "key": "camarillaKindredCourtier_02",
       "label": "Camarilla Courtier",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1442,13 +291,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaKindredCourtier_03.webp",
-      "key": "mem_camarillaKindredCourtier_03",
+      "filename": "npc_camarillaKindredCourtier_03.webp",
+      "key": "camarillaKindredCourtier_03",
       "label": "Camarilla Courtier",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1465,13 +314,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaMilitary_01.webp",
-      "key": "mem_camarillaMilitary_01",
+      "filename": "npc_camarillaMilitary_01.webp",
+      "key": "camarillaMilitary_01",
       "label": "Camarilla Guard",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1488,13 +337,13 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_camarillaMilitary_02.webp",
-      "key": "mem_camarillaMilitary_02",
+      "filename": "npc_camarillaMilitary_02.webp",
+      "key": "camarillaMilitary_02",
       "label": "Camarilla Guard",
-      "location": "",
+      "location": "Western",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
@@ -1511,1054 +360,440 @@
         "fomorach8",
         "blackCaesar27"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_haitiLaborer_01.webp",
-      "key": "mem_haitiLaborer_01",
-      "label": "Laborer",
-      "location": "Haiti",
-      "year": "1800s",
+      "filename": "npc_campFollower_1700_01.webp",
+      "key": "campFollower_1700_01",
+      "label": "Camp Follower",
+      "location": "Western",
+      "year": "1700s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "laborer haiti labourerRural rural dockworker 1800s",
+      "tags": "campFollower follower western 1700s",
       "periods": [
-        "blackCaesar18"
+        "fomorach5",
+        "fomorach8",
+        "blackCaesar8"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_haitiLaborer_02.webp",
-      "key": "mem_haitiLaborer_02",
-      "label": "Laborer",
-      "location": "Haiti",
-      "year": "1800s",
+      "filename": "npc_campFollower_1700_02.webp",
+      "key": "campFollower_1700_02",
+      "label": "Camp Follower",
+      "location": "Western",
+      "year": "1700s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "laborer haiti labourerRural rural dockworker 1800s",
+      "tags": "campFollower follower western 1700s",
       "periods": [
-        "blackCaesar18"
+        "fomorach5",
+        "fomorach8",
+        "blackCaesar8"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_haitiMerchantVendor_01.webp",
-      "key": "mem_haitiMerchantVendor_01",
-      "label": "Merchant",
-      "location": "Haiti",
-      "year": "1800s",
+      "filename": "npc_civilianDisplaced_1700_01.webp",
+      "key": "civilianDisplaced_1700_01",
+      "label": "Civilian",
+      "location": "Western",
+      "year": "1700s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "haiti merchantVendor vendor marketTrader trader 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_haitiMerchantVendor_02.webp",
-      "key": "mem_haitiMerchantVendor_02",
-      "label": "Merchant",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "haiti merchantVendor vendor marketTrader trader 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_haitiOccultClient_01.webp",
-      "key": "mem_haitiOccultClient_01",
-      "label": "Vodou Practitioner",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "vodouPractitioner practitioner haiti occultClient client 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_haitiOccultClient_02.webp",
-      "key": "mem_haitiOccultClient_02",
-      "label": "Vodou Practitioner",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "vodouPractitioner practitioner haiti occultClient client 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_haitiRevolutionaryVeteran_01.webp",
-      "key": "mem_haitiRevolutionaryVeteran_01",
-      "label": "Veteran",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "veteran haiti revolutionaryVeteran 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_haitiRevolutionaryVeteran_02.webp",
-      "key": "mem_haitiRevolutionaryVeteran_02",
-      "label": "Veteran",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "veteran haiti revolutionaryVeteran 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_haitiSupernatural_01.webp",
-      "key": "mem_haitiSupernatural_01",
-      "label": "Spirit",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "spirit haiti supernatural wraithsLoa loa 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_haitiSupernatural_02.webp",
-      "key": "mem_haitiSupernatural_02",
-      "label": "Spirit",
-      "location": "Haiti",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "spirit haiti supernatural wraithsLoa loa 1800s",
-      "periods": [
-        "blackCaesar18"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedLevantCivilian_01.webp",
-      "key": "mem_displacedLevantCivilian_01",
-      "label": "Refugee",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "refugee levant israel palestine civilianDisplaced displaced palestinianCivilianRefugee 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedLevantCivilian_02.webp",
-      "key": "mem_displacedLevantCivilian_02",
-      "label": "Refugee",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "refugee levant israel palestine civilianDisplaced displaced palestinianCivilianRefugee 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_levantLaborer_01.webp",
-      "key": "mem_levantLaborer_01",
-      "label": "Aid Worker",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "aidWorker worker levant israel palestine laborer 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_levantLaborer_02.webp",
-      "key": "mem_levantLaborer_02",
-      "label": "Aid Worker",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "aidWorker worker levant israel palestine laborer 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_levantLearnedMedia_01.webp",
-      "key": "mem_levantLearnedMedia_01",
-      "label": "Journalist",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "journalist levant israel palestine 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_levantMilitary_01.webp",
-      "key": "mem_levantMilitary_01",
-      "label": "Soldier",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier fighter levant israel palestine military jewishFighterOfficial official 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_levantMilitary_02.webp",
-      "key": "mem_levantMilitary_02",
-      "label": "Soldier",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier fighter levant israel palestine military jewishFighterOfficial official 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_levantSailor_01.webp",
-      "key": "mem_levantSailor_01",
-      "label": "Sailor",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sailor levant israel palestine 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_levantSailor_02.webp",
-      "key": "mem_levantSailor_02",
-      "label": "Sailor",
-      "location": "Levant",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sailor levant israel palestine 1900s",
-      "periods": [
-        "fomorach24"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedMexicoCivilian_01.webp",
-      "key": "mem_displacedMexicoCivilian_01",
-      "label": "Refugee",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "refugee mexico civilianDisplaced displacedCivilian 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedMexicoCivilian_02.webp",
-      "key": "mem_displacedMexicoCivilian_02",
-      "label": "Refugee",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "refugee mexico civilianDisplaced displacedCivilian 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mexicoLaborer_01.webp",
-      "key": "mem_mexicoLaborer_01",
-      "label": "Rail Worker",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "railWorker worker mexico laborer railwayWorker 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mexicoLaborer_02.webp",
-      "key": "mem_mexicoLaborer_02",
-      "label": "Rail Worker",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "railWorker worker mexico laborer railwayWorker 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mexicoMedical_01.webp",
-      "key": "mem_mexicoMedical_01",
-      "label": "Medic",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "mexico medical campMedic 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mexicoMedical_02.webp",
-      "key": "mem_mexicoMedical_02",
-      "label": "Medic",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "mexico medical campMedic 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mexicoMilitary_01.webp",
-      "key": "mem_mexicoMilitary_01",
-      "label": "Soldier",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier mexico military federalSoldier revolutionarySoldier 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_mexicoMilitary_02.webp",
-      "key": "mem_mexicoMilitary_02",
-      "label": "Soldier",
-      "location": "Mexico",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier mexico military federalSoldier revolutionarySoldier 1900s",
-      "periods": [
-        "lucien7"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_newOrleansEliteOfficial_01.webp",
-      "key": "mem_newOrleansEliteOfficial_01",
-      "label": "Creole Elite",
-      "location": "New Orleans",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "creoleElite newOrleans orleans eliteOfficial official 1800s",
+      "tags": "western civilianDisplaced displaced freePersonColor irishFamineMigrant migrant irishImmigrant immigrant refugee settler 1700s",
       "periods": [
         "aishe7",
         "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
         "blackCaesar22"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_newOrleansEliteOfficial_02.webp",
-      "key": "mem_newOrleansEliteOfficial_02",
-      "label": "Creole Elite",
-      "location": "New Orleans",
-      "year": "1800s",
+      "filename": "npc_civilianDisplaced_1700_02.webp",
+      "key": "civilianDisplaced_1700_02",
+      "label": "Civilian",
+      "location": "Western",
+      "year": "1700s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "creoleElite newOrleans orleans eliteOfficial official 1800s",
+      "tags": "western civilianDisplaced displaced freePersonColor irishFamineMigrant migrant irishImmigrant immigrant refugee settler 1700s",
       "periods": [
         "aishe7",
         "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
         "blackCaesar22"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_newOrleansNightlifeCivic_01.webp",
-      "key": "mem_newOrleansNightlifeCivic_01",
-      "label": "Socialite",
-      "location": "New Orleans",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "socialite newOrleans orleans nightlifeCivic jazzMusician musician 2000s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_newOrleansNightlifeCivic_02.webp",
-      "key": "mem_newOrleansNightlifeCivic_02",
-      "label": "Socialite",
-      "location": "New Orleans",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "socialite newOrleans orleans nightlifeCivic jazzMusician musician 2000s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanCivilServant_01.webp",
-      "key": "mem_ottomanCivilServant_01",
-      "label": "Civil Servant",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "civilServant servant ottoman 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanCivilServant_02.webp",
-      "key": "mem_ottomanCivilServant_02",
-      "label": "Civil Servant",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "civilServant servant ottoman 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedOttomanCivilian_01.webp",
-      "key": "mem_displacedOttomanCivilian_01",
-      "label": "Refugee",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "refugee ottoman civilianDisplaced displaced 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedOttomanCivilian_02.webp",
-      "key": "mem_displacedOttomanCivilian_02",
-      "label": "Refugee",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "refugee ottoman civilianDisplaced displaced 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanEliteOfficial_01.webp",
-      "key": "mem_ottomanEliteOfficial_01",
-      "label": "Diplomat",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "diplomat ottoman eliteOfficial official 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanHouseStaff_01.webp",
-      "key": "mem_ottomanHouseStaff_01",
-      "label": "Servant",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "servant ottoman houseStaff staff householdServant 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanHouseStaff_02.webp",
-      "key": "mem_ottomanHouseStaff_02",
-      "label": "Servant",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "servant ottoman houseStaff staff householdServant 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanJournalistReporter_01.webp",
-      "key": "mem_ottomanJournalistReporter_01",
-      "label": "Journalist",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "ottoman journalistReporter reporter 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanLaborer_01.webp",
-      "key": "mem_ottomanLaborer_01",
-      "label": "Laborer",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "laborer ottoman tramDockWorker worker 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanLaborer_02.webp",
-      "key": "mem_ottomanLaborer_02",
-      "label": "Laborer",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "laborer ottoman tramDockWorker worker 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanLawEnforcement_01.webp",
-      "key": "mem_ottomanLawEnforcement_01",
-      "label": "Agent",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "agent ottoman lawEnforcement enforcement policeIntelligenceAgent 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanLawEnforcement_02.webp",
-      "key": "mem_ottomanLawEnforcement_02",
-      "label": "Agent",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "agent ottoman lawEnforcement enforcement policeIntelligenceAgent 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanLearnedMedia_01.webp",
-      "key": "mem_ottomanLearnedMedia_01",
-      "label": "Scholar",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "scholar ottoman 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanLearnedMedia_02.webp",
-      "key": "mem_ottomanLearnedMedia_02",
-      "label": "Scholar",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "scholar ottoman 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanMerchantVendor_01.webp",
-      "key": "mem_ottomanMerchantVendor_01",
-      "label": "Merchant",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "ottoman merchantVendor vendor 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanMerchantVendor_02.webp",
-      "key": "mem_ottomanMerchantVendor_02",
-      "label": "Merchant",
-      "location": "Ottoman",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "ottoman merchantVendor vendor 1800s",
-      "periods": [
-        "rashid9",
-        "rashid12"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanMilitary_01.webp",
-      "key": "mem_ottomanMilitary_01",
-      "label": "Soldier",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier ottoman military 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_ottomanMilitary_02.webp",
-      "key": "mem_ottomanMilitary_02",
-      "label": "Soldier",
-      "location": "Ottoman",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier ottoman military 1900s",
-      "periods": [
-        "rashid13"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatLearnedMedia_01.webp",
-      "key": "mem_sabbatLearnedMedia_01",
-      "label": "Sabbat Scholar",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "scholar sabbat occultScholar vampire 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatRetainerOrVessel_01.webp",
-      "key": "mem_sabbatRetainerOrVessel_01",
-      "label": "Sabbat Retainer",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sabbat retainerVessel vessel ghoulRetainer 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatRetainerOrVessel_02.webp",
-      "key": "mem_sabbatRetainerOrVessel_02",
-      "label": "Sabbat Retainer",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sabbat retainerVessel vessel ghoulRetainer 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatSabbatPackMember_01.webp",
-      "key": "mem_sabbatSabbatPackMember_01",
-      "label": "Sabbat Vampire",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "packMember sabbatPackMember vampire 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatSabbatPackMember_02.webp",
-      "key": "mem_sabbatSabbatPackMember_02",
-      "label": "Sabbat Vampire",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "packMember sabbatPackMember vampire 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatSabbatPackMember_03.webp",
-      "key": "mem_sabbatSabbatPackMember_03",
-      "label": "Sabbat Vampire",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "packMember sabbatPackMember vampire 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatSabbatPackMember_04.webp",
-      "key": "mem_sabbatSabbatPackMember_04",
-      "label": "Sabbat Vampire",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "packMember sabbatPackMember vampire 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatTzimisceGhouls_01.webp",
-      "key": "mem_sabbatTzimisceGhouls_01",
-      "label": "Tzimisce Ghoul",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sabbat tzimisceGhouls ghouls 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatTzimisceGhouls_02.webp",
-      "key": "mem_sabbatTzimisceGhouls_02",
-      "label": "Tzimisce Ghoul",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sabbat tzimisceGhouls ghouls 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatTzimisceGhouls_03.webp",
-      "key": "mem_sabbatTzimisceGhouls_03",
-      "label": "Tzimisce Ghoul",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sabbat tzimisceGhouls ghouls 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sabbatTzimisceGhouls_04.webp",
-      "key": "mem_sabbatTzimisceGhouls_04",
-      "label": "Tzimisce Ghoul",
-      "location": "",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "sabbat tzimisceGhouls ghouls 2000s",
-      "periods": [
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedSovietCivilian_01.webp",
-      "key": "mem_displacedSovietCivilian_01",
+      "filename": "npc_civilianDisplaced_1700_03.webp",
+      "key": "civilianDisplaced_1700_03",
       "label": "Civilian",
-      "location": "Soviet",
-      "year": "1900s",
+      "location": "Western",
+      "year": "1700s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "soviet civilianDisplaced displaced starvingCivilian 1900s",
+      "tags": "western civilianDisplaced displaced freePersonColor irishFamineMigrant migrant irishImmigrant immigrant refugee settler 1700s",
       "periods": [
-        "fomorach23"
+        "aishe7",
+        "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar22"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_displacedSovietCivilian_02.webp",
-      "key": "mem_displacedSovietCivilian_02",
+      "filename": "npc_civilianDisplaced_1800_01.webp",
+      "key": "civilianDisplaced_1800_01",
       "label": "Civilian",
-      "location": "Soviet",
-      "year": "1900s",
+      "location": "Western",
+      "year": "1800s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "soviet civilianDisplaced displaced starvingCivilian 1900s",
+      "tags": "western civilianDisplaced displaced runawayTunnelResident resident 1800s",
       "periods": [
-        "fomorach23"
+        "lucien17",
+        "rashid21",
+        "fomorach22",
+        "fomorach27"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_sovietEliteOfficial_01.webp",
-      "key": "mem_sovietEliteOfficial_01",
-      "label": "Party Official",
-      "location": "Soviet",
-      "year": "1900s",
+      "filename": "npc_civilianDisplaced_1800_02.webp",
+      "key": "civilianDisplaced_1800_02",
+      "label": "Civilian",
+      "location": "Western",
+      "year": "1800s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "partyOfficial official soviet eliteOfficial 1900s",
+      "tags": "western civilianDisplaced displaced runawayTunnelResident resident 1800s",
       "periods": [
-        "fomorach23"
+        "lucien17",
+        "rashid21",
+        "fomorach22",
+        "fomorach27"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_sovietEliteOfficial_02.webp",
-      "key": "mem_sovietEliteOfficial_02",
-      "label": "Party Official",
-      "location": "Soviet",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "partyOfficial official soviet eliteOfficial 1900s",
-      "periods": [
-        "fomorach23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sovietLaborer_01.webp",
-      "key": "mem_sovietLaborer_01",
-      "label": "Rail Worker",
-      "location": "Soviet",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "railWorker worker soviet laborer railwayWorker 1900s",
-      "periods": [
-        "fomorach23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sovietLaborer_02.webp",
-      "key": "mem_sovietLaborer_02",
-      "label": "Rail Worker",
-      "location": "Soviet",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "railWorker worker soviet laborer railwayWorker 1900s",
-      "periods": [
-        "fomorach23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sovietMedical_01.webp",
-      "key": "mem_sovietMedical_01",
-      "label": "Doctor",
-      "location": "Soviet",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "doctor soviet medical 1900s",
-      "periods": [
-        "fomorach23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sovietMilitary_01.webp",
-      "key": "mem_sovietMilitary_01",
-      "label": "Soldier",
-      "location": "Soviet",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier soviet military 1900s",
-      "periods": [
-        "fomorach23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_sovietMilitary_02.webp",
-      "key": "mem_sovietMilitary_02",
-      "label": "Soldier",
-      "location": "Soviet",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "soldier soviet military 1900s",
-      "periods": [
-        "fomorach23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernArchivist_01.webp",
-      "key": "mem_westernArchivist_01",
-      "label": "Archivist",
+      "filename": "npc_civilianDisplaced_1900_01.webp",
+      "key": "civilianDisplaced_1900_01",
+      "label": "Civilian",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "archivist western 1900s",
+      "tags": "western civilianDisplaced displaced refugee drifter 1900s",
       "periods": [
+        "lucien6",
+        "lucien14",
+        "rashid13",
         "rashid18",
+        "aishe18",
+        "fomorach22",
         "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCampFollower_01.webp",
-      "key": "mem_westernCampFollower_01",
-      "label": "Camp Follower",
+      "filename": "npc_civilianDisplaced_1900_02.webp",
+      "key": "civilianDisplaced_1900_02",
+      "label": "Civilian",
       "location": "Western",
-      "year": "1700s",
+      "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "campFollower follower western 1700s",
+      "tags": "western civilianDisplaced displaced refugee drifter 1900s",
       "periods": [
-        "fomorach5",
-        "fomorach8",
-        "blackCaesar8"
+        "lucien6",
+        "lucien14",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "fomorach22",
+        "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCampFollower_02.webp",
-      "key": "mem_westernCampFollower_02",
-      "label": "Camp Follower",
+      "filename": "npc_civilianDisplaced_1900_03.webp",
+      "key": "civilianDisplaced_1900_03",
+      "label": "Civilian",
       "location": "Western",
-      "year": "1700s",
+      "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "campFollower follower western 1700s",
+      "tags": "western civilianDisplaced displaced refugee drifter 1900s",
       "periods": [
-        "fomorach5",
-        "fomorach8",
-        "blackCaesar8"
+        "lucien6",
+        "lucien14",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "fomorach22",
+        "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCivilServant_01.webp",
-      "key": "mem_westernCivilServant_01",
+      "filename": "npc_civilianDisplaced_1900_04.webp",
+      "key": "civilianDisplaced_1900_04",
+      "label": "Civilian",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "western civilianDisplaced displaced refugee drifter 1900s",
+      "periods": [
+        "lucien6",
+        "lucien14",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "fomorach22",
+        "blackCaesar28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_1900_05.webp",
+      "key": "civilianDisplaced_1900_05",
+      "label": "Civilian",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "western civilianDisplaced displaced refugee drifter 1900s",
+      "periods": [
+        "lucien6",
+        "lucien14",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "fomorach22",
+        "blackCaesar28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_alamut_1800_01.webp",
+      "key": "civilianDisplaced_alamut_1800_01",
+      "label": "Civilian",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "alamut civilianDisplaced displaced prisoner 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_alamut_1800_02.webp",
+      "key": "civilianDisplaced_alamut_1800_02",
+      "label": "Civilian",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "alamut civilianDisplaced displaced prisoner 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_alamut_1800_03.webp",
+      "key": "civilianDisplaced_alamut_1800_03",
+      "label": "Civilian",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "alamut civilianDisplaced displaced prisoner 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_australia_1800_01.webp",
+      "key": "civilianDisplaced_australia_1800_01",
+      "label": "Colonist",
+      "location": "Australia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "colonist australia civilianDisplaced displaced convict settler 1800s",
+      "periods": [
+        "blackCaesar13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_australia_1800_02.webp",
+      "key": "civilianDisplaced_australia_1800_02",
+      "label": "Colonist",
+      "location": "Australia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "colonist australia civilianDisplaced displaced convict settler 1800s",
+      "periods": [
+        "blackCaesar13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_levant_1900_01.webp",
+      "key": "civilianDisplaced_levant_1900_01",
+      "label": "Refugee",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "refugee levant israel palestine civilianDisplaced displaced palestinianCivilianRefugee 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_levant_1900_02.webp",
+      "key": "civilianDisplaced_levant_1900_02",
+      "label": "Refugee",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "refugee levant israel palestine civilianDisplaced displaced palestinianCivilianRefugee 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_mexico_1900_01.webp",
+      "key": "civilianDisplaced_mexico_1900_01",
+      "label": "Refugee",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "refugee mexico civilianDisplaced displacedCivilian 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_mexico_1900_02.webp",
+      "key": "civilianDisplaced_mexico_1900_02",
+      "label": "Refugee",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "refugee mexico civilianDisplaced displacedCivilian 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_ottoman_1900_01.webp",
+      "key": "civilianDisplaced_ottoman_1900_01",
+      "label": "Refugee",
+      "location": "Ottoman",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "refugee ottoman civilianDisplaced displaced 1900s",
+      "periods": [
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_ottoman_1900_02.webp",
+      "key": "civilianDisplaced_ottoman_1900_02",
+      "label": "Refugee",
+      "location": "Ottoman",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "refugee ottoman civilianDisplaced displaced 1900s",
+      "periods": [
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_soviet_1900_01.webp",
+      "key": "civilianDisplaced_soviet_1900_01",
+      "label": "Civilian",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soviet civilianDisplaced displaced starvingCivilian 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilianDisplaced_soviet_1900_02.webp",
+      "key": "civilianDisplaced_soviet_1900_02",
+      "label": "Civilian",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soviet civilianDisplaced displaced starvingCivilian 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_civilServant_1900_01.webp",
+      "key": "civilServant_1900_01",
       "label": "Civil Servant",
       "location": "Western",
       "year": "1900s",
@@ -2575,8 +810,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCivilServant_02.webp",
-      "key": "mem_westernCivilServant_02",
+      "filename": "npc_civilServant_1900_02.webp",
+      "key": "civilServant_1900_02",
       "label": "Civil Servant",
       "location": "Western",
       "year": "1900s",
@@ -2593,196 +828,38 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_displacedWesternCivilian1700_01.webp",
-      "key": "mem_displacedWesternCivilian1700_01",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1700s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced freePersonColor irishFamineMigrant migrant irishImmigrant immigrant refugee settler 1700s",
-      "periods": [
-        "aishe7",
-        "aishe13",
-        "fomorach1",
-        "fomorach5",
-        "fomorach8",
-        "fomorach15",
-        "fomorach22",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian1700_02.webp",
-      "key": "mem_displacedWesternCivilian1700_02",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1700s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced freePersonColor irishFamineMigrant migrant irishImmigrant immigrant refugee settler 1700s",
-      "periods": [
-        "aishe7",
-        "aishe13",
-        "fomorach1",
-        "fomorach5",
-        "fomorach8",
-        "fomorach15",
-        "fomorach22",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian1700_03.webp",
-      "key": "mem_displacedWesternCivilian1700_03",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1700s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced freePersonColor irishFamineMigrant migrant irishImmigrant immigrant refugee settler 1700s",
-      "periods": [
-        "aishe7",
-        "aishe13",
-        "fomorach1",
-        "fomorach5",
-        "fomorach8",
-        "fomorach15",
-        "fomorach22",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar22"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian1900_01.webp",
-      "key": "mem_displacedWesternCivilian1900_01",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced refugee 1900s",
-      "periods": [
-        "lucien6",
-        "rashid13",
-        "rashid18",
-        "aishe18",
-        "fomorach22",
-        "blackCaesar28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian1900_02.webp",
-      "key": "mem_displacedWesternCivilian1900_02",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced refugee 1900s",
-      "periods": [
-        "lucien6",
-        "rashid13",
-        "rashid18",
-        "aishe18",
-        "fomorach22",
-        "blackCaesar28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian1900_03.webp",
-      "key": "mem_displacedWesternCivilian1900_03",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced refugee 1900s",
-      "periods": [
-        "lucien6",
-        "rashid13",
-        "rashid18",
-        "aishe18",
-        "fomorach22",
-        "blackCaesar28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian_01.webp",
-      "key": "mem_displacedWesternCivilian_01",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced drifter 1900s",
-      "periods": [
-        "lucien14"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian_02.webp",
-      "key": "mem_displacedWesternCivilian_02",
-      "label": "Civilian",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western civilianDisplaced displaced drifter 1900s",
-      "periods": [
-        "lucien14"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_displacedWesternCivilian1800_01.webp",
-      "key": "mem_displacedWesternCivilian1800_01",
-      "label": "Civilian",
-      "location": "Western",
+      "filename": "npc_civilServant_ottoman_1800_01.webp",
+      "key": "civilServant_ottoman_1800_01",
+      "label": "Civil Servant",
+      "location": "Ottoman",
       "year": "1800s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "western civilianDisplaced displaced runawayTunnelResident resident 1800s",
+      "tags": "civilServant servant ottoman 1800s",
       "periods": [
-        "lucien17",
-        "rashid21",
-        "fomorach22",
-        "fomorach27"
+        "rashid9",
+        "rashid12"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_displacedWesternCivilian1800_02.webp",
-      "key": "mem_displacedWesternCivilian1800_02",
-      "label": "Civilian",
-      "location": "Western",
+      "filename": "npc_civilServant_ottoman_1800_02.webp",
+      "key": "civilServant_ottoman_1800_02",
+      "label": "Civil Servant",
+      "location": "Ottoman",
       "year": "1800s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "western civilianDisplaced displaced runawayTunnelResident resident 1800s",
+      "tags": "civilServant servant ottoman 1800s",
       "periods": [
-        "lucien17",
-        "rashid21",
-        "fomorach22",
-        "fomorach27"
+        "rashid9",
+        "rashid12"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCoachman_01.webp",
-      "key": "mem_westernCoachman_01",
+      "filename": "npc_coachman_1700_01.webp",
+      "key": "coachman_1700_01",
       "label": "Coachman",
       "location": "Western",
       "year": "1700s",
@@ -2796,8 +873,59 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCriminalOutlaw1900_01.webp",
-      "key": "mem_westernCriminalOutlaw1900_01",
+      "filename": "npc_crimeOutlaw_1900_01.webp",
+      "key": "crimeOutlaw_1900_01",
+      "label": "Criminal",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "western criminalOutlaw outlaw 1900s",
+      "periods": [
+        "lucien11",
+        "aishe22",
+        "fomorach22",
+        "blackCaesar27"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_crimeOutlaw_1900_02.webp",
+      "key": "crimeOutlaw_1900_02",
+      "label": "Criminal",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "western criminalOutlaw outlaw 1900s",
+      "periods": [
+        "lucien11",
+        "aishe22",
+        "fomorach22",
+        "blackCaesar27"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_crimeOutlaw_1900_03.webp",
+      "key": "crimeOutlaw_1900_03",
+      "label": "Criminal",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "western criminalOutlaw outlaw 1900s",
+      "periods": [
+        "lucien11",
+        "aishe22",
+        "fomorach22",
+        "blackCaesar27"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_crimePirate_1800_01.webp",
+      "key": "crimePirate_1800_01",
       "label": "Criminal",
       "location": "Western",
       "year": "1900s",
@@ -2814,8 +942,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCriminalOutlaw1900_02.webp",
-      "key": "mem_westernCriminalOutlaw1900_02",
+      "filename": "npc_crimePirate_1800_02.webp",
+      "key": "crimePirate_1800_02",
       "label": "Criminal",
       "location": "Western",
       "year": "1900s",
@@ -2832,8 +960,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCriminalOutlaw1900_03.webp",
-      "key": "mem_westernCriminalOutlaw1900_03",
+      "filename": "npc_crimePirate_1800_03.webp",
+      "key": "crimePirate_1800_03",
       "label": "Criminal",
       "location": "Western",
       "year": "1900s",
@@ -2850,59 +978,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernCriminalOutlaw_01.webp",
-      "key": "mem_westernCriminalOutlaw_01",
-      "label": "Criminal",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western criminalOutlaw outlaw 1900s",
-      "periods": [
-        "lucien11",
-        "aishe22",
-        "fomorach22",
-        "blackCaesar27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernCriminalOutlaw_02.webp",
-      "key": "mem_westernCriminalOutlaw_02",
-      "label": "Criminal",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western criminalOutlaw outlaw 1900s",
-      "periods": [
-        "lucien11",
-        "aishe22",
-        "fomorach22",
-        "blackCaesar27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernCriminalOutlaw_03.webp",
-      "key": "mem_westernCriminalOutlaw_03",
-      "label": "Criminal",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western criminalOutlaw outlaw 1900s",
-      "periods": [
-        "lucien11",
-        "aishe22",
-        "fomorach22",
-        "blackCaesar27"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernEliteOfficial_01.webp",
-      "key": "mem_westernEliteOfficial_01",
+      "filename": "npc_eliteOfficial_1800_01.webp",
+      "key": "eliteOfficial_1800_01",
       "label": "Aristocrat",
       "location": "Western",
       "year": "1800s",
@@ -2922,8 +999,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernEliteOfficial_02.webp",
-      "key": "mem_westernEliteOfficial_02",
+      "filename": "npc_eliteOfficial_1800_02.webp",
+      "key": "eliteOfficial_1800_02",
       "label": "Aristocrat",
       "location": "Western",
       "year": "1800s",
@@ -2943,8 +1020,183 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernHospitalityStaff1700_01.webp",
-      "key": "mem_westernHospitalityStaff1700_01",
+      "filename": "npc_eliteOfficial_arabia_1800_01.webp",
+      "key": "eliteOfficial_arabia_1800_01",
+      "label": "Envoy",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "envoy arabia eliteOfficial official tribalEnvoy 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_eliteOfficial_arabia_1800_02.webp",
+      "key": "eliteOfficial_arabia_1800_02",
+      "label": "Envoy",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "envoy arabia eliteOfficial official tribalEnvoy 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_eliteOfficial_newOrleans_1800_01.webp",
+      "key": "eliteOfficial_newOrleans_1800_01",
+      "label": "Creole Elite",
+      "location": "New Orleans",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "creoleElite newOrleans orleans eliteOfficial official 1800s",
+      "periods": [
+        "aishe7",
+        "aishe13",
+        "blackCaesar22"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_eliteOfficial_newOrleans_1800_02.webp",
+      "key": "eliteOfficial_newOrleans_1800_02",
+      "label": "Creole Elite",
+      "location": "New Orleans",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "creoleElite newOrleans orleans eliteOfficial official 1800s",
+      "periods": [
+        "aishe7",
+        "aishe13",
+        "blackCaesar22"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_eliteOfficial_ottoman_1800_01.webp",
+      "key": "eliteOfficial_ottoman_1800_01",
+      "label": "Diplomat",
+      "location": "Ottoman",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "diplomat ottoman eliteOfficial official 1800s",
+      "periods": [
+        "rashid9",
+        "rashid12"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_eliteOfficial_soviet_1900_01.webp",
+      "key": "eliteOfficial_soviet_1900_01",
+      "label": "Party Official",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "partyOfficial official soviet eliteOfficial 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_eliteOfficial_soviet_1900_02.webp",
+      "key": "eliteOfficial_soviet_1900_02",
+      "label": "Party Official",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "partyOfficial official soviet eliteOfficial 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_farmer_arabia_1800_01.webp",
+      "key": "farmer_arabia_1800_01",
+      "label": "Farmer",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "farmer arabia 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_farmer_arabia_1800_02.webp",
+      "key": "farmer_arabia_1800_02",
+      "label": "Farmer",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "farmer arabia 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_hospitalityStaff_01.webp",
+      "key": "hospitalityStaff_01",
+      "label": "Hospitality Staff",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "hospitalityStaff staff western dinerEmployee employee motelClerk clerk 2000s",
+      "periods": [
+        "lucien14",
+        "lucien15",
+        "lucien16"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_hospitalityStaff_02.webp",
+      "key": "hospitalityStaff_02",
+      "label": "Hospitality Staff",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "hospitalityStaff staff western dinerEmployee employee motelClerk clerk 2000s",
+      "periods": [
+        "lucien14",
+        "lucien15",
+        "lucien16"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_hospitalityStaff_1700_01.webp",
+      "key": "hospitalityStaff_1700_01",
       "label": "Hospitality Staff",
       "location": "Western",
       "year": "1700s",
@@ -2965,8 +1217,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernHospitalityStaff1700_02.webp",
-      "key": "mem_westernHospitalityStaff1700_02",
+      "filename": "npc_hospitalityStaff_1700_02.webp",
+      "key": "hospitalityStaff_1700_02",
       "label": "Hospitality Staff",
       "location": "Western",
       "year": "1700s",
@@ -2987,8 +1239,59 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernHospitalityStaff1900_01.webp",
-      "key": "mem_westernHospitalityStaff1900_01",
+      "filename": "npc_hospitalityStaff_1800_01.webp",
+      "key": "hospitalityStaff_1800_01",
+      "label": "Hospitality Staff",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "hospitalityStaff staff western domesticServiceWorker worker hospitalityWorker 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_hospitalityStaff_1800_02.webp",
+      "key": "hospitalityStaff_1800_02",
+      "label": "Hospitality Staff",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "hospitalityStaff staff western domesticServiceWorker worker hospitalityWorker 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_hospitalityStaff_1800_03.webp",
+      "key": "hospitalityStaff_1800_03",
+      "label": "Hospitality Staff",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "hospitalityStaff staff western domesticServiceWorker worker hospitalityWorker 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_hospitalityStaff_1900_01.webp",
+      "key": "hospitalityStaff_1900_01",
       "label": "Hospitality Staff",
       "location": "Western",
       "year": "1900s",
@@ -3002,8 +1305,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernHospitalityStaff1900_02.webp",
-      "key": "mem_westernHospitalityStaff1900_02",
+      "filename": "npc_hospitalityStaff_1900_02.webp",
+      "key": "hospitalityStaff_1900_02",
       "label": "Hospitality Staff",
       "location": "Western",
       "year": "1900s",
@@ -3017,91 +1320,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernHospitalityStaff1800_01.webp",
-      "key": "mem_westernHospitalityStaff1800_01",
-      "label": "Hospitality Staff",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "hospitalityStaff staff western domesticServiceWorker worker hospitalityWorker 1800s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernHospitalityStaff1800_02.webp",
-      "key": "mem_westernHospitalityStaff1800_02",
-      "label": "Hospitality Staff",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "hospitalityStaff staff western domesticServiceWorker worker hospitalityWorker 1800s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernHospitalityStaff1800_03.webp",
-      "key": "mem_westernHospitalityStaff1800_03",
-      "label": "Hospitality Staff",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "hospitalityStaff staff western domesticServiceWorker worker hospitalityWorker 1800s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernHospitalityStaff_01.webp",
-      "key": "mem_westernHospitalityStaff_01",
-      "label": "Hospitality Staff",
-      "location": "Western",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "hospitalityStaff staff western dinerEmployee employee motelClerk clerk 2000s",
-      "periods": [
-        "lucien14",
-        "lucien15",
-        "lucien16"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernHospitalityStaff_02.webp",
-      "key": "mem_westernHospitalityStaff_02",
-      "label": "Hospitality Staff",
-      "location": "Western",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "hospitalityStaff staff western dinerEmployee employee motelClerk clerk 2000s",
-      "periods": [
-        "lucien14",
-        "lucien15",
-        "lucien16"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernHouseStaff_01.webp",
-      "key": "mem_westernHouseStaff_01",
+      "filename": "npc_houseStaff_1800_01.webp",
+      "key": "houseStaff_1800_01",
       "label": "Servant",
       "location": "Western",
       "year": "1800s",
@@ -3127,8 +1347,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernHouseStaff_02.webp",
-      "key": "mem_westernHouseStaff_02",
+      "filename": "npc_houseStaff_1800_02.webp",
+      "key": "houseStaff_1800_02",
       "label": "Servant",
       "location": "Western",
       "year": "1800s",
@@ -3154,8 +1374,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernHouseStaff_03.webp",
-      "key": "mem_westernHouseStaff_03",
+      "filename": "npc_houseStaff_1800_03.webp",
+      "key": "houseStaff_1800_03",
       "label": "Servant",
       "location": "Western",
       "year": "1800s",
@@ -3181,8 +1401,74 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernJournalistReporter_01.webp",
-      "key": "mem_westernJournalistReporter_01",
+      "filename": "npc_houseStaff_alamut_1800_01.webp",
+      "key": "houseStaff_alamut_1800_01",
+      "label": "Servant",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "servant alamut houseStaff staff banuHaqim haqim assamite ghoul 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_houseStaff_alamut_1800_02.webp",
+      "key": "houseStaff_alamut_1800_02",
+      "label": "Servant",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "servant alamut houseStaff staff banuHaqim haqim assamite ghoul 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_houseStaff_ottoman_1800_01.webp",
+      "key": "houseStaff_ottoman_1800_01",
+      "label": "Servant",
+      "location": "Ottoman",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "servant ottoman houseStaff staff householdServant 1800s",
+      "periods": [
+        "rashid9",
+        "rashid12"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_houseStaff_ottoman_1800_02.webp",
+      "key": "houseStaff_ottoman_1800_02",
+      "label": "Servant",
+      "location": "Ottoman",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "servant ottoman houseStaff staff householdServant 1800s",
+      "periods": [
+        "rashid9",
+        "rashid12"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_journalistReporter_1900_01.webp",
+      "key": "journalistReporter_1900_01",
       "label": "Journalist",
       "location": "Western",
       "year": "1900s",
@@ -3199,173 +1485,22 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLaborer1700_01.webp",
-      "key": "mem_westernLaborer1700_01",
-      "label": "Laborer",
-      "location": "Western",
-      "year": "1700s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "laborer western craftWorkerGeneralLabourer labourer dockLabourer indenturedLabourer industrialGeneralLabourer maritimeLabourerSailorDockworker dockworker railwayLabourer tradespersonGeneralLabourer waterfrontLabourerRiverboatHand 1700s",
-      "periods": [
-        "lucien2",
-        "lucien6",
-        "lucien7",
-        "aishe2",
-        "aishe7",
-        "aishe13",
-        "fomorach1",
-        "fomorach5",
-        "fomorach8",
-        "fomorach15",
-        "fomorach22",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar9",
-        "blackCaesar13",
-        "blackCaesar18",
-        "blackCaesar19",
-        "blackCaesar21",
-        "blackCaesar22",
-        "blackCaesar23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLaborer1700_02.webp",
-      "key": "mem_westernLaborer1700_02",
-      "label": "Laborer",
-      "location": "Western",
-      "year": "1700s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "laborer western craftWorkerGeneralLabourer labourer dockLabourer indenturedLabourer industrialGeneralLabourer maritimeLabourerSailorDockworker dockworker railwayLabourer tradespersonGeneralLabourer waterfrontLabourerRiverboatHand 1700s",
-      "periods": [
-        "lucien2",
-        "lucien6",
-        "lucien7",
-        "aishe2",
-        "aishe7",
-        "aishe13",
-        "fomorach1",
-        "fomorach5",
-        "fomorach8",
-        "fomorach15",
-        "fomorach22",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar9",
-        "blackCaesar13",
-        "blackCaesar18",
-        "blackCaesar19",
-        "blackCaesar21",
-        "blackCaesar22",
-        "blackCaesar23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLaborer1700_03.webp",
-      "key": "mem_westernLaborer1700_03",
-      "label": "Laborer",
-      "location": "Western",
-      "year": "1700s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "laborer western craftWorkerGeneralLabourer labourer dockLabourer indenturedLabourer industrialGeneralLabourer maritimeLabourerSailorDockworker dockworker railwayLabourer tradespersonGeneralLabourer waterfrontLabourerRiverboatHand 1700s",
-      "periods": [
-        "lucien2",
-        "lucien6",
-        "lucien7",
-        "aishe2",
-        "aishe7",
-        "aishe13",
-        "fomorach1",
-        "fomorach5",
-        "fomorach8",
-        "fomorach15",
-        "fomorach22",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar9",
-        "blackCaesar13",
-        "blackCaesar18",
-        "blackCaesar19",
-        "blackCaesar21",
-        "blackCaesar22",
-        "blackCaesar23"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLaborer1900_01.webp",
-      "key": "mem_westernLaborer1900_01",
-      "label": "Laborer",
-      "location": "Western",
+      "filename": "npc_journalistReporter_ottoman_1900_01.webp",
+      "key": "journalistReporter_ottoman_1900_01",
+      "label": "Journalist",
+      "location": "Ottoman",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "laborer western industrialLabourer labourer railwayTraveller traveller railwayWorker worker 1900s",
+      "tags": "ottoman journalistReporter reporter 1900s",
       "periods": [
-        "lucien6",
-        "lucien11",
-        "rashid13",
-        "rashid18",
-        "aishe18",
-        "aishe22",
-        "fomorach22",
-        "blackCaesar27",
-        "blackCaesar28"
+        "rashid13"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLaborer1900_02.webp",
-      "key": "mem_westernLaborer1900_02",
-      "label": "Laborer",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "laborer western industrialLabourer labourer railwayTraveller traveller railwayWorker worker 1900s",
-      "periods": [
-        "lucien6",
-        "lucien11",
-        "rashid13",
-        "rashid18",
-        "aishe18",
-        "aishe22",
-        "fomorach22",
-        "blackCaesar27",
-        "blackCaesar28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLaborer1900_03.webp",
-      "key": "mem_westernLaborer1900_03",
-      "label": "Laborer",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "laborer western industrialLabourer labourer railwayTraveller traveller railwayWorker worker 1900s",
-      "periods": [
-        "lucien6",
-        "lucien11",
-        "rashid13",
-        "rashid18",
-        "aishe18",
-        "aishe22",
-        "fomorach22",
-        "blackCaesar27",
-        "blackCaesar28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLaborer_01.webp",
-      "key": "mem_westernLaborer_01",
+      "filename": "npc_laborer_01.webp",
+      "key": "laborer_01",
       "label": "Laborer",
       "location": "Western",
       "year": "Modern",
@@ -3376,11 +1511,11 @@
         "lucien19",
         "blackCaesar29"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_westernLaborer_02.webp",
-      "key": "mem_westernLaborer_02",
+      "filename": "npc_laborer_02.webp",
+      "key": "laborer_02",
       "label": "Laborer",
       "location": "Western",
       "year": "Modern",
@@ -3391,11 +1526,110 @@
         "lucien19",
         "blackCaesar29"
       ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_laborer_1700_01.webp",
+      "key": "laborer_1700_01",
+      "label": "Laborer",
+      "location": "Western",
+      "year": "1700s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer western craftWorkerGeneralLabourer labourer dockLabourer indenturedLabourer industrialGeneralLabourer maritimeLabourerSailorDockworker dockworker railwayLabourer tradespersonGeneralLabourer waterfrontLabourerRiverboatHand 1700s",
+      "periods": [
+        "lucien2",
+        "lucien6",
+        "lucien7",
+        "aishe2",
+        "aishe7",
+        "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar9",
+        "blackCaesar13",
+        "blackCaesar18",
+        "blackCaesar19",
+        "blackCaesar21",
+        "blackCaesar22",
+        "blackCaesar23"
+      ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLaborer1800_01.webp",
-      "key": "mem_westernLaborer1800_01",
+      "filename": "npc_laborer_1700_02.webp",
+      "key": "laborer_1700_02",
+      "label": "Laborer",
+      "location": "Western",
+      "year": "1700s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer western craftWorkerGeneralLabourer labourer dockLabourer indenturedLabourer industrialGeneralLabourer maritimeLabourerSailorDockworker dockworker railwayLabourer tradespersonGeneralLabourer waterfrontLabourerRiverboatHand 1700s",
+      "periods": [
+        "lucien2",
+        "lucien6",
+        "lucien7",
+        "aishe2",
+        "aishe7",
+        "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar9",
+        "blackCaesar13",
+        "blackCaesar18",
+        "blackCaesar19",
+        "blackCaesar21",
+        "blackCaesar22",
+        "blackCaesar23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_1700_03.webp",
+      "key": "laborer_1700_03",
+      "label": "Laborer",
+      "location": "Western",
+      "year": "1700s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer western craftWorkerGeneralLabourer labourer dockLabourer indenturedLabourer industrialGeneralLabourer maritimeLabourerSailorDockworker dockworker railwayLabourer tradespersonGeneralLabourer waterfrontLabourerRiverboatHand 1700s",
+      "periods": [
+        "lucien2",
+        "lucien6",
+        "lucien7",
+        "aishe2",
+        "aishe7",
+        "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar9",
+        "blackCaesar13",
+        "blackCaesar18",
+        "blackCaesar19",
+        "blackCaesar21",
+        "blackCaesar22",
+        "blackCaesar23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_1800_01.webp",
+      "key": "laborer_1800_01",
       "label": "Laborer",
       "location": "Western",
       "year": "1800s",
@@ -3411,8 +1645,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLaborer1800_02.webp",
-      "key": "mem_westernLaborer1800_02",
+      "filename": "npc_laborer_1800_02.webp",
+      "key": "laborer_1800_02",
       "label": "Laborer",
       "location": "Western",
       "year": "1800s",
@@ -3428,8 +1662,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLaborer1800_03.webp",
-      "key": "mem_westernLaborer1800_03",
+      "filename": "npc_laborer_1800_03.webp",
+      "key": "laborer_1800_03",
       "label": "Laborer",
       "location": "Western",
       "year": "1800s",
@@ -3445,8 +1679,242 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLandlordSAgent_01.webp",
-      "key": "mem_westernLandlordSAgent_01",
+      "filename": "npc_laborer_1900_01.webp",
+      "key": "laborer_1900_01",
+      "label": "Laborer",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer western industrialLabourer labourer railwayTraveller traveller railwayWorker worker 1900s",
+      "periods": [
+        "lucien6",
+        "lucien11",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "aishe22",
+        "fomorach22",
+        "blackCaesar27",
+        "blackCaesar28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_1900_02.webp",
+      "key": "laborer_1900_02",
+      "label": "Laborer",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer western industrialLabourer labourer railwayTraveller traveller railwayWorker worker 1900s",
+      "periods": [
+        "lucien6",
+        "lucien11",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "aishe22",
+        "fomorach22",
+        "blackCaesar27",
+        "blackCaesar28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_1900_03.webp",
+      "key": "laborer_1900_03",
+      "label": "Laborer",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer western industrialLabourer labourer railwayTraveller traveller railwayWorker worker 1900s",
+      "periods": [
+        "lucien6",
+        "lucien11",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "aishe22",
+        "fomorach22",
+        "blackCaesar27",
+        "blackCaesar28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_australia_1800_01.webp",
+      "key": "laborer_australia_1800_01",
+      "label": "Dockworker",
+      "location": "Australia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "dockworker australia laborer 1800s",
+      "periods": [
+        "blackCaesar13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_australia_1800_02.webp",
+      "key": "laborer_australia_1800_02",
+      "label": "Dockworker",
+      "location": "Australia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "dockworker australia laborer 1800s",
+      "periods": [
+        "blackCaesar13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_haiti_1800_01.webp",
+      "key": "laborer_haiti_1800_01",
+      "label": "Laborer",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer haiti labourerRural rural dockworker 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_haiti_1800_02.webp",
+      "key": "laborer_haiti_1800_02",
+      "label": "Laborer",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer haiti labourerRural rural dockworker 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_levant_1900_01.webp",
+      "key": "laborer_levant_1900_01",
+      "label": "Aid Worker",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "aidWorker worker levant israel palestine laborer 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_levant_1900_02.webp",
+      "key": "laborer_levant_1900_02",
+      "label": "Aid Worker",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "aidWorker worker levant israel palestine laborer 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_mexico_1900_01.webp",
+      "key": "laborer_mexico_1900_01",
+      "label": "Rail Worker",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "railWorker worker mexico laborer railwayWorker 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_mexico_1900_02.webp",
+      "key": "laborer_mexico_1900_02",
+      "label": "Rail Worker",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "railWorker worker mexico laborer railwayWorker 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_ottoman_1900_01.webp",
+      "key": "laborer_ottoman_1900_01",
+      "label": "Laborer",
+      "location": "Ottoman",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer ottoman tramDockWorker worker 1900s",
+      "periods": [
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_ottoman_1900_02.webp",
+      "key": "laborer_ottoman_1900_02",
+      "label": "Laborer",
+      "location": "Ottoman",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "laborer ottoman tramDockWorker worker 1900s",
+      "periods": [
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_soviet_1900_01.webp",
+      "key": "laborer_soviet_1900_01",
+      "label": "Rail Worker",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "railWorker worker soviet laborer railwayWorker 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_laborer_soviet_1900_02.webp",
+      "key": "laborer_soviet_1900_02",
+      "label": "Rail Worker",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "railWorker worker soviet laborer railwayWorker 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_landlordsAgent_1800_01.webp",
+      "key": "landlordsAgent_1800_01",
       "label": "Landlord's Agent",
       "location": "Western",
       "year": "1800s",
@@ -3459,8 +1927,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLandlordSAgent_02.webp",
-      "key": "mem_westernLandlordSAgent_02",
+      "filename": "npc_landlordsAgent_1800_02.webp",
+      "key": "landlordsAgent_1800_02",
       "label": "Landlord's Agent",
       "location": "Western",
       "year": "1800s",
@@ -3473,8 +1941,44 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLawEnforcement1700_01.webp",
-      "key": "mem_westernLawEnforcement1700_01",
+      "filename": "npc_lawEnforcement_01.webp",
+      "key": "lawEnforcement_01",
+      "label": "Officer",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "officer western lawEnforcement enforcement deputySheriff sheriff policeOfficer 2000s",
+      "periods": [
+        "lucien14",
+        "lucien15",
+        "lucien16",
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_lawEnforcement_02.webp",
+      "key": "lawEnforcement_02",
+      "label": "Officer",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "officer western lawEnforcement enforcement deputySheriff sheriff policeOfficer 2000s",
+      "periods": [
+        "lucien14",
+        "lucien15",
+        "lucien16",
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_lawEnforcement_1700_01.webp",
+      "key": "lawEnforcement_1700_01",
       "label": "Officer",
       "location": "Western",
       "year": "1700s",
@@ -3503,8 +2007,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLawEnforcement1700_02.webp",
-      "key": "mem_westernLawEnforcement1700_02",
+      "filename": "npc_lawEnforcement_1700_02.webp",
+      "key": "lawEnforcement_1700_02",
       "label": "Officer",
       "location": "Western",
       "year": "1700s",
@@ -3533,8 +2037,42 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLawEnforcement1900_01.webp",
-      "key": "mem_westernLawEnforcement1900_01",
+      "filename": "npc_lawEnforcement_1800_01.webp",
+      "key": "lawEnforcement_1800_01",
+      "label": "Officer",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "officer western lawEnforcement enforcement policeOfficer 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_lawEnforcement_1800_02.webp",
+      "key": "lawEnforcement_1800_02",
+      "label": "Officer",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "officer western lawEnforcement enforcement policeOfficer 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_lawEnforcement_1900_01.webp",
+      "key": "lawEnforcement_1900_01",
       "label": "Officer",
       "location": "Western",
       "year": "1900s",
@@ -3552,8 +2090,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLawEnforcement1900_02.webp",
-      "key": "mem_westernLawEnforcement1900_02",
+      "filename": "npc_lawEnforcement_1900_02.webp",
+      "key": "lawEnforcement_1900_02",
       "label": "Officer",
       "location": "Western",
       "year": "1900s",
@@ -3571,124 +2109,50 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLawEnforcement1800_01.webp",
-      "key": "mem_westernLawEnforcement1800_01",
-      "label": "Officer",
-      "location": "Western",
+      "filename": "npc_lawEnforcement_australia_1800_01.webp",
+      "key": "lawEnforcement_australia_1800_01",
+      "label": "Gaoler",
+      "location": "Australia",
       "year": "1800s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "officer western lawEnforcement enforcement policeOfficer 1800s",
+      "tags": "gaoler australia lawEnforcement enforcement 1800s",
       "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
+        "blackCaesar13"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLawEnforcement1800_02.webp",
-      "key": "mem_westernLawEnforcement1800_02",
-      "label": "Officer",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "officer western lawEnforcement enforcement policeOfficer 1800s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLawEnforcement_01.webp",
-      "key": "mem_westernLawEnforcement_01",
-      "label": "Officer",
-      "location": "Western",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "officer western lawEnforcement enforcement deputySheriff sheriff policeOfficer 2000s",
-      "periods": [
-        "lucien14",
-        "lucien15",
-        "lucien16",
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLawEnforcement_02.webp",
-      "key": "mem_westernLawEnforcement_02",
-      "label": "Officer",
-      "location": "Western",
-      "year": "Modern",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "officer western lawEnforcement enforcement deputySheriff sheriff policeOfficer 2000s",
-      "periods": [
-        "lucien14",
-        "lucien15",
-        "lucien16",
-        "lucien19",
-        "blackCaesar29"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernLearnedMedia1900_01.webp",
-      "key": "mem_westernLearnedMedia1900_01",
-      "label": "Scholar",
-      "location": "Western",
+      "filename": "npc_lawEnforcement_ottoman_1900_01.webp",
+      "key": "lawEnforcement_ottoman_1900_01",
+      "label": "Agent",
+      "location": "Ottoman",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "scholar western artistWriter writer clergyman 1900s",
+      "tags": "agent ottoman lawEnforcement enforcement policeIntelligenceAgent 1900s",
       "periods": [
-        "lucien2",
-        "lucien6",
-        "rashid9",
-        "aishe2",
-        "fomorach1",
-        "fomorach5",
-        "fomorach15",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar23"
+        "rashid13"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLearnedMedia1900_02.webp",
-      "key": "mem_westernLearnedMedia1900_02",
-      "label": "Scholar",
-      "location": "Western",
+      "filename": "npc_lawEnforcement_ottoman_1900_02.webp",
+      "key": "lawEnforcement_ottoman_1900_02",
+      "label": "Agent",
+      "location": "Ottoman",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "scholar western artistWriter writer clergyman 1900s",
+      "tags": "agent ottoman lawEnforcement enforcement policeIntelligenceAgent 1900s",
       "periods": [
-        "lucien2",
-        "lucien6",
-        "rashid9",
-        "aishe2",
-        "fomorach1",
-        "fomorach5",
-        "fomorach15",
-        "blackCaesar6",
-        "blackCaesar8",
-        "blackCaesar23"
+        "rashid13"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernLearnedMedia_01.webp",
-      "key": "mem_westernLearnedMedia_01",
+      "filename": "npc_learnedMedia_01.webp",
+      "key": "learnedMedia_01",
       "label": "Scholar",
       "location": "Western",
       "year": "Modern",
@@ -3699,11 +2163,136 @@
         "lucien19",
         "blackCaesar29"
       ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_learnedMedia_1900_01.webp",
+      "key": "learnedMedia_1900_01",
+      "label": "Scholar",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "scholar western artistWriter writer clergyman 1900s",
+      "periods": [
+        "lucien2",
+        "lucien6",
+        "rashid9",
+        "aishe2",
+        "fomorach1",
+        "fomorach5",
+        "fomorach15",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar23"
+      ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMedical1900_01.webp",
-      "key": "mem_westernMedical1900_01",
+      "filename": "npc_learnedMedia_1900_02.webp",
+      "key": "learnedMedia_1900_02",
+      "label": "Scholar",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "scholar western artistWriter writer clergyman 1900s",
+      "periods": [
+        "lucien2",
+        "lucien6",
+        "rashid9",
+        "aishe2",
+        "fomorach1",
+        "fomorach5",
+        "fomorach15",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_learnedMedia_alamut_1800_01.webp",
+      "key": "learnedMedia_alamut_1800_01",
+      "label": "Scribe",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "scribe alamut banuHaqim haqim assamite ghoul 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_learnedMedia_arabia_1800_01.webp",
+      "key": "learnedMedia_arabia_1800_01",
+      "label": "Scholar",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "scholar arabia religiousScholar 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_learnedMedia_levant_1900_01.webp",
+      "key": "learnedMedia_levant_1900_01",
+      "label": "Journalist",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "journalist levant israel palestine 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_learnedMedia_ottoman_1800_01.webp",
+      "key": "learnedMedia_ottoman_1800_01",
+      "label": "Scholar",
+      "location": "Ottoman",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "scholar ottoman 1800s",
+      "periods": [
+        "rashid9",
+        "rashid12"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_learnedMedia_ottoman_1800_02.webp",
+      "key": "learnedMedia_ottoman_1800_02",
+      "label": "Scholar",
+      "location": "Ottoman",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "scholar ottoman 1800s",
+      "periods": [
+        "rashid9",
+        "rashid12"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_medical_1900_01.webp",
+      "key": "medical_1900_01",
       "label": "Medic",
       "location": "Western",
       "year": "1900s",
@@ -3711,16 +2300,22 @@
       "isGeneric": true,
       "tags": "western medical fieldSurgeon surgeon nurse 1900s",
       "periods": [
+        "lucien6",
+        "rashid13",
+        "rashid18",
         "aishe7",
+        "aishe18",
         "fomorach5",
         "fomorach8",
-        "blackCaesar8"
+        "fomorach22",
+        "blackCaesar8",
+        "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMedical1900_02.webp",
-      "key": "mem_westernMedical1900_02",
+      "filename": "npc_medical_1900_02.webp",
+      "key": "medical_1900_02",
       "label": "Medic",
       "location": "Western",
       "year": "1900s",
@@ -3728,60 +2323,116 @@
       "isGeneric": true,
       "tags": "western medical fieldSurgeon surgeon nurse 1900s",
       "periods": [
+        "lucien6",
+        "rashid13",
+        "rashid18",
         "aishe7",
+        "aishe18",
         "fomorach5",
         "fomorach8",
-        "blackCaesar8"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernMedical_01.webp",
-      "key": "mem_westernMedical_01",
-      "label": "Medic",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "western medical nurse 1900s",
-      "periods": [
-        "lucien6",
-        "rashid13",
-        "rashid18",
-        "aishe18",
         "fomorach22",
+        "blackCaesar8",
         "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMedical_02.webp",
-      "key": "mem_westernMedical_02",
+      "filename": "npc_medical_1900_03.webp",
+      "key": "medical_1900_03",
       "label": "Medic",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "western medical nurse 1900s",
+      "tags": "western medical fieldSurgeon surgeon nurse 1900s",
       "periods": [
         "lucien6",
         "rashid13",
         "rashid18",
+        "aishe7",
         "aishe18",
+        "fomorach5",
+        "fomorach8",
         "fomorach22",
+        "blackCaesar8",
         "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMerchantVendor1900_01.webp",
-      "key": "mem_westernMerchantVendor1900_01",
+      "filename": "npc_medical_1900_04.webp",
+      "key": "medical_1900_04",
+      "label": "Medic",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "western medical fieldSurgeon surgeon nurse 1900s",
+      "periods": [
+        "lucien6",
+        "rashid13",
+        "rashid18",
+        "aishe7",
+        "aishe18",
+        "fomorach5",
+        "fomorach8",
+        "fomorach22",
+        "blackCaesar8",
+        "blackCaesar28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_medical_mexico_1900_01.webp",
+      "key": "medical_mexico_1900_01",
+      "label": "Medic",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "mexico medical campMedic 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_medical_mexico_1900_02.webp",
+      "key": "medical_mexico_1900_02",
+      "label": "Medic",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "mexico medical campMedic 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_medical_soviet_1900_01.webp",
+      "key": "medical_soviet_1900_01",
+      "label": "Doctor",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "doctor soviet medical 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_merchantVendor_1900_01.webp",
+      "key": "merchantVendor_1900_01",
       "label": "Merchant",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "western merchantVendor vendor riverTrader trader shopkeeper streetVendor 1900s",
+      "tags": "western merchantVendor vendor riverTrader blackMarketTrader trader shopkeeper streetVendor 1900s",
       "periods": [
         "lucien2",
         "lucien6",
@@ -3802,19 +2453,21 @@
         "blackCaesar19",
         "blackCaesar21",
         "blackCaesar22",
-        "blackCaesar23"
+        "blackCaesar23",
+        "blackCaesar28",
+        "rashid18"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMerchantVendor1900_02.webp",
-      "key": "mem_westernMerchantVendor1900_02",
+      "filename": "npc_merchantVendor_1900_02.webp",
+      "key": "merchantVendor_1900_02",
       "label": "Merchant",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "western merchantVendor vendor riverTrader trader shopkeeper streetVendor 1900s",
+      "tags": "western merchantVendor vendor riverTrader blackMarketTrader trader shopkeeper streetVendor 1900s",
       "periods": [
         "lucien2",
         "lucien6",
@@ -3835,43 +2488,177 @@
         "blackCaesar19",
         "blackCaesar21",
         "blackCaesar22",
-        "blackCaesar23"
+        "blackCaesar23",
+        "blackCaesar28",
+        "rashid18"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMerchantVendor_01.webp",
-      "key": "mem_westernMerchantVendor_01",
+      "filename": "npc_merchantVendor_1900_03.webp",
+      "key": "merchantVendor_1900_03",
       "label": "Merchant",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "western merchantVendor vendor blackMarketTrader trader 1900s",
+      "tags": "western merchantVendor vendor riverTrader blackMarketTrader trader shopkeeper streetVendor 1900s",
       "periods": [
-        "rashid18",
-        "blackCaesar28"
+        "lucien2",
+        "lucien6",
+        "lucien7",
+        "aishe2",
+        "aishe7",
+        "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar9",
+        "blackCaesar13",
+        "blackCaesar18",
+        "blackCaesar19",
+        "blackCaesar21",
+        "blackCaesar22",
+        "blackCaesar23",
+        "blackCaesar28",
+        "rashid18"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMerchantVendor_02.webp",
-      "key": "mem_westernMerchantVendor_02",
+      "filename": "npc_merchantVendor_1900_04.webp",
+      "key": "merchantVendor_1900_04",
       "label": "Merchant",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "western merchantVendor vendor blackMarketTrader trader 1900s",
+      "tags": "western merchantVendor vendor riverTrader blackMarketTrader trader shopkeeper streetVendor 1900s",
       "periods": [
-        "rashid18",
-        "blackCaesar28"
+        "lucien2",
+        "lucien6",
+        "lucien7",
+        "aishe2",
+        "aishe7",
+        "aishe13",
+        "fomorach1",
+        "fomorach5",
+        "fomorach8",
+        "fomorach15",
+        "fomorach22",
+        "blackCaesar6",
+        "blackCaesar8",
+        "blackCaesar9",
+        "blackCaesar13",
+        "blackCaesar18",
+        "blackCaesar19",
+        "blackCaesar21",
+        "blackCaesar22",
+        "blackCaesar23",
+        "blackCaesar28",
+        "rashid18"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMilitary1800_01.webp",
-      "key": "mem_westernMilitary1800_01",
+      "filename": "npc_merchantVendor_arabia_1800_01.webp",
+      "key": "merchantVendor_arabia_1800_01",
+      "label": "Merchant",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "arabia merchantVendor vendor 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_merchantVendor_arabia_1800_02.webp",
+      "key": "merchantVendor_arabia_1800_02",
+      "label": "Merchant",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "arabia merchantVendor vendor 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_merchantVendor_haiti_1800_01.webp",
+      "key": "merchantVendor_haiti_1800_01",
+      "label": "Merchant",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "haiti merchantVendor vendor marketTrader trader 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_merchantVendor_haiti_1800_02.webp",
+      "key": "merchantVendor_haiti_1800_02",
+      "label": "Merchant",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "haiti merchantVendor vendor marketTrader trader 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_merchantVendor_ottoman_1800_01.webp",
+      "key": "merchantVendor_ottoman_1800_01",
+      "label": "Merchant",
+      "location": "Ottoman",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "ottoman merchantVendor vendor 1800s",
+      "periods": [
+        "rashid9",
+        "rashid12"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_merchantVendor_ottoman_1800_02.webp",
+      "key": "merchantVendor_ottoman_1800_02",
+      "label": "Merchant",
+      "location": "Ottoman",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "ottoman merchantVendor vendor 1800s",
+      "periods": [
+        "rashid9",
+        "rashid12"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_1800_01.webp",
+      "key": "military_1800_01",
       "label": "Soldier",
       "location": "Western",
       "year": "1800s",
@@ -3891,8 +2678,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMilitary1800_02.webp",
-      "key": "mem_westernMilitary1800_02",
+      "filename": "npc_military_1800_02.webp",
+      "key": "military_1800_02",
       "label": "Soldier",
       "location": "Western",
       "year": "1800s",
@@ -3912,16 +2699,17 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMilitary1900_01.webp",
-      "key": "mem_westernMilitary1900_01",
+      "filename": "npc_military_1900_01.webp",
+      "key": "military_1900_01",
       "label": "Soldier",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "soldier western military nationalistSoldier republicanFighter fighter 1900s",
+      "tags": "soldier western military nationalistSoldier republicanFighter fighter veteran 1900s",
       "periods": [
         "lucien6",
+        "lucien14",
         "rashid13",
         "rashid18",
         "aishe18",
@@ -3931,16 +2719,17 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMilitary1900_02.webp",
-      "key": "mem_westernMilitary1900_02",
+      "filename": "npc_military_1900_02.webp",
+      "key": "military_1900_02",
       "label": "Soldier",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "soldier western military nationalistSoldier republicanFighter fighter 1900s",
+      "tags": "soldier western military nationalistSoldier republicanFighter fighter veteran 1900s",
       "periods": [
         "lucien6",
+        "lucien14",
         "rashid13",
         "rashid18",
         "aishe18",
@@ -3950,16 +2739,17 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMilitary1900_03.webp",
-      "key": "mem_westernMilitary1900_03",
+      "filename": "npc_military_1900_03.webp",
+      "key": "military_1900_03",
       "label": "Soldier",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "soldier western military nationalistSoldier republicanFighter fighter 1900s",
+      "tags": "soldier western military nationalistSoldier republicanFighter fighter veteran 1900s",
       "periods": [
         "lucien6",
+        "lucien14",
         "rashid13",
         "rashid18",
         "aishe18",
@@ -3969,36 +2759,356 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMilitary_01.webp",
-      "key": "mem_westernMilitary_01",
+      "filename": "npc_military_1900_04.webp",
+      "key": "military_1900_04",
       "label": "Soldier",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "soldier western militaryVeteran veteran 1900s",
+      "tags": "soldier western military nationalistSoldier republicanFighter fighter veteran 1900s",
       "periods": [
-        "lucien14"
+        "lucien6",
+        "lucien14",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "fomorach22",
+        "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernMilitary_02.webp",
-      "key": "mem_westernMilitary_02",
+      "filename": "npc_military_1900_05.webp",
+      "key": "military_1900_05",
       "label": "Soldier",
       "location": "Western",
       "year": "1900s",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "soldier western militaryVeteran veteran 1900s",
+      "tags": "soldier western military nationalistSoldier republicanFighter fighter veteran 1900s",
       "periods": [
-        "lucien14"
+        "lucien6",
+        "lucien14",
+        "rashid13",
+        "rashid18",
+        "aishe18",
+        "fomorach22",
+        "blackCaesar28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernNightlifeCivic1900_01.webp",
-      "key": "mem_westernNightlifeCivic1900_01",
+      "filename": "npc_military_alamut_1800_01.webp",
+      "key": "military_alamut_1800_01",
+      "label": "Warrior",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "warrior alamut military banuHaqim haqim assamite ghoul 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_alamut_1800_02.webp",
+      "key": "military_alamut_1800_02",
+      "label": "Warrior",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "warrior alamut military banuHaqim haqim assamite ghoul 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_arabia_1800_01.webp",
+      "key": "military_arabia_1800_01",
+      "label": "Soldier",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier arabia military 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_arabia_1800_02.webp",
+      "key": "military_arabia_1800_02",
+      "label": "Soldier",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier arabia military 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_arabia_1800_03.webp",
+      "key": "military_arabia_1800_03",
+      "label": "Soldier",
+      "location": "Arabia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier arabia military 1800s",
+      "periods": [
+        "rashid1",
+        "rashid4",
+        "rashid6",
+        "rashid7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_australia_1800_01.webp",
+      "key": "military_australia_1800_01",
+      "label": "Soldier",
+      "location": "Australia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier australia military 1800s",
+      "periods": [
+        "blackCaesar13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_australia_1800_02.webp",
+      "key": "military_australia_1800_02",
+      "label": "Soldier",
+      "location": "Australia",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier australia military 1800s",
+      "periods": [
+        "blackCaesar13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_levant_1900_01.webp",
+      "key": "military_levant_1900_01",
+      "label": "Soldier",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier fighter levant israel palestine military jewishFighterOfficial official 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_levant_1900_02.webp",
+      "key": "military_levant_1900_02",
+      "label": "Soldier",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier fighter levant israel palestine military jewishFighterOfficial official 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_mexico_1900_01.webp",
+      "key": "military_mexico_1900_01",
+      "label": "Soldier",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier mexico military federalSoldier revolutionarySoldier 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_mexico_1900_02.webp",
+      "key": "military_mexico_1900_02",
+      "label": "Soldier",
+      "location": "Mexico",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier mexico military federalSoldier revolutionarySoldier 1900s",
+      "periods": [
+        "lucien7"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_ottoman_1900_01.webp",
+      "key": "military_ottoman_1900_01",
+      "label": "Soldier",
+      "location": "Ottoman",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier ottoman military 1900s",
+      "periods": [
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_ottoman_1900_02.webp",
+      "key": "military_ottoman_1900_02",
+      "label": "Soldier",
+      "location": "Ottoman",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier ottoman military 1900s",
+      "periods": [
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_soviet_1900_01.webp",
+      "key": "military_soviet_1900_01",
+      "label": "Soldier",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier soviet military 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_military_soviet_1900_02.webp",
+      "key": "military_soviet_1900_02",
+      "label": "Soldier",
+      "location": "Soviet",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "soldier soviet military 1900s",
+      "periods": [
+        "fomorach23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_nightlifeCivic_01.webp",
+      "key": "nightlifeCivic_01",
+      "label": "Socialite",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "socialite western nightlifeCivic nightlifePatron patron politicalActivist activist 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_nightlifeCivic_02.webp",
+      "key": "nightlifeCivic_02",
+      "label": "Socialite",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "socialite western nightlifeCivic nightlifePatron patron politicalActivist activist 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_nightlifeCivic_1800_01.webp",
+      "key": "nightlifeCivic_1800_01",
+      "label": "Socialite",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "socialite western nightlifeCivic communityActivist activist 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_nightlifeCivic_1800_02.webp",
+      "key": "nightlifeCivic_1800_02",
+      "label": "Socialite",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "socialite western nightlifeCivic communityActivist activist 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_nightlifeCivic_1800_03.webp",
+      "key": "nightlifeCivic_1800_03",
+      "label": "Socialite",
+      "location": "Western",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "socialite western nightlifeCivic communityActivist activist 1800s",
+      "periods": [
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_nightlifeCivic_1900_01.webp",
+      "key": "nightlifeCivic_1900_01",
       "label": "Socialite",
       "location": "Western",
       "year": "1900s",
@@ -4014,8 +3124,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernNightlifeCivic1900_02.webp",
-      "key": "mem_westernNightlifeCivic1900_02",
+      "filename": "npc_nightlifeCivic_1900_02.webp",
+      "key": "nightlifeCivic_1900_02",
       "label": "Socialite",
       "location": "Western",
       "year": "1900s",
@@ -4031,89 +3141,42 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernNightlifeCivic1800_01.webp",
-      "key": "mem_westernNightlifeCivic1800_01",
+      "filename": "npc_nightlifeCivic_newOrleans_01.webp",
+      "key": "nightlifeCivic_newOrleans_01",
       "label": "Socialite",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "socialite western nightlifeCivic communityActivist activist 1800s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernNightlifeCivic1800_02.webp",
-      "key": "mem_westernNightlifeCivic1800_02",
-      "label": "Socialite",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "socialite western nightlifeCivic communityActivist activist 1800s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernNightlifeCivic1800_03.webp",
-      "key": "mem_westernNightlifeCivic1800_03",
-      "label": "Socialite",
-      "location": "Western",
-      "year": "1800s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "socialite western nightlifeCivic communityActivist activist 1800s",
-      "periods": [
-        "aishe18",
-        "aishe22",
-        "aishe26",
-        "aishe28"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernNightlifeCivic_01.webp",
-      "key": "mem_westernNightlifeCivic_01",
-      "label": "Socialite",
-      "location": "Western",
+      "location": "New Orleans",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "socialite western nightlifeCivic nightlifePatron patron politicalActivist activist 2000s",
+      "tags": "socialite newOrleans orleans nightlifeCivic jazzMusician musician 2000s",
       "periods": [
-        "lucien19",
-        "blackCaesar29"
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernNightlifeCivic_02.webp",
-      "key": "mem_westernNightlifeCivic_02",
+      "filename": "npc_nightlifeCivic_newOrleans_02.webp",
+      "key": "nightlifeCivic_newOrleans_02",
       "label": "Socialite",
-      "location": "Western",
+      "location": "New Orleans",
       "year": "Modern",
       "variantOfUnique": "",
       "isGeneric": true,
-      "tags": "socialite western nightlifeCivic nightlifePatron patron politicalActivist activist 2000s",
+      "tags": "socialite newOrleans orleans nightlifeCivic jazzMusician musician 2000s",
       "periods": [
-        "lucien19",
-        "blackCaesar29"
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28"
       ],
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernOccultClient1800_01.webp",
-      "key": "mem_westernOccultClient1800_01",
+      "filename": "npc_occultClient_1800_01.webp",
+      "key": "occultClient_1800_01",
       "label": "Occult Client",
       "location": "Western",
       "year": "1800s",
@@ -4128,8 +3191,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernOccultClient1800_02.webp",
-      "key": "mem_westernOccultClient1800_02",
+      "filename": "npc_occultClient_1800_02.webp",
+      "key": "occultClient_1800_02",
       "label": "Occult Client",
       "location": "Western",
       "year": "1800s",
@@ -4144,22 +3207,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernOccultClient_01.webp",
-      "key": "mem_westernOccultClient_01",
-      "label": "Occult Client",
-      "location": "Western",
-      "year": "1900s",
-      "variantOfUnique": "",
-      "isGeneric": true,
-      "tags": "occultClient client western occultSeeker seeker 1900s",
-      "periods": [
-        "lucien14"
-      ],
-      "catalog": false
-    },
-    {
-      "filename": "npc_mem_westernOccultClient1900_01.webp",
-      "key": "mem_westernOccultClient1900_01",
+      "filename": "npc_occultClient_1900_01.webp",
+      "key": "occultClient_1900_01",
       "label": "Occult Client",
       "location": "Western",
       "year": "1900s",
@@ -4168,6 +3217,7 @@
       "tags": "occultClient client western desperatePetitioner petitioner grievingClient occultHobbyist hobbyist wealthyPatronCuriousSocialite socialite 1900s",
       "periods": [
         "lucien2",
+        "lucien14",
         "aishe7",
         "aishe13",
         "aishe18",
@@ -4180,8 +3230,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernOccultClient1900_02.webp",
-      "key": "mem_westernOccultClient1900_02",
+      "filename": "npc_occultClient_1900_02.webp",
+      "key": "occultClient_1900_02",
       "label": "Occult Client",
       "location": "Western",
       "year": "1900s",
@@ -4190,6 +3240,7 @@
       "tags": "occultClient client western desperatePetitioner petitioner grievingClient occultHobbyist hobbyist wealthyPatronCuriousSocialite socialite 1900s",
       "periods": [
         "lucien2",
+        "lucien14",
         "aishe7",
         "aishe13",
         "aishe18",
@@ -4202,8 +3253,59 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernProspector_01.webp",
-      "key": "mem_westernProspector_01",
+      "filename": "npc_occultClient_1900_03.webp",
+      "key": "occultClient_1900_03",
+      "label": "Occult Client",
+      "location": "Western",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "occultClient client western desperatePetitioner petitioner grievingClient occultHobbyist hobbyist wealthyPatronCuriousSocialite socialite 1900s",
+      "periods": [
+        "lucien2",
+        "lucien14",
+        "aishe7",
+        "aishe13",
+        "aishe18",
+        "aishe22",
+        "aishe26",
+        "aishe28",
+        "blackCaesar18",
+        "blackCaesar23"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_occultClient_haiti_1800_01.webp",
+      "key": "occultClient_haiti_1800_01",
+      "label": "Vodou Practitioner",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "vodouPractitioner practitioner haiti occultClient client 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_occultClient_haiti_1800_02.webp",
+      "key": "occultClient_haiti_1800_02",
+      "label": "Vodou Practitioner",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "vodouPractitioner practitioner haiti occultClient client 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_prospector_1900_01.webp",
+      "key": "prospector_1900_01",
       "label": "Prospector",
       "location": "Western",
       "year": "1900s",
@@ -4216,8 +3318,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernProspector_02.webp",
-      "key": "mem_westernProspector_02",
+      "filename": "npc_prospector_1900_02.webp",
+      "key": "prospector_1900_02",
       "label": "Prospector",
       "location": "Western",
       "year": "1900s",
@@ -4230,8 +3332,275 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernTechnicalTransport_01.webp",
-      "key": "mem_westernTechnicalTransport_01",
+      "filename": "npc_revolutionaryVeteran_haiti_1800_01.webp",
+      "key": "revolutionaryVeteran_haiti_1800_01",
+      "label": "Veteran",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "veteran haiti revolutionaryVeteran 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_revolutionaryVeteran_haiti_1800_02.webp",
+      "key": "revolutionaryVeteran_haiti_1800_02",
+      "label": "Veteran",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "veteran haiti revolutionaryVeteran 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_sabbatLearnedMedia_01.webp",
+      "key": "sabbatLearnedMedia_01",
+      "label": "Sabbat Scholar",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "scholar sabbat occultScholar vampire 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatPackMember_01.webp",
+      "key": "sabbatPackMember_01",
+      "label": "Sabbat Vampire",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "packMember sabbatPackMember vampire 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatPackMember_02.webp",
+      "key": "sabbatPackMember_02",
+      "label": "Sabbat Vampire",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "packMember sabbatPackMember vampire 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatPackMember_03.webp",
+      "key": "sabbatPackMember_03",
+      "label": "Sabbat Vampire",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "packMember sabbatPackMember vampire 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatPackMember_04.webp",
+      "key": "sabbatPackMember_04",
+      "label": "Sabbat Vampire",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "packMember sabbatPackMember vampire 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatRetainerOrVessel_01.webp",
+      "key": "sabbatRetainerOrVessel_01",
+      "label": "Sabbat Retainer",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sabbat retainerVessel vessel ghoulRetainer 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatRetainerOrVessel_02.webp",
+      "key": "sabbatRetainerOrVessel_02",
+      "label": "Sabbat Retainer",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sabbat retainerVessel vessel ghoulRetainer 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatTzimisceGhouls_01.webp",
+      "key": "sabbatTzimisceGhouls_01",
+      "label": "Tzimisce Ghoul",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sabbat tzimisceGhouls ghouls 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatTzimisceGhouls_02.webp",
+      "key": "sabbatTzimisceGhouls_02",
+      "label": "Tzimisce Ghoul",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sabbat tzimisceGhouls ghouls 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatTzimisceGhouls_03.webp",
+      "key": "sabbatTzimisceGhouls_03",
+      "label": "Tzimisce Ghoul",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sabbat tzimisceGhouls ghouls 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sabbatTzimisceGhouls_04.webp",
+      "key": "sabbatTzimisceGhouls_04",
+      "label": "Tzimisce Ghoul",
+      "location": "Western",
+      "year": "Modern",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sabbat tzimisceGhouls ghouls 2000s",
+      "periods": [
+        "lucien19",
+        "blackCaesar29"
+      ],
+      "catalog": true
+    },
+    {
+      "filename": "npc_sailor_levant_1900_01.webp",
+      "key": "sailor_levant_1900_01",
+      "label": "Sailor",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sailor levant israel palestine 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_sailor_levant_1900_02.webp",
+      "key": "sailor_levant_1900_02",
+      "label": "Sailor",
+      "location": "Levant",
+      "year": "1900s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sailor levant israel palestine 1900s",
+      "periods": [
+        "fomorach24"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_supernatural_alamut_1800_01.webp",
+      "key": "supernatural_alamut_1800_01",
+      "label": "Sorcerer",
+      "location": "Alamut",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "sorcerer alamut supernatural bloodSorcerer banuHaqim haqim assamite vampire 1800s",
+      "periods": [
+        "rashid4",
+        "rashid6",
+        "rashid7",
+        "rashid12",
+        "rashid13"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_supernatural_haiti_1800_01.webp",
+      "key": "supernatural_haiti_1800_01",
+      "label": "Spirit",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "spirit haiti supernatural wraithsLoa loa 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_supernatural_haiti_1800_02.webp",
+      "key": "supernatural_haiti_1800_02",
+      "label": "Spirit",
+      "location": "Haiti",
+      "year": "1800s",
+      "variantOfUnique": "",
+      "isGeneric": true,
+      "tags": "spirit haiti supernatural wraithsLoa loa 1800s",
+      "periods": [
+        "blackCaesar18"
+      ],
+      "catalog": false
+    },
+    {
+      "filename": "npc_technicalTransport_01.webp",
+      "key": "technicalTransport_01",
       "label": "Mechanic",
       "location": "Western",
       "year": "Modern",
@@ -4243,11 +3612,11 @@
         "lucien15",
         "lucien16"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_westernTechnicalTransport_02.webp",
-      "key": "mem_westernTechnicalTransport_02",
+      "filename": "npc_technicalTransport_02.webp",
+      "key": "technicalTransport_02",
       "label": "Mechanic",
       "location": "Western",
       "year": "Modern",
@@ -4259,11 +3628,11 @@
         "lucien15",
         "lucien16"
       ],
-      "catalog": false
+      "catalog": true
     },
     {
-      "filename": "npc_mem_westernTechnicalTransport1900_01.webp",
-      "key": "mem_westernTechnicalTransport1900_01",
+      "filename": "npc_technicalTransport_1900_01.webp",
+      "key": "technicalTransport_1900_01",
       "label": "Mechanic",
       "location": "Western",
       "year": "1900s",
@@ -4279,8 +3648,8 @@
       "catalog": false
     },
     {
-      "filename": "npc_mem_westernTechnicalTransport1900_02.webp",
-      "key": "mem_westernTechnicalTransport1900_02",
+      "filename": "npc_technicalTransport_1900_02.webp",
+      "key": "technicalTransport_1900_02",
       "label": "Mechanic",
       "location": "Western",
       "year": "1900s",

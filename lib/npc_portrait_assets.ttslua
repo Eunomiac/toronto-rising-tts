@@ -29,7 +29,7 @@ return {
   ["enzoCaruso"] = { ["fomorach"] = "npcPortrait_enzoCaruso" },
   ["miriamRavenscroft"] = { ["lordLucien"] = "npcPortrait_miriamRavenscroft" },
   ["kieraVaughan"] = { ["fomorach"] = "npcPortrait_kieraVaughan", ["blackCaesar"] = "npcPortrait_kieraVaughan" },
-  ["uwuByteMe"] = { ["aishe"] = "npcPortrait_uwuByteMe" },
+  ["uwuByteMe"] = { ["fomorach"] = "npcPortrait_uwuByteMe" },
   ["marieBouschard"] = { ["aishe"] = "npcPortrait_marieBouschard" },
   ["jervaisDeLaCroix"] = { ["blackCaesar"] = "npcPortrait_jervaisDeLaCroix" },
   ["jervaisDeLaCroix_1800"] = { ["blackCaesar"] = "npcPortrait_jervaisDeLaCroix" },

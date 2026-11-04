@@ -18,45 +18,45 @@
       "characterKey": "aishe",
       "fullName": "Aishe Tache",
       "isPC": true,
-      "catalog": true,
+      "catalog": false,
       "filename": "npc_aishe.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
       "characterKey": "blackCaesar",
       "fullName": "Black Caesar",
       "isPC": true,
-      "catalog": true,
+      "catalog": false,
       "filename": "npc_blackCaesar.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
       "characterKey": "fomorach",
       "fullName": "Fomórach",
       "isPC": true,
-      "catalog": true,
+      "catalog": false,
       "filename": "npc_fomorach.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
       "characterKey": "lordLucien",
       "fullName": "Lord Lucien",
       "isPC": true,
-      "catalog": true,
+      "catalog": false,
       "filename": "npc_lordLucien.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
       "characterKey": "rashid",
       "fullName": "Rashid Abdulrahman",
       "isPC": true,
-      "catalog": true,
+      "catalog": false,
       "filename": "npc_rashid.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     }
   ],
@@ -67,7 +67,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_abbasFaruk.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "touchstone"
       ]
@@ -76,9 +76,9 @@
       "characterKey": "adrianGerrard",
       "fullName": "Adrian Gerrard",
       "isPC": false,
-      "catalog": false,
+      "catalog": true,
       "filename": "npc_adrianGerrard.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
@@ -87,7 +87,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_adrianVarga.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -98,16 +98,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_agnesBellanger.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "alexander",
-      "fullName": "Alexander",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_alexander.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
@@ -116,7 +107,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_alexandra.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redeemers"
       ]
@@ -127,36 +118,18 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_alexisHoltt.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "petitioners"
       ]
     },
     {
-      "characterKey": "aliRamsoon",
-      "fullName": "Ali Ramsoon",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_aliRamsoon.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
       "characterKey": "alistairEtrata",
       "fullName": "Alistair Etrata",
       "isPC": false,
-      "catalog": false,
-      "filename": "npc_alistairEtrata.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "alyaWang",
-      "fullName": "Alya Wang",
-      "isPC": false,
       "catalog": true,
-      "filename": "npc_alyaWang.webp",
-      "canonicalKey": null,
+      "filename": "npc_alistairEtrata.webp",
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
@@ -165,7 +138,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_anitaMorris.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "freeChantry"
       ]
@@ -175,36 +148,11 @@
       "fullName": "Daeva: Anita Morris",
       "isPC": false,
       "catalog": true,
-      "filename": "npc_daevaAnitaMorris.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "antoineRustovich",
-      "fullName": "Antoine Rustovich",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_antoineRustovich.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "artemis",
-      "fullName": "Artemis",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_artemis.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "aryanaMortazavi",
-      "fullName": "Aryana Mortazavi",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_aryanaMortazavi.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
+      "filename": "npc_anitaMorrisDaeva.webp",
+      "variantOfUnique": "",
+      "pickerGroups": [
+        "aapilu"
+      ]
     },
     {
       "characterKey": "averyInnis",
@@ -212,7 +160,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_averyInnis.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "petitioners"
       ]
@@ -223,7 +171,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_bacchusGiovanni.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -234,19 +182,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_bee.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "beesHive"
       ]
-    },
-    {
-      "characterKey": "benBlinker",
-      "fullName": "Ben Blinker",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_benBlinker.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "benedictKincaid",
@@ -254,7 +193,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_benedictKincaid.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "petitioners"
       ]
@@ -265,7 +204,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_bertrice.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "autarkis"
       ]
@@ -276,7 +215,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_calvinWallace.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redFlag"
       ]
@@ -287,7 +226,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_carol.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "beesHive"
       ]
@@ -298,18 +237,18 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_chokesOnMoonlight.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
     },
     {
-      "characterKey": "chokesOnMoonlightGarou",
+      "characterKey": "chokesOnMoonlight_Garou",
       "fullName": "Chokes-On-Moonlight",
       "isPC": false,
-      "catalog": false,
-      "filename": "npc_chokesOnMoonlightGarou.webp",
-      "canonicalKey": null,
+      "catalog": true,
+      "filename": "npc_chokesOnMoonlight_Garou.webp",
+      "variantOfUnique": "chokesOnMoonlight",
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -320,7 +259,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_christianne.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "harpies"
       ]
@@ -331,42 +270,9 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_christopherGiovanniJr.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "wychwoodHecata"
-      ]
-    },
-    {
-      "characterKey": "daevaAnitaMorris",
-      "fullName": "Daeva: Anita Morris",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_daevaAnitaMorris.webp",
-      "canonicalKey": "anitaMorrisDaeva",
-      "pickerGroups": [
-        "aapilu"
-      ]
-    },
-    {
-      "characterKey": "daevaGabrielCollard",
-      "fullName": "Daeva: Gabriel Collard",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_daevaGabrielCollard.webp",
-      "canonicalKey": "gabrielCollardDaeva",
-      "pickerGroups": [
-        "aapilu"
-      ]
-    },
-    {
-      "characterKey": "daevaNasirKhan",
-      "fullName": "Daeva: Nasir Khan",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_daevaNasirKhan.webp",
-      "canonicalKey": "nasirKhanDaeva",
-      "pickerGroups": [
-        "aapilu"
       ]
     },
     {
@@ -375,7 +281,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_damienAbanda.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redFlag"
       ]
@@ -386,19 +292,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_damienKline.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
-    },
-    {
-      "characterKey": "danielGable",
-      "fullName": "Daniel Gable",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_danielGable.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "deaconReal",
@@ -406,19 +303,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_deaconReal.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "midnightMass"
       ]
-    },
-    {
-      "characterKey": "dragomirIlyan",
-      "fullName": "Dragomir Ilyan",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_dragomirIlyan.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "drake",
@@ -426,19 +314,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_drake.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "autarkis"
       ]
-    },
-    {
-      "characterKey": "drArthurRoy",
-      "fullName": "Dr. Arthur Roy",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_drArthurRoy.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "drIrenaVoss",
@@ -446,7 +325,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_drIrenaVoss.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
@@ -457,7 +336,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_eddie.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "petitioners"
       ]
@@ -468,7 +347,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_emilyTheDuskRose.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "ironGuard"
       ]
@@ -479,19 +358,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_enzoCaruso.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "touchstone"
       ]
-    },
-    {
-      "characterKey": "evaBates",
-      "fullName": "Eva Bates",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_evaBates.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "evanescentBlue",
@@ -499,7 +369,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_evanescentBlue.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "colorBlitz"
       ]
@@ -510,7 +380,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_evangelineDupont.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
@@ -521,18 +391,18 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_fangsAtTheCradle.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
     },
     {
-      "characterKey": "fangsAtTheCradleGarou",
+      "characterKey": "fangsAtTheCradle_Garou",
       "fullName": "Fangs-at-the-Cradle",
       "isPC": false,
-      "catalog": false,
-      "filename": "npc_fangsAtTheCradleGarou.webp",
-      "canonicalKey": null,
+      "catalog": true,
+      "filename": "npc_fangsAtTheCradle_Garou.webp",
+      "variantOfUnique": "fangsAtTheCradle",
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -543,36 +413,18 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_fatherDiaz.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "midnightMass"
       ]
     },
     {
-      "characterKey": "flagellantDawson",
-      "fullName": "Flagellant Dawson",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_flagellantDawson.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "flagellantRebecca",
-      "fullName": "Flagellant Rebecca",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_flagellantRebecca.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
       "characterKey": "frederikScheer",
       "fullName": "Frederik Scheer",
       "isPC": false,
-      "catalog": false,
+      "catalog": true,
       "filename": "npc_frederikScheer.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
@@ -581,7 +433,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_gabrielCollard.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "freeChantry"
       ]
@@ -591,9 +443,11 @@
       "fullName": "Daeva: Gabriel Collard",
       "isPC": false,
       "catalog": true,
-      "filename": "npc_daevaGabrielCollard.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
+      "filename": "npc_gabrielCollardDaeva.webp",
+      "variantOfUnique": "",
+      "pickerGroups": [
+        "aapilu"
+      ]
     },
     {
       "characterKey": "georgieStJames",
@@ -601,19 +455,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_georgieStJames.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "moonClub"
       ]
-    },
-    {
-      "characterKey": "hellwroughtMask",
-      "fullName": "Hell-Wrought Mask of Blackened Iron",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_hellwroughtMask.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "ianRammond",
@@ -621,19 +466,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_ianRammond.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "beesHive"
       ]
-    },
-    {
-      "characterKey": "iantheSarkophylax",
-      "fullName": "Ianthe Sarkophylax",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_iantheSarkophylax.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "iq",
@@ -641,19 +477,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_iq.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "beesHive"
       ]
-    },
-    {
-      "characterKey": "j",
-      "fullName": "J",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_j.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "jackBeNimble",
@@ -661,28 +488,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_jackBeNimble.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "theLine"
       ]
-    },
-    {
-      "characterKey": "janeDoe",
-      "fullName": "Jane 'JD' Doe",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_janeDoe.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "jason",
-      "fullName": "Jason",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_jason.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "jeanDucheskiI",
@@ -690,7 +499,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_jeanDucheskiI.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "criseDeLwa"
       ]
@@ -701,7 +510,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_jeanDucheskiIII.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "ducheskiRevenant"
       ]
@@ -712,7 +521,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_jervaisDeLaCroix.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
@@ -721,7 +530,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_jesseSharp.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -732,19 +541,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_jezdimirDucheski.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "ducheskiRevenant"
       ]
-    },
-    {
-      "characterKey": "johannesNapier",
-      "fullName": "Johannes Napier",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_johannesNapier.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "kadePhillips",
@@ -752,7 +552,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_kadePhillips.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "touchstone"
       ]
@@ -763,7 +563,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_kai.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redeemers"
       ]
@@ -774,7 +574,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_kieraVaughan.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "touchstone"
       ]
@@ -785,19 +585,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_kingstonBlack.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "jarvisJacks"
       ]
-    },
-    {
-      "characterKey": "kitEdwards",
-      "fullName": "Kit Edwards",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_kitEdwards.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "ladyAvelineDubois",
@@ -805,7 +596,16 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_ladyAvelineDubois.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
+      "pickerGroups": []
+    },
+    {
+      "characterKey": "lalehBintSaif",
+      "fullName": "Laleh bint Saif",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_lalehBintSaif.webp",
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
@@ -814,28 +614,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_laz.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "ironGuard"
       ]
-    },
-    {
-      "characterKey": "leahHawk",
-      "fullName": "Leah Hawk",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_leahHawk.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "lemon",
-      "fullName": "Lemon",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_lemon.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "lexiMadi",
@@ -843,19 +625,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_lexiMadi.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "petitioners"
       ]
-    },
-    {
-      "characterKey": "lockeUlrich",
-      "fullName": "Locke Ulrich",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_lockeUlrich.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "lorenzaGiovanni",
@@ -863,7 +636,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_lorenzaGiovanni.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -874,19 +647,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_lucasMerrow.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
-    },
-    {
-      "characterKey": "maeve",
-      "fullName": "Maeve",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_maeve.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "mamboAbigail",
@@ -894,7 +658,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_mamboAbigail.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -905,19 +669,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_mara.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "deepSix"
       ]
-    },
-    {
-      "characterKey": "mariaNorris",
-      "fullName": "Maria Norris",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_mariaNorris.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "marieBouschard",
@@ -925,7 +680,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_marieBouschard.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "civilian"
       ]
@@ -936,7 +691,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_masonSchmidt.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "theLine"
       ]
@@ -947,460 +702,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_maxFloyd.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "jarvisJacks"
       ]
-    },
-    {
-      "characterKey": "maximillianSteele",
-      "fullName": "Maximillian Steele",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_maximillianSteele.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_adrianGerrard",
-      "fullName": "Adrian Gerrard",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_adrianGerrard.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_adrianGerrard1800",
-      "fullName": "Adrian Gerrard",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_adrianGerrard1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_adrianGerrard1900",
-      "fullName": "Adrian Gerrard",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_adrianGerrard1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_agnesBellanger",
-      "fullName": "Agnes Bellanger",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_agnesBellanger.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_agnesBellanger1900",
-      "fullName": "Agnes Bellanger",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_agnesBellanger1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_alistairEtrata",
-      "fullName": "Alistair Etrata",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_alistairEtrata.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_andreiStrandza",
-      "fullName": "Andrei Strandza",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_andreiStrandza.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_bertrice1800",
-      "fullName": "Bertrice",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_bertrice1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_bertrice1900",
-      "fullName": "Bertrice",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_bertrice1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_carna",
-      "fullName": "Carna",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_carna.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_damienAbanda1800",
-      "fullName": "Damien Abanda",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_damienAbanda1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_damienAbanda1900",
-      "fullName": "Damien Abanda",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_damienAbanda1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_fomorachPreEmbrace",
-      "fullName": "Pre-Embrace Fomórach",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_fomorachPreEmbrace.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_frederikScheer",
-      "fullName": "Frederik Scheer",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_frederikScheer.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_frederikScheer1900",
-      "fullName": "Frederik Scheer",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_frederikScheer1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_ibrahimKethuda",
-      "fullName": "Ibrahim Kethüda",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_ibrahimKethuda.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_jeanDucheskiIPreDeath",
-      "fullName": "Pre-Death Jean Ducheski Francois I",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_jeanDucheskiIPreDeath.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_jervaisDeLaCroix",
-      "fullName": "Jervais de la Croix",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_jervaisDeLaCroix.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_jervaisDeLaCroix1800",
-      "fullName": "Jervais de la Croix",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_jervaisDeLaCroix1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_jervaisDeLaCroix1900",
-      "fullName": "Jervais de la Croix",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_jervaisDeLaCroix1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_ladyAvelineDubois",
-      "fullName": "Lady Aveline Dubois",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_ladyAvelineDubois.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_lalehBintSaif",
-      "fullName": "Laleh bint Saif",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_lalehBintSaif.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_lockeUlrich",
-      "fullName": "Locke Ulrich",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_lockeUlrich.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_lordOswald",
-      "fullName": "Lord Oswald",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_lordOswald.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_lordOswald1800",
-      "fullName": "Lord Oswald",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_lordOswald1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_lordOswald1900",
-      "fullName": "Lord Oswald",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_lordOswald1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_mamboAbigail1800",
-      "fullName": "Mambo Abigail",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_mamboAbigail1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_maraPreEmbrace",
-      "fullName": "Pre-Embrace Oksana Mara Ziva",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_maraPreEmbrace.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_marcelGuilbeau",
-      "fullName": "Marcel Guilbeau",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_marcelGuilbeau.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_maximillianSteele",
-      "fullName": "Maximillian Steele",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_maximillianSteele.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_maximillianSteele1800",
-      "fullName": "Maximillian Steele",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_maximillianSteele1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_maximillianSteele1900",
-      "fullName": "Maximillian Steele",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_maximillianSteele1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_michaelTheArchangel",
-      "fullName": "Michael the Archangel",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_michaelTheArchangel.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_monikaEulenberg",
-      "fullName": "Monika Eulenberg",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_monikaEulenberg.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_mortius",
-      "fullName": "Mortius",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_mortius.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_mortius1900",
-      "fullName": "Mortius",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_mortius1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_oldQuentin",
-      "fullName": "Old Quentin",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_oldQuentin.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_oldQuentin1800",
-      "fullName": "Old Quentin",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_oldQuentin1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_oldQuentin1900",
-      "fullName": "Old Quentin",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_oldQuentin1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_oliverGagnon1800",
-      "fullName": "Oliver Gagnon",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_oliverGagnon1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_palisPreEmbrace",
-      "fullName": "Pre-Embrace Yusuf bin Yafa",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_palisPreEmbrace.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_princeDoran",
-      "fullName": "Prince Doran",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_princeDoran.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_raphaelBishop",
-      "fullName": "Raphael Bishop",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_raphaelBishop.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_raphaelBishop1900",
-      "fullName": "Raphael Bishop",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_raphaelBishop1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_sofiaMavridi",
-      "fullName": "Sofia Mavridi",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_sofiaMavridi.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_terenceMerik",
-      "fullName": "Terence Merik",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_terenceMerik.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_terenceMerik1900",
-      "fullName": "Terence Merik",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_terenceMerik1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_theBleakBokor1800",
-      "fullName": "The Baron's Bleak Bokor",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_theBleakBokor1800.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "mem_victorVex1900",
-      "fullName": "Victor Vex",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_mem_victorVex1900.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "merrickSingh",
@@ -1408,10 +713,19 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_merrickSingh.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
+    },
+    {
+      "characterKey": "michaelTheArchangel",
+      "fullName": "Michael the Archangel",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_michaelTheArchangel.webp",
+      "variantOfUnique": "",
+      "pickerGroups": []
     },
     {
       "characterKey": "miriamRavenscroft",
@@ -1419,7 +733,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_miriamRavenscroft.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "touchstone"
       ]
@@ -1430,30 +744,21 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_moltsInShadow.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
     },
     {
-      "characterKey": "moltsInShadowGarou",
+      "characterKey": "moltsInShadow_Garou",
       "fullName": "Molts-in-Shadow",
       "isPC": false,
-      "catalog": false,
-      "filename": "npc_moltsInShadowGarou.webp",
-      "canonicalKey": null,
+      "catalog": true,
+      "filename": "npc_moltsInShadow_Garou.webp",
+      "variantOfUnique": "moltsInShadow",
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
-    },
-    {
-      "characterKey": "monikaEulenberg",
-      "fullName": "Monika Eulenberg",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_monikaEulenberg.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "mrEasy",
@@ -1461,7 +766,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_mrEasy.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "jarvisJacks"
       ]
@@ -1472,7 +777,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_myleneHamelin.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -1483,7 +788,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_nasirKhan.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "freeChantry"
       ]
@@ -1493,9 +798,11 @@
       "fullName": "Daeva: Nasir Khan",
       "isPC": false,
       "catalog": true,
-      "filename": "npc_daevaNasirKhan.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
+      "filename": "npc_nasirKhanDaeva.webp",
+      "variantOfUnique": "",
+      "pickerGroups": [
+        "aapilu"
+      ]
     },
     {
       "characterKey": "niccoloGiovanni",
@@ -1503,7 +810,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_niccoloGiovanni.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -1512,9 +819,9 @@
       "characterKey": "oldQuentin",
       "fullName": "Old Quentin",
       "isPC": false,
-      "catalog": false,
+      "catalog": true,
       "filename": "npc_oldQuentin.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": []
     },
     {
@@ -1523,19 +830,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_oliverGagnon.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
-    },
-    {
-      "characterKey": "opalMask",
-      "fullName": "Opal Mask of Memories Scorned",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_opalMask.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "osborneLowell",
@@ -1543,7 +841,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_osborneLowell.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "ironGuard"
       ]
@@ -1554,7 +852,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_palis.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "beesHive"
       ]
@@ -1565,7 +863,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_percivalCavendish.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "civilian"
       ]
@@ -1576,7 +874,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_ponticulus.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "criseDeLwa"
       ]
@@ -1587,7 +885,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_profEthanKeen.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redFlag"
       ]
@@ -1598,28 +896,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_raduIancu.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
-    },
-    {
-      "characterKey": "raduRustovich",
-      "fullName": "Radu Milovan syn Rustovich",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_raduRustovich.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "raphaelBishop",
-      "fullName": "Raphael Bishop",
-      "isPC": false,
-      "catalog": false,
-      "filename": "npc_raphaelBishop.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "razorWhit",
@@ -1627,19 +907,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_razorWhit.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
-    },
-    {
-      "characterKey": "reaper",
-      "fullName": "Reaper",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_reaper.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "rebeccaRossellini",
@@ -1647,7 +918,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_rebeccaRossellini.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "criseDeLwa"
       ]
@@ -1658,19 +929,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_ren.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redeemers"
       ]
-    },
-    {
-      "characterKey": "robin",
-      "fullName": "Robin",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_robin.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "rosie",
@@ -1678,7 +940,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_rosie.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redFlag"
       ]
@@ -1689,18 +951,18 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_rotInTheRiver.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
     },
     {
-      "characterKey": "rotInTheRiverGarou",
+      "characterKey": "rotInTheRiver_Garou",
       "fullName": "Rot-in-the-River",
       "isPC": false,
-      "catalog": false,
-      "filename": "npc_rotInTheRiverGarou.webp",
-      "canonicalKey": null,
+      "catalog": true,
+      "filename": "npc_rotInTheRiver_Garou.webp",
+      "variantOfUnique": "rotInTheRiver",
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -1711,7 +973,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_rubyRouge.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "colorBlitz"
       ]
@@ -1722,19 +984,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_sageSam.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "theLine"
       ]
-    },
-    {
-      "characterKey": "sangFroid",
-      "fullName": "Sang-Froid",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_sangFroid.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "scarlett",
@@ -1742,7 +995,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_scarlett.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
@@ -1753,7 +1006,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_scottTempo.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "moonClub"
       ]
@@ -1764,7 +1017,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_severinKoslov.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -1775,37 +1028,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_sisterCicione.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "midnightMass"
       ]
-    },
-    {
-      "characterKey": "slit",
-      "fullName": "Slit",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_slit.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "sonnySlater",
-      "fullName": "Sonny Slater",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_sonnySlater.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "stalkerTodd",
-      "fullName": "Stalker Todd",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_stalkerTodd.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "stalksTheTangle",
@@ -1813,30 +1039,21 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_stalksTheTangle.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
     },
     {
-      "characterKey": "stalksTheTangleGarou",
+      "characterKey": "stalksTheTangle_Garou",
       "fullName": "Stalks-The-Tangle",
       "isPC": false,
-      "catalog": false,
-      "filename": "npc_stalksTheTangleGarou.webp",
-      "canonicalKey": null,
+      "catalog": true,
+      "filename": "npc_stalksTheTangle_Garou.webp",
+      "variantOfUnique": "stalksTheTangle",
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
-    },
-    {
-      "characterKey": "stephanieHill",
-      "fullName": "Stephanie Hill",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_stephanieHill.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "stirlingSiskin",
@@ -1844,7 +1061,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_stirlingSiskin.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -1855,37 +1072,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_suyin.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "theLine"
       ]
-    },
-    {
-      "characterKey": "sydney",
-      "fullName": "Sydney",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_sydney.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "sylvain",
-      "fullName": "Sylvain",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_sylvain.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "symeonRustovich",
-      "fullName": "Symeon Rustovich",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_symeonRustovich.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "terry",
@@ -1893,7 +1083,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_terry.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "beesHive"
       ]
@@ -1904,7 +1094,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_theAristocrat.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "harpies"
       ]
@@ -1915,7 +1105,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_theBleakBokor.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -1926,19 +1116,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_theIslandDevil.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "autarkis"
       ]
-    },
-    {
-      "characterKey": "thePieceTaker",
-      "fullName": "The Piece-Taker",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_thePieceTaker.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "theUnshadowedThrone",
@@ -1946,19 +1127,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_theUnshadowedThrone.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "aapilu"
       ]
-    },
-    {
-      "characterKey": "theWretch",
-      "fullName": "The Wretch",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_theWretch.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "tommy",
@@ -1966,7 +1138,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_tommy.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "beesHive"
       ]
@@ -1977,7 +1149,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_twist.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "jarvisJacks"
       ]
@@ -1988,7 +1160,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_tyler.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "redeemers"
       ]
@@ -1999,7 +1171,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_ulyssesCelaj.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "freeChantry"
       ]
@@ -2010,7 +1182,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_uwuByteMe.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "civilian"
       ]
@@ -2021,19 +1193,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_vanceVogel.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "moonClub"
       ]
-    },
-    {
-      "characterKey": "vegaGold",
-      "fullName": "Vega Gold",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_vegaGold.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "victorVex",
@@ -2041,28 +1204,10 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_victorVex.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "moonClub"
       ]
-    },
-    {
-      "characterKey": "wallflower",
-      "fullName": "Wallflower",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_wallflower.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
-    },
-    {
-      "characterKey": "wesleyRichardson",
-      "fullName": "Wesley Richardson",
-      "isPC": false,
-      "catalog": true,
-      "filename": "npc_wesleyRichardson.webp",
-      "canonicalKey": null,
-      "pickerGroups": []
     },
     {
       "characterKey": "xavierWhitchurch",
@@ -2070,7 +1215,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_xavierWhitchurch.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "harpies"
       ]
@@ -2081,7 +1226,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_yusefShamsin.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "theLine"
       ]
@@ -2092,7 +1237,7 @@
       "isPC": false,
       "catalog": true,
       "filename": "npc_zuriOluwusi.webp",
-      "canonicalKey": null,
+      "variantOfUnique": "",
       "pickerGroups": [
         "fiveKeys"
       ]
