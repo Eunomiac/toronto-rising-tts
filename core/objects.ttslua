@@ -72,7 +72,7 @@ end
 
 --- True when every `C.LockedObjects` GUID resolves and custom assets finished loading (`loading_custom == false`).
 --- @return boolean
-function O.areLockedObjectsReadyForInteractableLock()
+function O.areLockedObjectsReadyForInteractableLock(deferredGuids)
     local locked = C.LockedObjects
     if U.Type(locked) ~= "table" then
         return true
@@ -80,10 +80,10 @@ function O.areLockedObjectsReadyForInteractableLock()
     for _, guid in pairs(locked) do
         if U.Type(guid) == "string" and guid ~= "" then
             local obj = G.getObject(guid)
-            if obj == nil then
+            if obj == nil and not (deferredGuids and deferredGuids[guid]) then
                 return false
             end
-            if obj.loading_custom == true then
+            if obj ~= nil and obj.loading_custom == true then
                 return false
             end
         end
@@ -106,7 +106,7 @@ local function applyLockedObjectsFromConstants(options)
                 if obj ~= nil then
                     obj.interactable = false
                     applied = applied + 1
-                else
+                elseif not (options.deferredGuids and options.deferredGuids[guid]) then
                     missing = missing + 1
                     missingGuids[#missingGuids + 1] = guid
                     if warnMissing then
@@ -153,7 +153,7 @@ local function applyHiddenObjectsFromConstants(options)
                     obj.setInvisibleTo(colors)
                     applied = applied + 1
                 else
-                    if obj == nil then
+                    if obj == nil and not (options.deferredGuids and options.deferredGuids[guid]) then
                         missing = missing + 1
                         missingGuids[#missingGuids + 1] = guid
                         if warnMissing then
@@ -210,8 +210,8 @@ end
 
 --- Startup gate entry: lock interactable + apply hidden visibility once objects are ready.
 --- @return table `{ locked: table, hidden: table }`
-function O.ApplyLockedAndHiddenAtStartupGate()
-    return O.ApplyLockedAndHiddenFromConstants({ warnMissing = true, logSummary = true })
+function O.ApplyLockedAndHiddenAtStartupGate(deferredGuids)
+    return O.ApplyLockedAndHiddenFromConstants({ warnMissing = true, logSummary = true, deferredGuids = deferredGuids })
 end
 
 --- Viewer colors used when a seat is narratively absent (hide from everyone).
@@ -1130,6 +1130,7 @@ function O.SetHungerSmokeState(color, state, duration)
 
     local smoke = G.getObject(guid)
     if not smoke then
+        if S.getStateVal("connectionControls", "sessionStartJoin") == true then return false end
         U.AlertGM("O.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
         return false
     end

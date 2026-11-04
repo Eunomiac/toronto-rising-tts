@@ -120,6 +120,14 @@ function JoinColdPools.isActive()
     return backup ~= nil and type(backup.entries) == "table" and #backup.entries > 0
 end
 
+--- Intentionally absent objects must not hold the host's normal startup readiness gate open.
+function JoinColdPools.deferredGuids()
+    local guids = {}
+    local backup = resolveBackup()
+    for _, entry in ipairs(backup and backup.entries or {}) do guids[entry.guid] = true end
+    return guids
+end
+
 --- @param kind string
 --- @return boolean
 local function backupHasKind(kind)
@@ -383,7 +391,7 @@ local function beginWarmFiltered(kindPredicate, label, afterWarm)
                     tostring(got)
                 ))
             end
-            if obj.spawning == true then
+            if obj.spawning == true or obj.loading_custom == true then
                 return false
             end
         end

@@ -4,8 +4,8 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { fetchSnapshot, validateSnapshot, root, writeAtomic } = require("./lib/sheet_exports.js");
-function run(script, env) {
-  const child = spawnSync(process.execPath, [path.join(root, script)], { cwd: root, env, stdio: "inherit" });
+function run(script, env, args = []) {
+  const child = spawnSync(process.execPath, [path.join(root, script), ...args], { cwd: root, env, stdio: "inherit" });
   if (child.error) throw child.error;
   if (child.status !== 0) throw new Error(`${script} failed (${child.status})`);
 }
@@ -38,6 +38,7 @@ async function main() {
       const child = spawnSync(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "build:tooling-after-exports"], { cwd: root, env, stdio: "inherit", shell: process.platform === "win32" });
       if (child.error) throw child.error;
       if (child.status !== 0) throw new Error(`Remaining FULL tooling failed (${child.status})`);
+      run(".tools/tts-save/build-session-start.js", env, ["--full"]);
     }
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
