@@ -106,17 +106,16 @@ const blankPower = (category: DraftCategory): DraftPower => ({
  * for a generic type (`generic`). Clicking off (or Escape) saves to `data/npc-stats.json` under `statsKey`;
  * incomplete pools, nameless attacks and powers, and empty power categories are dropped then.
  */
-export const NpcStatsModal = ({ statsKey, label, generic, fallback, onClose }: {
+export const NpcStatsModal = ({ statsKey, label, generic, onClose }: {
   statsKey: string;
   label: string;
   generic: boolean;
   /** Shown when this NPC has no block of its own (a Memoriam variant's linked NPC). Saving writes it here. */
-  fallback?: NpcStats;
   onClose: () => void;
 }): ReactElement => {
   const file = useNpcStats();
   const own = file?.[statsKey];
-  const saved = own && Object.keys(own).length > 0 ? own : fallback ?? {};
+  const saved = own ?? {};
   return file === null ? (
     <Overlay onClose={onClose}>
       <div className="lab-modal npc-stats">

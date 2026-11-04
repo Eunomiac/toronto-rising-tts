@@ -13,7 +13,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const text = (value: unknown): string => (typeof value === "string" ? value : "");
 
-export const parseRelationshipEntry = (value: unknown): RelationshipDraft | null => {
+export const parseRelationshipEntry = (value: unknown): RelationshipRow["entry"] | null => {
   if (!isRecord(value)) {
     return null;
   }
@@ -29,6 +29,7 @@ export const parseRelationshipEntry = (value: unknown): RelationshipDraft | null
   return {
     pcLinks,
     portrait: text(value.portrait),
+    ...(typeof value.npcKey === "string" ? { npcKey: value.npcKey } : {}),
     headerLeft: text(value.headerLeft),
     headerRight: text(value.headerRight),
     subheaderLeft: text(value.subheaderLeft),
@@ -83,7 +84,6 @@ export const isBondLink = (linkType: string | undefined): boolean => linkType ==
 
 export const emptyRelationship = (charKey: string, linkType: string): RelationshipDraft => ({
   pcLinks: { [charKey]: linkType },
-  portrait: "",
   headerLeft: "",
   headerRight: "",
   subheaderLeft: "",

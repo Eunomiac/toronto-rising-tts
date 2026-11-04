@@ -84,7 +84,7 @@ export type SeatSnapshot = {
 /** `gameState.relationships[key]`; `pcLinks` maps PC charKey -> link type (touchstone, sire, childe, thrall, …). */
 export type RelationshipDraft = {
   pcLinks: Record<string, string>;
-  portrait: string;
+  npcKey?: string;
   headerLeft: string;
   headerRight: string;
   subheaderLeft: string;
@@ -93,7 +93,7 @@ export type RelationshipDraft = {
   bondStrength?: number;
 };
 
-export type RelationshipRow = { readonly key: string; readonly entry: RelationshipDraft };
+export type RelationshipRow = { readonly key: string; readonly entry: RelationshipDraft & { portrait: string } };
 
 export type XpEntryRef = { readonly kind: "gain" | "spend"; readonly amount: number; readonly description: string };
 

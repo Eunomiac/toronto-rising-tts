@@ -107,7 +107,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
             <Text id="page4_otherRelation_0_title_text_right" class="box_text_title_text title_text_right" text="Enemy" />
           </HorizontalLayout>
           <HorizontalLayout class="box_content_container">
-            <Image id="page4_otherRelation_0_image" class="box_image" image="marieBouschardPortrait" />
+            <Image id="page4_otherRelation_0_image" class="box_image" />
             <VerticalLayout class="box_body_container">
               <HorizontalLayout class="box_subheader_container">
                 <Text id="page4_otherRelation_0_subheader_text" class="box_text_subheader_text" text="Journalism Student" />

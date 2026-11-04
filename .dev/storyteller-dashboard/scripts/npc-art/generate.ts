@@ -1,9 +1,8 @@
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { loadGenericNpcCatalog } from "../../src/server/genericNpcCatalog.ts";
-import { loadMemoriamNpcCatalog } from "../../src/server/memoriamNpcCatalog.ts";
 import { isEmptyNpcOverride, NPC_OVERRIDE_KEY_PATTERN, parseNpcOverride, type NpcOverride } from "../../src/shared/npcOverride.ts";
 import { drawToken, loadFont, type DrawAssets } from "./draw.ts";
 import { tokenBackShareMap } from "./token-back-share.ts";
@@ -14,7 +13,6 @@ import {
   renderLuaModule,
   renderOverridesLuaModule,
   type HeadCrop,
-  type MemoriamArtEntry,
   type NamedCatalogEntry,
   type NameSources,
   type NpcArtLinks,
@@ -26,7 +24,7 @@ import {
 /**
  * NPC art for TTS, in two steps around npm run cloud-asset-sync (npm run build:full runs all three in order):
  *
- * npm run npc-art:draw — one figurine per NPC at assets/NPC Art/Figurines/{Catalogued,Generic,Memoriam}/npc_<key>.webp.
+ * npm run npc-art:draw — one figurine per NPC at assets/NPC Art/Figurines/{Named,Generic}/npc_<key>.webp.
  * Each figurine whose key is in its folder's catalog gets a spotlight token (both sides) at
  * assets/NPC Art/Tokens/npcToken_<key>.{front,back}.webp; tokens whose inputs are unchanged are skipped (--force redraws
  * all). Identical token backs keep one file (the alphabetically first NPC) and the others point at it. Also writes lib/npc_overrides.ttslua (the TTS half of data/npc-overrides.json) and the discrepancy list
@@ -51,7 +49,7 @@ const luaPath = path.join(repoRoot, "lib", "npc_art_urls.ttslua");
 const overridesLuaPath = path.join(repoRoot, "lib", "npc_overrides.ttslua");
 const discrepancyPath = path.join(repoRoot, ".dev", "build-logs", "npc-art-discrepancies.txt");
 const dataDir = path.join(dashboardDir, "data");
-const FOLDERS: readonly NpcFolder[] = ["Catalogued", "Generic", "Memoriam"];
+const FOLDERS: readonly NpcFolder[] = ["Named", "Generic"];
 const FIGURINE_BACK_REL = `${ART_REL}/Shared/npcFigurineBack.webp`;
 const GENERATED_BY = ".dev/storyteller-dashboard/scripts/npc-art/generate.ts (npm run npc-art:draw / npc-art:urls)";
 const KEY_PATTERN = /^[A-Za-z0-9_]+$/;
@@ -79,40 +77,31 @@ const readOptionalJson = async (file: string, what: string): Promise<unknown> =>
   return readJson(file);
 };
 
-const readNamedCatalog = async (): Promise<Map<string, NamedCatalogEntry>> => {
-  const file = path.join(dataDir, "scene-catalogs.json");
-  if (!existsSync(file)) {
-    throw new Error(`${path.relative(repoRoot, file)} is missing. Run npm run dashboard:scene-catalogs first.`);
-  }
-  const catalogs = await readJson(file);
+const { loadSnapshot, dataOf, bool, genericFigures } = createRequire(import.meta.url)("../../../scripts/lib/sheet_exports.js") as {
+  loadSnapshot: () => Promise<unknown>;
+  dataOf: (snapshot: unknown, name: string) => Record<string, string>[];
+  bool: (value: string | undefined, label: string) => boolean;
+  genericFigures: (snapshot: unknown) => { key: string; label: string }[];
+};
+
+const readNameSources = async (): Promise<NameSources> => {
+  const snapshot = await loadSnapshot();
+  const catalogs = await readJson(path.join(dataDir, "scene-catalogs.json"));
   if (!isRecord(catalogs) || !Array.isArray(catalogs.namedNpcs) || !Array.isArray(catalogs.pcs)) {
-    throw new Error("scene-catalogs.json has no namedNpcs / pcs lists. Regenerate it with npm run dashboard:scene-catalogs.");
+    throw new Error("scene-catalogs.json has no namedNpcs / pcs lists.");
   }
-  const named = new Map<string, NamedCatalogEntry>();
-  for (const row of [...catalogs.pcs, ...catalogs.namedNpcs] as unknown[]) {
-    if (isRecord(row) && typeof row.characterKey === "string" && typeof row.fullName === "string") {
-      const pickerGroups = Array.isArray(row.pickerGroups) ? row.pickerGroups.filter((group): group is string => typeof group === "string") : [];
-      const assetKey = typeof row.filename === "string" ? FIGURINE_FILE.exec(row.filename)?.[1] : undefined;
-      named.set(assetKey ?? row.characterKey, { characterKey: row.characterKey, fullName: row.fullName, pickerGroups });
+  const groups = new Map<string, string[]>();
+  for (const row of [...catalogs.pcs, ...catalogs.namedNpcs]) {
+    if (isRecord(row) && typeof row.characterKey === "string" && Array.isArray(row.pickerGroups)) {
+      groups.set(row.characterKey, row.pickerGroups.filter((group): group is string => typeof group === "string"));
     }
   }
-  return named;
-};
-
-const readGenericLabels = async (): Promise<Map<string, string>> => {
-  const { npcs } = await loadGenericNpcCatalog(path.join(dataDir, "generic-npcs.json"));
-  if (npcs.length === 0) {
-    throw new Error("data/generic-npcs.json lists no generic NPCs. Run npm run generic-npcs:import.");
+  const named = new Map<string, NamedCatalogEntry>();
+  for (const row of dataOf(snapshot, "CHARACTERS_NAMED")) {
+    const key = row["API Key"]!;
+    if (bool(row["Has Figurine"], key)) named.set(key, { characterKey: key, fullName: row.Name!, pickerGroups: groups.get(key) ?? [] });
   }
-  return new Map(npcs.map((npc) => [FIGURINE_FILE.exec(npc.filename)?.[1] ?? npc.key, npc.label]));
-};
-
-const readMemoriamNames = async (): Promise<Map<string, MemoriamArtEntry>> => {
-  const { npcs } = await loadMemoriamNpcCatalog(path.join(dataDir, "memoriam-npcs.json"));
-  if (npcs.length === 0) {
-    throw new Error("data/memoriam-npcs.json lists no Memoriam NPCs. Run npm run memoriam-npcs:import.");
-  }
-  return new Map(npcs.map((npc) => [FIGURINE_FILE.exec(npc.filename)?.[1] ?? npc.key, { label: npc.label, isGeneric: npc.isGeneric }]));
+  return { named, genericLabels: new Map(genericFigures(snapshot).map(row => [row.key, row.label])) };
 };
 
 /** Ring colours come from the roster layout in data/npc-roster.json, which the dashboard's roster tab writes. */
@@ -226,21 +215,16 @@ const runPool = async <T>(items: readonly T[], worker: (item: T) => Promise<void
 type Subjects = {
   readonly subjects: NpcArtSubject[];
   readonly uncatalogued: string[];
-  readonly genericLabels: Map<string, string>;
+  readonly genericLabels: ReadonlyMap<string, string>;
   readonly withoutFigurine: string[];
   readonly overrides: Record<string, NpcOverride>;
 };
 
 const loadSubjects = async (): Promise<Subjects> => {
-  const [named, genericLabels, memoriamNames, roster, crops, overrides] = await Promise.all([
-    readNamedCatalog(),
-    readGenericLabels(),
-    readMemoriamNames(),
-    readRoster(),
-    readCrops(),
-    readOverrides()
+  const [sources, roster, crops, overrides] = await Promise.all([
+    readNameSources(), readRoster(), readCrops(), readOverrides()
   ]);
-  const sources: NameSources = { named, genericLabels, memoriamNames };
+  const { named, genericLabels } = sources;
   const subjects: NpcArtSubject[] = [];
   const uncatalogued: string[] = [];
   const seen = new Map<string, NpcFolder>();
@@ -263,10 +247,11 @@ const loadSubjects = async (): Promise<Subjects> => {
     }
   }
   const withoutFigurine = FOLDERS.flatMap((folder) => {
-    const keys = folder === "Catalogued" ? named.keys() : folder === "Generic" ? genericLabels.keys() : memoriamNames.keys();
+    const keys = folder === "Named" ? named.keys() : genericLabels.keys();
     const missing = [...keys].filter((key) => !seen.has(key)).sort();
     return missing.length > 0 ? [`${folder}: ${missing.join(", ")}`] : [];
   });
+  if (withoutFigurine.length) throw new Error(`Missing required NPC figurines: ${withoutFigurine.join("; ")}`);
   return { subjects, uncatalogued, genericLabels, withoutFigurine, overrides };
 };
 
@@ -404,20 +389,13 @@ const urls = async (): Promise<void> => {
     });
   });
 
+  if (missingNpcs.length > 0) {
+    throw new Error(`NPC art is missing from the Cloud manifest: ${missingNpcs.sort().join(", ")}`);
+  }
+  if (outdated.length) throw new Error(`NPC art changed since Cloud sync: ${outdated.sort().join(", ")}`);
   await writeFile(luaPath, renderLuaModule(back, links, GENERATED_BY));
   console.log(`[npc-art] Wrote lib/npc_art_urls.ttslua: ${links.size} NPCs.`);
-  if (missingNpcs.length > 0) {
-    console.warn(
-      `[npc-art] WARN ${missingNpcs.length} NPC(s) left out because their art is not in Steam Cloud yet (${missingNpcs.sort().slice(0, 8).join(", ")}${missingNpcs.length > 8 ? ", …" : ""}). ` +
-        "Close TTS, run npm run cloud:push, then npm run cloud-asset-sync and npm run npc-art:urls."
-    );
-  }
-  if (outdated.length > 0) {
-    console.warn(
-      `[npc-art] WARN ${outdated.length} file(s) changed locally since their last upload, so TTS still shows the old art (${outdated.slice(0, 5).join(", ")}${outdated.length > 5 ? ", …" : ""}). ` +
-        "Close TTS and run npm run cloud-asset-sync, then npm run npc-art:urls."
-    );
-  }
+
 };
 
 if (process.argv.includes("--urls")) {

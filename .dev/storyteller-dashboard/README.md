@@ -87,7 +87,7 @@ Right-click any tagged term (a discipline, power, skill, advantage, …) to open
 - Optional NPC portrait generation through the OpenAI Images API.
 - Compact NPC cards, full screen-pin-friendly modal export cards, local browser-session history, pinned/favorite NPCs, field reroll buttons, and field locks for mass rerolls.
 - PC sheet animations use GSAP (`npm` `gsap`), bundled by Vite.
-- NPC cutouts are served at `/figurine-images/<characterKey>.webp`: the server serves `npc_<characterKey>.webp` from the local Steam Cloud mirror `assets/NPC Art/Figurines/Catalogued/` (named NPCs), then `Generic/` (generic NPCs), then `Memoriam/` (`mem_` keys). See [NPC Art Pipeline](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md).
+- NPC cutouts are served at `/figurine-images/<characterKey>.webp`: the server serves `npc_<characterKey>.webp` from the local Steam Cloud mirror `assets/NPC Art/Figurines/Named/` or `Generic/`, according to the export. See [NPC Art Pipeline](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md).
 
 ## Repository placement
 

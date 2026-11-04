@@ -3,7 +3,8 @@
 
   Entry shape (same as the seed file lib/json/PC_Relationships.json):
     pcLinks = { [charKey] = linkType }   -- touchstone | sire | childe | thrall | regnant | any other word
-    portrait, headerLeft, headerRight, subheaderLeft, subheaderRight = string
+    npcKey = optional Named NPC API key for a relationship with a different entry key
+    headerLeft, headerRight, subheaderLeft, subheaderRight = string
     body = string[]
     bondStrength = 0..6 (thrall / regnant only)
 
@@ -16,9 +17,10 @@ local R = {}
 
 local C = require("lib.constants")
 local S = require("core.state")
+local portraits = require("lib.npc_portrait_assets")
 
 local MAX_BOND_STRENGTH = 6
-local TEXT_FIELDS = { "portrait", "headerLeft", "headerRight", "subheaderLeft", "subheaderRight" }
+local TEXT_FIELDS = { "headerLeft", "headerRight", "subheaderLeft", "subheaderRight" }
 
 local function trim(s)
   if type(s) ~= "string" then
@@ -63,6 +65,13 @@ local function normalizeEntry(raw)
     return nil, "Missing relationship"
   end
   local entry = {}
+  local npcKey = trim(raw.npcKey)
+  if npcKey ~= "" then
+    if not portraits[npcKey] and not require("lib.unique_character_catalog")[npcKey] then
+      return nil, "Unknown Named NPC API key: " .. npcKey
+    end
+    entry.npcKey = npcKey
+  end
   for _, field in ipairs(TEXT_FIELDS) do
     entry[field] = trim(raw[field])
   end
@@ -116,7 +125,7 @@ local function linkedColors(entry, into)
   return into
 end
 
---- @return table<string, table> entryKey -> entry linked to this PC (live references)
+--- @return table<string, table> entryKey -> entry linked to this PC with that PC’s assigned portrait
 function R.listForChar(charKey)
   local out = {}
   if type(charKey) ~= "string" or charKey == "" then
@@ -124,7 +133,11 @@ function R.listForChar(charKey)
   end
   for key, entry in pairs(allEntries()) do
     if type(entry) == "table" and type(entry.pcLinks) == "table" and entry.pcLinks[charKey] ~= nil then
-      out[key] = entry
+      local row = {}
+      for field, value in pairs(entry) do row[field] = value end
+      local assignments = portraits[entry.npcKey or key]
+      row.portrait = assignments and assignments[charKey] or ""
+      out[key] = row
     end
   end
   return out

@@ -282,13 +282,13 @@ export const normalizeNpcStats = (value: unknown): NpcStats => {
 /** Which stats a live NPC rolls from: a kept character's own block, its generic type's tier, or a named NPC's block. */
 export const statBlockFor = (
   file: NpcStatsFile,
-  npc: { readonly characterKey: string; readonly genericLabel?: string | undefined; readonly tier?: NpcTier | undefined; readonly keptId?: string | undefined }
+  npc: { readonly characterKey: string; readonly generic?: boolean | undefined; readonly tier?: NpcTier | undefined; readonly keptId?: string | undefined }
 ): NpcStatBlock | undefined => {
   if (npc.keptId) {
     return file[keptStatsKey(npc.keptId)]?.named;
   }
-  if (npc.genericLabel !== undefined) {
-    return npc.tier ? file[genericStatsKey(npc.genericLabel)]?.[npc.tier] : undefined;
+  if (npc.generic) {
+    return npc.tier ? file[genericStatsKey(npc.characterKey)]?.[npc.tier] : undefined;
   }
   return file[npc.characterKey]?.named;
 };

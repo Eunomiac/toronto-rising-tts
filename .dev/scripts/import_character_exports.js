@@ -1,6 +1,6 @@
 "use strict";
 const path = require("node:path");
-const { loadSnapshot, root, contract, uniqueCharacters, renderUniqueLua, renderGenericLua, genericFigures, memoriamFigures, compulsions, writeAtomic } = require("./lib/sheet_exports.js");
+const { loadSnapshot, root, contract, uniqueCharacters, renderUniqueLua, renderGenericLua, renderPortraitLua, genericFigures, memoriamFigures, compulsions, writeAtomic } = require("./lib/sheet_exports.js");
 const { renderMemoriamNpcCatalogLua } = require("./lib/memoriam_npcs_sheet_csv.js");
 
 function writeCharacterExports(snapshot, { lua = true } = {}) {
@@ -15,7 +15,7 @@ function writeCharacterExports(snapshot, { lua = true } = {}) {
     [path.join(data, "memoriam-npcs.json"), catalog("EXPORT_CHARACTERS_NAMED + EXPORT_CHARACTERS_GENERIC", memoriam)],
     [path.join(data, "compulsions.jsonc"), compulsionText],
   ];
-  if (lua) outputs.push([path.join(root, "lib/unique_character_catalog.ttslua"), renderUniqueLua(snapshot)], [path.join(root, "lib/generic_character_catalog.ttslua"), renderGenericLua(snapshot)], [path.join(root, "lib/memoriam_npc_catalog.ttslua"), renderMemoriamNpcCatalogLua(memoriam)]);
+  if (lua) outputs.push([path.join(root, "lib/unique_character_catalog.ttslua"), renderUniqueLua(snapshot)], [path.join(root, "lib/generic_character_catalog.ttslua"), renderGenericLua(snapshot)], [path.join(root, "lib/memoriam_npc_catalog.ttslua"), renderMemoriamNpcCatalogLua(memoriam)], [path.join(root, "lib/npc_portrait_assets.ttslua"), renderPortraitLua(snapshot)]);
   for (const [file, contents] of outputs) writeAtomic(file, contents);
   return { uniqueCount: Object.keys(uniqueCharacters(snapshot)).length, genericCount: figures.length, memoriamCount: memoriam.length };
 }

@@ -168,6 +168,16 @@ function renderUniqueLua(snapshot) {
   for (const [key, value] of Object.entries(uniqueCharacters(snapshot)).sort(([a], [b]) => a.localeCompare(b))) lines.push(`  ${key} = { ${Object.entries(value).map(([k, v]) => `${k} = ${typeof v === "boolean" ? v : q(v)}`).join(", ")} },`);
   return lines.concat("}", "return Characters", "").join("\n");
 }
+function renderPortraitLua(snapshot) {
+  const lines = ["-- Generated from EXPORT_CHARACTERS_NAMED. DO NOT EDIT.", "return {"];
+  for (const row of dataOf(snapshot, "CHARACTERS_NAMED")) {
+    const owners = portraitOwners(row);
+    if (!owners.length) continue;
+    const name = row["Portrait Filename"].replace(/\.webp$/, "");
+    lines.push(`  [${q(row["API Key"])}] = { ${owners.map(owner => `[${q(owner)}] = ${q(name)}`).join(", ")} },`);
+  }
+  return lines.concat("}", "").join("\n");
+}
 function genericFigures(snapshot) {
   const figures = new Map();
   for (const row of dataOf(snapshot, "CHARACTERS_GENERIC")) {
@@ -189,7 +199,7 @@ function memoriamFigures(snapshot) {
   const named = namedRows(snapshot).filter(row => !bool(row["Is PC"], row["API Key"]) && memoriamPeriods(row).length).map(row => ({
     filename: bool(row["Has Figurine"], row["API Key"]) ? row["Figurine Filename"] : "",
     key: row["API Key"], label: row.Name, location: row["Locations Active"], year: row["Years Active"],
-    variantOfUnique: row["Variant Of"], isGeneric: false, periods: memoriamPeriods(row), catalog: bool(row["In Catalog"], row["API Key"]),
+    variantOfUnique: row["Variant Of"], isGeneric: false, tags: "", periods: memoriamPeriods(row), catalog: bool(row["In Catalog"], row["API Key"]),
   }));
   const generic = genericFigures(snapshot).filter(row => row.periods.length).map(row => ({
     filename: row.filename, key: row.key, label: row.label, location: row.location, year: row.year,
@@ -216,4 +226,4 @@ function compulsions(snapshot) {
   for (const [key, value] of Object.entries(out)) { if (value.variants.length !== 4) throw new Error(`${key}: needs cards 1–4`); value.variants.sort((a,b) => a.card-b.card); }
   return out;
 }
-module.exports = { contract, root, defaultSnapshotPath, list, bool, namedRows, portraitOwners, rowsOf, dataOf, csvOf, parseExport, validateSnapshot, fetchSnapshot, loadSnapshot, exportUrl, uniqueCharacters, renderUniqueLua, renderGenericLua, genericFigures, memoriamFigures, compulsions, writeAtomic };
+module.exports = { contract, root, defaultSnapshotPath, list, bool, namedRows, portraitOwners, rowsOf, dataOf, csvOf, parseExport, validateSnapshot, fetchSnapshot, loadSnapshot, exportUrl, uniqueCharacters, renderUniqueLua, renderGenericLua, renderPortraitLua, genericFigures, memoriamFigures, compulsions, writeAtomic };

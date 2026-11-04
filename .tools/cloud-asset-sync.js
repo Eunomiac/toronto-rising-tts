@@ -203,6 +203,7 @@ function resolveTargets(raw, targetGroups, id) {
  *   searchPattern: string, replacePattern: string, literal: string,
  *   targets: string[], ownsAllRows: boolean, purgePatterns: string[],
  *   module: string | null, field: string | null, objects: Record<string, string[]>,
+ *   portraitOwners: string[] | null,
  * }} Job
  */
 
@@ -256,12 +257,21 @@ function validateJob(job, targetGroups, seenIds) {
     module: null,
     field: null,
     objects: {},
+    portraitOwners: null,
   };
 
   if (output === OUTPUT_OBJECT) {
     out.targets = resolveTargets(j.targets, targetGroups, id);
   } else if (j.targets !== undefined || j.ownsAllRows !== undefined) {
     throw new Error(`Job "${id}": targets / ownsAllRows are only valid on ${OUTPUT_OBJECT}.`);
+  }
+  if (j.portraitOwners !== undefined) {
+    if (output !== OUTPUT_OBJECT || !Array.isArray(j.portraitOwners) ||
+        j.portraitOwners.length !== out.targets.length || new Set(j.portraitOwners).size !== out.targets.length ||
+        j.portraitOwners.some(owner => typeof owner !== "string" || !owner)) {
+      throw new Error(`Job "${id}": portraitOwners must name one distinct PC per object target.`);
+    }
+    out.portraitOwners = j.portraitOwners;
   }
   if (output === OUTPUT_GLOBAL || output === OUTPUT_OBJECT) {
     if (!out.ownsAllRows && purgePatterns.length === 0 && derivePurgePatterns(out.replacePattern) === null) {
@@ -518,6 +528,40 @@ async function main() {
     }
   }
 
+  const npcFiles = new Map();
+  const portraitTargets = new Map();
+  const npcJobs = active.filter(job => job.portraitOwners || job.id === "npcFiguresNamed" || job.id === "npcFiguresGeneric");
+  if (npcJobs.length) {
+    const { loadSnapshot, dataOf, bool, portraitOwners } = require("../.dev/scripts/lib/sheet_exports.js");
+    const snapshot = await loadSnapshot();
+    for (const job of npcJobs) {
+      const kind = job.id === "npcFiguresGeneric" ? "GENERIC" : "NAMED";
+      const allowed = new Set();
+      const targets = new Map();
+      for (const row of dataOf(snapshot, `CHARACTERS_${kind}`)) {
+        if (job.portraitOwners) {
+          const owners = portraitOwners(row);
+          if (!owners.length) continue;
+          const file = row["Portrait Filename"];
+          allowed.add(file);
+          const name = file.replace(/\.webp$/, "");
+          if (!targets.has(name)) targets.set(name, new Set());
+          for (const owner of owners) {
+            const guid = job.targets[job.portraitOwners.indexOf(owner)];
+            if (!guid) throw new Error(`${file}: no Page 4 target for ${owner}`);
+            targets.get(name).add(guid.toLowerCase());
+          }
+        } else if (bool(row["Has Figurine"], row["API Key"])) {
+          allowed.add(row["Figurine Filename"]);
+        }
+      }
+      const missing = [...allowed].filter(file => !fs.existsSync(path.join(cfg.assetsDir, job.folder, file)));
+      if (missing.length) throw new Error(`Job "${job.id}": missing files in assets/${job.folder}: ${missing.join(", ")}`);
+      npcFiles.set(job.id, allowed);
+      if (job.portraitOwners) portraitTargets.set(job.id, targets);
+    }
+  }
+
   let session = null;
   if (!cli.noPush) {
     try {
@@ -550,7 +594,14 @@ async function main() {
     /** @type {Map<string, { name: string, filename: string, path: string, sha1: string, url: string, size: number }[]>} */
     const rowsByJob = new Map();
     for (const job of [...active]) {
-      const { rows, pending } = collectJobRows(job, local, ledger);
+      const allowed = npcFiles.get(job.id);
+      const jobFiles = allowed ? local.filter(file => file.folder === job.folder && allowed.has(file.name)) : local;
+      if (allowed) {
+        for (const file of local) if (file.folder === job.folder && !allowed.has(file.name)) {
+          warn(`STRAY assets/${job.folder}/${file.name}: no matching NPC export assignment`);
+        }
+      }
+      const { rows, pending } = collectJobRows(job, jobFiles, ledger);
       if (pending.length > 0) {
         warn(
           `HOLD job "${job.id}": ${pending.length} file(s) are not in Cloud yet (${pending.slice(0, 3).join(", ")}${pending.length > 3 ? ", …" : ""}). Its outputs are left as they are until npm run cloud:push (TTS closed).`,
@@ -579,17 +630,38 @@ async function main() {
         if (!owned.has(key)) owned.set(key, new Set());
         owned.get(key).add(name);
       };
+      const rowsAtTarget = (job, rows, key) => {
+        const targets = carried.has(job.id) ? undefined : portraitTargets.get(job.id);
+        return targets ? rows.filter(row => targets.get(row.name)?.has(key)) : rows;
+      };
       const targetKeys = (job) => (job.output === OUTPUT_GLOBAL ? ["global"] : job.targets.map((g) => g.toLowerCase()));
       /** Targets of a held job that has never run: its rows are unknown, so nothing there is purged. */
       const unsettled = new Map();
       for (const job of rowJobs) {
         const rows = carried.has(job.id) ? (prevManifest.jobs[job.id] || { rows: [] }).rows : rowsByJob.get(job.id);
-        for (const key of targetKeys(job)) for (const r of rows) own(key, r.name);
+        for (const key of targetKeys(job)) for (const r of rowsAtTarget(job, rows, key)) own(key, r.name);
         if (carried.has(job.id) && !prevManifest.jobs[job.id]) for (const key of targetKeys(job)) unsettled.set(key, job.id);
       }
 
       for (const job of saveJobs.filter((j) => j.output !== OUTPUT_IMAGE)) {
         const rows = rowsByJob.get(job.id);
+        if (job.portraitOwners && saveRoot.LuaScriptState) {
+          const state = JSON.parse(saveRoot.LuaScriptState);
+          let changed = false;
+          const seed = require("../lib/json/PC_Relationships.json");
+          for (const [key, relationship] of Object.entries(state.relationships ?? {})) {
+            const npcKey = seed[key]?.npcKey;
+            if (npcKey && relationship.npcKey === undefined) {
+              relationship.npcKey = npcKey;
+              changed = true;
+            }
+            if (Object.hasOwn(relationship, "portrait")) {
+              delete relationship.portrait;
+              changed = true;
+            }
+          }
+          if (changed) saveRoot.LuaScriptState = JSON.stringify(state);
+        }
         const targets = resolveAssetTargets(saveRoot, job.output === OUTPUT_GLOBAL ? [] : job.targets);
         const family = [...(derivePurgePatterns(job.replacePattern) || []), ...job.purgePatterns].map((p) => parseUserRegExp(p));
         const prevNames = new Set(((prevManifest.jobs[job.id] || {}).rows || []).map((r) => r.name));
@@ -599,7 +671,7 @@ async function main() {
           const byName = new Map(target.assets.map((a, i) => [a.Name, i]));
           let added = 0;
           let changed = 0;
-          for (const r of rows) {
+          for (const r of rowsAtTarget(job, rows, key)) {
             const idx = byName.get(r.name);
             if (idx == null) {
               target.assets.push({ Type: 0, Name: r.name, URL: r.url });

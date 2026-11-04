@@ -22,9 +22,8 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### TOR-750 — Consolidated spreadsheet imports and runtime catalogs
 
-**How to verify:** On your configured local checkout, close TTS and run FULL with your existing assets, save path and Dashboard files. Reopen TTS and Save & Play. Check a named NPC, an old Daeva key, a Garou form and a generic with several supplied tiers. In the Dashboard, confirm a character with Catalog? false is excluded from Main while historical entries remain in Memoriam. Choose a district/site and date; confirm its skybox, sound, fog and weather. Check a Complication and each PC's Compulsion badge text, then save/reload to confirm existing keys still work.
+**How to verify:** After the cutover is merged, run `node .dev/scripts/migrate_npc_roster_keys.js` to preview the eight roster key changes. Run it with `--apply` to update the local roster and make a backup. Close TTS and run FULL on a copy of the save. In TTS, check Laleh's portrait on Rashid's Page 4, check one Named and one Generic figurine, and apply then reverse a Complication. In the Dashboard, check the Catalog and the two Memoriam panels, then open a Generic figurine's tier picker. Verify the live save only after the copy passes.
 
-Cloud checks passed for the live exports, generated Lua, Dashboard tests and browser interactions. Steam upload, live write-back and Save & Play still require your local setup. The existing setXmlTable gate baseline also fails on the unchanged base branch; the export implementation does not raise that baseline.
 
 #### Complications discard pile stays unlocked — direct author request
 

@@ -50,13 +50,12 @@ import { useWorldState } from "../worldState";
 import { useNpcOverrides } from "../npcOverrides";
 import { configuredTiers, genericStatsKey, keptStatsKey, newStatId, type NpcTier } from "../../shared/npcStats";
 import {
-  inheritedNamedBlock,
+  sortNamedVariants,
   layoutMemoriamRoster,
   MEMORIAM_GENERIC_COLOR,
   MEMORIAM_YEAR_GROUPS,
   MEMORIAM_YEARS,
   memoriamGenericLabel,
-  memoriamStem,
   type MemoriamGroup,
   type MemoriamYear
 } from "../../shared/memoriamNpc";
@@ -1052,20 +1051,23 @@ export const MasonryRoster = (): ReactElement => {
       return [];
     }
     const byKey = new Map<string, RosterMember[]>();
-    for (const npc of catalogs.namedNpcs.filter(npc => npc.catalog !== false)) {
-      for (const key of npc.pickerGroups.length ? npc.pickerGroups : ["catalogUngrouped"]) {
+    const eligible = catalogs.namedNpcs.filter(npc => npc.catalog === true);
+    const byNpc = new Map(eligible.map(npc => [npc.characterKey, npc]));
+    for (const npc of eligible) {
+      const groupNpc = byNpc.get(npc.variantOfUnique ?? "") ?? npc;
+      for (const key of groupNpc.pickerGroups.length ? groupNpc.pickerGroups : ["catalogUngrouped"]) {
         byKey.set(key, [...(byKey.get(key) ?? []), { characterKey: npc.characterKey, name: npc.fullName }]);
       }
     }
     return [...byKey].map(([key, members]) => {
       const label = catalogs.pickerGroupLabels[key] ?? (key === "catalogUngrouped" ? "Ungrouped" : key);
-      return { key, label, labelWidth: groupLabelWidth(label), members };
+      return { key, label, labelWidth: groupLabelWidth(label), members: sortNamedVariants(members, npcKey => byNpc.get(npcKey)?.variantOfUnique) };
     });
   }, [catalogs]);
   const spawnedKey = [...inScene.map((npc) => npc.characterKey), ...Object.keys(queuedGenerics)].join(",");
   const spawned = useMemo(() => new Set(spawnedKey.split(",")), [spawnedKey]);
   const genGroups = useMemo(
-    () => (genericCatalog ? genericGroups(genericCatalog.filter(npc => npc.catalog !== false), spawned, overrides) : []),
+    () => (genericCatalog ? genericGroups(genericCatalog.filter(npc => npc.catalog === true), spawned, overrides) : []),
     [genericCatalog, spawned, overrides]
   );
   const periodKey = phase?.phase === "Play" && phase.subPhase === "Memoriam" ? phase.memoriamSkyboxKey : undefined;
@@ -1116,8 +1118,8 @@ export const MasonryRoster = (): ReactElement => {
   /** No tier blocks on the type: no tier; one: that one; several: the tier picker. */
   const pickGeneric = (member: RosterMember) => (event: MouseEvent<HTMLElement>): void => {
     const mem = memoriamByKey.get(member.characterKey);
-    const label = mem?.isGeneric ? memoriamStem(member.characterKey) : genericCatalog?.find((npc) => npc.key === member.characterKey)?.label;
-    const options = label ? configuredTiers(npcStats?.[genericStatsKey(label)]) : [];
+    const label = mem?.isGeneric ? mem.label : genericCatalog?.find((npc) => npc.key === member.characterKey)?.label;
+    const options = label ? configuredTiers(npcStats?.[genericStatsKey(member.characterKey)]) : [];
     if (label && options.length > 1) {
       setTierPick({ member, label, at: canvasPoint(event), tiers: options });
       return;
@@ -1129,19 +1131,11 @@ export const MasonryRoster = (): ReactElement => {
     const at = canvasPoint(event);
     const mem = memoriamByKey.get(characterKey);
     if (mem) {
-      const stem = memoriamStem(mem.key);
-      const statsKey = mem.isGeneric ? genericStatsKey(stem) : mem.key;
+      const statsKey = mem.isGeneric ? genericStatsKey(mem.key) : mem.key;
       const onPeriod = periodKey !== undefined && mem.periods.includes(periodKey);
       const visible = overrides[mem.key]?.name ?? (mem.isGeneric ? memoriamGenericLabel(mem.label, mem.years, !onPeriod) : mem.label);
       const yearColor = MEMORIAM_YEAR_GROUPS.find((group) => mem.years.includes(group.year))?.color ?? MEMORIAM_GENERIC_COLOR;
       const spawnedNpc = mem.isGeneric ? inScene.find((npc) => npc.characterKey === characterKey) : undefined;
-      const inherited = !mem.isGeneric
-        ? inheritedNamedBlock(
-          (key) => npcStats?.[key]?.named,
-          (key) => memoriamByKey.get(key)?.variantOfUnique ?? "",
-          mem.key
-        )
-        : undefined;
       const keeping = spawnedNpc && !draftGenerics ? {
         keptId: spawnedNpc.keptId,
         keep: async (name: string): Promise<string> => {
@@ -1163,13 +1157,6 @@ export const MasonryRoster = (): ReactElement => {
         defaultName: mem.label,
         defaultColor: mem.isGeneric ? MEMORIAM_GENERIC_COLOR : yearColor,
         stats: { key: statsKey, label: visible, tiered: mem.isGeneric },
-        ...(inherited ? { statSeed: { named: inherited } } : {}),
-        memoriam: {
-          locations: mem.locations,
-          years: mem.years,
-          periods: mem.periods,
-          knownPeriods: catalogs?.memoriamPeriods.map((period) => period.key) ?? []
-        },
         ...(spawnedNpc && send
           ? {
             inScene: {
@@ -1201,7 +1188,7 @@ export const MasonryRoster = (): ReactElement => {
       keep: async (name: string): Promise<string> => {
         const id = newStatId();
         const tier = sceneTiers[characterKey];
-        const block = tier ? npcStats?.[genericStatsKey(generic.label)]?.[tier] : undefined;
+        const block = tier ? npcStats?.[genericStatsKey(generic.key)]?.[tier] : undefined;
         await saveNpcStats(keptStatsKey(id), { ...(block ? { named: block } : {}), kept: { name, figurineKey: characterKey, label: generic.label } });
         send({ op: "genericKeep", key: characterKey, keptId: id });
         return id;
@@ -1217,7 +1204,7 @@ export const MasonryRoster = (): ReactElement => {
       defaultName: named?.fullName ?? generic?.label ?? characterKey,
       defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING,
       stats: generic
-        ? { key: genericStatsKey(generic.label), label: generic.label, tiered: true }
+        ? { key: genericStatsKey(generic.key), label: generic.label, tiered: true }
         : { key: characterKey, label: named?.fullName ?? characterKey, tiered: false },
       ...(spawnedNpc && generic && send
         ? {
@@ -1232,7 +1219,7 @@ export const MasonryRoster = (): ReactElement => {
               }
             },
             tier: sceneTiers[characterKey],
-            tiers: configuredTiers(npcStats?.[genericStatsKey(generic.label)]),
+            tiers: configuredTiers(npcStats?.[genericStatsKey(generic.key)]),
             setTier: (tier: NpcTier | undefined) => send({ op: "genericTier", key: characterKey, ...(tier ? { tier } : {}) }),
             ...(keeping ? { keeping } : {})
           }
@@ -1335,26 +1322,27 @@ export const MasonryRoster = (): ReactElement => {
     </div>
   );
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const mainFound = (): readonly ReactElement[] | null => terms.length === 0 || !catalogs
-    ? null
-    : catalogs.namedNpcs
-      .filter(npc => npc.catalog !== false)
-      .filter((npc) => terms.every((term) => npc.fullName.toLowerCase().includes(term)))
-      .sort((a, b) => a.fullName.localeCompare(b.fullName))
-      .map((npc) => (
+  const mainFound = (): readonly ReactElement[] | null => {
+    if (terms.length === 0 || !catalogs) return null;
+    const matches = catalogs.namedNpcs.filter(npc => npc.catalog === true &&
+      terms.every(term => npc.fullName.toLowerCase().includes(term)));
+    const parents = new Map(matches.map(npc => [npc.characterKey, npc.variantOfUnique]));
+    return sortNamedVariants(matches.map(npc => ({ characterKey: npc.characterKey, name: npc.fullName })), key => parents.get(key))
+      .map(npc => (
         <RosterToken
           key={npc.characterKey}
           characterKey={npc.characterKey}
-          name={npc.fullName}
+          name={npc.name}
           className="lab-group-head"
           color={ownColor(npc.characterKey)}
           onConfigure={configure}
         />
       ));
+  };
   const genericFound = (): readonly ReactElement[] | null => terms.length === 0 || !genericCatalog
     ? null
     : genericCatalog
-      .filter(npc => npc.catalog !== false)
+      .filter(npc => npc.catalog === true)
       .filter((npc) => !spawned.has(npc.key))
       .filter((npc) => terms.every((term) => `${npc.label} ${npc.tags} ${npc.key}`.toLowerCase().includes(term)))
       .slice(0, GENERIC_MATCH_LIMIT)
@@ -1372,10 +1360,14 @@ export const MasonryRoster = (): ReactElement => {
           />
         );
       });
+  const eligibleMemoriamKeys = new Set([
+    ...memLayout.surfacedUniques,
+    ...[...memLayout.surfacedGenerics, ...memLayout.remainingUniques, ...memLayout.remainingGenerics].flatMap(group => group.members)
+  ].map(member => member.characterKey));
   const memoriamFound = (): readonly ReactElement[] | null => terms.length === 0
     ? null
     : memoriamCatalog
-      .filter((npc) => !(npc.isGeneric && spawned.has(npc.key)))
+      .filter(npc => eligibleMemoriamKeys.has(npc.key))
       .filter((npc) => terms.every((term) => `${npc.label} ${memoriamGenericLabel(npc.label, npc.years, true)} ${npc.tags} ${npc.key} ${npc.locations.join(" ")} ${npc.years.join(" ")}`.toLowerCase().includes(term)))
       .slice(0, GENERIC_MATCH_LIMIT)
       .map((npc) => {
@@ -1418,7 +1410,7 @@ export const MasonryRoster = (): ReactElement => {
     <div className="lab-mroster" ref={rosterRef}>
       {preview && rosterRef.current && <FigurinePreview characterKey={preview.characterKey} token={preview.token} panel={rosterRef.current} />}
       <div className="lab-mroster-head">
-        <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Main</button>
+        <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Catalog</button>
         <button type="button" className={`lab-btn${view === "generic" ? " primary" : ""}`} onClick={() => setView("generic")}>Generic</button>
         <button type="button" className={`lab-btn${view === "memoriam" ? " primary" : ""}`} onClick={() => setView("memoriam")}>Memoriam</button>
         <input

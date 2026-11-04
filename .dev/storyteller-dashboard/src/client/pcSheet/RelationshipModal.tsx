@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { Field, linesFromText, LinesInput, NumberInput, SelectInput, textFromLines, TextInput } from "./fields.js";
 import { sheetArtUrl } from "./layout.js";
 import { isBondLink, LINK_TYPE_SUGGESTIONS, MAX_BOND_STRENGTH } from "./relationships.js";
@@ -6,22 +6,6 @@ import { SheetModal } from "./SheetModal.js";
 import type { ApplyCommand, RelationshipDraft, RelationshipRow, SeatColor, SeatSnapshot } from "./types.js";
 
 export const portraitUrl = (key: string): string => sheetArtUrl(key);
-
-/** Portrait keys in assets/CSheets/Page4/Portraits (the build registers all of them on every Page 4). */
-const usePortraitKeys = (): readonly string[] => {
-  const [keys, setKeys] = useState<readonly string[]>([]);
-  useEffect(() => {
-    void fetch("/api/sheet-portraits")
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Portrait list failed (${response.status}).`);
-        }
-        setKeys(await response.json() as string[]);
-      })
-      .catch((error: unknown) => console.error(error));
-  }, []);
-  return keys;
-};
 
 const NOT_LINKED = "";
 const CUSTOM = "__custom";
@@ -72,7 +56,7 @@ type Props = {
   readonly onClose: () => void;
 };
 
-/** Add / edit one `gameState.relationships` entry: per-PC link types, header text, body, bond strength, portrait. */
+/** Add / edit one `gameState.relationships` entry: per-PC link types, header text, body, bond strength, and Named NPC key. */
 export const RelationshipModal = ({ seat, seats, row, draft, send, onClose }: Props): ReactElement => {
   const color: SeatColor = seat.color;
   const [pcLinks, setPcLinks] = useState<Record<string, string>>(draft.pcLinks);
@@ -82,8 +66,7 @@ export const RelationshipModal = ({ seat, seats, row, draft, send, onClose }: Pr
   const [subheaderRight, setSubheaderRight] = useState(draft.subheaderRight);
   const [body, setBody] = useState(textFromLines(draft.body));
   const [bondStrength, setBondStrength] = useState(draft.bondStrength ?? 1);
-  const [portrait, setPortrait] = useState(draft.portrait);
-  const portraitKeys = usePortraitKeys();
+  const [npcKey, setNpcKey] = useState(draft.npcKey ?? "");
 
   const ordered = [seat, ...seats.filter((other) => other.color !== seat.color)].filter((other) => other.charKey !== "");
   const bonded = Object.values(pcLinks).some(isBondLink);
@@ -101,7 +84,7 @@ export const RelationshipModal = ({ seat, seats, row, draft, send, onClose }: Pr
 
   const entry = (): RelationshipDraft => ({
     pcLinks,
-    portrait,
+    ...(npcKey.trim() ? { npcKey: npcKey.trim() } : {}),
     headerLeft: headerLeft.trim(),
     headerRight: headerRight.trim(),
     subheaderLeft: subheaderLeft.trim(),
@@ -165,23 +148,8 @@ export const RelationshipModal = ({ seat, seats, row, draft, send, onClose }: Pr
       <Field label="Body" hint="One paragraph per line." wide>
         <LinesInput value={body} onChange={setBody} rows={5} />
       </Field>
-      <Field label="Portrait" hint="To add one, drop <key>Portrait.webp in assets/CSheets/Page4/Portraits and run the Full build." wide>
-        <div className="pc-rel-portraits">
-          <button type="button" className={`pc-rel-portrait none${portrait === "" ? " selected" : ""}`} onClick={() => setPortrait("")}>
-            None
-          </button>
-          {portraitKeys.map((key) => (
-            <button
-              key={key}
-              type="button"
-              className={`pc-rel-portrait${portrait === key ? " selected" : ""}`}
-              title={key}
-              onClick={() => setPortrait(key)}
-            >
-              <img src={portraitUrl(key)} alt={key} loading="lazy" />
-            </button>
-          ))}
-        </div>
+      <Field label="Named NPC API key" hint="Set this when the relationship name differs from the NPC key. The spreadsheet controls which players see the portrait." wide>
+        <TextInput value={npcKey} onChange={setNpcKey} placeholder="e.g. lalehBintSaif" />
       </Field>
     </SheetModal>
   );

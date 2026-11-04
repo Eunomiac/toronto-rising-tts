@@ -1,5 +1,5 @@
 import { createReadStream, existsSync } from "node:fs";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,13 +10,7 @@ import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js"
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshSheetExports, exportRecords, characterDefinitions, figureFilename } from "./sheetExports.js";
 import { loadMemoriamNpcCatalog } from "./memoriamNpcCatalog.js";
-import { applyMemoriamFields, sheetMemoriamLists } from "../shared/memoriamNpc.js";
-import {
-  createMemoriamFieldStore,
-  MemoriamFieldError,
-  parseMemoriamFieldBody,
-  requireMemoriamFieldKey
-} from "./memoriamNpcFields.js";
+import { toMemoriamNpcView } from "../shared/memoriamNpc.js";
 import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
 import { createNpcOverrideStore, NpcOverrideError, parseNpcOverrideBody, requireNpcOverrideKey } from "./npcOverrides.js";
 import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
@@ -45,13 +39,12 @@ const genericNpcImageDir = path.join(figurineDir, "Generic");
 const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
 const compulsionsPath = path.join(dashboardRoot, "data", "compulsions.jsonc");
-const cataloguedNpcImageDir = path.join(figurineDir, "Catalogued");
-const memoriamNpcImageDir = path.join(figurineDir, "Memoriam");
+const namedNpcImageDir = path.join(figurineDir, "Named");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
 const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 /** TTS sheet art (assets/CSheets, the Cloud mirror); a name on several pages resolves to the first folder here. */
 const sheetArtRoot = path.join(repoRoot, "assets", "CSheets");
-const sheetPortraitDir = path.join(sheetArtRoot, "Page4", "Portraits");
+const sheetPortraitDir = path.join(repoRoot, "assets", "NPC Art", "Portraits");
 const sheetArtDirs = [
   ...["Page1", "Page2", "Page3", "Page4", "Page5", "Page6", "Shared"].map((folder) => path.join(sheetArtRoot, folder)),
   sheetPortraitDir
@@ -60,7 +53,6 @@ const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-i
 const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
 const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "headshot-crops.json"));
 const npcOverrides = createNpcOverrideStore(path.join(dashboardRoot, "data", "npc-overrides.json"));
-const memoriamFields = createMemoriamFieldStore(path.join(dashboardRoot, "data", "memoriam-npc-fields.json"));
 const dashboardBackupDir = resolveDashboardBackupDir(repoRoot).then((backupDir) => {
   if (!backupDir) {
     console.warn("tts-assets.config.json has no backupDir; scene deck, scene library and NPC stats backups are off.");
@@ -237,64 +229,13 @@ const handleHeadshotCrops = async (request: IncomingMessage, response: ServerRes
   }
 };
 
-const loadKnownMemoriamPeriods = async (): Promise<Set<string>> => {
-  let text: string;
-  try {
-    text = await readFile(sceneCatalogsPath, "utf8");
-  } catch {
-    throw new MemoriamFieldError("Scene catalogs are missing, so Memoriam periods cannot be checked.", 500);
+const handleMemoriamNpcs = async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
+  if (request.method !== "GET") {
+    sendJson(response, 405, { error: "Edit Memoriam NPC assignments in the chronicle spreadsheet." });
+    return;
   }
-  const parsed: unknown = JSON.parse(text);
-  const periods = typeof parsed === "object" && parsed !== null ? (parsed as { memoriamPeriods?: unknown }).memoriamPeriods : undefined;
-  const keys = new Set<string>();
-  if (Array.isArray(periods)) {
-    for (const period of periods) {
-      if (typeof period === "object" && period !== null && typeof (period as { key?: unknown }).key === "string") {
-        keys.add((period as { key: string }).key);
-      }
-    }
-  }
-  if (keys.size < 1) {
-    throw new MemoriamFieldError("Scene catalogs list no Memoriam periods.", 500);
-  }
-  return keys;
-};
-
-const memoriamNpcViews = async () => {
   const catalog = await loadMemoriamNpcCatalog(memoriamNpcCatalogPath);
-  const fields = await memoriamFields.list();
-  return catalog.npcs.map((npc) => applyMemoriamFields(npc, fields.fields[npc.key]));
-};
-
-const handleMemoriamNpcs = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
-  try {
-    if (request.method === "GET") {
-      sendJson(response, 200, { npcs: await memoriamNpcViews() });
-      return;
-    }
-    const key = requireMemoriamFieldKey(url.searchParams.get("key"));
-    if (request.method === "PUT") {
-      const catalog = await loadMemoriamNpcCatalog(memoriamNpcCatalogPath);
-      const npc = catalog.npcs.find((row) => row.key === key);
-      if (!npc) {
-        throw new MemoriamFieldError(`No Memoriam NPC named ${key}.`, 404);
-      }
-      const parsed = parseMemoriamFieldBody(await readRequestJson(request), await loadKnownMemoriamPeriods());
-      if (typeof parsed === "string") {
-        throw new MemoriamFieldError(parsed, 400);
-      }
-      await memoriamFields.put(key, parsed, sheetMemoriamLists(npc));
-      sendJson(response, 200, { npcs: await memoriamNpcViews() });
-      return;
-    }
-    sendJson(response, 405, { error: "Method not allowed" });
-  } catch (error: unknown) {
-    if (error instanceof MemoriamFieldError) {
-      sendJson(response, error.status, { error: error.message });
-      return;
-    }
-    throw error;
-  }
+  sendJson(response, 200, { npcs: catalog.npcs.map(toMemoriamNpcView) });
 };
 
 const handleNpcOverrides = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
@@ -467,12 +408,6 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
-  if (request.method === "GET" && pathname === "/api/sheet-portraits") {
-    const files = await readdir(sheetPortraitDir);
-    sendJson(response, 200, files.filter((file) => /^[A-Za-z0-9]+Portrait\.webp$/.test(file)).map((file) => file.slice(0, -".webp".length)).sort());
-    return;
-  }
-
   if (request.method === "GET" && pathname === "/api/chronicle-exports") {
     sendJson(response, 200, { districts: exportRecords("LOCATIONS_DISTRICTS"), sites: exportRecords("LOCATIONS_SITES"), weather: exportRecords("WEATHER") });
     return;
@@ -618,7 +553,7 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   }
 
   if (pathname === "/api/memoriam-npcs") {
-    await handleMemoriamNpcs(request, response, url);
+    await handleMemoriamNpcs(request, response);
     return true;
   }
 
@@ -666,7 +601,7 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
     const requested = decodeURIComponent(pathname.slice("/figurine-images/".length));
     const key = requested.replace(/\.webp$/, "");
     const filename = figureFilename(key) ?? `npc_${requested}`;
-    await serveSafeWebp(response, [cataloguedNpcImageDir, genericNpcImageDir, memoriamNpcImageDir], filename, "Invalid NPC figurine image filename.");
+    await serveSafeWebp(response, [namedNpcImageDir, genericNpcImageDir], filename, "Invalid NPC figurine image filename.");
     return true;
   }
 
@@ -742,12 +677,12 @@ void (async () => {
   httpServer.listen(config.port, "127.0.0.1", () => {
     console.log(`Storyteller dashboard listening on http://127.0.0.1:${config.port}`);
     console.log(chronicleHealthInfo(config).chronicleStatus);
-    console.log(`Catalogued NPC images: ${cataloguedNpcImageDir}`);
+    console.log(`Named NPC images: ${namedNpcImageDir}`);
     if (isDev) {
       console.log("Vite HMR is enabled (--dev).");
     }
-    if (!existsSync(cataloguedNpcImageDir)) {
-      console.error("Catalogued NPC image folder is missing.");
+    if (!existsSync(namedNpcImageDir)) {
+      console.error("Named NPC image folder is missing.");
     }
   });
 })().catch((error: unknown) => {

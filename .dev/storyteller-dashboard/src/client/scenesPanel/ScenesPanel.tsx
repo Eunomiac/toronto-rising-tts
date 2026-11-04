@@ -28,10 +28,8 @@ import { loadGenericCatalog } from "./genericCatalog";
 import { planNpcTypeSeed } from "../../shared/npcRollPlan";
 import { configuredTiers, genericStatsKey, keptStatsKey, newStatId } from "../../shared/npcStats";
 import {
-  inheritedNamedBlock,
   MEMORIAM_GENERIC_COLOR,
   MEMORIAM_YEAR_GROUPS,
-  memoriamStem
 } from "../../shared/memoriamNpc";
 import { useMemoriamCatalog } from "../memoriamCatalog";
 import { useNpcOverrides } from "../npcOverrides";
@@ -492,15 +490,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       const at = dropPoint();
       const mem = memoriamCatalog.find((row) => row.key === key);
       if (mem) {
-        const statsKey = mem.isGeneric ? genericStatsKey(memoriamStem(mem.key)) : mem.key;
+        const statsKey = mem.isGeneric ? genericStatsKey(mem.key) : mem.key;
         const spawned = mem.isGeneric ? seats?.generics.find((row) => row.characterKey === key) : undefined;
-        const inherited = !mem.isGeneric
-          ? inheritedNamedBlock(
-            (statKey) => npcStats?.[statKey]?.named,
-            (statKey) => memoriamCatalog.find((row) => row.key === statKey)?.variantOfUnique ?? "",
-            mem.key
-          )
-          : undefined;
         const yearColor = MEMORIAM_YEAR_GROUPS.find((group) => mem.years.includes(group.year))?.color ?? MEMORIAM_GENERIC_COLOR;
         setDndEdit({
           characterKey: key,
@@ -508,13 +499,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           defaultName: mem.label,
           defaultColor: mem.isGeneric ? MEMORIAM_GENERIC_COLOR : yearColor,
           stats: { key: statsKey, label: spawned?.name ?? mem.label, tiered: mem.isGeneric },
-          ...(inherited ? { statSeed: { named: inherited } } : {}),
-          memoriam: {
-            locations: mem.locations,
-            years: mem.years,
-            periods: mem.periods,
-            knownPeriods: catalogs?.memoriamPeriods.map((period) => period.key) ?? []
-          },
           ...(spawned ? {
             inScene: {
               name: spawned.name,
@@ -547,9 +531,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
         const spawned = generic ? seats?.generics.find((row) => row.characterKey === key) : undefined;
         setDndEdit({
           characterKey: key, at, defaultName: generic?.label ?? characterName(key), defaultColor: "#77706a",
-          stats: { key: generic ? genericStatsKey(generic.label) : key, label: generic?.label ?? characterName(key), tiered: generic !== undefined },
+          stats: { key: generic ? genericStatsKey(generic.key) : key, label: generic?.label ?? characterName(key), tiered: generic !== undefined },
           ...(spawned && generic ? { inScene: {
-            name: spawned.name, tier: tiers[key], tiers: configuredTiers(npcStats?.[genericStatsKey(generic.label)]),
+            name: spawned.name, tier: tiers[key], tiers: configuredTiers(npcStats?.[genericStatsKey(generic.key)]),
             rename: (name: string, keptId: string | undefined) => {
               send({ op: "genericRename", key, name });
               const kept = keptId ? npcStats?.[keptStatsKey(keptId)] : undefined;
