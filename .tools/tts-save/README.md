@@ -13,6 +13,19 @@ Source of truth:
 Status:
 - current
 
+## Between-session start save
+
+After FULL, save the source game in Intermission with the latest scripts. Download the **Integrated assets** tab as CSV. The command reads the static URL column beside **Manual decision**. Use a new TTS slot filename such as `TS_Save_9001.json`.
+
+```powershell
+npm run tts-save:session-start -- --decisions "Integrated assets.csv" --dry-run
+npm run tts-save:session-start -- --decisions "Integrated assets.csv" --output "TS_Save_9001.json" --report "session-start-report.json"
+```
+
+The source defaults to the configured save. `--source` accepts a separate full save. The command writes only to new output paths. It defers reviewed top-level Unity bundle objects and preserves their GUIDs and data for restore. A `Prune` URL that moved, appears in another kind of field, or shares an object with an asset outside the prune list stops generation for review. `Purge`, `Investigate`, and URLs without a decision stay in the copy and are accounted for separately in the report.
+
+Load the new slot in TTS and wait for the host table to finish starting. Players get their assigned colors as they join. Once they are connected, open **Phase tools**, click **1 Load Bundles**, then wait for the status to show **bundles ready to finish**. Click **2 Finish Join** to seat connected players and refresh the HUD. Play or advance the phase after that step finishes. A saved copy can resume at either stage.
+
 ## Complications decks (Full build hook)
 
 `npm run build:full` assembles the Standard and Enhanced Complications decks after cloud asset sync and consolidation. It rebuilds only variants with changed image/settings/URL fingerprints, defers pending uploads, and refuses to rebuild an active saved game or loose cards. Setup, exact filenames, save behavior, and verification: [`../complications/decks/README.md`](../complications/decks/README.md). Direct command: `npm run complications:decks -- --dry-run`.

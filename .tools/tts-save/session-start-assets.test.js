@@ -3,6 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { planSessionStart, readDecisions } = require("./session-start-assets.js");
+const { createSessionStart } = require("./build-session-start.js");
 
 const bundle = "https://steamusercontent-a.akamaihd.net/ugc/42/0123456789ABCDEF0123456789ABCDEF01234567/";
 const keep = "https://example.test/keep.png";
@@ -35,4 +36,23 @@ test("fails closed for drift, unsupported placements, and collateral assets", ()
   source.CustomUIAssets.push({ Name: "bundle", URL: bundle });
   assert.throws(() => planSessionStart(source, review), /needs a restore handler/);
   assert.throws(() => planSessionStart({ ObjectStates: [] }, review), /no longer occurs/);
+});
+
+test("preserves chronicle state and UI assets while staging exact restore data", () => {
+  const source = fixture();
+  source.LuaScriptState = JSON.stringify({ currentPhase: "Intermission", sessionNum: 42, debug: { assumeConnected: true } });
+  source.ObjectStates[0].GMNotes = "SOUNDSCAPE_MUSIC_C";
+  const plan = planSessionStart(source, review);
+  const output = createSessionStart(source, plan, "new lua", "new xml");
+  const state = JSON.parse(output.LuaScriptState);
+  assert.equal(output.LuaScript, "new lua");
+  assert.equal(output.XmlUI, "new xml");
+  assert.deepEqual(output.CustomUIAssets, source.CustomUIAssets);
+  assert.equal(state.sessionNum, 42);
+  assert.equal(state.debug.assumeConnected, false);
+  assert.equal(state.connectionControls.sessionStartJoin, true);
+  assert.deepEqual(state.connectionControls.joinColdPoolsBackup.entries, [
+    { kind: "soundscape_emitter", guid: "abcdef", data: source.ObjectStates[0] },
+  ]);
+  assert.throws(() => createSessionStart(output, plan, "", ""), /Use a full save/);
 });
