@@ -6,23 +6,23 @@ local C=require('lib.constants')
 local Model=require('lib.complications_model')
 local registered=false
 local variants={
- [11]={{'WPRerollLimit2'},{'WPRerollLimit1'}},
- [17]={{'WPRefreshLow'},{'WPRefresh1'}},
- [52]={{'BestialNullBasicSuccess'},{'BestialNullBasicSuccess','BestialNullCrit'}},
- [57]={{'NoMessyReroll'},{'NoMessyReroll'}},
- [59]={{'noBloodSurge'},{'noBloodSurge','NoDisciplineBonus'}},
+ limitWillpowerRerolls={{'WPRerollLimit2'},{'WPRerollLimit1'}},
+ limitWillpowerRefresh={{'WPRefreshLow'},{'WPRefresh1'}},
+ nullifySuccessesOnBestialOnes={{'BestialNullBasicSuccess'},{'BestialNullBasicSuccess','BestialNullCrit'}},
+ blockMessyRerolls={{'NoMessyReroll'},{'NoMessyReroll'}},
+ restrictBloodSurgeAndDiscipline={{'noBloodSurge'},{'noBloodSurge','NoDisciplineBonus'}},
 }
 function E.register()
  if registered then return end
  registered=true
  local A=require('lib.complications_automations')
- for index,pair in pairs(variants) do
-  A.register(index,{
+ for key,pair in pairs(variants) do
+  A.register(key,{
    apply=function(g,guid,enhanced)
     local pid=S.getPlayerID(g.target.color)
     local before=S.getStateVal('playerData',pid,'conditions') or {}
     local desired,restore={},{}
-    if index==11 or index==17 or index==57 then
+    if key=='limitWillpowerRerolls' or key=='limitWillpowerRefresh' or key=='blockMessyRerolls' then
      for _,ids in ipairs(pair) do for _,id in ipairs(ids) do desired[id]=false end end
     end
     for _,id in ipairs(pair[enhanced and 2 or 1]) do desired[id]=true end
@@ -35,7 +35,7 @@ function E.register()
    end,
   })
  end
- A.register(6,{
+ A.register('projectDiePenalty',{
   apply=function(g,guid,enhanced)
    local Projects=require('core.projects')
    local pid=S.getPlayerID(g.target.color)
@@ -58,7 +58,7 @@ function E.register()
    else U.AlertGM('The affected Project no longer exists; no other Project was changed.') end
   end,
  })
- A.register(7,{
+ A.register('startClanCompulsion',{
   apply=function(g,guid)
    local Compulsions=require('core.compulsions')
    if not Compulsions.canStartClan(g.target.color) then return nil end
@@ -72,13 +72,14 @@ function E.register()
   end,
  })
  -- Physical clones are planned by the runtime, whose journal owns GUID allocation.
- A.register(28,{
+ A.register('cloneRareComplications',{
   apply=function(g,guid,enhanced)
    Model.queue(g,{kind='doomPlan',guid=guid,copies=enhanced and 4 or 2})
    return {source=guid}
   end,
   reverse=function(g,guid,r) Model.queue(g,{kind='doomReverse',guid=r.source}) end,
  })
+ A.validateCatalog()
 end
 function E.execute(op)
  if op.effect=='conditions' then

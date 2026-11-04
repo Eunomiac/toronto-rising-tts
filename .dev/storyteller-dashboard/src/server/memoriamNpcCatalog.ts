@@ -8,6 +8,7 @@ export type MemoriamNpc = {
   readonly year: string;
   readonly variantOfUnique: string;
   readonly isGeneric: boolean;
+  readonly catalog: boolean;
   readonly tags: string;
   readonly periods: readonly string[];
 };
@@ -35,6 +36,7 @@ const parseNpc = (value: unknown, index: number): MemoriamNpc => {
   const variantOfUnique = value.variantOfUnique;
   const isGeneric = value.isGeneric;
   const tags = value.tags;
+  const catalog = value.catalog;
   const periods = value.periods;
   if (
     typeof filename !== "string" ||
@@ -45,12 +47,13 @@ const parseNpc = (value: unknown, index: number): MemoriamNpc => {
     typeof variantOfUnique !== "string" ||
     typeof isGeneric !== "boolean" ||
     typeof tags !== "string" ||
+    typeof catalog !== "boolean" ||
     !Array.isArray(periods) ||
     periods.some((period) => typeof period !== "string")
   ) {
-    throw new Error(`memoriam-npcs.json npc[${index}] is missing filename/key/label/location/year/variantOfUnique/isGeneric/tags/periods.`);
+    throw new Error(`memoriam-npcs.json npc[${index}] is missing filename/key/label/location/year/variantOfUnique/isGeneric/catalog/tags/periods.`);
   }
-  return { filename, key, label, location, year, variantOfUnique, isGeneric, tags, periods };
+  return { filename, key, label, location, year, variantOfUnique, isGeneric, catalog, tags, periods };
 };
 
 export const parseMemoriamNpcCatalog = (payload: unknown): MemoriamNpcCatalog => {

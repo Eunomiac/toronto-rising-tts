@@ -12,6 +12,9 @@ const root = path.resolve(__dirname, "../../..");
 const defaultSnapshotPath = path.join(root, ".dev/storyteller-dashboard/data/sheet-exports.json");
 const identifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const list = (text) => String(text || "").split(",").map(s => s.trim()).filter(Boolean);
+const memoriamPeriods = row => list(row["Memoriam Periods"]).filter(period => period !== "~");
+const portraitOwners = row => list(row["Has Portrait"]).filter(owner => owner !== "~");
+const playerKeys = new Set(["lordLucien", "rashid", "aishe", "fomorach", "blackCaesar"]);
 const bool = (text, label, blank = false) => {
   if (text === "" && blank) return false;
   if (!/^(TRUE|FALSE)$/i.test(text)) throw new Error(`${label}: expected TRUE or FALSE, got ${JSON.stringify(text)}`);
@@ -20,6 +23,8 @@ const bool = (text, label, blank = false) => {
 const rowsOf = (snapshot, name) => snapshot.tables[`EXPORT_${name}`];
 const records = (rows) => rows.slice(1).map(row => Object.fromEntries(rows[0].map((key, i) => [key, row[i] || ""])));
 const dataOf = (snapshot, name) => records(rowsOf(snapshot, name));
+const namedRows = snapshot => dataOf(snapshot, "CHARACTERS_NAMED").filter(row =>
+  bool(row["Is PC"], row["API Key"]) || bool(row["In Catalog"], row["API Key"]) || memoriamPeriods(row).length > 0);
 const csvOf = (snapshot, name) => rowsOf(snapshot, name).map(row => row.map(v => `"${v.replace(/"/g, '""')}"`).join(",")).join("\n");
 
 function parseExport(csv, spec) {
@@ -36,13 +41,17 @@ function parseExport(csv, spec) {
 
 function validateSnapshot(snapshot) {
   if (snapshot.version !== 1 || !snapshot.tables) throw new Error("Unsupported spreadsheet snapshot");
+  const expected = new Set(contract.exports.map(spec => spec.name));
+  for (const name of Object.keys(snapshot.tables)) {
+    if (!expected.has(name)) throw new Error(`Unexpected export table ${name}`);
+  }
   // Revalidate saved snapshots as strictly as downloads; never trust an old cache.
   for (const spec of contract.exports) {
     const rows = snapshot.tables[spec.name];
     if (!Array.isArray(rows)) throw new Error(`Snapshot missing ${spec.name}`);
     parseExport(rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n"), spec);
   }
-  const unique = dataOf(snapshot, "CHARACTERS_UNIQUE");
+  const named = dataOf(snapshot, "CHARACTERS_NAMED");
   const generic = dataOf(snapshot, "CHARACTERS_GENERIC");
   const all = new Map();
   const addKey = (key, label, value) => {
@@ -50,42 +59,47 @@ function validateSnapshot(snapshot) {
     if (all.has(key)) throw new Error(`${label}: duplicate identity ${key}`);
     all.set(key, value);
   };
-  for (const row of unique) {
-    addKey(row["API Key"], "Unique characters", row);
-    if (!["PC", "Named NPC"].includes(row.Type)) throw new Error(`${row["API Key"]}: invalid Type ${row.Type}`);
-    bool(row["Catalog?"], row["API Key"], true);
-    if (!row.Name || !/^npc_[\w-]+\.webp$/.test(row.Filename)) throw new Error(`${row["API Key"]}: missing Name or invalid figurine filename`);
-  }
-  for (const row of unique) for (const alias of list(row["Legacy API Keys"])) addKey(alias, "Legacy API Keys", row);
-  for (const row of unique) {
-    if (row["Inherits From"] && !all.has(row["Inherits From"])) throw new Error(`${row["API Key"]}: unknown Inherits From ${row["Inherits From"]}`);
-    const seen = new Set([row["API Key"]]);
-    let next = row["Variant Of"];
-    while (next) {
-      if (seen.has(next)) throw new Error(`${row["API Key"]}: variant cycle at ${next}`);
-      seen.add(next);
-      const target = all.get(next);
-      if (!target) throw new Error(`${row["API Key"]}: unknown Variant Of ${next}`);
-      next = target["Variant Of"];
+  for (const row of named) {
+    const key = row["API Key"];
+    addKey(key, "Named characters", row);
+    const isPC = bool(row["Is PC"], key);
+    if (isPC && !playerKeys.has(key)) throw new Error(`${key}: unexpected PC key`);
+    if (row.Type !== "Named NPC" || !row.Name) throw new Error(`${key}: invalid Type or missing Name`);
+    bool(row["In Catalog"], key);
+    if (bool(row["Has Figurine"], key) && row["Figurine Filename"] !== `npc_${key}.webp`) {
+      throw new Error(`${key}: expected figurine filename npc_${key}.webp`);
     }
   }
-  const figures = new Map(), profiles = new Map(), pairs = new Set();
-  const figureFields = ["Label", "Stat Profile", "Catalog?", "Locations", "Time Periods", "Memoriam Periods", "Tags", "Filename", "Figurine Filename", "Source Group"];
+  for (const row of named) {
+    const key = row["API Key"], parentKey = row["Variant Of"];
+    const parent = parentKey ? all.get(parentKey) : null;
+    if (parentKey && (!parent || parent["Variant Of"] || !key.startsWith(parentKey + "_") || key.length === parentKey.length + 1 || bool(row["Is PC"], key))) {
+      throw new Error(`${key}: variant must be an NPC named ${parentKey}_<distinction> with a non-variant parent`);
+    }
+    const owners = portraitOwners(row);
+    if (owners.some(owner => !playerKeys.has(owner)) || new Set(owners).size !== owners.length) {
+      throw new Error(`${key}: invalid or duplicate portrait recipient`);
+    }
+    if (owners.length && row["Portrait Filename"] !== `npcPortrait_${key}.webp` &&
+        !(parent && portraitOwners(parent).length && row["Portrait Filename"] === parent["Portrait Filename"])) {
+      throw new Error(`${key}: expected own or inherited portrait filename`);
+    }
+  }
+  const figures = new Map(), pairs = new Set();
+  const figureFields = ["Label", "In Catalog", "Years Active", "Locations Active", "Memoriam Periods", "Tags", "Has Figurine", "Figurine Filename"];
   for (const row of generic) {
     const key = row["API Key"], pair = `${key}/${row.Tier}`;
     if (pairs.has(pair)) throw new Error(`Generic characters: duplicate ${pair}`);
     pairs.add(pair);
-    bool(row["Catalog?"], pair, true);
+    bool(row["In Catalog"], pair);
     const tiers = row.Kind === "Vampire" ? ["Average", "Gifted", "Deadly", "Superhuman"] : ["Weak", "Average", "Gifted", "Deadly"];
-    if (!tiers.includes(row.Tier) || !row["Stat Profile"] || !row["Stat Key"] || !row.Label) throw new Error(`${pair}: missing profile/stat key/label or unsupported tier`);
-    if (!/^npc_[\w-]+\.webp$/.test(row["Figurine Filename"])) throw new Error(`${pair}: invalid Figurine Filename`);
+    if (!tiers.includes(row.Tier) || !row.Label) throw new Error(`${pair}: missing label or unsupported tier`);
+    if (!/_\d{2}$/.test(key) || !bool(row["Has Figurine"], pair) || row["Figurine Filename"] !== `npc_${key}.webp`) {
+      throw new Error(`${pair}: expected two-digit figure key and figurine filename npc_${key}.webp`);
+    }
     const first = figures.get(key);
     if (first && figureFields.some(f => first[f] !== row[f])) throw new Error(`${pair}: inconsistent figure metadata across tiers`);
     if (!first) { addKey(key, "Generic characters", row); figures.set(key, row); }
-    const profileKey = `${row["Stat Profile"]}/${row.Tier}`;
-    const block = Object.fromEntries(Object.entries(row).filter(([field]) => !["API Key", ...figureFields, "Authoring Tab", "Authoring Key"].includes(field)));
-    if (profiles.has(profileKey) && JSON.stringify(profiles.get(profileKey)) !== JSON.stringify(block)) throw new Error(`${profileKey}: conflicting shared profile rows`);
-    profiles.set(profileKey, block);
   }
   for (const name of ["LOCATIONS_DISTRICTS", "LOCATIONS_SITES", "MEMORIAM", "SKYBOXES"]) {
     const seen = new Set();
@@ -106,7 +120,7 @@ function validateSnapshot(snapshot) {
   // Applicability can include a source period which has not been approved for export.
   // Retain these assignments and report them; never invent a playable period.
   const periods = new Set(dataOf(snapshot, "MEMORIAM").map(r => r.Key));
-  snapshot.warnings = [...new Set([...unique, ...generic].flatMap(row => list(row["Memoriam Periods"]).filter(p => !periods.has(p)).map(p => `${row["API Key"]}: Memoriam period ${p} is not approved/exported; assignment retained`)))];
+  snapshot.warnings = [...new Set([...namedRows(snapshot), ...generic].flatMap(row => memoriamPeriods(row).filter(p => !periods.has(p)).map(p => `${row["API Key"]}: Memoriam period ${p} is not approved/exported; assignment retained`)))];
   compulsions(snapshot);
   return snapshot;
 }
@@ -138,24 +152,40 @@ function loadSnapshot() {
 const q = value => `"${escapeLuaString(String(value))}"`;
 function uniqueCharacters(snapshot) {
   const out = {};
-  for (const row of dataOf(snapshot, "CHARACTERS_UNIQUE")) {
+  for (const row of namedRows(snapshot)) {
     const key = row["API Key"];
-    const def = { name: key, fullName: row.Name, isPC: row.Type === "PC", catalog: bool(row["Catalog?"], key, true), werewolf: row.Kind === "Werewolf", filename: row.Filename, portraitAsset: row["Portrait Asset"], variantOfUnique: row["Variant Of"] };
-    out[key] = def;
-    for (const alias of list(row["Legacy API Keys"])) out[alias] = { ...def, name: alias, canonicalKey: key, catalog: false };
+    out[key] = {
+      name: key, fullName: row.Name, isPC: bool(row["Is PC"], key), catalog: bool(row["In Catalog"], key),
+      werewolf: row.Kind === "Werewolf", filename: bool(row["Has Figurine"], key) ? row["Figurine Filename"] : "",
+      portraitAsset: portraitOwners(row).length ? row["Portrait Filename"].replace(/\.webp$/, "") : "",
+      variantOfUnique: row["Variant Of"],
+    };
   }
   return out;
 }
 function renderUniqueLua(snapshot) {
-  const lines = ["-- Generated by npm run characters:import from EXPORT_CHARACTERS_UNIQUE. DO NOT EDIT.", "local Characters = {"];
+  const lines = ["-- Generated by npm run characters:import from EXPORT_CHARACTERS_NAMED. DO NOT EDIT.", "local Characters = {"];
   for (const [key, value] of Object.entries(uniqueCharacters(snapshot)).sort(([a], [b]) => a.localeCompare(b))) lines.push(`  ${key} = { ${Object.entries(value).map(([k, v]) => `${k} = ${typeof v === "boolean" ? v : q(v)}`).join(", ")} },`);
   return lines.concat("}", "return Characters", "").join("\n");
+}
+function renderPortraitLua(snapshot) {
+  const lines = ["-- Generated from EXPORT_CHARACTERS_NAMED. DO NOT EDIT.", "return {"];
+  for (const row of dataOf(snapshot, "CHARACTERS_NAMED")) {
+    const owners = portraitOwners(row);
+    if (!owners.length) continue;
+    const name = row["Portrait Filename"].replace(/\.webp$/, "");
+    lines.push(`  [${q(row["API Key"])}] = { ${owners.map(owner => `[${q(owner)}] = ${q(name)}`).join(", ")} },`);
+  }
+  return lines.concat("}", "").join("\n");
 }
 function genericFigures(snapshot) {
   const figures = new Map();
   for (const row of dataOf(snapshot, "CHARACTERS_GENERIC")) {
     const key = row["API Key"];
-    if (!figures.has(key)) figures.set(key, { key, label: row.Label, tags: row.Tags, filename: row["Figurine Filename"], catalog: bool(row["Catalog?"], key, true), statProfile: row["Stat Profile"], location: row.Locations, year: row["Time Periods"], periods: list(row["Memoriam Periods"]), sourceGroup: row["Source Group"], tiers: [] });
+    if (!figures.has(key)) figures.set(key, {
+      key, label: row.Label, tags: row.Tags, filename: row["Figurine Filename"], catalog: bool(row["In Catalog"], key),
+      location: row["Locations Active"], year: row["Years Active"], periods: memoriamPeriods(row), tiers: [],
+    });
     figures.get(key).tiers.push(row.Tier.toLowerCase());
   }
   return [...figures.values()];
@@ -166,7 +196,16 @@ function renderGenericLua(snapshot) {
   return lines.concat("}", "return Generics", "").join("\n");
 }
 function memoriamFigures(snapshot) {
-  return [...dataOf(snapshot, "CHARACTERS_UNIQUE").filter(r => r["Memoriam Periods"]).map(r => ({ filename: r.Filename, key: r["API Key"], label: r.Name, location: r.Locations, year: r["Time Periods"], variantOfUnique: r["Variant Of"], isGeneric: false, tags: r.Tags, periods: list(r["Memoriam Periods"]), catalog: bool(r["Catalog?"], r["API Key"], true) })), ...genericFigures(snapshot).filter(r => r.periods.length).map(r => ({ filename: r.filename, key: r.key, label: r.label, location: r.location, year: r.year, variantOfUnique: "", isGeneric: true, tags: r.tags, periods: r.periods, catalog: r.catalog }))];
+  const named = namedRows(snapshot).filter(row => !bool(row["Is PC"], row["API Key"]) && memoriamPeriods(row).length).map(row => ({
+    filename: bool(row["Has Figurine"], row["API Key"]) ? row["Figurine Filename"] : "",
+    key: row["API Key"], label: row.Name, location: row["Locations Active"], year: row["Years Active"],
+    variantOfUnique: row["Variant Of"], isGeneric: false, tags: "", periods: memoriamPeriods(row), catalog: bool(row["In Catalog"], row["API Key"]),
+  }));
+  const generic = genericFigures(snapshot).filter(row => row.periods.length).map(row => ({
+    filename: row.filename, key: row.key, label: row.label, location: row.location, year: row.year,
+    variantOfUnique: "", isGeneric: true, tags: row.tags, periods: row.periods, catalog: row.catalog,
+  }));
+  return [...named, ...generic];
 }
 function compulsions(snapshot) {
   const out = {}, clans = new Set();
@@ -187,4 +226,4 @@ function compulsions(snapshot) {
   for (const [key, value] of Object.entries(out)) { if (value.variants.length !== 4) throw new Error(`${key}: needs cards 1–4`); value.variants.sort((a,b) => a.card-b.card); }
   return out;
 }
-module.exports = { contract, root, defaultSnapshotPath, list, bool, rowsOf, dataOf, csvOf, parseExport, validateSnapshot, fetchSnapshot, loadSnapshot, exportUrl, uniqueCharacters, renderUniqueLua, renderGenericLua, genericFigures, memoriamFigures, compulsions, writeAtomic };
+module.exports = { contract, root, defaultSnapshotPath, list, bool, namedRows, portraitOwners, rowsOf, dataOf, csvOf, parseExport, validateSnapshot, fetchSnapshot, loadSnapshot, exportUrl, uniqueCharacters, renderUniqueLua, renderGenericLua, renderPortraitLua, genericFigures, memoriamFigures, compulsions, writeAtomic };

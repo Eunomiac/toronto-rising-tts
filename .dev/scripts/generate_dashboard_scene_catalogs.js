@@ -890,7 +890,7 @@ function main() {
     isPC: readBooleanField(entry.body, "isPC") === true,
     catalog: readBooleanField(entry.body, "catalog") === true,
     filename: readStringField(entry.body, "filename"),
-    canonicalKey: readStringField(entry.body, "canonicalKey"),
+    variantOfUnique: readStringField(entry.body, "variantOfUnique"),
     pickerGroups: npcRoster.members[entry.key] ?? [],
   }));
 

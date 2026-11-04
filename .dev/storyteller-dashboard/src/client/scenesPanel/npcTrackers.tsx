@@ -6,12 +6,10 @@ import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingAction } from "../pcSheet/types";
 import { useNpcStats } from "../npcStats";
 import { statBlockFor, type NpcKind, type NpcStatBlock, type NpcTier } from "../../shared/npcStats";
-import { inheritedNamedBlock, memoriamStem } from "../../shared/memoriamNpc";
 import type { GenericNpc, NpcTrackerRecord } from "../worldState";
 import { bloodPotencyRow } from "../catalogVocab";
 import { useMemoriamCatalog } from "../memoriamCatalog";
 import type { NpcTrackerMode, NpcTrackerWhich, ScenesCommand } from "./commands";
-import { useGenericCatalog } from "./genericCatalog";
 import { Icon } from "./icons";
 import { RollsCommandContext, type RollsCommand } from "./rolls/commands";
 
@@ -48,10 +46,8 @@ export const useNpcLive = (
   send?: (command: ScenesCommand) => void
 ): NpcLive => {
   const stats = useNpcStats();
-  const catalog = useGenericCatalog();
   const memoriam = useMemoriamCatalog();
   const raw = useMemo(() => {
-    const labels = new Map((catalog ?? []).map((entry) => [entry.key, entry.label]));
     const memoriamByKey = new Map(memoriam.map((npc) => [npc.key, npc]));
     const inScene = new Map(generics.map((npc) => [npc.characterKey, npc]));
     const wolves = new Set(werewolves);
@@ -61,29 +57,17 @@ export const useNpcLive = (
       }
       const generic = inScene.get(characterKey);
       const mem = memoriamByKey.get(characterKey);
-      if (mem?.isGeneric) {
-        return statBlockFor(stats, {
-          characterKey,
-          genericLabel: memoriamStem(characterKey),
-          tier: tiers[characterKey],
-          keptId: generic?.keptId
-        });
-      }
-      if (generic) {
-        return statBlockFor(stats, { characterKey, genericLabel: labels.get(characterKey), tier: tiers[characterKey], keptId: generic.keptId });
-      }
-      return inheritedNamedBlock(
-        (key) => statBlockFor(stats, { characterKey: key }),
-        (key) => memoriamByKey.get(key)?.variantOfUnique ?? "",
-        characterKey
-      );
+      return statBlockFor(stats, {
+        characterKey, generic: mem?.isGeneric === true || generic !== undefined,
+        tier: tiers[characterKey], keptId: generic?.keptId
+      });
     };
     return {
       trackers: trackers ?? {},
       blockFor,
       kindOf: (characterKey: string) => blockFor(characterKey)?.kind ?? (wolves.has(characterKey) ? "werewolf" : undefined)
     };
-  }, [stats, catalog, memoriam, trackers, generics, tiers, werewolves]);
+  }, [stats, memoriam, trackers, generics, tiers, werewolves]);
   const pending = JSON.stringify([...new Set([...Object.keys(trackers ?? {}), ...Object.keys(conditions ?? {})])].sort().flatMap((key) => {
     const block = raw.blockFor(key);
     if (!block) return [];

@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import type { NpcPower, NpcStatBlock } from "../../src/shared/npcStats.ts";
-import { parseStatRecord, type SheetRecord } from "./sheet.ts";
+import { parseStatRecord, type DisciplinePowerLookup, type SheetRecord } from "./sheet.ts";
 
 export const WRITE_HEADERS = [
   "Kind", "Clan", "Generation", "Rank", "Blood Potency", "Humanity", "Difficulty", "Health", "Willpower",
@@ -72,22 +72,24 @@ const comparable = (block: NpcStatBlock): unknown => ({
   advantages: block.advantages?.map((advantage) => advantage.name) ?? []
 });
 
-export const planRowWrite = (key: string, block: NpcStatBlock, current: SheetRecord): WritePlan => {
+export const planRowWrite = (key: string, block: NpcStatBlock, current: SheetRecord, catalogue?: DisciplinePowerLookup): WritePlan => {
   if ((block.difficultyStrong === undefined) !== (block.difficultyWeak === undefined)) {
     return { cells: {}, problems: ["Difficulty needs both exceptional and general values"], notesDiffer: false };
   }
-  try { parseStatRecord(current, key, true); }
+  let currentBlock: NpcStatBlock;
+  try { currentBlock = parseStatRecord(current, key, true, catalogue); }
   catch (reason) {
     return { cells: {}, problems: [`the Sheet row cannot be read first (${reason instanceof Error ? reason.message : String(reason)})`], notesDiffer: false };
   }
   const cells = Object.fromEntries(WRITE_HEADERS.flatMap((header) => {
+    if (header === "Powers" && isDeepStrictEqual(block.powers, currentBlock.powers)) return [];
     if (header === "Clan" && block.kind !== "vampire") return [];
     const next = value(block, header);
     return String(next) === (current[header] ?? "").trim() ? [] : [[header, next]];
   }));
   const merged = { ...current, ...Object.fromEntries(Object.entries(cells).map(([header, cell]) => [header, String(cell)])) };
   try {
-    const reparsed = parseStatRecord(merged, key, true);
+    const reparsed = parseStatRecord(merged, key, true, catalogue);
     if (!isDeepStrictEqual(comparable(block), comparable(reparsed))) {
       return { cells: {}, problems: ["the edited block cannot make a lossless round trip through the Sheet notation"], notesDiffer: false };
     }

@@ -11,12 +11,18 @@ function run(script, env) {
 }
 async function main() {
   const full = process.argv.includes("--full");
+  const check = process.argv.includes("--check");
+  if (full && check) throw new Error("--full and --check cannot be combined");
   // Write-back must finish before we read formula-derived exports. It is a no-op without pending edits.
   if (full) run(".dev/storyteller-dashboard/scripts/npc-stats/push.ts", process.env);
   const snapshot = process.env.TR_EXPORT_SNAPSHOT ? validateSnapshot(JSON.parse(fs.readFileSync(process.env.TR_EXPORT_SNAPSHOT, "utf8"))) : await fetchSnapshot();
   const { validateExportData } = require("./lib/validate_export_data.js");
   const counts = validateExportData(snapshot);
   for (const warning of snapshot.warnings) console.warn(`[exports] ${warning}`);
+  if (check) {
+    console.log("[exports] All exports validated:", counts);
+    return;
+  }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "toronto-rising-exports-"));
   const file = path.join(dir, "snapshot.json");
   writeAtomic(file, JSON.stringify(snapshot));
@@ -27,7 +33,7 @@ async function main() {
     if (!full) scripts.push("import_skyboxes_from_sheet.js", "import_locations_from_sheet.js");
     for (const script of scripts) run(`.dev/scripts/${script}`, env);
     run(".dev/storyteller-dashboard/scripts/npc-stats/import.ts", env);
-    console.log(full ? "[exports] All nine exports validated; asset joins follow cloud sync:" : "[exports] All nine exports generated successfully:", counts);
+    console.log(full ? "[exports] All exports validated; asset joins follow cloud sync:" : "[exports] All exports generated successfully:", counts);
     if (full) {
       const child = spawnSync(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "build:tooling-after-exports"], { cwd: root, env, stdio: "inherit", shell: process.platform === "win32" });
       if (child.error) throw child.error;

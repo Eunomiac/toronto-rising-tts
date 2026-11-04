@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyMemoriamFields,
-  inheritedNamedBlock,
+  toMemoriamNpcView,
   layoutMemoriamRoster,
   memoriamGenericLabel,
-  memoriamOverrideAgainstSheet,
   parseMemoriamLocations,
-  parseMemoriamPeriods,
   parseMemoriamYears,
   type MemoriamNpcView,
   type MemoriamSheetNpc
@@ -19,12 +16,13 @@ const sheet = (partial: Partial<MemoriamSheetNpc> & Pick<MemoriamSheetNpc, "key"
   year: partial.year ?? "Modern",
   variantOfUnique: partial.variantOfUnique ?? "",
   isGeneric: partial.isGeneric ?? false,
+  catalog: partial.catalog ?? false,
   tags: partial.tags ?? "",
   periods: partial.periods ?? ["aishe2"],
   ...partial
 });
 
-const view = (npc: MemoriamSheetNpc): MemoriamNpcView => applyMemoriamFields(npc, undefined);
+const view = (npc: MemoriamSheetNpc): MemoriamNpcView => toMemoriamNpcView(npc);
 
 describe("Memoriam lists", () => {
   it("splits locations and years, and trims a double space", () => {
@@ -33,26 +31,11 @@ describe("Memoriam lists", () => {
     expect(parseMemoriamLocations("")).toEqual([]);
   });
 
-  it("rejects Present, an empty piece, and an unknown period", () => {
+  it("rejects Present, and an empty piece", () => {
     expect(parseMemoriamYears("Present")).toMatch(/Modern/);
     expect(parseMemoriamLocations("Toronto,,Western")).toMatch(/empty entry/);
-    expect(parseMemoriamPeriods("aishe2, no-such", new Set(["aishe2"]))).toMatch(/no-such/);
   });
 
-  it("keeps a dashboard year when it differs from the sheet and drops it when it matches", () => {
-    const npc = sheet({ key: "mem_a", year: "1800s", location: "Toronto", periods: ["aishe2"] });
-    const edited = applyMemoriamFields(npc, { years: ["1900s"] });
-    expect(edited.years).toEqual(["1900s"]);
-    expect(edited.sheetYears).toEqual(["1800s"]);
-    expect(memoriamOverrideAgainstSheet(
-      { locations: ["Toronto"], years: ["1800s"], periods: ["aishe2"] },
-      { locations: ["Toronto"], years: ["1800s"], periods: ["aishe2"] }
-    )).toEqual({});
-    expect(memoriamOverrideAgainstSheet(
-      { locations: ["Ottoman"], years: ["1800s"], periods: ["aishe2"] },
-      { locations: ["Toronto"], years: ["1800s"], periods: ["aishe2"] }
-    )).toEqual({ locations: ["Ottoman"] });
-  });
 });
 
 describe("Memoriam roster layout", () => {
@@ -151,15 +134,20 @@ describe("Memoriam roster layout", () => {
     expect(memoriamGenericLabel("Servant", ["Modern", "1900s"], true)).toBe("1900s Servant");
     expect(memoriamGenericLabel("Servant", ["1800s"], false)).toBe("Servant");
   });
-});
-
-describe("variant stat fallback", () => {
-  it("uses the linked NPC's block when this one has none", () => {
-    const blocks = new Map<string, string>([["bertrice", "hers"], ["mem_bertrice", "closer"]]);
-    const variantOf = (key: string): string => (key === "mem_bertrice1800" ? "mem_bertrice" : key === "mem_bertrice" ? "bertrice" : "");
-    expect(inheritedNamedBlock((key) => blocks.get(key), variantOf, "mem_bertrice1800")).toBe("closer");
-    blocks.delete("mem_bertrice");
-    expect(inheritedNamedBlock((key) => blocks.get(key), variantOf, "mem_bertrice1800")).toBe("hers");
-    expect(inheritedNamedBlock((key) => blocks.get(key), variantOf, "mem_bertrice")).toBe("hers");
+  it("surfaces catalog members in the active period and keeps eligible variants beside their parents", () => {
+    const parent = view(sheet({ key: "ada", label: "Ada", catalog: true }));
+    const variant = view(sheet({ key: "ada_1800", label: "Zelda", variantOfUnique: "ada" }));
+    const unrelated = view(sheet({ key: "maria", label: "Maria" }));
+    const otherCatalog = view(sheet({ key: "other", catalog: true, periods: ["fomorach8"] }));
+    const result = layoutMemoriamRoster([variant, unrelated, parent, otherCatalog], {
+      periodKey: "aishe2",
+      years: new Set(),
+      locations: new Set(),
+      spawnedGenerics: new Set(),
+      names: {}
+    });
+    expect(result.surfacedUniques.map(member => member.characterKey)).toEqual(["ada", "ada_1800", "maria"]);
+    expect(result.remainingUniques).toEqual([]);
   });
+
 });

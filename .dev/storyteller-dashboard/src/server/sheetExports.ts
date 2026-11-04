@@ -22,7 +22,7 @@ export const refreshSheetExports = async (): Promise<void> => {
   importer.writeCharacterExports(snapshot, { lua: false });
   characters = exportsModule.uniqueCharacters(snapshot);
   filenames = new Map([...Object.entries(characters).map(([key, row]) => [key, row.filename] as const), ...exportsModule.genericFigures(snapshot).map(row => [row.key, row.filename] as const)]);
-  console.log("[exports] Dashboard uses one validated snapshot of all nine named ranges.");
+  console.log("[exports] Dashboard uses one validated snapshot of all named ranges.");
 };
 export const exportRecords = (name: string): Record<string, string>[] => exportsModule.dataOf(snapshot, name);
 export const characterDefinitions = (): Record<string, Character> => characters;

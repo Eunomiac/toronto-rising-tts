@@ -12,7 +12,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"aishe": "touchstone"
 		},
-    "portrait": "kadePhillipsPortrait",
 		"headerLeft": "Kade Phillips",
 		"headerRight": "Hair Stylist",
 		"subheaderLeft": "\"You Must Take Care Of Yourself First\"",
@@ -26,7 +25,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"aishe": "sire"
 		},
-    "portrait": "ladyAvelinePortrait",
 		"headerLeft": "Lady Aveline Dubois",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Ancilla of Clan Malkavian",
@@ -39,7 +37,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"rashid": "touchstone"
 		},
-    "portrait": "abbasFarukPortrait",
 		"headerLeft": "Abbas Faruk",
 		"headerRight": "Imam, Madina Masjid",
 		"subheaderLeft": "\"The City Must Not Burn\"",
@@ -48,10 +45,10 @@ PC_REL.RAW_JSON = [==================================================[
 		]
 	},
 	"thePieceTaker": {
+    "npcKey": "lalehBintSaif",
 		"pcLinks": {
 			"rashid": "sire"
 		},
-    "portrait": "thePieceTakerPortrait",
 		"headerLeft": "Laleh bint Saif, the Piece-Taker",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of the Banu Haqim",
@@ -64,7 +61,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"fomorach": "touchstone"
 		},
-    "portrait": "enzoCarusoPortrait",
 		"headerLeft": "Vincenzo \"Enzo\" Caruso",
 		"headerRight": "Retired Mafia Hitman",
 		"subheaderLeft": "\"Clan Over Sect\"",
@@ -77,7 +73,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"fomorach": "sire"
 		},
-    "portrait": "drakePortrait",
 		"headerLeft": "Drake",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of Clan Nosferatu",
@@ -90,7 +85,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"fomorach": "childe"
 		},
-    "portrait": "maraPortrait",
 		"headerLeft": "Mara",
 		"headerRight": "Embraced 1932",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Nosferatu",
@@ -103,7 +97,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"fomorach": "childe"
 		},
-    "portrait": "palisPortrait",
 		"headerLeft": "Palis",
 		"headerRight": "Embraced 1950",
 		"subheaderLeft": "Ninth Generation Neonate of Clan Nosferatu",
@@ -116,7 +109,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"lordLucien": "touchstone"
 		},
-    "portrait": "miriamRavenscroftPortrait",
 		"headerLeft": "Miriam Ravenscroft",
 		"headerRight": "ROM Curator & Adjunct Professor",
 		"subheaderLeft": "\"Drama Over Caution\"",
@@ -129,7 +121,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"lordLucien": "sire"
 		},
-    "portrait": "oliverGagnonPortrait",
 		"headerLeft": "Oliver Gagnon",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Ancilla of Clan Toreador",
@@ -142,7 +133,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"lordLucien": "childe"
 		},
-    "portrait": "damienAbandaPortrait",
 		"headerLeft": "Damien Abanda",
 		"headerRight": "Embraced 1915",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Toreador",
@@ -152,10 +142,10 @@ PC_REL.RAW_JSON = [==================================================[
 		]
 	},
 	"kieraVaughan1": {
+    "npcKey": "kieraVaughan",
 		"pcLinks": {
 			"blackCaesar": "touchstone"
 		},
-    "portrait": "kieraVaughanPortrait",
 		"headerLeft": "Kiera Vaughan",
 		"headerRight": "Chief of Police",
 		"subheaderLeft": "\"My Soldiers Must Be Able to Handle Anything\"",
@@ -165,10 +155,10 @@ PC_REL.RAW_JSON = [==================================================[
 		]
 	},
 	"kieraVaughan2": {
+    "npcKey": "kieraVaughan",
 		"pcLinks": {
 			"fomorach": "enemy"
 		},
-    "portrait": "kieraVaughanPortrait",
 		"headerLeft": "Kiera Vaughan",
 		"headerRight": "Enemy",
 		"subheaderLeft": "Chief of Police",
@@ -181,7 +171,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"blackCaesar": "sire"
 		},
-    "portrait": "jervaisDeLaCroixPortrait",
 		"headerLeft": "Jervais de la Croix",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of Clan Tremere",
@@ -194,7 +183,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"blackCaesar": "childe"
 		},
-    "portrait": "severinKoslovPortrait",
 		"headerLeft": "Severin Koslov",
 		"headerRight": "Embraced 2023",
 		"subheaderLeft": "Ninth Generation Neonate of Clan Tremere",
@@ -207,7 +195,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"blackCaesar": "contact"
 		},
-    "portrait": "christopherGiovanniJrPortrait",
 		"headerLeft": "Christopher Giovanni Jr.",
 		"headerRight": "Contact",
 		"subheaderLeft": "Ghoul",
@@ -220,7 +207,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"lordLucien": "mawla"
 		},
-    "portrait": "evanescentBluePortrait",
 		"headerLeft": "Evanescent Blue",
 		"headerRight": "Mawla",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Ravnos",
@@ -233,7 +219,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"lordLucien": "mawla"
 		},
-    "portrait": "merrickSinghPortrait",
 		"headerLeft": "Merrick Singh",
 		"headerRight": "Mawla",
 		"subheaderLeft": "Eleventh Generation Neonate of Clan Ravnos",
@@ -247,7 +232,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"blackCaesar": "criseDeLwa"
 		},
-    "portrait": "rebeccaRosselliniPortrait",
 		"headerLeft": "Rebecca Rossellini",
 		"headerRight": "Died 1905",
 		"subheaderLeft": "Wraith",
@@ -260,7 +244,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"blackCaesar": "mawla"
 		},
-    "portrait": "theBleakBokorPortrait",
 		"headerLeft": "The Baron's Bleak Bokor",
 		"headerRight": "Mawla",
 		"subheaderLeft": "Tenth Generation Ancilla of the Samedi",
@@ -273,7 +256,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"blackCaesar": "criseDeLwa"
 		},
-    "portrait": "ponticulusPortrait",
 		"headerLeft": "Ponticulus",
 		"headerRight": "Died 980",
 		"subheaderLeft": "Wraith",
@@ -286,7 +268,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"blackCaesar": "criseDeLwa"
 		},
-    "portrait": "jeanDucheskiIPortrait",
 		"headerLeft": "Jean Ducheski-Francois I",
 		"headerRight": "Died 1790",
 		"subheaderLeft": "Wraith",
@@ -300,7 +281,6 @@ PC_REL.RAW_JSON = [==================================================[
 			"blackCaesar": "thrall"
 		},
     "bondStrength": 6,
-    "portrait": "jeanDucheskiIIIPortrait",
 		"headerLeft": "Jean Ducheski-Francois III",
 		"headerRight": "Retainer",
 		"subheaderLeft": "Ducheski Revenant",
@@ -314,7 +294,6 @@ PC_REL.RAW_JSON = [==================================================[
 			"blackCaesar": "thrall"
 		},
     "bondStrength": 6,
-    "portrait": "jezdimirDucheskiPortrait",
 		"headerLeft": "Jezdimir Ducheski",
 		"headerRight": "Retainer",
 		"subheaderLeft": "Ducheski Revenant",
@@ -327,7 +306,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"aishe": "enemy"
 		},
-    "portrait": "marieBouschardPortrait",
 		"headerLeft": "Marie Bouschard",
 		"headerRight": "Enemy",
 		"subheaderLeft": "Journalism Student",
@@ -340,7 +318,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"fomorach": "victim"
 		},
-    "portrait": "percivalCavendishPortrait",
 		"headerLeft": "Percival Cavendish",
 		"headerRight": "Descendant of Lord Cavendish",
 		"subheaderLeft": "",
@@ -353,7 +330,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"fomorach": "thrall"
 		},
-    "portrait": "robinPortrait",
     "bondStrength": 6,
 		"headerLeft": "Robin",
 		"headerRight": "",
@@ -367,7 +343,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"lordLucien": "thrall"
 		},
-    "portrait": "sylvainPortrait",
     "bondStrength": 6,
 		"headerLeft": "Sylvain",
 		"headerRight": "",
@@ -381,7 +356,6 @@ PC_REL.RAW_JSON = [==================================================[
 		"pcLinks": {
 			"fomorach": "contact"
 		},
-    "portrait": "uwuByteMePortrait",
 		"headerLeft": "UwU Byte Me",
 		"headerRight": "Contact",
 		"subheaderLeft": "Professional Hacker",

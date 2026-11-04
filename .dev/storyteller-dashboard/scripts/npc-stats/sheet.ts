@@ -47,7 +47,52 @@ const optional = <K extends string, V>(key: K, value: V | undefined): Partial<Re
 
 export const parseTier = (value: string): NpcTier | undefined => NPC_TIERS.find((tier) => tier === value.trim().toLowerCase());
 
-export const parseStatRecord = (row: SheetRecord, key: string, named: boolean): NpcStatBlock => {
+type DisciplinePower = Omit<NpcPower, "pool">;
+export type DisciplinePowerLookup = ReadonlyMap<string, DisciplinePower>;
+const disciplinePowerKey = (discipline: string, name: string): string =>
+  JSON.stringify([discipline, name].map(part => part.trim().replace(/[‘’]/g, "'").toLowerCase()));
+
+export const disciplinePowerLookup = (rows: readonly SheetRecord[]): DisciplinePowerLookup => {
+  const powers = new Map<string, DisciplinePower>();
+  for (const row of rows) {
+    const discipline = row.Discipline ?? "", name = row.Name ?? "";
+    const level = Number(row.Level), rouse = Number(row["Rouse Checks"]);
+    const difficulty = row["Difficulty Range"] ?? "";
+    const traits: [string, string] = [row["Trait Affinity 1"] ?? "", row["Trait Affinity 2"] ?? ""];
+    const key = disciplinePowerKey(discipline, name);
+    if (!discipline.trim() || !name.trim() || !/^\d+$/.test(row.Level ?? "") || level < RANGES.level[0] || level > RANGES.level[1] ||
+        !/^\d+$/.test(row["Rouse Checks"] ?? "") || rouse < RANGES.rouse[0] || rouse > RANGES.rouse[1] ||
+        !parseNpcDifficulty(difficulty)) {
+      throw new Error(`EXPORT_DISCIPLINES: invalid power fields for ${discipline} / ${name}`);
+    }
+    if (powers.has(key)) throw new Error(`EXPORT_DISCIPLINES: duplicate power ${discipline} / ${name}`);
+    powers.set(key, { level, name, rouse, difficulty, ...(traits.some(Boolean) ? { traits } : {}) });
+  }
+  return powers;
+};
+
+// Catalogue names can contain parentheses. Explicit difficulty lists can contain commas.
+const splitNamedPowers = (text: string): string[] => {
+  const powers: string[] = [];
+  let start = 0, depth = 0;
+  for (let index = 0; index <= text.length; index++) {
+    const char = text[index];
+    if (char === "(") depth++;
+    if (char === ")") depth--;
+    if (index < text.length && (char !== "," || depth !== 0)) continue;
+    const value = text.slice(start, index).trim();
+    const prior = powers.at(-1);
+    if (/^\d+$/.test(value) && prior && /^\d+(?:-\d+)?:.*_\d+(?:,\d+)*$/.test(prior)) {
+      powers[powers.length - 1] = `${prior},${value}`;
+    } else {
+      powers.push(value);
+    }
+    start = index + 1;
+  }
+  return powers;
+};
+
+export const parseStatRecord = (row: SheetRecord, key: string, named: boolean, catalogue?: DisciplinePowerLookup): NpcStatBlock => {
   const problems: string[] = [];
   const readInt = (header: string, range: readonly [number, number]): number | undefined => {
     const raw = row[header];
@@ -128,7 +173,17 @@ export const parseStatRecord = (row: SheetRecord, key: string, named: boolean): 
     const dots = Number(match[2]);
     if (dots < RANGES.dots[0] || dots > RANGES.dots[1]) { problems.push(`Powers group "${group}" has an invalid rating`); continue; }
     const entries: NpcPower[] = [];
-    for (const raw of match[3]!.split(/,(?=\s*\d+(?:-\d+)?:)/).map((value) => value.trim()).filter(Boolean)) {
+    const category = match[1]!.trim();
+    const list = named ? splitNamedPowers(match[3]!) : match[3]!.split(/,(?=\s*\d+(?:-\d+)?:)/).map(value => value.trim());
+    for (const raw of list) {
+      if (named && !/^\d+(?:-\d+)?:/.test(raw)) {
+        const definition = catalogue?.get(disciplinePowerKey(category, raw));
+        if (!definition) { problems.push(`Unknown catalogue power "${category} / ${raw}"`); continue; }
+        const names = [category, definition.name, ...(definition.traits ?? [])];
+        const pool = names.map(name => exceptional.find(candidate => candidate.name === name)).find(Boolean);
+        entries.push({ ...definition, rouse: usesRouse(kind) ? definition.rouse : 0, pool: pool ? `ex:${pool.id}` : "supernatural" });
+        continue;
+      }
       const power = /^(\d+)(?:-(\d+))?:([^=_:]+?)(?:=([^_:]+))?(?::([^_]+))?(?:_(.+))?$/.exec(raw);
       if (!power) { problems.push(`Power "${raw}" has invalid notation`); continue; }
       const level = Number(power[1]);
@@ -144,7 +199,7 @@ export const parseStatRecord = (row: SheetRecord, key: string, named: boolean): 
       entries.push({ level, rouse: usesRouse(kind) ? rouse : 0, name: power[3]!.trim(), pool,
         ...metadata(power[5], problems), ...(difficulty ? { difficulty } : {}) });
     }
-    powers.push({ name: match[1]!.trim(), dots, powers: entries });
+    powers.push({ name: category, dots, powers: entries });
   }
 
   const advantages: NpcAdvantage[] = named ? splitPipe(row.Advantages).map((name) => ({ id: stableId(name, ids), name })) : [];

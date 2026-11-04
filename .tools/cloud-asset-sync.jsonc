@@ -208,14 +208,15 @@
       "filenameToNameReplacePattern": "divider_$1"
     },
     {
-      // Relationship portraits: a relationship's `portrait` field is the row name; every Page 4 gets all of them.
+      // Route each portrait by its exported PC recipients. Target order matches csheetPage4.
       "id": "csheetPage4Portraits",
-      "folder": "CSheets/Page4/Portraits",
+      "folder": "NPC Art/Portraits",
       "output": "ObjectCustomUIAssets",
       "targets": "csheetPage4",
-      "ownsAllRows": true,
-      "filenameToNameSearchPattern": "^(.*)Portrait\\.webp$",
-      "filenameToNameReplacePattern": "$1Portrait"
+      "portraitOwners": ["fomorach", "rashid", "lordLucien", "aishe", "blackCaesar"],
+      "purgePatterns": ["^[A-Za-z0-9_]+Portrait$"],
+      "filenameToNameSearchPattern": "^npcPortrait_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "npcPortrait_$1"
     },
     {
       "id": "csheetPage5Dividers",
@@ -353,27 +354,13 @@
     // NPC art. npm run npc-art:draw draws the tokens before this sync; npm run npc-art:urls reads these jobs'
     // manifest rows afterwards and writes lib/npc_art_urls.ttslua. Roll-banner figures (core/roll_ui.ttslua) are
     // the rollFigure_<characterKey> rows. Present-day generic NPCs, and Memoriam generics
-    // (filename ending _NN), have no banner figure. Named Memoriam figures do.
+    // (filename ending _NN), have no banner figure.
     {
-      "id": "npcFiguresCatalogued",
-      "folder": "NPC Art/Figurines/Catalogued",
+      "id": "npcFiguresNamed",
+      "folder": "NPC Art/Figurines/Named",
       "output": "GlobalCustomUIAssets",
       "filenameToNameSearchPattern": "^npc_(.*)\\.webp$",
       "filenameToNameReplacePattern": "rollFigure_$1"
-    },
-    {
-      "id": "npcFiguresMemoriam",
-      "folder": "NPC Art/Figurines/Memoriam",
-      "output": "GlobalCustomUIAssets",
-      "filenameToNameSearchPattern": "^npc_(.*(?<!_\\d{2}))\\.webp$",
-      "filenameToNameReplacePattern": "rollFigure_$1"
-    },
-    {
-      "id": "npcFiguresMemoriamGeneric",
-      "folder": "NPC Art/Figurines/Memoriam",
-      "output": "Manifest",
-      "filenameToNameSearchPattern": "^npc_(.*_\\d{2})\\.webp$",
-      "filenameToNameReplacePattern": "$1"
     },
     {
       "id": "npcFiguresGeneric",

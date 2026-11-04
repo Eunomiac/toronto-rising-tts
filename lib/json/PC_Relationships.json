@@ -3,7 +3,6 @@
 		"pcLinks": {
 			"aishe": "touchstone"
 		},
-    "portrait": "kadePhillipsPortrait",
 		"headerLeft": "Kade Phillips",
 		"headerRight": "Hair Stylist",
 		"subheaderLeft": "\"You Must Take Care Of Yourself First\"",
@@ -17,7 +16,6 @@
 		"pcLinks": {
 			"aishe": "sire"
 		},
-    "portrait": "ladyAvelinePortrait",
 		"headerLeft": "Lady Aveline Dubois",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Ancilla of Clan Malkavian",
@@ -30,7 +28,6 @@
 		"pcLinks": {
 			"rashid": "touchstone"
 		},
-    "portrait": "abbasFarukPortrait",
 		"headerLeft": "Abbas Faruk",
 		"headerRight": "Imam, Madina Masjid",
 		"subheaderLeft": "\"The City Must Not Burn\"",
@@ -39,10 +36,10 @@
 		]
 	},
 	"thePieceTaker": {
+    "npcKey": "lalehBintSaif",
 		"pcLinks": {
 			"rashid": "sire"
 		},
-    "portrait": "thePieceTakerPortrait",
 		"headerLeft": "Laleh bint Saif, the Piece-Taker",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of the Banu Haqim",
@@ -55,7 +52,6 @@
 		"pcLinks": {
 			"fomorach": "touchstone"
 		},
-    "portrait": "enzoCarusoPortrait",
 		"headerLeft": "Vincenzo \"Enzo\" Caruso",
 		"headerRight": "Retired Mafia Hitman",
 		"subheaderLeft": "\"Clan Over Sect\"",
@@ -68,7 +64,6 @@
 		"pcLinks": {
 			"fomorach": "sire"
 		},
-    "portrait": "drakePortrait",
 		"headerLeft": "Drake",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of Clan Nosferatu",
@@ -81,7 +76,6 @@
 		"pcLinks": {
 			"fomorach": "childe"
 		},
-    "portrait": "maraPortrait",
 		"headerLeft": "Mara",
 		"headerRight": "Embraced 1932",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Nosferatu",
@@ -94,7 +88,6 @@
 		"pcLinks": {
 			"fomorach": "childe"
 		},
-    "portrait": "palisPortrait",
 		"headerLeft": "Palis",
 		"headerRight": "Embraced 1950",
 		"subheaderLeft": "Ninth Generation Neonate of Clan Nosferatu",
@@ -107,7 +100,6 @@
 		"pcLinks": {
 			"lordLucien": "touchstone"
 		},
-    "portrait": "miriamRavenscroftPortrait",
 		"headerLeft": "Miriam Ravenscroft",
 		"headerRight": "ROM Curator & Adjunct Professor",
 		"subheaderLeft": "\"Drama Over Caution\"",
@@ -120,7 +112,6 @@
 		"pcLinks": {
 			"lordLucien": "sire"
 		},
-    "portrait": "oliverGagnonPortrait",
 		"headerLeft": "Oliver Gagnon",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Ancilla of Clan Toreador",
@@ -133,7 +124,6 @@
 		"pcLinks": {
 			"lordLucien": "childe"
 		},
-    "portrait": "damienAbandaPortrait",
 		"headerLeft": "Damien Abanda",
 		"headerRight": "Embraced 1915",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Toreador",
@@ -143,10 +133,10 @@
 		]
 	},
 	"kieraVaughan1": {
+    "npcKey": "kieraVaughan",
 		"pcLinks": {
 			"blackCaesar": "touchstone"
 		},
-    "portrait": "kieraVaughanPortrait",
 		"headerLeft": "Kiera Vaughan",
 		"headerRight": "Chief of Police",
 		"subheaderLeft": "\"My Soldiers Must Be Able to Handle Anything\"",
@@ -156,10 +146,10 @@
 		]
 	},
 	"kieraVaughan2": {
+    "npcKey": "kieraVaughan",
 		"pcLinks": {
 			"fomorach": "enemy"
 		},
-    "portrait": "kieraVaughanPortrait",
 		"headerLeft": "Kiera Vaughan",
 		"headerRight": "Enemy",
 		"subheaderLeft": "Chief of Police",
@@ -172,7 +162,6 @@
 		"pcLinks": {
 			"blackCaesar": "sire"
 		},
-    "portrait": "jervaisDeLaCroixPortrait",
 		"headerLeft": "Jervais de la Croix",
 		"headerRight": "",
 		"subheaderLeft": "Seventh Generation Elder of Clan Tremere",
@@ -185,7 +174,6 @@
 		"pcLinks": {
 			"blackCaesar": "childe"
 		},
-    "portrait": "severinKoslovPortrait",
 		"headerLeft": "Severin Koslov",
 		"headerRight": "Embraced 2023",
 		"subheaderLeft": "Ninth Generation Neonate of Clan Tremere",
@@ -198,7 +186,6 @@
 		"pcLinks": {
 			"blackCaesar": "contact"
 		},
-    "portrait": "christopherGiovanniJrPortrait",
 		"headerLeft": "Christopher Giovanni Jr.",
 		"headerRight": "Contact",
 		"subheaderLeft": "Ghoul",
@@ -211,7 +198,6 @@
 		"pcLinks": {
 			"lordLucien": "mawla"
 		},
-    "portrait": "evanescentBluePortrait",
 		"headerLeft": "Evanescent Blue",
 		"headerRight": "Mawla",
 		"subheaderLeft": "Ninth Generation Ancilla of Clan Ravnos",
@@ -224,7 +210,6 @@
 		"pcLinks": {
 			"lordLucien": "mawla"
 		},
-    "portrait": "merrickSinghPortrait",
 		"headerLeft": "Merrick Singh",
 		"headerRight": "Mawla",
 		"subheaderLeft": "Eleventh Generation Neonate of Clan Ravnos",
@@ -238,7 +223,6 @@
 		"pcLinks": {
 			"blackCaesar": "criseDeLwa"
 		},
-    "portrait": "rebeccaRosselliniPortrait",
 		"headerLeft": "Rebecca Rossellini",
 		"headerRight": "Died 1905",
 		"subheaderLeft": "Wraith",
@@ -251,7 +235,6 @@
 		"pcLinks": {
 			"blackCaesar": "mawla"
 		},
-    "portrait": "theBleakBokorPortrait",
 		"headerLeft": "The Baron's Bleak Bokor",
 		"headerRight": "Mawla",
 		"subheaderLeft": "Tenth Generation Ancilla of the Samedi",
@@ -264,7 +247,6 @@
 		"pcLinks": {
 			"blackCaesar": "criseDeLwa"
 		},
-    "portrait": "ponticulusPortrait",
 		"headerLeft": "Ponticulus",
 		"headerRight": "Died 980",
 		"subheaderLeft": "Wraith",
@@ -277,7 +259,6 @@
 		"pcLinks": {
 			"blackCaesar": "criseDeLwa"
 		},
-    "portrait": "jeanDucheskiIPortrait",
 		"headerLeft": "Jean Ducheski-Francois I",
 		"headerRight": "Died 1790",
 		"subheaderLeft": "Wraith",
@@ -291,7 +272,6 @@
 			"blackCaesar": "thrall"
 		},
     "bondStrength": 6,
-    "portrait": "jeanDucheskiIIIPortrait",
 		"headerLeft": "Jean Ducheski-Francois III",
 		"headerRight": "Retainer",
 		"subheaderLeft": "Ducheski Revenant",
@@ -305,7 +285,6 @@
 			"blackCaesar": "thrall"
 		},
     "bondStrength": 6,
-    "portrait": "jezdimirDucheskiPortrait",
 		"headerLeft": "Jezdimir Ducheski",
 		"headerRight": "Retainer",
 		"subheaderLeft": "Ducheski Revenant",
@@ -318,7 +297,6 @@
 		"pcLinks": {
 			"aishe": "enemy"
 		},
-    "portrait": "marieBouschardPortrait",
 		"headerLeft": "Marie Bouschard",
 		"headerRight": "Enemy",
 		"subheaderLeft": "Journalism Student",
@@ -331,7 +309,6 @@
 		"pcLinks": {
 			"fomorach": "victim"
 		},
-    "portrait": "percivalCavendishPortrait",
 		"headerLeft": "Percival Cavendish",
 		"headerRight": "Descendant of Lord Cavendish",
 		"subheaderLeft": "",
@@ -344,7 +321,6 @@
 		"pcLinks": {
 			"fomorach": "thrall"
 		},
-    "portrait": "robinPortrait",
     "bondStrength": 6,
 		"headerLeft": "Robin",
 		"headerRight": "",
@@ -358,7 +334,6 @@
 		"pcLinks": {
 			"lordLucien": "thrall"
 		},
-    "portrait": "sylvainPortrait",
     "bondStrength": 6,
 		"headerLeft": "Sylvain",
 		"headerRight": "",
@@ -372,7 +347,6 @@
 		"pcLinks": {
 			"fomorach": "contact"
 		},
-    "portrait": "uwuByteMePortrait",
 		"headerLeft": "UwU Byte Me",
 		"headerRight": "Contact",
 		"subheaderLeft": "Professional Hacker",

@@ -9,13 +9,22 @@
   "rangeEndRow": 3001,
   "exports": [
     {
-      "name": "EXPORT_CHARACTERS_UNIQUE",
-      "rangeAtVerification": "C4:BK3001",
+      "name": "EXPORT_CHARACTERS_NAMED",
+      "rangeAtVerification": "C3:BB3001",
       "headers": [
         "API Key",
         "Type",
         "Name",
-        "Catalog?",
+        "Variant Of",
+        "Years Active",
+        "Locations Active",
+        "Memoriam Periods",
+        "In Catalog",
+        "Has Figurine",
+        "Figurine Filename",
+        "Has Portrait",
+        "Portrait Filename",
+        "Is PC",
         "Kind",
         "Subkind",
         "Clan",
@@ -30,12 +39,7 @@
         "Domitor",
         "Coterie / Pack",
         "Boss?",
-        "Deferred?",
-        "PC Relation PC",
-        "PC Relation Type",
         "PC Relation",
-        "Portrait Asset",
-        "Portrait Review",
         "Sect Status",
         "Clan Status",
         "Blood Potency",
@@ -59,23 +63,10 @@
         "Personal Domain",
         "Quote",
         "Bio",
-        "Notes",
-        "Tags",
-        "Stat Tags",
-        "Locations",
-        "Time Periods",
-        "Variant Of",
-        "Inherits From",
-        "Memoriam Periods",
-        "Filename",
-        "Legacy API Keys",
-        "IsCanon?",
-        "Description",
-        "Authoring Tab",
-        "Authoring Key"
+        "Notes"
       ],
-      "source": "CHARACTERS + MEM NAMED STATS + Memoriam NPC Export",
-      "verifiedRows": 206,
+      "source": "CHARACTERS with variant fields resolved in the sheet",
+      "verifiedRows": 195,
       "currentImporters": [
         ".dev/storyteller-dashboard/scripts/npc-stats/import.ts",
         ".dev/scripts/import_memoriam_npcs_from_sheet.js",
@@ -95,12 +86,17 @@
     },
     {
       "name": "EXPORT_CHARACTERS_GENERIC",
-      "rangeAtVerification": "BO4:CY3001",
+      "rangeAtVerification": "BD3:CI3001",
       "headers": [
         "API Key",
         "Tier",
         "Label",
-        "Stat Profile",
+        "Years Active",
+        "Locations Active",
+        "Memoriam Periods",
+        "In Catalog",
+        "Has Figurine",
+        "Figurine Filename",
         "Kind",
         "Subkind",
         "Clan",
@@ -123,19 +119,9 @@
         "Ancilla Power(s)",
         "Elder Power(s)",
         "Special Abilities",
-        "Catalog?",
-        "Locations",
-        "Time Periods",
-        "Memoriam Periods",
-        "Tags",
-        "Filename",
-        "Stat Key",
-        "Figurine Filename",
-        "Source Group",
-        "Authoring Tab",
-        "Authoring Key"
+        "Tags"
       ],
-      "source": "GENERICS \u00d7 STAT PROFILES; one row per figure and supplied tier",
+      "source": "GENERICS × STAT PROFILES joined in the sheet",
       "verifiedRows": 2070,
       "currentImporters": [
         ".dev/scripts/import_generic_npcs_from_sheet.js",
@@ -337,7 +323,7 @@
     },
     {
       "name": "EXPORT_COMPLICATIONS",
-      "rangeAtVerification": "HG4:HU3001",
+      "rangeAtVerification": "FU2:GH3001",
       "headers": [
         "Index",
         "Name",
@@ -352,10 +338,9 @@
         "Willpower",
         "Launch",
         "Goal",
-        "DESIGN COMPLETE?",
-        "Necessary Automations"
+        "Function Calls"
       ],
-      "source": "Toronto Rising Decks: completed [CPL] Cards",
+      "source": "Toronto Rising Decks: completed [CPL] Cards and automation keys",
       "verifiedRows": 66,
       "currentImporters": [
         ".dev/scripts/import_complications_from_sheet.js"
@@ -397,6 +382,33 @@
       "runtimeConsumers": [
         "core/compulsions.ttslua",
         "lib/compulsion_objects.ttslua"
+      ]
+    },
+    {
+      "name": "EXPORT_DISCIPLINES",
+      "rangeAtVerification": "GV2:HJ3001",
+      "headers": [
+        "Discipline",
+        "Level",
+        "Name",
+        "Description",
+        "Rouse Checks",
+        "Activation Roll",
+        "Trait Affinity 1",
+        "Trait Affinity 2",
+        "Difficulty Range",
+        "Opposed By",
+        "Ingredients",
+        "Process",
+        "System",
+        "Duration",
+        "Source"
+      ],
+      "source": "V5: DISCIPLINES named range, normalized in Toronto Rising",
+      "verifiedRows": 382,
+      "currentImporters": [
+        ".dev/scripts/lib/validate_export_data.js",
+        ".dev/storyteller-dashboard/scripts/npc-stats/import.ts"
       ]
     }
   ],

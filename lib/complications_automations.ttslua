@@ -2,23 +2,35 @@
 -- Handlers plan saved-state changes and journal operations; core.complications executes
 -- the journal. They must not perform immediate world mutations or schedule callbacks.
 local A = {}
+local Catalog = require("lib.complications_catalog")
 local entries = {}
-function A.register(index, handler)
-    assert(type(index)=='number' and not entries[index], 'Duplicate/invalid automation index')
+function A.register(key, handler)
+    assert(type(key)=='string' and key~="" and not entries[key], 'Duplicate/invalid automation key')
     assert(type(handler.apply)=='function' and type(handler.reverse)=='function', 'Automation needs apply and reverse')
-    entries[index]=handler
+    entries[key]=handler
 end
-function A.has(index) return entries[index]~=nil end
+local function keyFor(index)
+    local card = Catalog[index]
+    local key = card and card.automationKey
+    if key ~= nil then assert(entries[key], "Unknown Complication automation key: " .. tostring(key)) end
+    return key
+end
+function A.has(index) return keyFor(index)~=nil end
+function A.validateCatalog()
+    for index in pairs(Catalog) do keyFor(index) end
+end
 function A.run(g, guid, reverse)
     local c=g.cards[guid]
-    local handler=c and entries[c.index]
+    local key=c and keyFor(c.index)
+    local handler=key and entries[key]
     if not handler or not c.up or c.zone~='slot' then return false end
     g.automations=g.automations or {}
     local receipt=g.automations[guid]
     if reverse==nil then reverse=receipt~=nil end
     if reverse then
         if not receipt then return false end
-        handler.reverse(g,guid,receipt)
+        assert(receipt.key==key and type(receipt.value)=='table', "Invalid Complication automation receipt for " .. key)
+        handler.reverse(g,guid,receipt.value)
         g.automations[guid]=nil
     else
         if receipt then return false end
@@ -27,7 +39,7 @@ function A.run(g, guid, reverse)
         receipt=handler.apply(g,guid,c.enhanced==true)
         if receipt==nil then return false end
         assert(type(receipt)=='table','Automation must return a saved reversal receipt')
-        g.automations[guid]=receipt
+        g.automations[guid]={key=key,value=receipt}
     end
     return true
 end

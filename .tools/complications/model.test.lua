@@ -35,8 +35,10 @@ local id,name,enh=M.identity('40:Powderkeg:Enhanced'); eq(id,40); eq(name,'Powde
 print('Complications model: totals, categories, enhanced discards, eligibility, exhaustion, and result classification passed.')
 -- A receipt is source-specific, survives serialization, and preserves the applied variant.
 local A=require('lib.complications_automations')
-assert(not A.has(28)) -- proposals are not enabled before author review
-A.register(999,{apply=function(state,guid,enhanced)
+assert(not A.has(998))
+local catalog = require('lib.complications_catalog')
+catalog[999] = { automationKey = 'testEffect' }
+A.register('testEffect',{apply=function(state,guid,enhanced)
  local amount=enhanced and 2 or 1;state.adjust=state.adjust+amount;return {amount=amount}
 end,reverse=function(state,guid,receipt) state.adjust=state.adjust-receipt.amount end})
 g=M.new({result={margin=0}},{a={index=999,zone='slot',up=true}})

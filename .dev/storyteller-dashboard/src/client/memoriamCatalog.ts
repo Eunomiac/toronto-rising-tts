@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
-import type { MemoriamNpcView, MemoriamYear } from "../shared/memoriamNpc";
+import type { MemoriamNpcView } from "../shared/memoriamNpc";
 
-/** Merged Memoriam catalog (`/api/memoriam-npcs`): the sheet plus dashboard location, year, and period edits. */
+/** Memoriam roster from the spreadsheet export (`/api/memoriam-npcs`). */
 
 type Catalog = readonly MemoriamNpcView[];
 
@@ -39,19 +39,3 @@ const subscribe = (listener: () => void): (() => void) => {
 };
 
 export const useMemoriamCatalog = (): Catalog => useSyncExternalStore(subscribe, () => catalog);
-
-export type MemoriamFieldDraft = {
-  readonly locations: readonly string[];
-  readonly years: readonly MemoriamYear[];
-  readonly periods: readonly string[];
-};
-
-/** Saves this NPC's location, year, and periods. Values that match the sheet are not stored. */
-export const saveMemoriamFields = async (key: string, draft: MemoriamFieldDraft): Promise<void> => {
-  const response = await fetch(`/api/memoriam-npcs?key=${encodeURIComponent(key)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(draft)
-  });
-  publish(await readCatalog(response));
-};
