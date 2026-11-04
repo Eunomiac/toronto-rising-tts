@@ -24,6 +24,8 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 **How to verify:** After the cutover is merged, run `node .dev/scripts/migrate_npc_roster_keys.js` to preview the eight roster key changes. Run it with `--apply` to update the local roster and make a backup. Close TTS and run FULL on a copy of the save. In TTS, check Laleh's portrait on Rashid's Page 4, check one Named and one Generic figurine, and apply then reverse a Complication. In the Dashboard, check the Catalog and the two Memoriam panels, then open a Generic figurine's tier picker. Verify the live save only after the copy passes.
 
+After FULL, use Save & Play to install the updated Lua. Check Enzo's portrait on Fomórach's Page 4 and confirm that a relationship with no assigned portrait still shows its text.
+
 
 #### Complications discard pile stays unlocked — direct author request
 

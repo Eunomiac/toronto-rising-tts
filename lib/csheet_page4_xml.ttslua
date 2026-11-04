@@ -164,11 +164,8 @@ local function buildCommonHeaderParams(entry)
     SUBHEADER_TEXT = tostring(entry.subheaderLeft or ""),
     SUBHEADER_TEXT_RIGHT = tostring(entry.subheaderRight or ""),
     BODY_TEXT = joinBodyField(entry.body),
+    IMAGE_REF = type(entry.portrait) == "string" and entry.portrait or "",
   }
-  local portrait = entry.portrait
-  if type(portrait) == "string" and portrait ~= "" then
-    params.IMAGE_REF = portrait
-  end
   local body = params.BODY_TEXT
   local w = W_TITLE
   if params.SUBHEADER_TEXT ~= "" then
