@@ -1,0 +1,15 @@
+<Panel id="sessionStartJoinBar" visibility="Host" active="false" rectAlignment="MiddleCenter"
+  width="700" height="112" color="rgba(0.08,0.07,0.10,0.97)">
+  <VerticalLayout padding="16 16 12 12" spacing="8" childForceExpandHeight="false">
+    <Text id="sessionStartJoinStatus" preferredHeight="28" fontSize="17" color="#FFFFFF"
+      alignment="MiddleCenter">Preparing the table…</Text>
+    <HorizontalLayout spacing="10" preferredHeight="44">
+      <Button id="sessionStartJoinBundles" onClick="HUD_sessionStartJoinStep" interactable="false"
+        colors="#544466|#6A567E|#796292|#28242F" textColor="#FFFFFF" fontSize="18">1 · Load Bundles</Button>
+      <Button id="sessionStartJoinHud" onClick="HUD_sessionStartJoinStep" interactable="false"
+        colors="#544466|#6A567E|#796292|#28242F" textColor="#FFFFFF" fontSize="18">2 · Refresh HUD</Button>
+      <Button id="sessionStartJoinFinish" onClick="HUD_sessionStartJoinStep" interactable="false"
+        colors="#544466|#6A567E|#796292|#28242F" textColor="#FFFFFF" fontSize="18">3 · Seat Players</Button>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>

@@ -10,7 +10,7 @@
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
     <Text id="phase_diagnosticJoinHelp" fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. After Arm, restore Assets, HUD, then Emitters.</Text>
-    <Text id="phase_sessionStartJoinHelp" active="false" fontSize="12" color="#AAAAAA">Once players connect, load deferred bundles, then finish seating and refresh the HUD.</Text>
+    <Text id="phase_sessionStartJoinHelp" active="false" fontSize="12" color="#AAAAAA">Use the onboarding bar in the center of the host's screen.</Text>
     <HorizontalLayout id="phase_diagnosticJoinSwitches" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Toggle id="phase_deferSetXml" isOn="false" onValueChanged="HUD_phaseDeferSetXml"
         minWidth="160" preferredWidth="180" textColor="#FFFFFF">Defer setXML</Toggle>
@@ -24,12 +24,6 @@
       <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <HorizontalLayout id="phase_sessionStartJoinSteps" active="false" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_sessionStartLoadBundles" text="1 Load Bundles" minWidth="135" preferredWidth="135" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sessionStartFinishJoin" text="2 Finish Join" minWidth="120" preferredWidth="120" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <HorizontalLayout id="phase_diagnosticJoinRefresh" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">

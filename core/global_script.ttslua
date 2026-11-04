@@ -1334,11 +1334,35 @@ local function waitEnsureGlobalHudDocumentMounted()
     end
 end
 
---- Run a short join-restore U.chain (assets / emitters). Shares remount-in-flight guard.
--- @param label string
--- @param steps function[]
--- @param stepNames string[]
--- @return boolean
+local function nextSessionStartJoinStep()
+    if require("core.join_cold_pools").isActive() then
+        return "sessionStartJoinBundles", "When your players have connected, load the deferred bundles."
+    end
+    if S.getStateVal("connectionControls", "sessionStartJoinHudReady") ~= true then
+        return "sessionStartJoinHud", "Bundles ready. Refresh the HUD."
+    end
+    return "sessionStartJoinFinish", "HUD ready. Seat the connected players to finish."
+end
+
+local function syncSessionStartJoinBar(busyLabel, failed)
+    local active = S.getStateVal("connectionControls", "sessionStartJoin") == true
+    U.setAttributes("sessionStartJoinBar", { active = active })
+    if not active then return end
+    local nextButton, status = nextSessionStartJoinStep()
+    if startupCoverHeld then
+        status = "Preparing the table…"
+    elseif pendingFullUiRemount then
+        status = (busyLabel or "Onboarding") .. " in progress…"
+    elseif failed then
+        status = "Step failed. Check the host console, then retry."
+    end
+    for _, id in ipairs({ "sessionStartJoinBundles", "sessionStartJoinHud", "sessionStartJoinFinish" }) do
+        U.setAttributes(id, { interactable = not startupCoverHeld and not pendingFullUiRemount and id == nextButton })
+    end
+    UI.setValue("sessionStartJoinStatus", status)
+end
+
+--- Run a short join-restore U.chain under the same guard as a Global remount.
 local function performJoinRestoreStep(label, steps, stepNames)
     cancelPendingFullUiResync()
     if pendingFullUiRemount then
@@ -1349,11 +1373,13 @@ local function performJoinRestoreStep(label, steps, stepNames)
         return false
     end
     pendingFullUiRemount = true
+    if S.getStateVal("connectionControls", "sessionStartJoin") == true then syncSessionStartJoinBar(label) end
     U.chain(steps, {
         maxWait = 300,
         stepNames = stepNames,
         onComplete = function(ok, detail)
             pendingFullUiRemount = false
+            if S.getStateVal("connectionControls", "sessionStartJoin") == true then syncSessionStartJoinBar(nil, not ok) end
             if syncStorytellerPhaseButtons ~= nil then
                 syncStorytellerPhaseButtons()
             end
@@ -3107,6 +3133,9 @@ function onLoad(saved_data)
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
     require("lib.sync_trace").installIfEnabled()
+    local sessionStartJoin = S.getStateVal("connectionControls", "sessionStartJoin") == true
+    local deferredGuids = sessionStartJoin and require("core.join_cold_pools").deferredGuids() or nil
+    if sessionStartJoin then syncSessionStartJoinBar() end
 
     -- TOR-439: armed save load — remount minimal Global XmlUI + slim CustomUIAssets before
     -- the rest of startup UI work. Persist via File → Save after Arm (not Save & Play /
@@ -3253,7 +3282,7 @@ function onLoad(saved_data)
             setStartupAction("startup-ready-wait-locked-objects")
             if O ~= nil and type(O.areLockedObjectsReadyForInteractableLock) == "function" then
                 return function()
-                    return O.areLockedObjectsReadyForInteractableLock()
+                    return O.areLockedObjectsReadyForInteractableLock(deferredGuids)
                 end
             end
             return true
@@ -3261,7 +3290,7 @@ function onLoad(saved_data)
         function()
             setStartupAction("apply-locked-objects-at-startup-gate")
             if O ~= nil and type(O.ApplyLockedAndHiddenAtStartupGate) == "function" then
-                O.ApplyLockedAndHiddenAtStartupGate()
+                O.ApplyLockedAndHiddenAtStartupGate(deferredGuids)
             elseif O ~= nil and type(O.ApplyLockedAndHiddenFromConstants) == "function" then
                 O.ApplyLockedAndHiddenFromConstants({ warnMissing = true, logSummary = true })
             end
@@ -3299,9 +3328,10 @@ function onLoad(saved_data)
             applySessionBlindfoldImagesFromState()
             setStartupAction("startup-ready-apply-global-blindfold-from-phase")
             startupCoverHeld = false
+            if sessionStartJoin then syncSessionStartJoinBar() end
             applyGlobalBlindfoldFromPhase()
             local phase = S.getStateVal("currentPhase")
-            if phase == C.Phases.INTERMISSION then
+            if phase == C.Phases.INTERMISSION and not sessionStartJoin then
                 setStartupAction("startup-ready-intermission-theme")
                 local Phases = require("core.phases")
                 Phases.reconcileIntermissionAmbientOnLoad()
@@ -3894,10 +3924,9 @@ syncStorytellerPhaseButtons = function()
     U.setAttributes("phase_diagnosticJoinSteps", { active = not sessionStartJoin })
     U.setAttributes("phase_diagnosticJoinRefresh", { active = not sessionStartJoin })
     U.setAttributes("phase_sessionStartJoinHelp", { active = sessionStartJoin })
-    U.setAttributes("phase_sessionStartJoinSteps", { active = sessionStartJoin })
     U.setAttributes("phase_diagnosticJoinHelp", { active = not sessionStartJoin })
     if sessionStartJoin then
-        joinStatus = JoinColdPools.isActive() and "Joining: deferred bundles pending" or "Joining: bundles ready to finish"
+        joinStatus = "Session-start onboarding in progress"
     elseif joinXmlArmed then
         joinStatus = string.format(
             "Join: ARMED | assets:%s | hud:min | %s",
@@ -4262,37 +4291,50 @@ function HUD_phaseSessionStartQuick(player, value, id)
     syncStorytellerPhaseButtons()
 end
 
---- Phases panel: remount full Global XmlUI only (step 2 of staged restore). Does not restore assets/pools. TOR-439.
-function HUD_phaseRefreshXml(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseRefreshXml") then
+--- Host clicks advance one stage at a time. Connect and color-change callbacks remain color-only until the end.
+function HUD_sessionStartJoinStep(player, button, id)
+    if not U.isPlayer(player) or player.host ~= true or startupCoverHeld or pendingFullUiRemount
+        or S.getStateVal("connectionControls", "sessionStartJoin") ~= true or id ~= nextSessionStartJoinStep() then
         return
     end
-    if S.getStateVal("connectionControls", "sessionStartJoin") == true then
-        if startupCoverHeld or require("core.join_cold_pools").isActive() then
-            U.AlertGM("Finish Join: wait for startup and load the deferred bundles first.")
-            return
-        end
-        performJoinRestoreStep("Finish Join", {
+    if id == "sessionStartJoinBundles" then
+        performJoinRestoreStep("Loading bundles", {
+            require("core.join_cold_pools").beginWarm,
+            function() O.ApplyLockedAndHiddenAtStartupGate() end,
+        }, { "warmBundles", "applyObjectVisibility" })
+    elseif id == "sessionStartJoinHud" then
+        performJoinRestoreStep("Refreshing HUD", {
             function()
                 applyEmbeddedGlobalXml(resolveGlobalXmlDoc("full"))
                 return waitUiAssetsNotLoading()
             end,
+            function() S.setStateVal(true, "connectionControls", "sessionStartJoinHudReady") end,
+        }, { "refreshHud", "markHudReady" })
+    else
+        performJoinRestoreStep("Seating players", {
             function()
                 local connection = require("core.player_connection")
                 connection.prepareSessionStartSeats()
                 for _, seated in ipairs(Player.getPlayers()) do
                     if connection.chronicleSeatColorForPlayer(seated) ~= nil then M.setCamera(seated, "default") end
                 end
-                Sync.full({ force = true, reason = "finish_session_start_join" })
-                S.setStateVal(false, "connectionControls", "sessionStartJoin")
-                S.setStateVal(false, "connectionControls", "deferSetXml")
+                local intermissionThemeStarted = require("core.phases").reconcileIntermissionAmbientOnLoad()
+                Sync.full({ force = true, reason = "finish_session_start_join", skipSoundscape = intermissionThemeStarted })
                 invalidateGlobalBlindfoldAppliedState()
                 applySessionBlindfoldImagesFromState()
                 applyGlobalBlindfoldFromPhase()
+                S.setStateVal(nil, "connectionControls", "sessionStartJoinHudReady")
+                S.setStateVal(false, "connectionControls", "sessionStartJoin")
+                syncSessionStartJoinBar()
             end,
-        }, { "refreshHud", "finishSeating" })
-        return
+        }, { "finishSeating" })
     end
+end
+
+--- Phases panel: remount full Global XmlUI only (step 2 of the diagnostic restore). TOR-439.
+function HUD_phaseRefreshXml(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseRefreshXml")
+        or S.getStateVal("connectionControls", "sessionStartJoin") == true then return end
     S.setStateVal(false, "connectionControls", "joinXmlArmed")
     print("[JoinControls] Restore HUD — remounting full Global XmlUI (assets/pools unchanged).")
     performFullUiResync("Restore HUD / Refresh XML", { mode = "full" })
@@ -4300,7 +4342,8 @@ end
 
 --- Phases panel: mount join-minimal Global XmlUI before a struggling client connects. TOR-439.
 function HUD_phaseArmJoinXml(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseArmJoinXml") then
+    if not requireStorytellerForMutation(player, "HUD_phaseArmJoinXml")
+        or S.getStateVal("connectionControls", "sessionStartJoin") == true then
         return
     end
     S.setStateVal(true, "connectionControls", "joinXmlArmed")
@@ -4312,7 +4355,8 @@ end
 
 --- Staged restore 1/3: CustomUIAssets from Arm backup. TOR-439.
 function HUD_phaseRestoreJoinAssets(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinAssets") then
+    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinAssets")
+        or S.getStateVal("connectionControls", "sessionStartJoin") == true then
         return
     end
     print("[JoinControls] Restore Assets — setCustomAssets from backup.")
@@ -4334,18 +4378,11 @@ end
 
 --- Staged restore 3/3: soundscape emitters. TOR-439.
 function HUD_phaseRestoreJoinEmitters(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinEmitters") then
+    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinEmitters")
+        or S.getStateVal("connectionControls", "sessionStartJoin") == true then
         return
     end
     local JoinColdPools = require("core.join_cold_pools")
-    if S.getStateVal("connectionControls", "sessionStartJoin") == true then
-        if startupCoverHeld then
-            U.AlertGM("Load Bundles: wait for the table to finish starting first.")
-            return
-        end
-        performJoinRestoreStep("Load Bundles", { JoinColdPools.beginWarm }, { "warmBundles" })
-        return
-    end
     print("[JoinControls] Restore Emitters — spawnObjectData with GUID keep.")
     performJoinRestoreStep("Restore Emitters", {
         function()

@@ -24,7 +24,7 @@ npm run tts-save:session-start -- --decisions "Integrated assets.csv" --output "
 
 The source defaults to the configured save. `--source` accepts a separate full save. The command writes only to new output paths. It defers reviewed top-level Unity bundle objects and preserves their GUIDs and data for restore. A `Prune` URL that moved, appears in another kind of field, or shares an object with an asset outside the prune list stops generation for review. `Purge`, `Investigate`, and URLs without a decision stay in the copy and are accounted for separately in the report.
 
-Load the new slot in TTS and wait for the host table to finish starting. Players get their assigned colors as they join. Once they are connected, open **Phase tools**, click **1 Load Bundles**, then wait for the status to show **bundles ready to finish**. Click **2 Finish Join** to seat connected players and refresh the HUD. Play or advance the phase after that step finishes. A saved copy can resume at either stage.
+Load the new slot in TTS. The host sees the onboarding bar in the center of the screen, and players get their assigned colors as they join. Once they are connected, click **1 Load Bundles**, then **2 Refresh HUD**, then **3 Seat Players**. Each button becomes available when the preceding work finishes. The bar disappears after seating and the final game update. A saved copy can resume at the next unfinished step. Later connections seat normally with automatic full XML rebuilds deferred. The host can still use **Refresh XML** in Phase tools if needed.
 
 ## Complications decks (Full build hook)
 

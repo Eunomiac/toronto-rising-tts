@@ -22,7 +22,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### Reduced session-start save
 
-**How to verify:** Load the session-start copy from the TTS main menu. Once the host table is ready, connect a player. Check that their assigned color appears while their chair and HUD wait. In Phase tools, click **1 Load Bundles**. Wait for **bundles ready to finish**, then click **2 Finish Join**. Check the player's chair and HUD, the soundscape, table fog, weather particles, and Hunger smoke. Connect again after finishing to check the normal reconnect flow.
+**How to verify:** Load the session-start copy from the TTS main menu. Check that only the host sees the centered onboarding bar. Once the host table is ready, connect a player. Check that their assigned color appears while their chair, camera, and HUD update wait. Click **1 Load Bundles**, **2 Refresh HUD**, then **3 Seat Players**, checking that each button becomes available after the previous one finishes. The bar should disappear and the player's chair, camera, and HUD should be ready. Check the soundscape, table fog, weather particles, and Hunger smoke. Connect again after finishing and check that seating works without rebuilding the Global HUD.
 
 #### TOR-750 — Consolidated spreadsheet imports and runtime catalogs
 

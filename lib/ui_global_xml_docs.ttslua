@@ -11129,7 +11129,7 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
     <Text id="phase_diagnosticJoinHelp" fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. After Arm, restore Assets, HUD, then Emitters.</Text>
-    <Text id="phase_sessionStartJoinHelp" active="false" fontSize="12" color="#AAAAAA">Once players connect, load deferred bundles, then finish seating and refresh the HUD.</Text>
+    <Text id="phase_sessionStartJoinHelp" active="false" fontSize="12" color="#AAAAAA">Use the onboarding bar in the center of the host's screen.</Text>
     <HorizontalLayout id="phase_diagnosticJoinSwitches" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Toggle id="phase_deferSetXml" isOn="false" onValueChanged="HUD_phaseDeferSetXml"
         minWidth="160" preferredWidth="180" textColor="#FFFFFF">Defer setXML</Toggle>
@@ -11143,12 +11143,6 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
       <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <HorizontalLayout id="phase_sessionStartJoinSteps" active="false" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_sessionStartLoadBundles" text="1 Load Bundles" minWidth="135" preferredWidth="135" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sessionStartFinishJoin" text="2 Finish Join" minWidth="120" preferredWidth="120" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <HorizontalLayout id="phase_diagnosticJoinRefresh" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
@@ -14204,6 +14198,27 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
   </Panel>
 
 <!-- /include ui/storyteller/project_editor_modal.xml -->
+
+
+<!-- include ui/storyteller/panel_session_start_join.xml -->
+<Panel id="sessionStartJoinBar" visibility="Host" active="false" rectAlignment="MiddleCenter"
+  width="700" height="112" color="rgba(0.08,0.07,0.10,0.97)">
+  <VerticalLayout padding="16 16 12 12" spacing="8" childForceExpandHeight="false">
+    <Text id="sessionStartJoinStatus" preferredHeight="28" fontSize="17" color="#FFFFFF"
+      alignment="MiddleCenter">Preparing the table…</Text>
+    <HorizontalLayout spacing="10" preferredHeight="44">
+      <Button id="sessionStartJoinBundles" onClick="HUD_sessionStartJoinStep" interactable="false"
+        colors="#544466|#6A567E|#796292|#28242F" textColor="#FFFFFF" fontSize="18">1 · Load Bundles</Button>
+      <Button id="sessionStartJoinHud" onClick="HUD_sessionStartJoinStep" interactable="false"
+        colors="#544466|#6A567E|#796292|#28242F" textColor="#FFFFFF" fontSize="18">2 · Refresh HUD</Button>
+      <Button id="sessionStartJoinFinish" onClick="HUD_sessionStartJoinStep" interactable="false"
+        colors="#544466|#6A567E|#796292|#28242F" textColor="#FFFFFF" fontSize="18">3 · Seat Players</Button>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- /include ui/storyteller/panel_session_start_join.xml -->
+
 ]=]
 
 -- Expanded from ui/Global.join_minimal.xml
@@ -15149,7 +15164,7 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
     <Text id="phase_diagnosticJoinHelp" fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. After Arm, restore Assets, HUD, then Emitters.</Text>
-    <Text id="phase_sessionStartJoinHelp" active="false" fontSize="12" color="#AAAAAA">Once players connect, load deferred bundles, then finish seating and refresh the HUD.</Text>
+    <Text id="phase_sessionStartJoinHelp" active="false" fontSize="12" color="#AAAAAA">Use the onboarding bar in the center of the host's screen.</Text>
     <HorizontalLayout id="phase_diagnosticJoinSwitches" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Toggle id="phase_deferSetXml" isOn="false" onValueChanged="HUD_phaseDeferSetXml"
         minWidth="160" preferredWidth="180" textColor="#FFFFFF">Defer setXML</Toggle>
@@ -15163,12 +15178,6 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
       <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <HorizontalLayout id="phase_sessionStartJoinSteps" active="false" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_sessionStartLoadBundles" text="1 Load Bundles" minWidth="135" preferredWidth="135" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sessionStartFinishJoin" text="2 Finish Join" minWidth="120" preferredWidth="120" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <HorizontalLayout id="phase_diagnosticJoinRefresh" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
