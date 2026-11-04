@@ -14,12 +14,13 @@ Verification:
 - Validate headers, keys, references, mixed values, and normalized records before changing consumers.
 - Follow the repository's browser and in-game verification requirements when implementing the consumer migration.
 
-Status: consumer migration implemented on 2026-11-03. All nine live ranges pass preflight and generate their existing consumer shapes. FULL, manual import commands and Dashboard startup use the shared loader. Local Steam upload, write-back credentials and Save & Play remain author checks (TOR-750).
+Status: the build import contract targets the Named, Generic, and Function Calls schemas. The Cloud jobs and runtime cutover are separate work.
 
 ## Running the aligned imports
 
 - `npm run exports:build`: fetch and validate all nine packages, then generate character catalogs, weather, locations, skyboxes, Complications metadata, Compulsion text and private NPC stats. Uses the current cloud manifest; no Steam upload or save mutation.
-- `npm run exports:test`: synthetic contracts and an isolated real stats-import regression covering pending aliases and kept NPCs.
+- `npm run exports:build -- --check`: run preflight against the live exports or an explicit snapshot without generating files.
+- `npm run exports:test`: test the export contracts and verify pending edits and kept NPCs in an isolated stats import.
 - `npm run exports:verify-lua`: execute the generated modules through `lib.npcs_data` and check identities, PC exclusion, Garou flags, generic figure counts, art associations, site skyboxes and weather.
 - `npm run build:full`: existing backup/silence wrapper, then pending stat write-back, one validated snapshot, metadata/stats generation, other tooling, artwork/cloud jobs, and finally URL-dependent skybox/location generation. Every later importer inherits the same snapshot. New skybox files are joined after cloud sync.
 - Dashboard `npm run dev` starts a fresh server, validates one batch and refreshes its character/Compulsion caches. `/api/chronicle-exports` serves weather/location detail from that batch; browser gviz reads have been removed. Refresh failures stop startup instead of using a stale file. NPC stats still refresh during the build.
@@ -31,69 +32,45 @@ For explicit offline replay, set `TR_EXPORT_SNAPSHOT` to the JSON written by `np
 
 Active workbook: `10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs`.
 Export tab: `(exports)`, gid `1673786468`.
-Every package is horizontal on this tab, has one header row at row 4, and starts its generated data at row 5. Titles, migration helpers, and review checks are outside the named ranges.
+Each horizontal package has its own named range with one header row followed by the data. Titles, migration helpers, and review checks are outside the named ranges.
 
 ```text
-https://docs.google.com/spreadsheets/d/10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs/export?format=csv&gid=1673786468&range=EXPORT_CHARACTERS_UNIQUE
+https://docs.google.com/spreadsheets/d/10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs/export?format=csv&gid=1673786468&range=EXPORT_CHARACTERS_NAMED
 ```
 
 Substitute the named package, not column letters. Omitting gid returned HTTP 400 for the character ranges. The gid-qualified endpoint succeeded for all nine packages.
 
 Use the regular CSV export, not gviz's majority-column typing. Parse TRUE/FALSE deliberately, preserve numeric zero, negative numbers, `X`, `~`, Unicode, commas, quotes, and multiline prose. Reject spreadsheet errors before generating outputs. Blank optional fields and `~` must retain their current parser meaning; do not turn them into literal defaults.
 
-The machine-readable contract contains every exact header and snapshot range. Named export ranges currently end at row 3001, giving 2,997 data rows each. Source formulas use open-ended authoring references where local data permits; source named ranges have their own boundaries. Expand ranges with grid growth. An array overflow must remain a visible failure, and source-count checks must prevent truncated snapshots from being accepted.
+The machine-readable contract contains every exact header and snapshot range. The export tab has 3,001 rows. Package capacity depends on its header position. Source formulas use open-ended authoring references where local data permits; source named ranges have their own boundaries. Expand ranges with grid growth. An array overflow must remain a visible failure, and source-count checks must prevent truncated snapshots from being accepted.
 
 ## Package inventory
 
 | Named package | Rows verified | Fields | Authoring source |
 | --- | ---: | ---: | --- |
-| EXPORT_CHARACTERS_UNIQUE | 206 | 61 | CHARACTERS; MEM NAMED STATS; Memoriam NPC Export assignments |
-| EXPORT_CHARACTERS_GENERIC | 2,070 | 37 | GENERICS joined to STAT PROFILES |
+| EXPORT_CHARACTERS_NAMED | 195 | 52 | CHARACTERS with variant values resolved in the sheet |
+| EXPORT_CHARACTERS_GENERIC | 2,070 | 32 | GENERICS joined to STAT PROFILES in the sheet |
 | EXPORT_LOCATIONS_DISTRICTS | 36 | 21 | Districts & Sites → DISTRICTS projection |
 | EXPORT_LOCATIONS_SITES | 186 | 27 | Districts & Sites → SITES and its authored audio/ducking lookups |
 | EXPORT_MEMORIAM | 50 | 26 | Approved MEMORIAMS records and the existing runtime key transformations |
 | EXPORT_WEATHER | 366 | 4 | WEATHER month, temperature, day, and DayCodes columns |
 | EXPORT_SKYBOXES | 95 | 4 | Authored site names/availability and the API workbook's non-site keyed definitions |
-| EXPORT_COMPLICATIONS | 66 | 15 | Toronto Rising Decks → [CPL] Cards, completed designs |
+| EXPORT_COMPLICATIONS | 66 | 14 | Toronto Rising Decks → [CPL] Cards, completed designs and automation keys |
 | EXPORT_COMPULSIONS | 36 | 11 | Toronto Rising Decks → COM_DEFINITIONS joined to COM_VARIANTS |
 
 There are no manually maintained image URL fields in these export contracts. The legacy portrait URLs remain in the authoring source for review.
 
 ## Current import paths and runtime use
 
-### Unique characters
+### Named and Generic characters
 
-Current routes:
-- `lib/sheet_exports.js` validates the named ranges and groups generic figure/tier rows.
-- `import_character_exports.js` generates `lib/unique_character_catalog.ttslua`, `lib/generic_character_catalog.ttslua`, the compatibility Memoriam module and Dashboard identity catalogs.
-- `npc-stats/import.ts` reads the two character exports into private Dashboard stats, preserving existing label/stem stat keys and rejecting conflicting profile blocks.
-- `lib/npcs_data.ttslua` loads generated identities; existing NPC spawn/roll consumers retain their entry points. Named stat blocks remain part of the Dashboard roll workflow, rather than a new Lua stats system.
+The Named export supplies the effective data for each row, including inherited fields. The importer requires a non-variant parent and a `<parent>_<distinction>` variant key. A PC can be a parent. PC rows remain available to the game and are excluded from the NPC roster and stats import. Named NPCs with neither Catalog membership nor a Memoriam assignment are drafts.
 
-The prepared table includes all 152 original CHARACTERS identities, 49 named historical identities, and five existing Garou figure forms migrated into CHARACTERS. The form rows preserve existing runtime keys, filenames, kind, and a Variant Of link; they have no invented stat values and start with Catalog? false.
+Named figurines use `npc_<key>.webp` when enabled. Portrait recipients and filenames come from the export. Variants can refer to an inherited portrait. The generated catalogs carry the filename or asset name used by each consumer.
 
-Three existing possession aliases are retained in `Legacy API Keys`. Their canonical records retain the existing artwork filenames. The importer emits these aliases; removing an alias or renaming a file is not an incidental cleanup.
+The Generic export supplies one resolved stats row per figure key and tier. Figure metadata must agree across the tiers for that key. The stats import uses the figure API key as its identity and writes the supplied tiers. The profile lookup happens in the sheet.
 
-`Catalog?` is an author choice for the roster's main Catalog tab. It is not scene/session presence. CHARACTERS retains its existing values. MEM NAMED STATS now has an editable Catalog? checkbox; historical records initially remain excluded. Locations, Time Periods, and Memoriam Periods are independent metadata. Historical Variant Of links come from the current catalog; the separate Inherits From field is retained rather than conflated with that link.
-
-Shared stat headers preserve the existing notation consumed by `scripts/npc-stats/sheet.ts`: Kind, Clan, Generation, Rank, Blood Potency, Humanity, Difficulty, Health, Willpower, Phy/Soc/Men/Pow, Exceptional Pools, Attacks, Powers, Advantages, and higher-tier/special-ability note sections. Discipline Expression, descriptions, tags, and identity metadata are also retained. Bio prose is not flattened.
-
-`Authoring Tab` and `Authoring Key` identify the source record. Write-back must continue targeting authoring cells through its deliberate field mapping, never a formula-generated export or an assumed export row number. Keep pending edits, audit logs, stable roll IDs, and existing roll metadata during imports.
-
-Portrait identifiers were resolved by managed file content hash when possible. Six legacy images differ from the currently managed portraits. Their original links remain untouched in CHARACTERS and their candidate managed identifiers are marked for review in Portrait Review.
-
-### Generic characters
-
-Current routes:
-- The generic export groups into one Dashboard/runtime figure per API key, retaining only its supplied tiers.
-- `npc-stats/import.ts` validates shared profile/tier blocks and keeps the existing generic label/stem storage keys so local edits and saved references continue to resolve.
-- `scripts/npc-art/generate.ts` resolves authored filenames; the generated art module associates canonical and saved identities with those uploaded files.
-- `lib/npcs_data.ttslua` builds the generic roster from `lib/generic_character_catalog.ttslua`. It no longer uses artwork rows as its identity source.
-
-The contract joins one editable figure definition to the tier rows actually supplied by its Stat Profile. Repeated figure keys across tiers are intentional. Group by figure key, then store separate tier blocks; do not duplicate roster figures. Figure/tier pairs and profile/tier pairs must be unique, references must exist, and Kind/Tier combinations must match the rule table.
-
-There are 531 figures and 613 source stat blocks. Mortals, Animals, Spirits, and Ghouls currently supply Weak/Average/Gifted/Deadly; Vampires supply Average/Gifted/Deadly/Superhuman. Do not impose a fixed count of tiers on future profiles.
-
-The original Filename field is preserved. Figurine Filename provides the actual npc_<key>.webp naming convention; consumers must not accidentally keep using the older generic basename as an asset path. Source Group is transitional provenance, not a character type or the primary availability rule. Stat Profile and Stat Key must survive the migration from the old label-based stat storage.
+The shared loader rejects obsolete headers and export tables. Write-back targets current `CHARACTERS` keys and rejects pending edits that cannot be attached to a current row.
 
 ### Districts and sites
 
@@ -122,7 +99,7 @@ Human author IDs and names are transformed using the existing runtime convention
 
 Image links belong to cloud skybox, panel, and transition jobs. Character identities and stats belong in the character packages.
 
-Two existing assignments on mem_jeanDucheskiIPreDeath refer to blackCaesar11 and blackCaesar12. Both authoring periods are unselected and lack panel definitions. The assignments are preserved and shown in the review area; do not invent panels, approve periods, or silently remove associations to make a check pass.
+During export validation, each Memoriam location audio key without a soundscape track produces a warning listing its periods and panels. The authored key remains in the generated data.
 
 ### Weather
 

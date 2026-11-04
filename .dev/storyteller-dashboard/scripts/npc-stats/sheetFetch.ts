@@ -14,6 +14,6 @@ export const fetchCharactersRows = async (): Promise<CsvRows> => {
   const body = await fetchText(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=686173989`, "CHARACTERS authoring");
   if (/^\s*</.test(body)) throw new Error("CHARACTERS authoring: received HTML instead of CSV");
   const rows = parseCsv(body);
-  if (!rows[0]?.includes("API key")) throw new Error("CHARACTERS authoring: API key header missing");
+  if (!rows[0]?.includes("API Key")) throw new Error("CHARACTERS authoring: API key header missing");
   return rows;
 };

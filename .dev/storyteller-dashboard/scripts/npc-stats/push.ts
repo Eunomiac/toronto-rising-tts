@@ -36,14 +36,10 @@ if (keys.length === 0) {
 const stats = normalizeNpcStatsFile(JSON.parse(await readFile(path.join(dataDir, "npc-stats.json"), "utf8")));
 const rows = new Map<string, Readonly<Record<string, string>>>();
 for (const row of sheetRecords(await fetchCharactersRows(), "CHARACTERS")) {
-  const key = (row["API key"] ?? "").trim();
+  const key = (row["API Key"] ?? "").trim();
   if (key !== "") {
     if (rows.has(key)) throw new Error(`Duplicate authoring key ${key}`);
     rows.set(key, row);
-    for (const alias of (row["Legacy API Keys"] ?? "").split(",").map(s => s.trim()).filter(Boolean)) {
-      if (rows.has(alias)) throw new Error(`Duplicate authoring alias ${alias}`);
-      rows.set(alias, row);
-    }
   }
 }
 
@@ -54,14 +50,8 @@ const problems: string[] = [];
 for (const key of keys) {
   const block = stats[key]?.named;
   const row = rows.get(key);
-  if (!block) {
-    notes.push(`${key}: no stats in the dashboard any more; the sheet is left as it is.`);
-    done[key] = pending[key]!;
-    continue;
-  }
-  if (!row) {
-    notes.push(`${key}: not on the sheet, so its stats stay dashboard-only.`);
-    done[key] = pending[key]!;
+  if (!block || !row) {
+    problems.push(`${key}: pending edit requires a current named stats block and CHARACTERS row`);
     continue;
   }
   const plan = planRowWrite(key, block, row);
@@ -75,10 +65,7 @@ for (const key of keys) {
   if (Object.keys(plan.cells).length === 0) {
     done[key] = pending[key]!;
   } else {
-    const authoringKey = row["API key"]!;
-    const existing = writes.find(write => write.key === authoringKey);
-    if (existing && JSON.stringify(existing.cells) !== JSON.stringify(plan.cells)) problems.push(`${key}: conflicting edits for ${authoringKey} and its legacy alias`);
-    else if (!existing) writes.push({ key: authoringKey, cells: plan.cells });
+    writes.push({ key, cells: plan.cells });
     done[key] = pending[key]!;
   }
 }

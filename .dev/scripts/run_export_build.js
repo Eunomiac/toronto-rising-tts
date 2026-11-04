@@ -11,12 +11,18 @@ function run(script, env) {
 }
 async function main() {
   const full = process.argv.includes("--full");
+  const check = process.argv.includes("--check");
+  if (full && check) throw new Error("--full and --check cannot be combined");
   // Write-back must finish before we read formula-derived exports. It is a no-op without pending edits.
   if (full) run(".dev/storyteller-dashboard/scripts/npc-stats/push.ts", process.env);
   const snapshot = process.env.TR_EXPORT_SNAPSHOT ? validateSnapshot(JSON.parse(fs.readFileSync(process.env.TR_EXPORT_SNAPSHOT, "utf8"))) : await fetchSnapshot();
   const { validateExportData } = require("./lib/validate_export_data.js");
   const counts = validateExportData(snapshot);
   for (const warning of snapshot.warnings) console.warn(`[exports] ${warning}`);
+  if (check) {
+    console.log("[exports] All nine exports validated:", counts);
+    return;
+  }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "toronto-rising-exports-"));
   const file = path.join(dir, "snapshot.json");
   writeAtomic(file, JSON.stringify(snapshot));
