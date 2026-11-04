@@ -28,7 +28,7 @@ function clearDirectoryContents(targetDir) {
 function main() {
   const preferredTtsModsDir = path.join(
     "D:",
-    "OneDrive",
+    "Owner",
     "Documents",
     "My Games",
     "Tabletop Simulator",
