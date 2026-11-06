@@ -3,7 +3,7 @@
 const { parseCsv } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
 const { ugcMatchKey } = require("../tts-cloud/lib/cloud_index.js");
 
-const DECISIONS = new Set(["Keep", "Prune", "Purge", "Investigate", "ForcePurge", "Resolve"]);
+const DECISIONS = new Set(["Keep", "Prune", "Purge", "Investigate", "ForcePurge", "Resolve", "RemoveFromSheet"]);
 const SCRIPT_FIELDS = new Set(["LuaScript", "LuaScriptState", "XmlUI"]);
 const urlKey = (url) => ugcMatchKey(url) ?? url;
 const isSkyboxReference = ({ path }) => path.length === 1 && path[0] === "SkyURL";
@@ -63,6 +63,8 @@ function scanAssetUrls(value) {
 function assertReviewResolved(decisions) {
   const unresolved = [...decisions.values()].filter(row => row.decision === "Resolve");
   if (unresolved.length) throw new Error(`Resolve decisions need author-directed action before building: ${unresolved.map(row => row.label || row.url).join(" | ")}`);
+  const sheetCleanup = [...decisions.values()].filter(row => row.decision === "RemoveFromSheet");
+  if (sheetCleanup.length) throw new Error(`RemoveFromSheet decisions need verified static-sheet cleanup before building: ${sheetCleanup.map(row => row.label || row.url).join(" | ")}`);
 }
 
 function forcePurgeAssets(save, decisions) {

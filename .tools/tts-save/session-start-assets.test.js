@@ -94,6 +94,12 @@ test("Resolve is recognized but blocks generation, and absent Purge URLs need no
   assert.deepEqual(planSessionStart(fixture(), decisions).report.purge, []);
 });
 
+test("RemoveFromSheet is recognized as a sheet cleanup task requiring completion", () => {
+  const decisions = readDecisions("URL,Manual decision\nhttps://example.test/old.png,RemoveFromSheet\n");
+  assert.equal(decisions.get("https://example.test/old.png").decision, "RemoveFromSheet");
+  assert.throws(() => planSessionStart(fixture(), decisions), /RemoveFromSheet decisions need verified static-sheet cleanup/);
+});
+
 test("automatically keeps whichever image is the active SkyURL", () => {
   for (const skybox of ["https://example.test/old-skybox.jpg", "https://example.test/another-skybox.webp"]) {
     const source = fixture();

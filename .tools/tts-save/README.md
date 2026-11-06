@@ -45,6 +45,10 @@ The source defaults to the configured save. `--source` accepts a separate full s
 
 Load the new slot in TTS. The host sees the onboarding bar in the center of the screen, and players get their assigned colors as they join. Once they are connected, click **1 Load Bundles**, then **2 Refresh HUD**, then **3 Seat Players**. Each button becomes available when the preceding work finishes. The bar disappears after seating and the final game update. An ordinary TTS save can resume at the next unfinished step. Finish onboarding before using **Save & Play**, which replaces the generated Global script that holds the deferred objects. Later connections seat normally with automatic full XML rebuilds deferred. The host can still use **Refresh XML** in Phase tools if needed.
 
+### Removing completed review records
+
+`RemoveFromSheet` requests agent cleanup of the static review area, and stops build preflight until that cleanup is completed. Verify against the latest **main-save** inventory, not only the minimized copy. If the obsolete asset is absent and cleanup is complete, remove its entire static record with all manual columns aligned. Leave raw input tabs and dynamic formulas intact. If it is still present, change its decision to `Purge` and alert the author. Old saves and old folder history are not blockers. The build reads the sheet; sheet edits are performed through the agent's authenticated connection. A purged asset returning after its review record is removed appears as unreviewed in a fresh inventory.
+
 ## Complications decks (Full build hook)
 
 `npm run build:full` assembles the Standard and Enhanced Complications decks after cloud asset sync and consolidation. It rebuilds only variants with changed image/settings/URL fingerprints, defers pending uploads, and refuses to rebuild an active saved game or loose cards. Setup, exact filenames, save behavior, and verification: [`../complications/decks/README.md`](../complications/decks/README.md). Direct command: `npm run complications:decks -- --dry-run`.
