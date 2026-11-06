@@ -13,6 +13,24 @@ local S = require("core.state")
 local PSC = require("lib.pc_sheet_collect")
 local PCAdv = require("lib.pc_advantages")
 local Projects = require("core.projects")
+local Portraits = require("lib.npc_portrait_assets")
+local Coterie = require("core.coterie")
+local CoterieHydrate = require("lib.coterie_hydrate")
+
+function M.portraitOptions(owner)
+  local out, seen = {}, {}
+  local catalog = require("lib.unique_character_catalog")
+  for _, assignments in pairs(Portraits) do
+    local asset = assignments[owner]
+    if asset and not seen[asset] then
+      seen[asset] = true
+      local key = asset:match("^npcPortrait_(.+)$")
+      out[#out + 1] = { value = asset, label = catalog[key] and catalog[key].fullName or key }
+    end
+  end
+  table.sort(out, function(a, b) return a.label < b.label end)
+  return out
+end
 
 local MAX_DISCIPLINES = 6
 local MAX_TITLE_DOTS = 6
@@ -150,7 +168,7 @@ end
 --- Overlay the modal fields onto `base` (keeps fields the modal does not edit, e.g. `blank`, `active`).
 --- @return table|nil entry
 --- @return string|nil err
-local function advantageFromCommand(raw, base)
+local function advantageFromCommand(raw, base, owner)
   if type(raw) ~= "table" then
     return nil, "Missing entry"
   end
@@ -170,6 +188,15 @@ local function advantageFromCommand(raw, base)
   entry.disabled = clampInt(raw.disabled, 0, MAX_TITLE_DOTS)
   entry.description = stringLines(raw.description)
   entry.rules = stringLines(raw.rules)
+  local portrait = trim(raw.portrait)
+  if portrait ~= "" then
+    local assigned = false
+    for _, option in ipairs(M.portraitOptions(owner)) do
+      if option.value == portrait then assigned = true end
+    end
+    if not assigned then return nil, "That portrait is not assigned to this recipient in the character export. Run FULL after updating the sheet." end
+  end
+  entry.portrait = portrait ~= "" and portrait or nil
   if raw.sheetDisplay == false then
     entry.sheetDisplay = false
   else
@@ -310,7 +337,7 @@ M.ops.advantageUpsert = function(color, pid, cmd)
     return "Unknown advantage type"
   end
   if tonumber(cmd.index) == nil then
-    local entry, err = advantageFromCommand(cmd.entry, nil)
+    local entry, err = advantageFromCommand(cmd.entry, nil, C.PlayerData[pid].charKey)
     if entry == nil then
       return err
     end
@@ -324,7 +351,7 @@ M.ops.advantageUpsert = function(color, pid, cmd)
   if existing == nil then
     return findErr
   end
-  local entry, err = advantageFromCommand(cmd.entry, existing)
+  local entry, err = advantageFromCommand(cmd.entry, existing, C.PlayerData[pid].charKey)
   if entry == nil then
     return err
   end
@@ -380,7 +407,57 @@ function M.snapshotFields(_color, pid, _stats)
       end
     end
   end
-  return { projectStakes = stakes }
+  return { projectStakes = stakes, portraitOptions = M.portraitOptions(sourceKey) }
+end
+
+local function courtArrayKey(scope, category)
+  if scope ~= "coterie" and scope ~= "domain" and scope ~= "haven" then return nil end
+  if not ADVANTAGE_CATEGORY[category] then return nil end
+  return scope .. category:sub(1, 1):upper() .. category:sub(2)
+end
+
+local function courtEntry(cmd)
+  local key = courtArrayKey(cmd.scope, cmd.fromType or cmd.type)
+  local index = tonumber(cmd.index)
+  local entry = key and index and S.getStateVal("coterieData", key, index)
+  if type(entry) ~= "table" or entry.active == false or (entry.blank == true and entry.active ~= true) or entry.name ~= cmd.expectName then
+    return nil, nil, "That Court Advantage changed. Refresh and try again."
+  end
+  return entry, key
+end
+
+local function retireCourtEntry(key, index, existing)
+  local empty = CoterieHydrate.makeBlankEntry()
+  -- Hydration groups real rows before session slots. Preserve the group and index.
+  empty.blank = existing.blank == true
+  Coterie.setTraitEntry(key, index, empty)
+end
+
+M.ops.courtAdvantageUpsert = function(_color, _pid, cmd)
+  local key = courtArrayKey(cmd.scope, cmd.type)
+  if not key then return "Unknown Court Advantage section" end
+  local existing, oldKey, err
+  if cmd.index ~= nil then
+    existing, oldKey, err = courtEntry(cmd)
+    if not existing then return err end
+  end
+  local entry, entryErr = advantageFromCommand(cmd.entry, existing, "coterie")
+  if not entry then return entryErr end
+  if existing and key == oldKey then
+    Coterie.setTraitEntry(key, cmd.index, entry)
+  else
+    if not Coterie.activateBlankEntry(key, entry) then return "No empty Court Advantage slots remain in this section." end
+    if existing then retireCourtEntry(oldKey, cmd.index, existing) end
+  end
+  return nil
+end
+
+M.ops.courtAdvantageDelete = function(_color, _pid, cmd)
+  local entry, key, err = courtEntry(cmd)
+  if not entry then return err end
+  -- Keep baked XML indices stable when a real entry is removed.
+  retireCourtEntry(key, cmd.index, entry)
+  return nil
 end
 
 return M

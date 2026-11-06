@@ -12,6 +12,7 @@ test("portrait jobs route shared and inherited art independently to Global and P
   const jobs = validateConfig(JSON.parse(stripJsonc(fs.readFileSync(path.join(__dirname, "cloud-asset-sync.jsonc"), "utf8"))));
   const globalJob = jobs.find(job => job.id === "coteriePortraits");
   const pcJob = jobs.find(job => job.id === "csheetPage4Portraits");
+  const pcPage3Job = jobs.find(job => job.id === "csheetPage3Portraits");
   const rows = [
     { "Has Portrait": "coterie", "Portrait Filename": "npcPortrait_courtOnly.webp" },
     { "Has Portrait": "rashid", "Portrait Filename": "npcPortrait_pcOnly.webp" },
@@ -21,12 +22,15 @@ test("portrait jobs route shared and inherited art independently to Global and P
   ];
   const court = collectPortraitAssignments(globalJob, rows);
   const pc = collectPortraitAssignments(pcJob, rows);
+  const page3 = collectPortraitAssignments(pcPage3Job, rows);
   assert.deepEqual([...court.files], ["npcPortrait_courtOnly.webp", "npcPortrait_shared.webp"]);
   assert.deepEqual([...court.targets.get("npcPortrait_shared")], ["global"]);
   assert.deepEqual([...pc.files], ["npcPortrait_pcOnly.webp", "npcPortrait_shared.webp"]);
   assert.deepEqual(new Set(pc.targets.get("npcPortrait_shared")), new Set([pcJob.targets[1], pcJob.targets[0]]));
   assert.equal(pc.targets.has("npcPortrait_courtOnly"), false);
   assert.equal(court.targets.has("npcPortrait_pcOnly"), false);
+  assert.deepEqual(page3.files, pc.files);
+  assert.deepEqual(new Set(page3.targets.get("npcPortrait_shared")), new Set([pcPage3Job.targets[1], pcPage3Job.targets[0]]));
   assert.throws(() => validateConfig({ jobs: [{ id: "badPortrait", folder: "Portraits", output: "GlobalCustomUIAssets",
     portraitOwners: ["rashid"], filenameToNameSearchPattern: "^npcPortrait_(.*)\\.webp$", filenameToNameReplacePattern: "npcPortrait_$1" }] }), /Global portrait recipient must be coterie/);
 });

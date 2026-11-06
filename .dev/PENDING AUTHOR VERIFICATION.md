@@ -22,7 +22,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### TOR-751 — NPC portraits in The Court
 
-**How to verify:** Run FULL with TTS closed so the new portrait can upload. Confirm that `npcPortrait_theAristocrat` appears in Global Custom UI Assets. After loading the updated save and scripts, assign that reference to an Advantage's `portrait` field in the Court data. Open **The Court** and check that the image appears beside its description and rules, with its dots still visible. Clear the portrait and check that the text fills the available width again. No Advantage has been assigned to The Aristocrat by this change.
+**How to verify:** Run FULL with TTS closed, then load the updated save and scripts. In the Dashboard, open **PCs → III · IV → The Court**. Add or edit an Advantage, choose **The Aristocrat** in **Portrait**, and save. Check the image beside its text in the Dashboard and in TTS's Court sidebar. Clear the portrait and check that the text fills the available width again. Repeat on **Character Advantages** using a portrait assigned to that PC. Check creating, editing, and deleting a Court entry, including changing its category and dot slots. Existing portraits should reopen selected in the editor. No Advantage has been assigned to The Aristocrat by this change.
 
 #### Reduced session-start save
 

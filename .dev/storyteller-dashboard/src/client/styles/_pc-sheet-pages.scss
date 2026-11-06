@@ -443,6 +443,30 @@
   text-wrap: pretty;
 }
 
+.pc-adv-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+
+  > div { flex: 1; min-width: 0; }
+}
+
+.pc-adv-portrait-preview {
+  width: 4rem;
+  height: 6rem;
+  object-fit: contain;
+}
+
+.pc-court-scope {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  white-space: nowrap;
+
+  select { flex: 1; min-width: 0; width: auto; }
+}
+
 .pc-adv-rules {
   margin: 0.2rem 0 0;
   white-space: pre-line;

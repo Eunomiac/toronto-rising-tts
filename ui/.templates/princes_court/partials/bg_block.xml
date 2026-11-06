@@ -19,22 +19,22 @@
     <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_title_@@color@@" class="box_text_title_text" text="@@TITLE_TEXT@@" />
     <Panel id="db_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_panel_title_dotline_@@color@@" class="box_text_panel_title_dotline">
       ##IF @@DOT_IMG_1@@##
-      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_1_@@color@@" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_1_@@color@@" image="@@DOT_IMG_1@@" active="@@DOT_ACTIVE_1@@" class="dot box_text_title_dot dot_1" />
       ##ENDIF##
       ##IF @@DOT_IMG_2@@##
-      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_2_@@color@@" image="@@DOT_IMG_2@@" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_2_@@color@@" image="@@DOT_IMG_2@@" active="@@DOT_ACTIVE_2@@" class="dot box_text_title_dot dot_2" />
       ##ENDIF##
       ##IF @@DOT_IMG_3@@##
-      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_3_@@color@@" image="@@DOT_IMG_3@@" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_3_@@color@@" image="@@DOT_IMG_3@@" active="@@DOT_ACTIVE_3@@" class="dot box_text_title_dot dot_3" />
       ##ENDIF##
       ##IF @@DOT_IMG_4@@##
-      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_4_@@color@@" image="@@DOT_IMG_4@@" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_4_@@color@@" image="@@DOT_IMG_4@@" active="@@DOT_ACTIVE_4@@" class="dot box_text_title_dot dot_4" />
       ##ENDIF##
       ##IF @@DOT_IMG_5@@##
-      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_5_@@color@@" image="@@DOT_IMG_5@@" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_5_@@color@@" image="@@DOT_IMG_5@@" active="@@DOT_ACTIVE_5@@" class="dot box_text_title_dot dot_5" />
       ##ENDIF##
       ##IF @@DOT_IMG_6@@##
-      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_6_@@color@@" image="@@DOT_IMG_6@@" class="dot box_text_title_dot dot_6" />
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_6_@@color@@" image="@@DOT_IMG_6@@" active="@@DOT_ACTIVE_6@@" class="dot box_text_title_dot dot_6" />
       ##ENDIF##
     </Panel>
   </HorizontalLayout>

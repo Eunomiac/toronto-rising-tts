@@ -15,6 +15,7 @@ local TRAIT = require("lib.trait_sheet_xml")
 local PRINCES_COURT_TRAIT_OPTS = {
   visibilityMode = "active",
   pinBlanksToColumn3 = true,
+  fixedDotSlots = TRAIT.MAX_TITLE_DOTS,
   templateKeyBySection = {
     bg = "princes_court/partials/bg_block",
     merit = "princes_court/partials/merit_block",

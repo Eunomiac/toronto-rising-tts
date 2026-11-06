@@ -13,6 +13,11 @@ const asString = (value: unknown, fallback = ""): string =>
 
 const asBool = (value: unknown): boolean => value === true;
 
+const portraitOptions = (value: unknown): readonly { value: string; label: string }[] =>
+  Array.isArray(value) ? value.flatMap(row =>
+    isRecord(row) && typeof row.value === "string" && typeof row.label === "string"
+      ? [{ value: row.value, label: row.label }] : []) : [];
+
 const asRating = (value: unknown) => ({
   base: isRecord(value) ? asNumber(value.base) : 0,
   temp: isRecord(value) ? asNumber(value.temp) : 0,
@@ -151,6 +156,7 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     hudFrenzy: asBool(value.hudFrenzy),
     hudBlindfold: asBool(value.hudBlindfold),
     projectStakes,
+    portraitOptions: portraitOptions(value.portraitOptions),
     relationships: parseRelationshipRows(value.relationships)
   };
 };
@@ -166,7 +172,9 @@ const parseSnapshotJson = (raw: string): SheetSnapshot => {
   const seats = Array.isArray(parsed.seats)
     ? parsed.seats.map(parseSeat).filter((seat): seat is SeatSnapshot => seat !== null)
     : [];
-  return { ok: true, seats, sessionNum: Math.floor(asNumber(parsed.sessionNum, 1)) };
+  return { ok: true, seats, sessionNum: Math.floor(asNumber(parsed.sessionNum, 1)),
+    ...(isRecord(parsed.coterieData) ? { coterieData: parsed.coterieData } : {}),
+    courtPortraits: portraitOptions(parsed.courtPortraits) };
 };
 
 export const extractSnapshotJson = (result: { returnValue?: unknown; prints: readonly string[]; error?: string }): string => {

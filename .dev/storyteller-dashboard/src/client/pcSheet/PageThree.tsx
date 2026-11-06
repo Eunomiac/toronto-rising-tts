@@ -17,6 +17,7 @@ import {
   type AdvantageEntry
 } from "./sheetData.js";
 import { termProps } from "../termImages/store.js";
+import { CourtAdvantages } from "./CourtAdvantages.js";
 
 type Popup = { readonly entry?: AdvantageEntry; readonly type: AdvantageCategory };
 
@@ -55,10 +56,15 @@ const AdvantageBox = ({
           <DotLine slots={traitDotSlots(entry, staked)} />
         </button>
       </header>
-      {entry.description.length > 0 ? (
-        <p className="pc-adv-flavor">{entry.description.join("\n")}</p>
-      ) : null}
-      {entry.rules.length > 0 ? <p className="pc-adv-rules">{entry.rules.join("\n")}</p> : null}
+      <div className="pc-adv-content">
+        {entry.portrait ? <img className="pc-rel-portrait-img" src={sheetArtUrl(entry.portrait)} alt="" /> : null}
+        <div>
+          {entry.description.length > 0 ? (
+            <p className="pc-adv-flavor">{entry.description.join("\n")}</p>
+          ) : null}
+          {entry.rules.length > 0 ? <p className="pc-adv-rules">{entry.rules.join("\n")}</p> : null}
+        </div>
+      </div>
     </div>
   );
 };
@@ -165,31 +171,39 @@ const StatusStrip = ({
 
 export const PageThree = ({ ctx }: { readonly ctx: PageContext }): ReactElement => {
   const [popup, setPopup] = useState<Popup | null>(null);
+  const [court, setCourt] = useState(false);
   const backgrounds = parseAdvantages(ctx.seat.playerData, "backgrounds");
   const merits = parseAdvantages(ctx.seat.playerData, "merits");
   const flaws = parseAdvantages(ctx.seat.playerData, "flaws");
   return (
     <article className={`pc-page pc-sheet-page pc-page-three ${ctx.side}`}>
-      <div className="pc-sheet-scroll">
-        <AdvantageSection
-          category="backgrounds"
-          entries={backgrounds}
-          ctx={ctx}
-          onPopup={setPopup}
-          lead={<StatusStrip backgrounds={backgrounds} ctx={ctx} onPopup={setPopup} />}
-        />
-        <AdvantageSection category="merits" entries={merits} ctx={ctx} onPopup={setPopup} />
-        <AdvantageSection category="flaws" entries={flaws} ctx={ctx} onPopup={setPopup} />
+      <div className="pc-divider-actions">
+        <button type="button" className={`pc-add-text${!court ? " active" : ""}`} onClick={() => setCourt(false)}>Character Advantages</button>
+        <button type="button" className={`pc-add-text${court ? " active" : ""}`} onClick={() => setCourt(true)}>The Court</button>
       </div>
-      {popup ? (
-        <AdvantageModal
-          color={ctx.seat.color}
-          defaultType={popup.type}
-          {...(popup.entry ? { entry: popup.entry } : {})}
-          send={ctx.applyNow}
-          onClose={() => setPopup(null)}
-        />
-      ) : null}
+      {court ? <CourtAdvantages ctx={ctx} /> : <>
+        <div className="pc-sheet-scroll">
+          <AdvantageSection
+            category="backgrounds"
+            entries={backgrounds}
+            ctx={ctx}
+            onPopup={setPopup}
+            lead={<StatusStrip backgrounds={backgrounds} ctx={ctx} onPopup={setPopup} />}
+          />
+          <AdvantageSection category="merits" entries={merits} ctx={ctx} onPopup={setPopup} />
+          <AdvantageSection category="flaws" entries={flaws} ctx={ctx} onPopup={setPopup} />
+        </div>
+        {popup ? (
+          <AdvantageModal
+            color={ctx.seat.color}
+            portraitOptions={ctx.seat.portraitOptions ?? []}
+            defaultType={popup.type}
+            {...(popup.entry ? { entry: popup.entry } : {})}
+            send={ctx.applyNow}
+            onClose={() => setPopup(null)}
+          />
+        ) : null}
+      </>}
     </article>
   );
 };

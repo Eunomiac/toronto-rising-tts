@@ -337,10 +337,11 @@ function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
     IMAGE_REF = portrait,
     PORTRAIT_ACTIVE = portrait ~= "" and "true" or "false",
   }
-  for i = 1, slotCount do
+  for i = 1, (opts.fixedDotSlots or slotCount) do
     params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(
       i, slotCount, baseCount, tempCount, disabledCount, filledImg, clampedProject
     )
+    params["DOT_ACTIVE_" .. tostring(i)] = i <= slotCount and "true" or "false"
   end
 
   local flavor = M.joinMultilineField(entry.description)

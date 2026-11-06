@@ -64,7 +64,7 @@ end
 --- @param entry table|nil
 --- @return boolean
 local function coterieEntryVisibleInStats(entry)
-    if type(entry) ~= "table" then
+    if type(entry) ~= "table" or entry.active == false then
         return false
     end
     if entry.blank ~= true then

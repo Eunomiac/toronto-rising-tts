@@ -57,7 +57,7 @@ A compact tab row sits flush with the top of the viewport:
    | --- | --- | --- |
    | 1 | Identity, attributes, skills, trackers, Hunger, Desire, XP jewel | `dashboard/pc_sheet.ttslua` |
    | 2 | Disciplines, powers, Blood Sorcery rituals, Oblivion ceremonies (dot ring + add/edit popups) | `dashboard/pc_sheet_traits.ttslua` |
-   | 3 | Backgrounds, Merits, Flaws, Status strip (shared Advantage popup with type dropdown) | `dashboard/pc_sheet_traits.ttslua` |
+   | 3 | Backgrounds, Merits, Flaws and Status strip. **Character Advantages** and **The Court** share the Advantage popup with portrait choices and preview. Court sections cover Coterie, Domain and Haven. | `dashboard/pc_sheet_traits.ttslua` |
    | 4 | Touchstone, Sire, Childer, Blood Bonds, Other Relationships (Relationship popup) | `dashboard/pc_sheet_relationships.ttslua` (`gameState.relationships`) |
    | 5 | Project cards + Coterie view; Project editor (R, Lock & Begin, Complete, Delete). Equipment / Boons not yet | `dashboard/projects.ttslua` — **own** snapshot (`GlobalDashboardProjectsSnapshot` / `Apply`), fetched when Page 5 opens and after each change |
    | 6 | Experience Log (all sessions) + Experience popup (Apply / Apply to All / Undo) | `dashboard/pc_sheet_xp.ttslua` |

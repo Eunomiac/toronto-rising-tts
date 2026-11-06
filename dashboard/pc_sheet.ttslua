@@ -21,8 +21,9 @@ local U = require("lib.util")
 
 --- Sibling modules: `ops[op] = function(color, pid, cmd) -> err|nil` and optional
 --- `snapshotFields(color, pid, stats) -> table` merged into each seat snapshot.
+local SheetTraits = require("dashboard.pc_sheet_traits")
 local EXTENSIONS = {
-  require("dashboard.pc_sheet_traits"),
+  SheetTraits,
   require("dashboard.pc_sheet_xp"),
   require("dashboard.pc_sheet_relationships"),
 }
@@ -582,7 +583,12 @@ local function snapshotPayload()
   for i = 1, #C.PlayerColors do
     seats[#seats + 1] = snapshotSeat(C.PlayerColors[i], true)
   end
-  return { ok = true, seats = seats, sessionNum = math.floor(num(S.getStateVal("sessionNum"), 1)) }
+  return {
+    ok = true, seats = seats,
+    sessionNum = math.floor(num(S.getStateVal("sessionNum"), 1)),
+    coterieData = S.getStateVal("coterieData"),
+    courtPortraits = SheetTraits.portraitOptions("coterie"),
+  }
 end
 
 function Dash.snapshot()
@@ -755,7 +761,7 @@ function Dash.apply(jsonText)
       break
     end
     local color = canonColor(list[i].color)
-    if color ~= nil then
+    if color ~= nil and list[i].op ~= "courtAdvantageUpsert" and list[i].op ~= "courtAdvantageDelete" then
       markTouched(color, false)
     end
   end

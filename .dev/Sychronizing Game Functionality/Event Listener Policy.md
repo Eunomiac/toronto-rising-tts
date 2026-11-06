@@ -117,6 +117,8 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 
 ### HUD handlers (summary)
 
+`GlobalDashboardPcSheetApply` also accepts `courtAdvantageUpsert` and `courtAdvantageDelete`. These use the existing `core.coterie` methods and their cached attribute reconciliation, skip the unrelated PC seat sync, preserve baked slot indices, and validate portrait recipient assignments before mutation. Sheet snapshots include the Court data and recipient-filtered portrait options.
+
 | Group | Examples | Tier | ST steam gate | TOR-144 |
 | --- | --- | --- | --- | --- |
 | UI-only | `HUD_togglePanel`, `HUD_selectStorytellerPanel`, modals, `HUD_show`/`hide`, roll opts open/cancel | A | — | — |

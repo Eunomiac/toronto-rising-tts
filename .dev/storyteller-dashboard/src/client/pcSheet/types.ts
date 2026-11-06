@@ -23,6 +23,7 @@ export type Specialty = {
 };
 
 export type SeatSnapshot = {
+  readonly portraitOptions?: readonly { value: string; label: string }[];
   readonly color: SeatColor;
   readonly playerId?: string;
   readonly charKey: string;
@@ -98,6 +99,8 @@ export type RelationshipRow = { readonly key: string; readonly entry: Relationsh
 export type XpEntryRef = { readonly kind: "gain" | "spend"; readonly amount: number; readonly description: string };
 
 export type SheetSnapshot = {
+  readonly coterieData?: Record<string, unknown>;
+  readonly courtPortraits?: readonly { value: string; label: string }[];
   readonly ok: boolean;
   readonly error?: string;
   /** TTS refused because the save has not finished loading (S.isReady false); retry shortly. */
@@ -122,6 +125,7 @@ export type PowerDraft = { name: string; level: number; notes: string };
 export type AdvantageType = "backgrounds" | "merits" | "flaws";
 
 export type AdvantageDraft = {
+  portrait?: string;
   name: string;
   focus: string;
   base: number;
@@ -135,6 +139,8 @@ export type AdvantageDraft = {
 };
 
 export type ApplyCommand =
+  | { op: "courtAdvantageUpsert"; color: SeatColor; scope: "coterie" | "domain" | "haven"; type: AdvantageType; index?: number; fromType?: AdvantageType; expectName?: string; entry: AdvantageDraft }
+  | { op: "courtAdvantageDelete"; color: SeatColor; scope: "coterie" | "domain" | "haven"; type: AdvantageType; index: number; expectName: string }
   | { op: "dotDelta"; color: SeatColor; family: "attributes" | "skills" | "bloodPotency" | "disciplines"; key: string; field: "base" | "temp" | "disabled"; delta: number }
   | { op: "disciplineAdd"; color: SeatColor; key: string }
   | { op: "disciplineRemove"; color: SeatColor; key: string }

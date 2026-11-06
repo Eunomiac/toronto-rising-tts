@@ -219,6 +219,15 @@
       "filenameToNameReplacePattern": "npcPortrait_$1"
     },
     {
+      "id": "csheetPage3Portraits",
+      "folder": "NPC Art/Portraits",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage3",
+      "portraitOwners": ["fomorach", "rashid", "lordLucien", "aishe", "blackCaesar"],
+      "filenameToNameSearchPattern": "^npcPortrait_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "npcPortrait_$1"
+    },
+    {
       "id": "coteriePortraits",
       "folder": "NPC Art/Portraits",
       "output": "GlobalCustomUIAssets",

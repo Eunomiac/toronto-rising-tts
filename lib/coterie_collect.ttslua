@@ -15,8 +15,8 @@ local MAX_DOMAIN_DOTS = 5
 --- Must match `lib/princes_court_trait_xml.ttslua` build opts so blank `setAttribute` ids align with baked XML.
 local TRAIT_ACTIVE_OPTS = { visibilityMode = "active" }
 
---- Blank-slot XML blocks are baked from `makeBlankEntry()`, so they carry exactly this many dot images.
-local BLANK_BLOCK_BAKED_DOTS = CoterieHydrate.makeBlankEntry().max
+--- Reserve all six dot controls so live edits can change a Court Advantage's maximum.
+local BAKED_TRAIT_DOTS = TRAIT.MAX_TITLE_DOTS
 
 --- Sections baked with only in-session blank slots: divider starts `active="false"` and shows once any slot is used.
 local RUNTIME_SECTION_DIVIDERS = {
@@ -93,11 +93,12 @@ local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitInde
       active = "true",
     })
   end
-  if entry.blank == true then
-    for slot = slotCount + 1, BLANK_BLOCK_BAKED_DOTS do
-      addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot), { active = "false" })
-    end
+  for slot = slotCount + 1, BAKED_TRAIT_DOTS do
+    addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot), { active = "false" })
   end
+  addUpdate(updates, string.format("db_p%d_%s_%d_title_bar", pageNum, sectionKey, traitIndex), {
+    class = "box_text_title_bar " .. TRAIT.titleBarDotClass(slotCount),
+  })
 end
 
 --- @param coterieData table|nil
@@ -123,6 +124,9 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
         })
 
         if entry.blank ~= true then
+          addUpdate(updates, traitBlockRootId(pageNum, sectionKey, traitIndex), {
+            active = entry.active == false and "false" or "true",
+          })
           addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw)
           local titleId = traitElementId(pageNum, sectionKey, traitIndex, "title")
           local flavorId = traitElementId(pageNum, sectionKey, traitIndex, "flavor")

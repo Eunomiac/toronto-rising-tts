@@ -4951,20 +4951,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_bg_0_title" class="box_text_title_text" text="RESOURCES" />
     <Panel id="db_p2_bg_0_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_bg_0_dot_1" image="dot_white" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_bg_0_dot_1" image="dot_white" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_bg_0_dot_2" image="dot_white" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_bg_0_dot_2" image="dot_white" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_bg_0_dot_3" image="dot_white" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_bg_0_dot_3" image="dot_white" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_bg_0_dot_4" image="dot_white" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_bg_0_dot_4" image="dot_white" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_bg_0_dot_5" image="dot_yellow" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_bg_0_dot_5" image="dot_yellow" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_bg_0_dot_6" image="dot_yellow" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -4985,20 +4987,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_bg_1_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_bg_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_bg_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_bg_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_bg_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_bg_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_bg_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5017,20 +5021,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_bg_2_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_bg_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_bg_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_bg_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_bg_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_bg_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_bg_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5049,20 +5055,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_bg_3_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_3_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_bg_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_bg_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_bg_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_bg_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_bg_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_bg_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_bg_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_bg_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_bg_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_bg_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_bg_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5081,20 +5089,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_bg_4_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_bg_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_bg_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_bg_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_bg_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_bg_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_bg_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5113,20 +5123,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_bg_5_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_bg_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_bg_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_bg_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_bg_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_bg_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_bg_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5145,20 +5157,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_bg_6_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_6_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_bg_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_bg_6_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_bg_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_bg_6_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_bg_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_bg_6_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_bg_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_bg_6_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_bg_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_bg_6_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_bg_6_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5186,14 +5200,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_0_title" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_0_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_0_dot_1" image="dot_yellow" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_0_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_0_dot_2" image="dot_yellow" active="true" class="dot box_text_title_dot dot_2" />
 
 
+      <Image id="pc_p2_merit_0_dot_3" image="dot_yellow" active="false" class="dot box_text_title_dot dot_3" />
 
 
+      <Image id="pc_p2_merit_0_dot_4" image="dot_yellow" active="false" class="dot box_text_title_dot dot_4" />
+
+
+      <Image id="pc_p2_merit_0_dot_5" image="dot_yellow" active="false" class="dot box_text_title_dot dot_5" />
+
+
+      <Image id="pc_p2_merit_0_dot_6" image="dot_yellow" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5212,12 +5234,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_3_title" class="box_text_title_text" text="ALL ACCESS" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_3_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_3_dot_1" image="dot_yellow" active="true" class="dot box_text_title_dot dot_1" />
 
 
+      <Image id="pc_p2_merit_3_dot_2" image="dot_yellow" active="false" class="dot box_text_title_dot dot_2" />
 
 
+      <Image id="pc_p2_merit_3_dot_3" image="dot_yellow" active="false" class="dot box_text_title_dot dot_3" />
 
+
+      <Image id="pc_p2_merit_3_dot_4" image="dot_yellow" active="false" class="dot box_text_title_dot dot_4" />
+
+
+      <Image id="pc_p2_merit_3_dot_5" image="dot_yellow" active="false" class="dot box_text_title_dot dot_5" />
+
+
+      <Image id="pc_p2_merit_3_dot_6" image="dot_yellow" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5237,16 +5269,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_1_title" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_1_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_1_dot_1" image="dot_yellow" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_1_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_1_dot_2" image="dot_yellow" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_merit_1_dot_3" image="dot_yellow" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_1_dot_3" image="dot_yellow" active="true" class="dot box_text_title_dot dot_3" />
 
 
+      <Image id="pc_p2_merit_1_dot_4" image="dot_yellow" active="false" class="dot box_text_title_dot dot_4" />
 
+
+      <Image id="pc_p2_merit_1_dot_5" image="dot_yellow" active="false" class="dot box_text_title_dot dot_5" />
+
+
+      <Image id="pc_p2_merit_1_dot_6" image="dot_yellow" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5265,14 +5303,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_4_title" class="box_text_title_text" text="CALL TO PURPOSE" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_4_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_4_dot_1" image="dot_yellow" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_4_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_4_dot_2" image="dot_yellow" active="true" class="dot box_text_title_dot dot_2" />
 
 
+      <Image id="pc_p2_merit_4_dot_3" image="dot_yellow" active="false" class="dot box_text_title_dot dot_3" />
 
 
+      <Image id="pc_p2_merit_4_dot_4" image="dot_yellow" active="false" class="dot box_text_title_dot dot_4" />
+
+
+      <Image id="pc_p2_merit_4_dot_5" image="dot_yellow" active="false" class="dot box_text_title_dot dot_5" />
+
+
+      <Image id="pc_p2_merit_4_dot_6" image="dot_yellow" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5292,14 +5338,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_2_title" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_2_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_2_dot_1" image="dot_yellow" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_2_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_2_dot_2" image="dot_yellow" active="true" class="dot box_text_title_dot dot_2" />
 
 
+      <Image id="pc_p2_merit_2_dot_3" image="dot_yellow" active="false" class="dot box_text_title_dot dot_3" />
 
 
+      <Image id="pc_p2_merit_2_dot_4" image="dot_yellow" active="false" class="dot box_text_title_dot dot_4" />
+
+
+      <Image id="pc_p2_merit_2_dot_5" image="dot_yellow" active="false" class="dot box_text_title_dot dot_5" />
+
+
+      <Image id="pc_p2_merit_2_dot_6" image="dot_yellow" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5318,20 +5372,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_5_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_merit_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_merit_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_merit_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5350,20 +5406,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_6_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_6_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_6_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_merit_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_6_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_merit_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_merit_6_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_merit_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_merit_6_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_merit_6_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5382,20 +5440,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_7_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_7_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_7_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_7_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_7_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_merit_7_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_7_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_merit_7_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_merit_7_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_merit_7_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_merit_7_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_merit_7_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5414,20 +5474,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_8_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_8_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_8_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_8_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_8_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_merit_8_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_8_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_merit_8_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_merit_8_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_merit_8_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_merit_8_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_merit_8_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5446,20 +5508,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_9_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_9_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_9_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_9_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_9_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_merit_9_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_9_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_merit_9_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_merit_9_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_merit_9_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_merit_9_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_merit_9_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5478,20 +5542,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_merit_10_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_merit_10_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_10_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_merit_10_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_10_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_merit_10_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_10_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_merit_10_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_merit_10_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_merit_10_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_merit_10_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_merit_10_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5519,20 +5585,22 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_flaw_0_title" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_flaw_0_dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_flaw_0_dot_1" image="dot_red" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_flaw_0_dot_2" image="dot_red" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_flaw_0_dot_2" image="dot_red" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_flaw_0_dot_3" image="dot_red" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_flaw_0_dot_3" image="dot_red" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_flaw_0_dot_4" image="dot_red" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_flaw_0_dot_4" image="dot_red" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_flaw_0_dot_5" image="dot_red" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_flaw_0_dot_5" image="dot_red" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_flaw_0_dot_6" image="dot_red" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5554,20 +5622,22 @@ Expect to feel their influence at least once per story." />
     <Text id="pc_p2_flaw_1_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_flaw_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_flaw_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_flaw_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_flaw_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_flaw_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_flaw_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5586,20 +5656,22 @@ Expect to feel their influence at least once per story." />
     <Text id="pc_p2_flaw_2_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_flaw_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_flaw_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_flaw_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_flaw_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_flaw_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_flaw_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5618,20 +5690,22 @@ Expect to feel their influence at least once per story." />
     <Text id="pc_p2_flaw_3_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_flaw_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_flaw_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_flaw_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_flaw_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_flaw_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_flaw_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_flaw_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_flaw_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_flaw_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_flaw_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_flaw_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5650,20 +5724,22 @@ Expect to feel their influence at least once per story." />
     <Text id="pc_p2_flaw_4_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_flaw_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_flaw_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_flaw_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_flaw_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_flaw_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_flaw_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5682,20 +5758,22 @@ Expect to feel their influence at least once per story." />
     <Text id="pc_p2_flaw_5_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_flaw_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_flaw_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_flaw_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_flaw_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_flaw_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_flaw_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5714,20 +5792,22 @@ Expect to feel their influence at least once per story." />
     <Text id="pc_p2_flaw_6_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p2_flaw_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_flaw_6_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p2_flaw_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_flaw_6_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p2_flaw_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_flaw_6_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p2_flaw_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_flaw_6_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p2_flaw_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_flaw_6_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p2_flaw_6_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5807,20 +5887,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p3_bg_0_title" class="box_text_title_text" text="" />
     <Panel id="db_p3_bg_0_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_bg_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_bg_0_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_bg_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_bg_0_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_bg_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_bg_0_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_bg_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_bg_0_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_bg_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_bg_0_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_bg_0_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5839,20 +5921,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p3_bg_1_title" class="box_text_title_text" text="" />
     <Panel id="db_p3_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_bg_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_bg_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_bg_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_bg_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_bg_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_bg_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5871,20 +5955,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p3_bg_2_title" class="box_text_title_text" text="" />
     <Panel id="db_p3_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_bg_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_bg_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_bg_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_bg_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_bg_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_bg_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5903,20 +5989,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p3_bg_3_title" class="box_text_title_text" text="" />
     <Panel id="db_p3_bg_3_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_bg_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_bg_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_bg_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_bg_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_bg_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_bg_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_bg_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_bg_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_bg_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_bg_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_bg_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5935,20 +6023,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p3_bg_4_title" class="box_text_title_text" text="" />
     <Panel id="db_p3_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_bg_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_bg_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_bg_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_bg_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_bg_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_bg_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -5967,20 +6057,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p3_bg_5_title" class="box_text_title_text" text="" />
     <Panel id="db_p3_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_bg_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_bg_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_bg_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_bg_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_bg_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_bg_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6009,14 +6101,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p3_merit_0_title" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_merit_0_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_0_dot_1" image="dot_yellow" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_merit_0_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_0_dot_2" image="dot_yellow" active="true" class="dot box_text_title_dot dot_2" />
 
 
+      <Image id="pc_p3_merit_0_dot_3" image="dot_yellow" active="false" class="dot box_text_title_dot dot_3" />
 
 
+      <Image id="pc_p3_merit_0_dot_4" image="dot_yellow" active="false" class="dot box_text_title_dot dot_4" />
+
+
+      <Image id="pc_p3_merit_0_dot_5" image="dot_yellow" active="false" class="dot box_text_title_dot dot_5" />
+
+
+      <Image id="pc_p3_merit_0_dot_6" image="dot_yellow" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6038,20 +6138,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_merit_1_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_merit_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_merit_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_merit_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_merit_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_merit_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_merit_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_merit_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_merit_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6070,20 +6172,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_merit_2_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_merit_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_merit_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_merit_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_merit_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_merit_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_merit_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_merit_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_merit_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6102,20 +6206,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_merit_3_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_merit_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_merit_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_merit_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_merit_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_merit_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_merit_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_merit_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_merit_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6134,20 +6240,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_merit_4_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_merit_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_merit_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_merit_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_merit_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_merit_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_merit_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_merit_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_merit_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6166,20 +6274,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_merit_5_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_merit_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_merit_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_merit_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6198,20 +6308,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_merit_6_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_merit_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_6_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_merit_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_6_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_merit_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_6_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_merit_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_merit_6_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_merit_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_merit_6_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_merit_6_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6239,14 +6351,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_flaw_0_title" class="box_text_title_text flaw_title" text="CUSTODIANS" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_flaw_0_dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_flaw_0_dot_1" image="dot_red" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_flaw_0_dot_2" image="dot_red" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_flaw_0_dot_2" image="dot_red" active="true" class="dot box_text_title_dot dot_2" />
 
 
+      <Image id="pc_p3_flaw_0_dot_3" image="dot_red" active="false" class="dot box_text_title_dot dot_3" />
 
 
+      <Image id="pc_p3_flaw_0_dot_4" image="dot_red" active="false" class="dot box_text_title_dot dot_4" />
+
+
+      <Image id="pc_p3_flaw_0_dot_5" image="dot_red" active="false" class="dot box_text_title_dot dot_5" />
+
+
+      <Image id="pc_p3_flaw_0_dot_6" image="dot_red" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6267,20 +6387,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_flaw_1_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_flaw_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_flaw_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_flaw_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_flaw_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_flaw_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_flaw_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6299,20 +6421,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_flaw_2_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_flaw_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_flaw_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_flaw_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_flaw_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_flaw_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_flaw_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6331,20 +6455,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_flaw_3_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_flaw_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_flaw_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_flaw_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_flaw_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_flaw_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_flaw_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_flaw_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_flaw_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_flaw_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_flaw_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_flaw_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6363,20 +6489,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_flaw_4_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_flaw_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_flaw_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_flaw_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_flaw_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_flaw_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_flaw_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6395,20 +6523,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_flaw_5_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_flaw_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_flaw_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_flaw_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_flaw_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_flaw_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_flaw_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6427,20 +6557,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p3_flaw_6_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p3_flaw_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_flaw_6_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p3_flaw_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_flaw_6_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p3_flaw_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_flaw_6_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p3_flaw_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p3_flaw_6_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p3_flaw_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p3_flaw_6_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p3_flaw_6_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6472,20 +6604,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_bg_0_title" class="box_text_title_text" text="" />
     <Panel id="db_p4_bg_0_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_bg_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_bg_0_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_bg_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_bg_0_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_bg_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_bg_0_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_bg_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_bg_0_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_bg_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_bg_0_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_bg_0_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6504,20 +6638,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_bg_1_title" class="box_text_title_text" text="" />
     <Panel id="db_p4_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_bg_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_bg_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_bg_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_bg_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_bg_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_bg_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6536,20 +6672,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_bg_2_title" class="box_text_title_text" text="" />
     <Panel id="db_p4_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_bg_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_bg_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_bg_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_bg_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_bg_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_bg_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6568,20 +6706,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_bg_3_title" class="box_text_title_text" text="" />
     <Panel id="db_p4_bg_3_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_bg_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_bg_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_bg_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_bg_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_bg_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_bg_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_bg_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_bg_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_bg_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_bg_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_bg_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6600,20 +6740,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_bg_4_title" class="box_text_title_text" text="" />
     <Panel id="db_p4_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_bg_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_bg_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_bg_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_bg_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_bg_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_bg_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6632,20 +6774,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_bg_5_title" class="box_text_title_text" text="" />
     <Panel id="db_p4_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_bg_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_bg_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_bg_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_bg_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_bg_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_bg_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6672,20 +6816,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_merit_0_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_merit_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_merit_0_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_merit_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_merit_0_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_merit_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_merit_0_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_merit_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_merit_0_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_merit_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_merit_0_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_merit_0_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6704,20 +6850,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_merit_1_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_merit_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_merit_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_merit_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_merit_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_merit_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_merit_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_merit_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_merit_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_merit_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_merit_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_merit_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6736,20 +6884,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_merit_2_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_merit_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_merit_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_merit_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_merit_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_merit_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_merit_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_merit_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_merit_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_merit_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_merit_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_merit_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6768,20 +6918,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_merit_3_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_merit_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_merit_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_merit_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_merit_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_merit_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_merit_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_merit_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_merit_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_merit_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_merit_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_merit_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6800,20 +6952,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_merit_4_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_merit_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_merit_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_merit_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_merit_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_merit_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_merit_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_merit_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_merit_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_merit_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_merit_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_merit_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6832,20 +6986,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_merit_5_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_merit_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_merit_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_merit_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_merit_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_merit_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_merit_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6872,20 +7028,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_flaw_0_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_flaw_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_flaw_0_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_flaw_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_flaw_0_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_flaw_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_flaw_0_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_flaw_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_flaw_0_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_flaw_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_flaw_0_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_flaw_0_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6904,20 +7062,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_flaw_1_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_flaw_1_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_flaw_1_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_flaw_1_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_flaw_1_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_flaw_1_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_flaw_1_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6936,20 +7096,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_flaw_2_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_flaw_2_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_flaw_2_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_flaw_2_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_flaw_2_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_flaw_2_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_flaw_2_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -6968,20 +7130,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_flaw_3_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_flaw_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_flaw_3_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_flaw_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_flaw_3_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_flaw_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_flaw_3_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_flaw_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_flaw_3_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_flaw_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_flaw_3_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_flaw_3_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -7000,20 +7164,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_flaw_4_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_flaw_4_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_flaw_4_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_flaw_4_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_flaw_4_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_flaw_4_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_flaw_4_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>
@@ -7032,20 +7198,22 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Text id="pc_p4_flaw_5_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
 
-      <Image id="pc_p4_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p4_flaw_5_dot_1" image="dot_blank" active="true" class="dot box_text_title_dot dot_1" />
 
 
-      <Image id="pc_p4_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p4_flaw_5_dot_2" image="dot_blank" active="true" class="dot box_text_title_dot dot_2" />
 
 
-      <Image id="pc_p4_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p4_flaw_5_dot_3" image="dot_blank" active="true" class="dot box_text_title_dot dot_3" />
 
 
-      <Image id="pc_p4_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p4_flaw_5_dot_4" image="dot_blank" active="true" class="dot box_text_title_dot dot_4" />
 
 
-      <Image id="pc_p4_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p4_flaw_5_dot_5" image="dot_blank" active="true" class="dot box_text_title_dot dot_5" />
 
+
+      <Image id="pc_p4_flaw_5_dot_6" image="dot_blank" active="false" class="dot box_text_title_dot dot_6" />
 
     </Panel>
   </HorizontalLayout>

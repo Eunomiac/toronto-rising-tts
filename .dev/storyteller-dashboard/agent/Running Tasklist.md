@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Added a portrait selector and preview to the shared Advantage form, plus **The Court** beside **Character Advantages** on PCs Page 3. Court Coterie, Domain and Haven Advantages can be created, edited and deleted. Portrait choices follow the character export's recipient assignments. Verified creation, editing, clearing, preserved text and recipient filtering in Playwright at 1920×1080 with mocked TTS replies. The Lua bridge and TTS XML still need FULL and in-game confirmation under TOR-751.
+
 
 
 ## Agent Instructions

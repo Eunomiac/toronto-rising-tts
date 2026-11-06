@@ -236,6 +236,7 @@ export const ADVANTAGE_LABELS: Record<AdvantageCategory, string> = {
 export type AdvantageSource = { readonly book: string; readonly page: number };
 
 export type AdvantageEntry = {
+  readonly portrait?: string;
   readonly category: AdvantageCategory;
   /** 1-based position in `stats.<category>`. */
   readonly index: number;
@@ -264,6 +265,7 @@ export const parseAdvantages = (playerData: Record<string, unknown>, category: A
       index: offset + 1,
       name: asString(row.name),
       focus: asString(row.focus),
+      portrait: asString(row.portrait),
       base: Math.floor(asNumber(row.base)),
       temp: Math.floor(asNumber(row.temp)),
       ...(typeof row.max === "number" ? { max: Math.floor(row.max) } : {}),

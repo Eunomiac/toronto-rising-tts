@@ -285,8 +285,9 @@ function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts) {
     IMAGE_REF: portrait,
     PORTRAIT_ACTIVE: portrait ? "true" : "false",
   };
-  for (let i = 1; i <= slotCount; i += 1) {
+  for (let i = 1; i <= (opts.fixedDotSlots || slotCount); i += 1) {
     params[`DOT_IMG_${i}`] = dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg);
+    params[`DOT_ACTIVE_${i}`] = i <= slotCount ? "true" : "false";
   }
 
   const flavor = joinMultilineField(entry.description);
@@ -445,6 +446,7 @@ const PRINCES_COURT_SECTIONS = {
 const PRINCES_COURT_TRAIT_OPTS = {
   visibilityMode: "active",
   pinBlanksToColumn3: true,
+  fixedDotSlots: MAX_TITLE_DOTS,
   templateKeyBySection: {
     bg: "princes_court/partials/bg_block",
     merit: "princes_court/partials/merit_block",

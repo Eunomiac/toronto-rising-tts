@@ -22,6 +22,10 @@ New dashboard Global entries must start with the same guard.
 
 ## PC sheet extensions
 
+PC Advantage snapshots include `portraitOptions` from the generated recipient assignments. The full sheet snapshot also carries `coterieData` and `courtPortraits`. `advantageUpsert` saves or clears a PC's `portrait` reference and rejects images assigned only to other recipients. The Page 3 Cloud job supplies those images to the PC's object UI.
+
+`courtAdvantageUpsert` and `courtAdvantageDelete` edit the Coterie, Domain or Haven arrays through `core.coterie`, which already reconciles the shared Court UI. These commands skip the selected PC's normal seat sync. Court creation activates a baked blank slot. Deletion preserves the slot's index, and category moves require a free destination before retiring the source.
+
 `pc_sheet.ttslua` keeps the seat snapshot and the Page 1 ops. Each sibling module in its `EXTENSIONS` list exports:
 
 - `ops[op] = function(color, pid, cmd) -> err|nil` — dispatched before the built-in ops; `pid` is already checked (never the Storyteller). Return a plain-English error string to reject; the dashboard shows it in the open popup.

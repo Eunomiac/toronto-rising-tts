@@ -3,6 +3,7 @@ import { CheckInput, Field, linesFromText, LinesInput, NumberInput, SelectInput,
 import { SheetModal } from "./SheetModal.js";
 import { ADVANTAGE_CATEGORIES, ADVANTAGE_LABELS, MAX_TITLE_DOTS, type AdvantageCategory, type AdvantageEntry } from "./sheetData.js";
 import type { AdvantageDraft, ApplyCommand, SeatColor } from "./types.js";
+import { sheetArtUrl } from "./layout.js";
 
 type Props = {
   readonly color: SeatColor;
@@ -11,13 +12,16 @@ type Props = {
   readonly defaultType: AdvantageCategory;
   readonly send: (command: ApplyCommand) => Promise<void>;
   readonly onClose: () => void;
+  readonly portraitOptions?: readonly { value: string; label: string }[];
+  readonly court?: boolean;
 };
 
 /** One popup for adding and editing Backgrounds, Merits and Flaws (fields mirror page3.xml). */
-export const AdvantageModal = ({ color, entry, defaultType, send, onClose }: Props): ReactElement => {
+export const AdvantageModal = ({ color, entry, defaultType, send, onClose, portraitOptions = [], court = false }: Props): ReactElement => {
   const [type, setType] = useState<AdvantageCategory>(entry?.category ?? defaultType);
   const [name, setName] = useState(entry?.name ?? "");
   const [focus, setFocus] = useState(entry?.focus ?? "");
+  const [portrait, setPortrait] = useState(entry?.portrait ?? "");
   const [base, setBase] = useState(entry?.base ?? 1);
   const [max, setMax] = useState(entry?.max ?? Math.max(1, entry?.base ?? 5));
   const [temp, setTemp] = useState(entry?.temp ?? 0);
@@ -31,6 +35,7 @@ export const AdvantageModal = ({ color, entry, defaultType, send, onClose }: Pro
   const draft = (): AdvantageDraft => ({
     name: name.trim(),
     focus: focus.trim(),
+    portrait,
     base: Math.min(base, max),
     max,
     temp,
@@ -77,14 +82,23 @@ export const AdvantageModal = ({ color, entry, defaultType, send, onClose }: Pro
           options={ADVANTAGE_CATEGORIES.map((value) => ({ value, label: ADVANTAGE_LABELS[value] }))}
         />
       </Field>
-      <Field label="Show on sheet" hint="Off for Status, which prints as the dot strip instead of a box.">
+      {!court ? <Field label="Show on sheet" hint="Off for Status, which prints as the dot strip instead of a box.">
         <CheckInput checked={sheetDisplay} onChange={setSheetDisplay} label="Print a box on Page 3" />
-      </Field>
+      </Field> : null}
       <Field label="Name">
         <TextInput value={name} onChange={setName} placeholder="e.g. Resources" />
       </Field>
       <Field label="Focus" hint="Printed after the name, e.g. RESOURCES: OLD MONEY.">
         <TextInput value={focus} onChange={setFocus} />
+      </Field>
+      <Field label="Portrait" hint="Available portraits come from this recipient's Has Portrait assignments in the character export." wide>
+        <SelectInput value={portrait} onChange={setPortrait} options={[
+          { value: "", label: "No portrait" },
+          ...(portrait && !portraitOptions.some(option => option.value === portrait)
+            ? [{ value: portrait, label: `${portrait} (current assignment unavailable)` }] : []),
+          ...portraitOptions,
+        ]} />
+        {portrait ? <img className="pc-adv-portrait-preview" src={sheetArtUrl(portrait)} alt="Selected portrait" /> : null}
       </Field>
       <Field label="Dots">
         <NumberInput value={Math.min(base, max)} onChange={setBase} min={0} max={max} />

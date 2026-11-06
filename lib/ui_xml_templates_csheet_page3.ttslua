@@ -120,10 +120,15 @@ M._byKey["csheet/partials/bg_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
+  <HorizontalLayout childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperLeft" spacing="8">
+    ##IF @@IMAGE_REF@@##
+    <Image image="@@IMAGE_REF@@" minWidth="100" preferredWidth="100" minHeight="150" preferredHeight="150" flexibleWidth="0" flexibleHeight="0" preserveAspect="true" raycastTarget="false" />
+    ##ENDIF##
   <VerticalLayout class="box_text_panel_body">
     <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
     <Text class="box_text rules_text" text="@@RULES_TEXT@@"  />
   </VerticalLayout>
+  </HorizontalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
   <Panel class="box_text_panel_source">
@@ -159,10 +164,15 @@ M._byKey["csheet/partials/flaw_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
+  <HorizontalLayout childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperLeft" spacing="8">
+    ##IF @@IMAGE_REF@@##
+    <Image image="@@IMAGE_REF@@" minWidth="100" preferredWidth="100" minHeight="150" preferredHeight="150" flexibleWidth="0" flexibleHeight="0" preserveAspect="true" raycastTarget="false" />
+    ##ENDIF##
   <VerticalLayout class="box_text_panel_body">
     <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@"  />
     <Text class="box_text rules_text" text="@@RULES_TEXT@@"  />
   </VerticalLayout>
+  </HorizontalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
   <Panel class="box_text_panel_source">
@@ -198,10 +208,15 @@ M._byKey["csheet/partials/merit_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
+  <HorizontalLayout childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperLeft" spacing="8">
+    ##IF @@IMAGE_REF@@##
+    <Image image="@@IMAGE_REF@@" minWidth="100" preferredWidth="100" minHeight="150" preferredHeight="150" flexibleWidth="0" flexibleHeight="0" preserveAspect="true" raycastTarget="false" />
+    ##ENDIF##
   <VerticalLayout class="box_text_panel_body">
     <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@"  />
     <Text class="box_text rules_text" text="@@RULES_TEXT@@"  />
   </VerticalLayout>
+  </HorizontalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
   <Panel class="box_text_panel_source">
