@@ -914,6 +914,15 @@ The extra copies are still on Cloud until the next full build with Tabletop Simu
 3. Start a Complications game and enhance a revealed card. Its Enhanced clone should show the matching artwork and still work with the existing game controls. Finish the game and save.
 4. Close TTS and repeat the Full build without changing images or sidecars. The deck step should report unchanged inputs and leave the decks alone. A changed image must wait for its new Cloud upload before rebuilding; changed inputs during an active saved game must produce a clear error instead of replacing cards.
 
+#### TOR-752 — Roster-only vampire NPC receives nightly Hunger on its first dashboard roll
+
+**How to verify:** Restart the Storyteller Dashboard, then use Save & Play so TTS loads the updated Lua.
+
+1. Choose a vampire NPC who is only in the roster and has not appeared or rolled this night.
+2. Start a standard roll for that NPC. Its Hunger tracker should be created at 1 or 2, and the roll should contain that many Hunger dice, capped by the pool size.
+3. Cancel and start another roll for the same NPC. Its Hunger should stay unchanged.
+4. Add a different vampire NPC to a scene before rolling. Its tracker should still be created on that first scene addition, and its later roll should use that same value.
+
 ## Cleared
 
 _Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._

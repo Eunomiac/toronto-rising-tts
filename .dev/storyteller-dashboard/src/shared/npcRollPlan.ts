@@ -60,6 +60,8 @@ export type NpcRollPlan = {
   readonly normal: number;
   readonly hunger: number;
   readonly rage: number;
+  /** TTS replaces the planned normal/Hunger split with its authoritative nightly Hunger tracker. */
+  readonly usesHungerTracker: boolean;
   /** The entry's own dice, before the bonuses below. */
   readonly poolDice: number;
   readonly discBonus: number;
@@ -149,6 +151,9 @@ const splitPool = (
   return { normal: total - hunger - rage, hunger, rage };
 };
 
+const usesHungerTracker = (input: NpcRollSeedInput): boolean =>
+  input.block.kind === "vampire" && !input.rules.withoutHunger.includes(input.rollType);
+
 const rollPlan = (
   input: NpcRollSeedInput,
   opts: {
@@ -169,6 +174,7 @@ const rollPlan = (
     kind: "roll",
     rollType: input.rollType,
     ...split,
+    usesHungerTracker: usesHungerTracker(input),
     poolDice: opts.poolDice,
     discBonus: opts.discBonus,
     rouse: opts.rouse ?? [],
@@ -312,6 +318,7 @@ export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
       normal: 0,
       hunger: 0,
       rage: 0,
+      usesHungerTracker: false,
       poolDice: 0,
       discBonus: 0,
       rouse,

@@ -69,8 +69,8 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
         return;
       }
       const point = { x: event.clientX, y: event.clientY };
-      const { highlight, hover } = sessionTargetsAt(point, payload.dragKind);
-      const cell = matrixCell(payload.dragKind, hitTestDrop(point).dropKind);
+      const { highlight, hover, target } = sessionTargetsAt(point, payload.dragKind);
+      const cell = matrixCell(payload.dragKind, target.dropKind);
       if (event.dataTransfer && (cell.kind === "noop" || cell.kind === "impossible" || (cell.kind === "panel" && !highlight))) {
         event.dataTransfer.dropEffect = "none";
       }
@@ -91,7 +91,8 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
       event.stopPropagation();
       const resolvedTarget = target.binId && getDndSession().hover && cell.kind === "hover"
         ? { ...getDndSession().hover!, binId: target.binId } : target;
-      tryCommitDrop(payload, resolvedTarget, ctxRef.current);
+      const current = getDndSession();
+      tryCommitDrop(payload, resolvedTarget, { ...ctxRef.current, scenes: current.scenes ?? ctxRef.current.scenes });
       endDrag();
     };
     window.addEventListener("keydown", onKey);
@@ -109,13 +110,15 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
     };
   }, [session.active]);
 
+  const activeContext = useMemo(() => ({ ...ctx, scenes: session.scenes ?? ctx.scenes }), [ctx, session.scenes]);
+
   const commitBin = (bin: DropBin, dropKind: DropTarget["dropKind"]): void => {
     const payload = session.payload;
     if (!payload) {
       return;
     }
     const target: DropTarget = { ...(session.hover?.dropKind === dropKind ? session.hover : { dropKind }), binId: bin.id };
-    if (tryCommitDrop(payload, target, ctx)) {
+    if (tryCommitDrop(payload, target, activeContext)) {
       endDrag();
       return;
     }

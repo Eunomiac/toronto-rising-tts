@@ -49,4 +49,18 @@ describe("NPC custom-roll editor", () => {
     expect(save).not.toHaveBeenCalled();
     expect(screen.getByText(/Fix the difficulty rule/)).toBeInTheDocument();
   });
+
+  it("hides the kind choices after selection and reopens them from the NPC name", async () => {
+    const user = userEvent.setup();
+    render(<NpcStatsModal statsKey="npc" label="NPC" generic={false} onClose={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: "vampire" }));
+    expect(screen.queryByRole("button", { name: "vampire" })).not.toBeInTheDocument();
+    await user.dblClick(screen.getByText("NPC", { selector: ".lab-modal-title" }));
+    expect(screen.getByRole("button", { name: "vampire" })).toBeInTheDocument();
+  });
+
+  it("does not show a derived dice box beside Exceptional pools", () => {
+    render(<NpcStatsModal statsKey="npc" label="NPC" generic={false} onClose={vi.fn()} />);
+    expect(screen.queryByLabelText(/Concentration dice/)).not.toBeInTheDocument();
+  });
 });

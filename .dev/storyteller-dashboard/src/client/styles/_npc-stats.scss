@@ -22,7 +22,7 @@ $power-height: 20px;
 }
 
 .lab-modal.npc-stats {
-  width: 680px;
+  width: 1020px;
   max-width: 96vw;
   max-height: 92vh;
   overflow-y: auto;
@@ -44,9 +44,22 @@ $power-height: 20px;
   gap: 8px;
 
   .lab-modal-title {
+    flex: 0 0 auto;
     font-family: inherit;
     font-size: 22px;
+
+    &[title] {
+      cursor: pointer;
+    }
   }
+}
+
+.npc-stats-identity {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-left: auto;
 }
 
 .npc-stats-tabs {
@@ -128,6 +141,10 @@ $power-height: 20px;
   gap: 5px;
   padding-bottom: 4px;
   border-bottom: 1px solid #3a3a44;
+}
+
+.npc-stats-summary {
+  flex-wrap: nowrap;
 }
 
 .npc-stats-label {
@@ -230,6 +247,31 @@ $power-height: 20px;
   align-items: start;
 }
 
+.npc-stats-section {
+  &.exceptional {
+    .npc-stats-grid {
+      display: flex;
+      flex-wrap: wrap;
+
+      > .npc-custom-roll {
+        flex: 1 1 190px;
+        max-width: 260px;
+      }
+    }
+  }
+
+  &.attacks,
+  &.powers {
+    .npc-stats-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  &.attacks .npc-stats-entry > .npc-stat-select {
+    flex-basis: 82px;
+  }
+}
+
 .npc-stats-entry {
   display: flex;
   align-items: center;
@@ -313,9 +355,9 @@ $power-height: 20px;
 }
 
 .npc-stats-notes {
-  max-height: 140px;
+  max-height: 230px;
   overflow-y: auto;
-  min-height: 90px;
+  min-height: 180px;
   border: 1px solid #5a5a66;
   background: #000;
   color: #ddd;
@@ -324,9 +366,12 @@ $power-height: 20px;
 
   .ProseMirror {
     box-sizing: border-box;
-    min-height: 90px;
+    min-height: 180px;
     padding: 8px;
     outline: none;
+    column-count: 3;
+    column-gap: 22px;
+    column-rule: 1px solid #34343e;
 
     p {
       margin: 0 0 0.4em;
@@ -339,6 +384,11 @@ $power-height: 20px;
       content: attr(data-placeholder);
       pointer-events: none;
     }
+  }
+
+  &:focus-within .ProseMirror {
+    column-count: 1;
+    column-rule: none;
   }
 }
 

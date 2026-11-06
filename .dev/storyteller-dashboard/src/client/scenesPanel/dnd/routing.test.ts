@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { startNativeDrag, acceptNativeDrag } from "./native";
 import { hitTestDrop } from "./resolve";
 import { sessionTargetsAt, tryCommitDrop } from "./commit";
-import { beginDrag, endDrag, getDndSession, moveDrag } from "./session";
+import { beginDrag, endDrag, getDndSession, moveDrag, subscribeDndPointer, subscribeDndSession } from "./session";
 import { isDropAllowed, edgesWithBins } from "./matrix";
 import { DROP_KINDS } from "./types";
 
@@ -156,6 +156,29 @@ describe("drop routing", () => {
     expect(
       sessionTargetsAt({ x: 40, y: 400 }, "pcRollPreroll").hover,
     ).toBeNull();
+  });
+
+  it("moves the preview pointer without rebuilding drag chrome for an unchanged target", () => {
+    beginDrag({ dragKind: "npcRoster", characterKey: "victorVex" }, point);
+    const chrome = vi.fn();
+    const pointer = vi.fn();
+    const stopChrome = subscribeDndSession(chrome);
+    const stopPointer = subscribeDndPointer(pointer);
+    const target = { dropKind: "stage" as const };
+    moveDrag({ x: 45, y: 75 }, target);
+    chrome.mockClear();
+    pointer.mockClear();
+    moveDrag({ x: 55, y: 85 }, { dropKind: "stage" });
+    expect(pointer).toHaveBeenCalledOnce();
+    expect(chrome).not.toHaveBeenCalled();
+    stopPointer();
+    stopChrome();
+  });
+
+  it("keeps a preview's scene writer on its drag session", () => {
+    const draftScenes = vi.fn();
+    beginDrag({ dragKind: "npcRoster", characterKey: "victorVex" }, point, undefined, draftScenes);
+    expect(getDndSession().scenes).toBe(draftScenes);
   });
 
   it("does not let a broad stage container mask an NPC target lower in the stack", () => {

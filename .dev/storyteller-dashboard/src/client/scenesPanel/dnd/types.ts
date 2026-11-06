@@ -174,7 +174,7 @@ export type ActionId =
 
 export type DragPayload =
   | { readonly dragKind: "npcRosterGroup"; readonly groupKey: string; readonly members: readonly { readonly characterKey: string; readonly name: string }[] }
-  | { readonly dragKind: "npcStaged"; readonly characterKey: string; readonly seated?: boolean }
+  | { readonly dragKind: "npcStaged"; readonly characterKey: string; readonly seated?: boolean; readonly seatKey?: string }
   | { readonly dragKind: "npcRoster"; readonly characterKey: string; readonly groupKey?: string }
   | { readonly dragKind: "npcSeated"; readonly characterKey: string; readonly seatKey: string; readonly chair: number }
   | { readonly dragKind: "pcSeated"; readonly color: string; readonly seatKey: string; readonly chair: number }

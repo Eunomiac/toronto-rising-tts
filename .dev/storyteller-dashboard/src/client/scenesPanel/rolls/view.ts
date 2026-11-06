@@ -1,4 +1,4 @@
-import type { PoolKind, RollPool, RollsSlice } from "../../worldState.js";
+import type { PcRoll, PoolKind, RollPool, RollsSlice } from "../../worldState.js";
 import type { RollOptionsApply, RollsCommand } from "./commands.js";
 import type { RollOptionsView } from "./bridge.js";
 
@@ -66,6 +66,13 @@ export const completedRollClearCommands = (rolls: RollsSlice): readonly RollsCom
     .filter((slot) => slot.result !== undefined && rolls.storyteller.live?.slot !== slot.index)
     .map((slot): RollsCommand => ({ op: "slotCancel", slot: slot.index }))
 ];
+
+/**
+ * A difficulty-zero PC result is displayed as a success count, so TTS intentionally omits its margin.
+ * For drag-to-set-difficulty, its margin against zero is exactly that success count.
+ */
+export const transferableMargin = (roll: Pick<PcRoll, "difficulty" | "result">): number | undefined =>
+  roll.result?.margin ?? (roll.difficulty === 0 ? roll.result?.successes : undefined);
 
 /** Result classes the Storyteller may override to (`C.ResultClass`), best first. */
 export const RESULT_CLASSES: readonly { readonly key: string; readonly label: string }[] = [

@@ -29,6 +29,21 @@ describe("applyDndAction", () => {
     expect(scenes).toHaveBeenCalledExactlyOnceWith({ op: "unseatNpc", seat: "NPC2" });
   });
 
+  it("returns a staged seated NPC to its seat when dragged off the board", () => {
+    const scenes = vi.fn();
+    const result = applyDndAction(
+      "restoreToSeatOrClearStage",
+      { dragKind: "npcStaged", characterKey: "fatherDiaz", seated: true, seatKey: "NPC2" },
+      { dropKind: "out" },
+      { scenes, rolls: vi.fn() }
+    );
+    expect(result.ok).toBe(true);
+    expect(scenes.mock.calls).toEqual([
+      [{ op: "seatPresence", seat: "NPC2", present: true }],
+      [{ op: "stage", changes: { fatherDiaz: { remove: true } } }]
+    ]);
+  });
+
   it("initiates a standard roll for a staged NPC", () => {
     const scenes = vi.fn();
     const rolls = vi.fn();
@@ -52,6 +67,7 @@ describe("applyDndAction", () => {
       normal: 3,
       hunger: 0,
       rage: 0,
+      usesHungerTracker: false,
       poolDice: 3,
       discBonus: 0,
       rouse: [],
@@ -72,7 +88,8 @@ describe("applyDndAction", () => {
       op: "npcStatRoll",
       rollType: "willpowerRoll",
       normal: 3,
-      hunger: 0
+      hunger: 0,
+      usesHungerTracker: false
     }));
   });
 

@@ -40,6 +40,7 @@ createRoot(document.getElementById('smoke-root')!).render(<Smoke/>);
   let saved;
   const fixture = { npc: { named: {
     kind: "vampire", bloodPotency: 2,
+    difficultyStrong: 4,
     exceptional: [{ id: "roll", name: "Concentration", dice: 8 }],
     attacks: [{ id: "attack", name: "Strike", pool: "ex:roll", bonus: 2 }],
     powers: [{ name: "Dominate", powers: [{ level: 1, name: "Command", rouse: 1, pool: "ex:roll" }] }]

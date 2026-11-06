@@ -29,7 +29,8 @@ export const useBoardDrag = <T,>(
   board: RefObject<HTMLDivElement | null>,
   onDrop: (item: T, point: StagePoint, client: { x: number; y: number }) => void,
   onTap?: (item: T, client: { x: number; y: number }) => void,
-  onMove?: (item: T, point: StagePoint, client: { x: number; y: number }) => void
+  onMove?: (item: T, point: StagePoint, client: { x: number; y: number }) => void,
+  renderEveryMove = true
 ): {
   drag: { item: T; point: StagePoint } | null;
   handlers: (item: T) => PointerHandlers;
@@ -60,7 +61,7 @@ export const useBoardDrag = <T,>(
       }
       held.moved = true;
       const point = pointIn(board, event.clientX, event.clientY);
-      setDrag({ item: held.item, point });
+      setDrag((current) => !renderEveryMove && current?.item === held.item ? current : { item: held.item, point });
       onMove?.(held.item, point, { x: event.clientX, y: event.clientY });
     },
     onPointerUp: (event) => {

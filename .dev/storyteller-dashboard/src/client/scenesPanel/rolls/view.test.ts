@@ -17,6 +17,7 @@ import {
   rollTypeLabel,
   toggleCondition,
   toggleStructural,
+  transferableMargin,
   withLocalPools
 } from "./view";
 
@@ -40,6 +41,17 @@ describe("completed roll transitions", () => {
       { op: "cancel", color: "Pink" },
       { op: "slotCancel", slot: 1 }
     ]);
+  });
+});
+
+describe("completed roll margin transfer", () => {
+  it("uses successes as the margin against difficulty zero", () => {
+    expect(transferableMargin({ difficulty: 0, result: { successes: 6, text: "6 SUCCESSES" } })).toBe(6);
+  });
+
+  it("keeps an explicit margin and does not invent one for an unset difficulty", () => {
+    expect(transferableMargin({ difficulty: 3, result: { successes: 5, margin: 2, text: "WIN +2" } })).toBe(2);
+    expect(transferableMargin({ result: { successes: 5, text: "5 SUCCESSES" } })).toBeUndefined();
   });
 });
 

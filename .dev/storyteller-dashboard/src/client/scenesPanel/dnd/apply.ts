@@ -49,6 +49,7 @@ const sendNpcStatPlan = (rolls: RollsSend, plan: NpcRollPlan): void => {
     normal: plan.normal,
     hunger: plan.hunger,
     rage: plan.rage,
+    usesHungerTracker: plan.usesHungerTracker,
     rouse: plan.rouse,
     hungerOnFail: plan.hungerOnFail,
     heading: plan.heading,

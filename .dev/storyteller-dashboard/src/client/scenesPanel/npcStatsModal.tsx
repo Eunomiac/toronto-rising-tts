@@ -84,8 +84,8 @@ const NumberBox = ({ value, range, onChange, className, title }: {
   />
 );
 
-const Section = ({ title, onAdd, children }: { title: string; onAdd: () => void; children: ReactNode }): ReactElement => (
-  <section className="npc-stats-section">
+const Section = ({ title, className, onAdd, children }: { title: string; className?: string; onAdd: () => void; children: ReactNode }): ReactElement => (
+  <section className={`npc-stats-section${className ? ` ${className}` : ""}`}>
     <header>
       <button type="button" className="npc-stats-add" title={`Add to ${title}`} onClick={onAdd}>+</button>
       <span>{title}:</span>
@@ -138,6 +138,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
   const slots: readonly NpcStatSlot[] = generic ? NPC_TIERS : ["named"];
   const [drafts, setDrafts] = useState(() => new Map(slots.map((slot) => [slot, toDraft(saved[slot])])));
   const [slot, setSlot] = useState<NpcStatSlot>(() => (generic ? configuredSlots(saved)[0] ?? "average" : "named"));
+  const [showKinds, setShowKinds] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const draft = drafts.get(slot) ?? toDraft(undefined);
@@ -188,7 +189,31 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
     <Overlay onClose={close}>
       <div className="lab-modal npc-stats">
         <div className="npc-stats-head">
-          <span className="lab-modal-title">{label}</span>
+          <span
+            className="lab-modal-title"
+            title={draft.kind ? "Double-click to change this NPC's kind" : undefined}
+            onDoubleClick={() => setShowKinds(true)}
+          >
+            {label}
+          </span>
+          {draft.kind === "vampire" && (
+            <div className="npc-stats-identity">
+              <NumberBox value={draft.generation} range={RANGES.generation} onChange={(generation) => update({ generation })} />
+              <small>th Gen.</small>
+              <select className="npc-stat-select clan" value={draft.clan ?? ""} onChange={(event) => update({ clan: event.target.value || undefined })}>
+                <option value="">Clan</option>
+                {NPC_CLANS.map((clan) => <option key={clan} value={clan}>{clan}</option>)}
+              </select>
+              <select className="npc-stat-select rank" value={draft.rank ?? ""} onChange={(event) => update({ rank: event.target.value || undefined })}>
+                <option value="">Rank</option>
+                {NPC_RANKS.map((rank) => <option key={rank} value={rank}>{rank}</option>)}
+              </select>
+              <small>Blood Potency</small>
+              <NumberBox value={draft.bloodPotency} range={RANGES.bloodPotency} onChange={(bloodPotency) => update({ bloodPotency })} />
+              <small>Humanity</small>
+              <NumberBox value={draft.humanity} range={RANGES.humanity} onChange={(humanity) => update({ humanity })} />
+            </div>
+          )}
           {generic && (
             <div className="npc-stats-tabs">
               {NPC_TIERS.map((tier) => (
@@ -205,37 +230,24 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
             </div>
           )}
         </div>
-        <div className="npc-stats-kinds">
-          {NPC_KINDS.map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              className={`npc-kind npc-kind-${kind}${draft.kind === kind ? " on" : ""}`}
-              onClick={() => update({ kind: draft.kind === kind ? undefined : kind })}
-            >
-              {kind}
-            </button>
-          ))}
-        </div>
-        {draft.kind === "vampire" && (
-          <div className="npc-stats-row">
-            <NumberBox value={draft.generation} range={RANGES.generation} onChange={(generation) => update({ generation })} />
-            <small>th Gen.</small>
-            <select className="npc-stat-select clan" value={draft.clan ?? ""} onChange={(event) => update({ clan: event.target.value || undefined })}>
-              <option value="">Clan</option>
-              {NPC_CLANS.map((clan) => <option key={clan} value={clan}>{clan}</option>)}
-            </select>
-            <select className="npc-stat-select rank" value={draft.rank ?? ""} onChange={(event) => update({ rank: event.target.value || undefined })}>
-              <option value="">Rank</option>
-              {NPC_RANKS.map((rank) => <option key={rank} value={rank}>{rank}</option>)}
-            </select>
-            <small>Blood Potency</small>
-            <NumberBox value={draft.bloodPotency} range={RANGES.bloodPotency} onChange={(bloodPotency) => update({ bloodPotency })} />
-            <small>Humanity</small>
-            <NumberBox value={draft.humanity} range={RANGES.humanity} onChange={(humanity) => update({ humanity })} />
+        {(showKinds || draft.kind === undefined) && (
+          <div className="npc-stats-kinds">
+            {NPC_KINDS.map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                className={`npc-kind npc-kind-${kind}${draft.kind === kind ? " on" : ""}`}
+                onClick={() => {
+                  update({ kind });
+                  setShowKinds(false);
+                }}
+              >
+                {kind}
+              </button>
+            ))}
           </div>
         )}
-        <div className="npc-stats-row">
+        <div className="npc-stats-row npc-stats-summary">
           <span className="npc-stats-label" title="Actions against this NPC where it is well suited / everything else">Difficulty:</span>
           <NumberBox value={draft.difficultyStrong} range={RANGES.difficulty} onChange={(difficultyStrong) => update({ difficultyStrong })} />
           <span className="npc-stats-slash">/</span>
@@ -244,9 +256,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
           <NumberBox value={draft.health} range={RANGES.tracker} onChange={(health) => update({ health })} />
           <span className="npc-stats-label push">Willpower:</span>
           <NumberBox value={draft.willpower} range={RANGES.tracker} onChange={(willpower) => update({ willpower })} />
-        </div>
-        <div className="npc-stats-row">
-          <span className="npc-stats-label">Physical:</span>
+          <span className="npc-stats-label push">Physical:</span>
           <NumberBox value={draft.physical} range={RANGES.dice} onChange={(physical) => update({ physical })} />
           <span className="npc-stats-label push">Social:</span>
           <NumberBox value={draft.social} range={RANGES.dice} onChange={(social) => update({ social })} />
@@ -259,7 +269,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
             </>
           )}
         </div>
-        <Section title="Exceptional pools" onAdd={() => update({ exceptional: [...draft.exceptional, { id: newStatId(), name: "" }] })}>
+        <Section title="Exceptional pools" className="exceptional" onAdd={() => update({ exceptional: [...draft.exceptional, { id: newStatId(), name: "" }] })}>
           {draft.exceptional.map((pool, index) => (
             <NpcCustomRollFields key={pool.id} label={pool.name || "Exceptional pool"} metadata={pool}
               onChange={(patch) => update({ exceptional: replaceAt<DraftPool>(draft.exceptional, index, patch) })}>
@@ -271,19 +281,11 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
                 value={pool.name}
                 onChange={(event) => update({ exceptional: replaceAt<DraftPool>(draft.exceptional, index, { name: event.target.value }) })}
               />
-              <input
-                className="npc-stat-num"
-                type="number"
-                value={draft.difficultyStrong === undefined ? "" : draft.difficultyStrong * 2}
-                title="Twice this NPC's exceptional Difficulty"
-                aria-label={`${pool.name || "Exceptional pool"} dice (twice exceptional Difficulty)`}
-                readOnly
-              />
             </div>
             </NpcCustomRollFields>
           ))}
         </Section>
-        <Section title="Attacks" onAdd={() => update({ attacks: [...draft.attacks, { id: newStatId(), name: "", pool: "" }] })}>
+        <Section title="Attacks" className="attacks" onAdd={() => update({ attacks: [...draft.attacks, { id: newStatId(), name: "", pool: "" }] })}>
           {draft.attacks.map((attack, index) => (
             <NpcCustomRollFields key={attack.id} label={attack.name || "Attack"} metadata={attack}
               onChange={(patch) => update({ attacks: replaceAt<DraftAttack>(draft.attacks, index, patch) })}>
@@ -311,7 +313,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
             </NpcCustomRollFields>
           ))}
         </Section>
-        <Section title="Powers" onAdd={() => update({ powers: [...draft.powers, { id: newStatId(), name: "", powers: [] }] })}>
+        <Section title="Powers" className="powers" onAdd={() => update({ powers: [...draft.powers, { id: newStatId(), name: "", powers: [] }] })}>
           {draft.powers.map((category, index) => {
             const setCategory = (patch: Partial<DraftCategory>): void => update({ powers: replaceAt(draft.powers, index, patch) });
             const setPower = (at: number, patch: Partial<DraftPower>): void => setCategory({
