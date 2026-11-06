@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { planSessionStart, readDecisions } = require("./session-start-assets.js");
+const { planSessionStart, readDecisions, forcePurgeAssets } = require("./session-start-assets.js");
 const { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson } = require("./build-session-start.js");
 
 const bundle = "https://steamusercontent-a.akamaihd.net/ugc/42/0123456789ABCDEF0123456789ABCDEF01234567/";
@@ -39,6 +39,59 @@ test("fails closed for drift, unsupported placements, and collateral assets", ()
   source.CustomUIAssets.push({ Name: "bundle", URL: bundle });
   assert.throws(() => planSessionStart(source, review), /needs a restore handler/);
   assert.throws(() => planSessionStart({ ObjectStates: [] }, review), /no longer occurs/);
+});
+
+test("ForcePurge removes registrations and clears direct URLs without mutating the source", () => {
+  const source = fixture();
+  source.SkyURL = keep;
+  source.LuaScript = `local retained_script = '${keep}'`;
+  source.CustomUIAssets.push({ Name: "alias", URL: keep });
+  source.MusicPlayer = { AudioLibrary: [{ Item1: keep, Item2: "old" }, { Item1: bundle, Item2: "retained" }], CurrentAudioURL: keep, CurrentAudioTitle: "old", PlaylistEntry: 0 };
+  source.DecalPallet = [{ Name: "old", ImageURL: keep }];
+  source.ObjectStates[1].CustomImage = { ImageURL: keep, ImageSecondaryURL: bundle };
+  source.ObjectStates[1].ContainedObjects = [{ CustomUIAssets: [{ Name: "old", URL: keep }] }];
+  source.ObjectStates[1].States = { 2: { CustomImage: { ImageURL: keep } } };
+  source.ObjectStates[1].CustomDeck = { 1: { FaceURL: keep, BackURL: bundle } };
+  const before = JSON.stringify(source);
+  const decisions = new Map(review);
+  decisions.set(keep, { url: keep, decision: "ForcePurge" });
+  const purged = forcePurgeAssets(source, decisions);
+  assert.equal(JSON.stringify(source), before);
+  assert.equal(purged.save.SkyURL, keep);
+  assert.equal(purged.save.LuaScript, source.LuaScript);
+  assert.deepEqual(purged.save.CustomUIAssets, []);
+  assert.deepEqual(purged.save.DecalPallet, []);
+  assert.equal(purged.save.MusicPlayer.AudioLibrary.length, 1);
+  assert.equal(purged.save.MusicPlayer.CurrentAudioURL, "");
+  assert.equal(purged.save.MusicPlayer.CurrentAudioTitle, "");
+  assert.equal(purged.save.ObjectStates[1].CustomImage.ImageURL, "");
+  assert.equal(purged.save.ObjectStates[1].CustomImage.ImageSecondaryURL, bundle);
+  assert.deepEqual(purged.save.ObjectStates[1].CustomDeck, {});
+  assert.equal(purged.save.ObjectStates[1].States[2].CustomImage.ImageURL, "");
+  assert.deepEqual(forcePurgeAssets(purged.save, decisions).save, purged.save);
+});
+
+test("ForcePurge reaches both the full source and the session-start copy and has no restore record", () => {
+  const source = fixture();
+  source.LuaScriptState = JSON.stringify({ currentPhase: "Intermission" });
+  const decisions = new Map(review);
+  decisions.set(keep, { url: keep, decision: "ForcePurge" });
+  const plan = planSessionStart(source, decisions);
+  assert.deepEqual(plan.source.CustomUIAssets, []);
+  assert.deepEqual(createSessionStart(source, plan, "lua", "xml").CustomUIAssets, []);
+  assert.equal(plan.report.forcePurgedReferences, 1);
+  assert.equal(plan.report.forcePurgedRegistrations, 1);
+  assert.equal(plan.objects.length, 1);
+  assert.deepEqual(plan.report.distinctAssetUrls, { before: 2, after: 0 });
+});
+
+test("Resolve is recognized but blocks generation, and absent Purge URLs need no dependency review", () => {
+  const unresolved = readDecisions("URL,Manual decision,Author Resolution Instructions\nhttps://example.test/item,Resolve,Replace it\n");
+  assert.equal(unresolved.values().next().value.resolutionInstructions, "Replace it");
+  assert.throws(() => planSessionStart(fixture(), unresolved), /Resolve decisions need/);
+  const decisions = new Map(review);
+  decisions.set("https://example.test/old.png", { decision: "Purge", url: "https://example.test/old.png" });
+  assert.deepEqual(planSessionStart(fixture(), decisions).report.purge, []);
 });
 
 test("automatically keeps whichever image is the active SkyURL", () => {

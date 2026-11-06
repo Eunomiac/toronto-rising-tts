@@ -5,7 +5,7 @@ const { parseCsv } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
 const { readDecisions } = require("./session-start-assets.js");
 
 // Static review area only. The dynamic inventory on the left is not reviewed data.
-const REVIEW_URL = "https://docs.google.com/spreadsheets/d/1lldquR2mq6_a2F8yJ5ygwPylzHJ5MOVYTUJ7y-rG26U/export?format=csv&gid=1457924209&range=AA:BF";
+const REVIEW_URL = "https://docs.google.com/spreadsheets/d/1lldquR2mq6_a2F8yJ5ygwPylzHJ5MOVYTUJ7y-rG26U/export?format=csv&gid=1457924209&range=AA:BI";
 
 function validateReview(snapshot) {
   if (snapshot.version !== 1 || snapshot.source !== REVIEW_URL ||

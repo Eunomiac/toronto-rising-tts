@@ -3,7 +3,7 @@
 const { parseCsv } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
 const { ugcMatchKey } = require("../tts-cloud/lib/cloud_index.js");
 
-const DECISIONS = new Set(["Keep", "Prune", "Purge", "Investigate"]);
+const DECISIONS = new Set(["Keep", "Prune", "Purge", "Investigate", "ForcePurge", "Resolve"]);
 const SCRIPT_FIELDS = new Set(["LuaScript", "LuaScriptState", "XmlUI"]);
 const urlKey = (url) => ugcMatchKey(url) ?? url;
 const isSkyboxReference = ({ path }) => path.length === 1 && path[0] === "SkyURL";
@@ -32,6 +32,7 @@ function readDecisions(csv) {
     const bytes = cell(row, "Known bytes").replace(/,/g, "");
     decisions.set(key, {
       url, decision, label: cell(row, "Helper Label"), notes: cell(row, "Manual notes"),
+      resolutionInstructions: cell(row, "Author Resolution Instructions"),
       knownBytes: /^\d+$/.test(bytes) ? Number(bytes) : null,
     });
   }
@@ -59,8 +60,57 @@ function scanAssetUrls(value) {
   return found;
 }
 
+function assertReviewResolved(decisions) {
+  const unresolved = [...decisions.values()].filter(row => row.decision === "Resolve");
+  if (unresolved.length) throw new Error(`Resolve decisions need author-directed action before building: ${unresolved.map(row => row.label || row.url).join(" | ")}`);
+}
+
+function forcePurgeAssets(save, decisions) {
+  const targets = new Map([...decisions].filter(([, row]) => row.decision === "ForcePurge"));
+  const matches = url => typeof url === "string" && targets.has(urlKey(url));
+  const before = scanAssetUrls(save);
+  let registrationsRemoved = 0;
+  const registrationFields = { CustomUIAssets: "URL", AudioLibrary: "Item1", DecalPallet: "ImageURL", Decals: "ImageURL" };
+  const visit = (node, path) => {
+    if (typeof node === "string") return matches(node) && !isSkyboxReference({ path }) ? "" : node;
+    if (Array.isArray(node)) {
+      const field = registrationFields[path.at(-1)];
+      return node.filter(row => {
+        if (field && matches(row?.[field])) { registrationsRemoved++; return false; }
+        return true;
+      }).map((child, i) => visit(child, [...path, i]));
+    }
+    if (!node || typeof node !== "object") return node;
+    const out = {};
+    for (const [field, child] of Object.entries(node)) {
+      if (path.at(-1) === "CustomDeck" && (matches(child?.FaceURL) || matches(child?.BackURL))) {
+        registrationsRemoved++;
+        continue;
+      }
+      out[field] = SCRIPT_FIELDS.has(field) ? child : visit(child, [...path, field]);
+    }
+    if (path.at(-1) === "MusicPlayer" && matches(node.CurrentAudioURL)) {
+      out.CurrentAudioTitle = "";
+      out.PlaylistEntry = 0;
+    }
+    return out;
+  };
+  const cleaned = targets.size ? visit(save, []) : save;
+  const after = scanAssetUrls(cleaned);
+  const entries = [...targets].map(([key, row]) => {
+    const references = (before.get(key) ?? []).filter(ref => !isSkyboxReference(ref));
+    if ((after.get(key) ?? []).some(ref => !isSkyboxReference(ref))) throw new Error(`ForcePurge left a reference to ${row.url}`);
+    return { ...row, references };
+  });
+  return { save: cleaned, entries, registrationsRemoved };
+}
+
 function planSessionStart(save, decisions) {
+  assertReviewResolved(decisions);
   if (!Array.isArray(save.ObjectStates)) throw new Error("The source save has no ObjectStates array.");
+  const originalUrlCount = scanAssetUrls(save).size;
+  const forced = forcePurgeAssets(save, decisions);
+  save = forced.save;
   const urls = scanAssetUrls(save);
   const skyboxKey = typeof save.SkyURL === "string" ? urlKey(save.SkyURL) : null;
   const skybox = urls.get(skyboxKey)?.find(isSkyboxReference);
@@ -72,7 +122,7 @@ function planSessionStart(save, decisions) {
     const references = (urls.get(key) ?? []).filter(ref => !isSkyboxReference(ref));
     if (skybox && key === skyboxKey && !references.length) continue;
     const entry = { ...reviewed, references };
-    if (reviewed.decision === "Purge") purge.push(entry);
+    if (reviewed.decision === "Purge" && references.length) purge.push(entry);
     if (reviewed.decision === "Investigate") investigate.push(entry);
     if (reviewed.decision !== "Prune") continue;
     if (!references.length) throw new Error(`Prune URL no longer occurs in the save. Review ${reviewed.label || reviewed.url}.`);
@@ -102,18 +152,21 @@ function planSessionStart(save, decisions) {
   const retained = save.ObjectStates.filter((_, index) => !removedObjects.has(index));
   const after = scanAssetUrls({ ...save, ObjectStates: retained });
   return {
-    objects, retained,
+    objects, retained, source: save,
     report: {
-      distinctAssetUrls: { before: urls.size, after: after.size },
+      distinctAssetUrls: { before: originalUrlCount, after: after.size },
       topLevelObjects: { before: save.ObjectStates.length, after: retained.length },
       retainedSkybox: skybox?.url ?? null,
       unreviewedUrls: [...urls].filter(([key, references]) =>
         !decisions.has(key) && references.some(ref => !isSkyboxReference(ref))).length,
       pruned, purge, investigate,
+      forcePurged: forced.entries,
+      forcePurgedRegistrations: forced.registrationsRemoved,
+      forcePurgedReferences: forced.entries.reduce((sum, row) => sum + row.references.length, 0),
       deferredKnownBytes: pruned.reduce((sum, entry) => sum + (entry.knownBytes ?? 0), 0),
       deferredUnknownSizes: pruned.filter(entry => entry.knownBytes === null).length,
     },
   };
 }
 
-module.exports = { readDecisions, scanAssetUrls, planSessionStart };
+module.exports = { readDecisions, scanAssetUrls, planSessionStart, forcePurgeAssets, assertReviewResolved };

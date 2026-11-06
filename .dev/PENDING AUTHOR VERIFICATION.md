@@ -26,6 +26,8 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### Reduced session-start save
 
+**ForcePurge and build wording:** With TTS closed, run FULL using the current review sheet. Check that the main save no longer contains the removed music-library entries or debug UI registrations, and that the session-start copy also omits them. Its summary should explicitly say that five bundle URLs (18 objects) were removed from the session-start save for staged onboarding. Load the copy and check the stage board, control board, roll-broadcast images, and both normal and Hunger dice. A remaining Resolve decision should stop preflight with a clear message.
+
 **Live review import:** Change a decision in the static review area of Integrated assets, then run FULL. Preflight should report loading the decisions from Google Sheets without asking for a CSV. The session-start report should include the review source and fetch time. If the sheet cannot be read, FULL should stop during preflight before modifying the save or Cloud assets.
 
 **Skybox retention:** Save the main game with any chosen skybox, then run FULL. The report should say the active skybox was kept automatically, even if that image has no review decision. Load the generated session-start copy and check that it uses that skybox. Other uses of the image still require a review decision.

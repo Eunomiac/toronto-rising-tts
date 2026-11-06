@@ -6,10 +6,11 @@ const path = require("node:path");
 const { randomUUID } = require("node:crypto");
 const { parseArgs } = require("node:util");
 const { bundleString } = require("luabundle");
-const { loadCloudConfig } = require("../tts-cloud/lib/cloud_config.js");
+const { loadCloudConfig, assertTtsClosed } = require("../tts-cloud/lib/cloud_config.js");
+const { backupSaveBeforeWrite, findExistingConfig, writeAtomic } = require("../custom-ui-assets/lib/custom-ui-assets-save.js");
 const { expandXmlFile } = require("../../.dev/scripts/embed_ui_global_xml_docs.js");
 const { escapeLuaString } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
-const { planSessionStart } = require("./session-start-assets.js");
+const { planSessionStart, assertReviewResolved } = require("./session-start-assets.js");
 const { loadReview } = require("./session-start-review.js");
 
 const root = path.resolve(__dirname, "../..");
@@ -27,6 +28,7 @@ function readSourceState(save) {
 
 function createSessionStart(save, plan, lua, xml) {
   const state = readSourceState(save);
+  save = plan.source;
   state.connectionControls = {
     ...state.connectionControls,
     generatedSessionStart: true,
@@ -137,10 +139,12 @@ async function main() {
     throw new Error("Usage: npm run tts-save:session-start -- (--dry-run | --output <new-save.json>) [--source <save.json>] [--report <new-report.json>] [--decisions <explicit-offline-review.csv>]");
   }
   const source = path.resolve(values.source ?? loadCloudConfig().saveFile);
-  const save = JSON.parse(fs.readFileSync(source, "utf8"));
+  const sourceText = fs.readFileSync(source, "utf8");
+  const save = JSON.parse(sourceText);
   const review = await loadReview({ decisionsFile: values.decisions,
     snapshotFile: replace || preflight ? process.env.TR_SESSION_START_REVIEW_SNAPSHOT : undefined, preflight });
   const { decisions } = review;
+  assertReviewResolved(decisions);
   console.log(`Loaded ${decisions.size} reviewed asset decisions from ${review.fetchedAt ? "Integrated assets (Google Sheets)" : review.source}.`);
   if (preflight) {
     readSourceState(save);
@@ -152,6 +156,13 @@ async function main() {
     ...report, restoredObjects: plan.objects.map(({ GUID, Nickname }) => ({ guid: GUID, name: Nickname })) };
   const copy = values.output && createSessionStart(save, plan, bundleGlobal(plan.objects),
     expandXmlFile(root, path.join(root, "ui", "Global.xml"), new Set()));
+  if (replace && report.forcePurgedReferences) {
+    assertTtsClosed("applying ForcePurge to the main save");
+    if (fs.readFileSync(source, "utf8") !== sourceText) throw new Error("The main save changed during generation. Run FULL again.");
+    backupSaveBeforeWrite(source, { ...findExistingConfig().config, backupBeforeWrite: true });
+    writeAtomic(source, JSON.stringify(plan.source, null, 2) + "\n");
+    console.log(`ForcePurge removed ${report.forcePurgedReferences} URL references and ${report.forcePurgedRegistrations} registrations from the main save.`);
+  }
   if (values.report) {
     if (replace) fs.mkdirSync(path.dirname(values.report), { recursive: true });
     writeJson(values.report, reportData, replace);
@@ -162,7 +173,9 @@ async function main() {
     console.log(`Wrote session-start copy to ${path.resolve(values.output)}.`);
   }
   console.log(`Asset URLs ${report.distinctAssetUrls.before} → ${report.distinctAssetUrls.after}; top-level objects ${report.topLevelObjects.before} → ${report.topLevelObjects.after}.`);
-  console.log(`Deferred ${report.pruned.length} reviewed bundles (${report.deferredKnownBytes.toLocaleString("en-CA")} known bytes, ${report.deferredUnknownSizes} unknown sizes).`);
+  console.log(`${values["dry-run"] ? "Would remove" : "Removed"} ${report.pruned.length} reviewed bundle URLs from the session-start save (${plan.objects.length} objects); these will load during staged onboarding.`);
+  console.log(`Known download size of those bundles: ${report.deferredKnownBytes.toLocaleString("en-CA")} bytes; ${report.deferredUnknownSizes} URLs have an unknown size.`);
+  if (!replace && report.forcePurgedReferences) console.log(`ForcePurge ${values["dry-run"] ? "would remove" : "removed"} ${report.forcePurgedReferences} URL references and ${report.forcePurgedRegistrations} registrations${values["dry-run"] ? "" : " from the output copy"}.`);
   if (report.retainedSkybox) console.log("Kept the active skybox automatically (SkyURL).");
   console.log(`Left ${report.purge.length} Purge and ${report.investigate.length} Investigate decisions for dependency review, plus ${report.unreviewedUrls} current URLs without a decision.`);
 }

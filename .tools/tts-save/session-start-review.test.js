@@ -18,7 +18,7 @@ const temp = t => {
 test("downloads the static reviewed columns with caching disabled", async () => {
   const result = await fetchReview(async (url, options) => {
     assert.equal(url, REVIEW_URL);
-    assert.match(url, /range=AA:BF$/);
+    assert.match(url, /range=AA:BI$/);
     assert.equal(options.cache, "no-store");
     assert.ok(options.signal instanceof AbortSignal);
     return response();
