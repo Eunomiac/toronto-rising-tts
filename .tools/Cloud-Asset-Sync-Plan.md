@@ -4,6 +4,10 @@
 
 ## Agent Routing
 
+Named portrait recipients in `EXPORT_CHARACTERS_NAMED` may include `coterie` alongside the five PC keys. `csheetPage4Portraits` routes PC assignments to their Page 4 objects. `coteriePortraits` routes only coterie assignments to Global Custom UI Assets. Both jobs read `assets/NPC Art/Portraits/npcPortrait_<key>.webp` and register `npcPortrait_<key>`, including inherited variant filenames. Removing a recipient purges that image from its previous destination on the next sync.
+
+Court Backgrounds, Merits and Flaws accept an optional `portrait` field containing the Global asset reference, for example `"portrait": "npcPortrait_theAristocrat"`. This matches the field used by Page 4 relationships. Seed entries live in `lib/json/Coterie.json` and runtime entries in `gameState.coterieData`. Court XML reserves a hidden image on each Advantage, so later state changes can show or clear a portrait through the normal Court attribute reconciler.
+
 Read this when:
 - adding, renaming, or removing an asset, or a job in `.tools/cloud-asset-sync.jsonc`
 - touching `.tools/cloud-asset-sync.js`, `.tools/tts-cloud/**`, generated `lib/cloud_*.ttslua`, or `lib/json/cloud-assets.json`

@@ -522,6 +522,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Character Sheets
 
+- [x] **NPC portraits in The Court.** The `coterie` portrait recipient uploads to Global UI assets. Court Advantages accept the same `portrait` reference field as player relationships and can show or clear the image through their normal refresh. XML/FULL rebuild the Court from its dedicated source template. Pending FULL and in-game confirmation. _(TOR-751)_
+
 _Blocked: author must define data binding approach before substantial implementation._
 
 - [x] **Scatter table change turns off every character sheet page:** Pages that were open when Scatter starts should stay open, the same as any other table change. Follow-up from the author check of **TOR-602**. relatedTo **TOR-633**. Author confirmed 2026-10-02 on the TOR-602 row (fixed by the TOR-631 seat-pile work). _(TOR-641)_

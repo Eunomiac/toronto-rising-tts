@@ -287,12 +287,17 @@ end
 --- @param rules string|nil
 --- @param opts table
 local function applyTraitBodyTextParams(params, entry, flavor, rules, opts)
-  local isBlankRuntimeTarget = opts.visibilityMode == "active" and entry.blank == true
-  if flavor ~= nil or rules ~= nil or isBlankRuntimeTarget then
+  local isRuntimeTarget = opts.visibilityMode == "active"
+  if flavor ~= nil or rules ~= nil or params.IMAGE_REF ~= "" or isRuntimeTarget then
     params.HAS_BODY_TEXT = "1"
     params.FLAVOR_TEXT = flavor or ""
     params.RULES_TEXT = rules or ""
   end
+end
+
+--- Portrait references use the same field as Page 4 relationships.
+function M.portraitAsset(entry)
+  return trimWhitespace(type(entry.portrait) == "string" and entry.portrait or "")
 end
 
 --- @param entry table
@@ -322,12 +327,15 @@ function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
   local slotCount, baseCount, tempCount, disabledCount, clampedProject =
     M.slotBaseTempDisabledProject(entry, projectCount)
   local filledImg = isFlaw and "dot_red" or "dot_yellow"
+  local portrait = M.portraitAsset(entry)
   local params = {
     TITLE_BAR_DOT_CLASS = M.titleBarDotClass(slotCount),
     TITLE_TEXT = M.entryTitleUpper(entry),
     PAGE_NUM = tostring(pageNum),
     INDEX = tostring(entryIndex),
     SECTION = sectionKey,
+    IMAGE_REF = portrait,
+    PORTRAIT_ACTIVE = portrait ~= "" and "true" or "false",
   }
   for i = 1, slotCount do
     params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(
@@ -539,7 +547,7 @@ function M.fingerprintOneTraitEntry(entry)
   local blankFlag = entry.blank == true and "1" or "0"
   return table.concat({
     name, "\1", focus, "\1", base, "\1", tempStr, "\1", disabledStr, "\1", maxStr, "\1", desc, "\1", rules, "\1",
-    book, "\1", page, "\1", sheetDis, "\1", activeFlag, "\1", blankFlag,
+    book, "\1", page, "\1", sheetDis, "\1", activeFlag, "\1", blankFlag, "\1", M.portraitAsset(entry),
   })
 end
 

@@ -116,6 +116,11 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
         local pageNum = group.pageNum
         local sectionKey = group.sectionKey
         local isFlaw = group.isFlaw == true
+        local portrait = TRAIT.portraitAsset(entry)
+        addUpdate(updates, traitElementId(pageNum, sectionKey, traitIndex, "portrait"), {
+          image = portrait,
+          active = portrait ~= "" and "true" or "false",
+        })
 
         if entry.blank ~= true then
           addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw)

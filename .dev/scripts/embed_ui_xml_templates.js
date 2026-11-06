@@ -82,6 +82,7 @@ const PACKS = [
  * @type {ReadonlySet<string>}
  */
 const BUILD_ONLY_KEYS = new Set([
+  "princes_court/panel",
   "csheet/page6",
   "csheet/partials/xp_gain_row",
   "csheet/partials/xp_spend_row",

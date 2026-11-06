@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### TOR-751 — NPC portraits in The Court
+
+**How to verify:** Run FULL with TTS closed so the new portrait can upload. Confirm that `npcPortrait_theAristocrat` appears in Global Custom UI Assets. After loading the updated save and scripts, assign that reference to an Advantage's `portrait` field in the Court data. Open **The Court** and check that the image appears beside its description and rules, with its dots still visible. Clear the portrait and check that the text fills the available width again. No Advantage has been assigned to The Aristocrat by this change.
+
 #### Reduced session-start save
 
 **How to verify:** Load the session-start copy from the TTS main menu. Check that only the host sees the centered onboarding bar. Once the host table is ready, connect a player. Check that their assigned color appears while their chair, camera, and HUD update wait. Click **1 Load Bundles**, **2 Refresh HUD**, then **3 Seat Players**, checking that each button becomes available after the previous one finishes. The bar should disappear and the player's chair, camera, and HUD should be ready. Check the soundscape, table fog, weather particles, and Hunger smoke. Connect again after finishing and check that seating works without rebuilding the Global HUD.

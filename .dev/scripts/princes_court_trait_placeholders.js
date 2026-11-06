@@ -159,6 +159,7 @@ if (require.main === module) {
 
 module.exports = {
   main,
+  loadPrincesCourtTemplates,
   replacePlaceholders,
   buildCourtProjectBlocks,
   BUILD_TEMPLATE_REL,

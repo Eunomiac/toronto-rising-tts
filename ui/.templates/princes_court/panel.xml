@@ -1,0 +1,444 @@
+<!-- Prince's Court layout source. Rendered by .dev/scripts/extract_shared_princes_court.js. -->
+<Panel id="playerHud_princesCourt_sharedRoot" class="popupImageContainer">
+<Defaults>
+
+    <Panel class="princesCourt-reference"
+      width = "1500"
+      height = "975"
+      offsetXY = "-50 0" />
+
+    <Image rectAlignment="MiddleLeft" />
+
+    <Image class="box"
+      rectAlignment = "MiddleLeft"
+      preserveAspect = "true"
+      raycastTarget = "false"
+      active = "true" />
+
+    <Image class="navButton"
+      height = "128"
+      width = "50"
+      color = "rgba(1, 1, 1, 0.25)"
+      preserveAspect = "true" />
+
+    <Image class="navButton_left"
+      rectAlignment = "MiddleLeft"
+      offsetXY = "-40 0" />
+
+    <Image class="navButton_right"
+      rectAlignment = "MiddleRight"
+      offsetXY = "40 0" />
+
+    <Image class="princeCourt_page"
+      height = "100%"
+      preserveAspect = "true" />
+
+    <Image class="dot_large"
+      rectAlignment = "UpperLeft"
+      height = "60"
+      width = "60"
+      active = "true" />
+
+    <Image class="box_standard"
+      height = "24"
+      width = "24"
+      active = "true" />
+
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
+    <VerticalLayout class="page"
+      width = "710"
+      padding = "8 8 50 50" />
+
+    <VerticalLayout class="page_right"
+      rectAlignment = "MiddleRight"
+      offsetXY = "-20 0" />
+
+    <VerticalLayout class="page_left"
+      rectAlignment = "MiddleLeft"
+      offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
+
+    <Image class="advantage_portrait"
+      minWidth="60" preferredWidth="60"
+      minHeight="90" preferredHeight="90"
+      flexibleWidth="0" flexibleHeight="0"
+      preserveAspect="true" raycastTarget="false" />
+  </Defaults>
+<Panel id="playerHud_refPanel_princesCourt" visibility="None" class="princesCourt-reference" active="false">
+    <!--
+  UI.hide("playerHud_refPanel_PrincesCourt_page1_Red")
+  -->
+    <Panel id="playerHud_refPanel_PrincesCourt_page1" class="princesCourt-page" visibility="None" active="false">
+      <Image id="refPanel_PrincesCourt_page1" class="princeCourt_page" image="refPanel_PrincesCourt_page1" raycastTarget="false" />
+      <!-- PURPLE panel trackers -->
+      <Image id="box_health_1_Purple" image="box_white" class="box box_standard" offsetXY="22 107" active="false" />
+      <Image id="box_health_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 107" active="false" />
+      <Image id="box_health_3_Purple" image="box_white" class="box box_standard" offsetXY="47 107" active="false" />
+      <Image id="box_health_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 107" active="false" />
+      <Image id="box_health_5_Purple" image="box_white" class="box box_standard" offsetXY="72 107" active="false" />
+      <Image id="box_health_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 107" active="false" />
+      <Image id="box_health_7_Purple" image="box_white" class="box box_standard" offsetXY="97 107" active="false" />
+      <Image id="box_health_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 107" active="false" />
+      <Image id="box_health_9_Purple" image="box_white" class="box box_standard" offsetXY="122 107" active="false" />
+      <Image id="box_health_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 107" active="false" />
+      <Image id="box_willpower_1_Purple" image="box_white" class="box box_standard" offsetXY="22 82" active="false" />
+      <Image id="box_willpower_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 82" active="false" />
+      <Image id="box_willpower_3_Purple" image="box_white" class="box box_standard" offsetXY="47 82" active="false" />
+      <Image id="box_willpower_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 82" active="false" />
+      <Image id="box_willpower_5_Purple" image="box_white" class="box box_standard" offsetXY="72 82" active="false" />
+      <Image id="box_willpower_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 82" active="false" />
+      <Image id="box_willpower_7_Purple" image="box_white" class="box box_standard" offsetXY="97 82" active="false" />
+      <Image id="box_willpower_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 82" active="false" />
+      <Image id="box_willpower_9_Purple" image="box_white" class="box box_standard" offsetXY="122 82" active="false" />
+      <Image id="box_willpower_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 82" active="false" />
+      <Image id="box_humanity_1_Purple" image="box_white" class="box box_standard" offsetXY="22 57" active="false" />
+      <Image id="box_humanity_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 57" active="false" />
+      <Image id="box_humanity_3_Purple" image="box_white" class="box box_standard" offsetXY="47 57" active="false" />
+      <Image id="box_humanity_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 57" active="false" />
+      <Image id="box_humanity_5_Purple" image="box_white" class="box box_standard" offsetXY="72 57" active="false" />
+      <Image id="box_humanity_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 57" active="false" />
+      <Image id="box_humanity_7_Purple" image="box_white" class="box box_standard" offsetXY="97 57" active="false" />
+      <Image id="box_humanity_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 57" active="false" />
+      <Image id="box_humanity_9_Purple" image="box_white" class="box box_standard" offsetXY="122 57" active="false" />
+      <Image id="box_humanity_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 57" active="false" />
+      <Image id="box_hunger_1_Purple" image="box_red" class="box box_standard" offsetXY="53.25 32" />
+      <Image id="box_hunger_2_Purple" image="box_red" class="box box_standard" offsetXY="65.75 32" />
+      <Image id="box_hunger_3_Purple" image="box_red" class="box box_standard" offsetXY="78.25 32" />
+      <Image id="box_hunger_4_Purple" image="box_red" class="box box_standard" offsetXY="90.75 32" />
+      <Image id="box_hunger_5_Purple" image="box_red" class="box box_standard" offsetXY="103.25 32" />
+
+      <!-- PINK panel trackers -->
+      <Image id="box_health_1_Pink" image="box_white" class="box box_standard" offsetXY="165 107" active="false" />
+      <Image id="box_health_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 107" active="false" />
+      <Image id="box_health_3_Pink" image="box_white" class="box box_standard" offsetXY="190 107" active="false" />
+      <Image id="box_health_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 107" active="false" />
+      <Image id="box_health_5_Pink" image="box_white" class="box box_standard" offsetXY="215 107" active="false" />
+      <Image id="box_health_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 107" active="false" />
+      <Image id="box_health_7_Pink" image="box_white" class="box box_standard" offsetXY="240 107" active="false" />
+      <Image id="box_health_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 107" active="false" />
+      <Image id="box_health_9_Pink" image="box_white" class="box box_standard" offsetXY="265 107" active="false" />
+      <Image id="box_health_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 107" active="false" />
+      <Image id="box_willpower_1_Pink" image="box_white" class="box box_standard" offsetXY="165 82" active="false" />
+      <Image id="box_willpower_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 82" active="false" />
+      <Image id="box_willpower_3_Pink" image="box_white" class="box box_standard" offsetXY="190 82" active="false" />
+      <Image id="box_willpower_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 82" active="false" />
+      <Image id="box_willpower_5_Pink" image="box_white" class="box box_standard" offsetXY="215 82" active="false" />
+      <Image id="box_willpower_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 82" active="false" />
+      <Image id="box_willpower_7_Pink" image="box_white" class="box box_standard" offsetXY="240 82" active="false" />
+      <Image id="box_willpower_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 82" active="false" />
+      <Image id="box_willpower_9_Pink" image="box_white" class="box box_standard" offsetXY="265 82" active="false" />
+      <Image id="box_willpower_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 82" active="false" />
+      <Image id="box_humanity_1_Pink" image="box_white" class="box box_standard" offsetXY="165 57" active="false" />
+      <Image id="box_humanity_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 57" active="false" />
+      <Image id="box_humanity_3_Pink" image="box_white" class="box box_standard" offsetXY="190 57" active="false" />
+      <Image id="box_humanity_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 57" active="false" />
+      <Image id="box_humanity_5_Pink" image="box_white" class="box box_standard" offsetXY="215 57" active="false" />
+      <Image id="box_humanity_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 57" active="false" />
+      <Image id="box_humanity_7_Pink" image="box_white" class="box box_standard" offsetXY="240 57" active="false" />
+      <Image id="box_humanity_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 57" active="false" />
+      <Image id="box_humanity_9_Pink" image="box_white" class="box box_standard" offsetXY="265 57" active="false" />
+      <Image id="box_humanity_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 57" active="false" />
+      <Image id="box_hunger_1_Pink" image="box_red" class="box box_standard" offsetXY="196.25 32" />
+      <Image id="box_hunger_2_Pink" image="box_red" class="box box_standard" offsetXY="208.75 32" />
+      <Image id="box_hunger_3_Pink" image="box_red" class="box box_standard" offsetXY="221.25 32" />
+      <Image id="box_hunger_4_Pink" image="box_red" class="box box_standard" offsetXY="233.75 32" />
+      <Image id="box_hunger_5_Pink" image="box_red" class="box box_standard" offsetXY="246.25 32" />
+
+      <!-- RED panel trackers -->
+      <Image id="box_health_1_Red" image="box_white" class="box box_standard" offsetXY="308 107" active="false" />
+      <Image id="box_health_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 107" active="false" />
+      <Image id="box_health_3_Red" image="box_white" class="box box_standard" offsetXY="333 107" active="false" />
+      <Image id="box_health_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 107" active="false" />
+      <Image id="box_health_5_Red" image="box_white" class="box box_standard" offsetXY="358 107" active="false" />
+      <Image id="box_health_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 107" active="false" />
+      <Image id="box_health_7_Red" image="box_white" class="box box_standard" offsetXY="383 107" active="false" />
+      <Image id="box_health_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 107" active="false" />
+      <Image id="box_health_9_Red" image="box_white" class="box box_standard" offsetXY="408 107" active="false" />
+      <Image id="box_health_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 107" active="false" />
+      <Image id="box_willpower_1_Red" image="box_white" class="box box_standard" offsetXY="308 82" active="false" />
+      <Image id="box_willpower_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 82" active="false" />
+      <Image id="box_willpower_3_Red" image="box_white" class="box box_standard" offsetXY="333 82" active="false" />
+      <Image id="box_willpower_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 82" active="false" />
+      <Image id="box_willpower_5_Red" image="box_white" class="box box_standard" offsetXY="358 82" active="false" />
+      <Image id="box_willpower_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 82" active="false" />
+      <Image id="box_willpower_7_Red" image="box_white" class="box box_standard" offsetXY="383 82" active="false" />
+      <Image id="box_willpower_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 82" active="false" />
+      <Image id="box_willpower_9_Red" image="box_white" class="box box_standard" offsetXY="408 82" active="false" />
+      <Image id="box_willpower_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 82" active="false" />
+      <Image id="box_humanity_1_Red" image="box_white" class="box box_standard" offsetXY="308 57" active="false" />
+      <Image id="box_humanity_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 57" active="false" />
+      <Image id="box_humanity_3_Red" image="box_white" class="box box_standard" offsetXY="333 57" active="false" />
+      <Image id="box_humanity_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 57" active="false" />
+      <Image id="box_humanity_5_Red" image="box_white" class="box box_standard" offsetXY="358 57" active="false" />
+      <Image id="box_humanity_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 57" active="false" />
+      <Image id="box_humanity_7_Red" image="box_white" class="box box_standard" offsetXY="383 57" active="false" />
+      <Image id="box_humanity_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 57" active="false" />
+      <Image id="box_humanity_9_Red" image="box_white" class="box box_standard" offsetXY="408 57" active="false" />
+      <Image id="box_humanity_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 57" active="false" />
+      <Image id="box_hunger_1_Red" image="box_red" class="box box_standard" offsetXY="339.25 32" />
+      <Image id="box_hunger_2_Red" image="box_red" class="box box_standard" offsetXY="351.75 32" />
+      <Image id="box_hunger_3_Red" image="box_red" class="box box_standard" offsetXY="364.25 32" />
+      <Image id="box_hunger_4_Red" image="box_red" class="box box_standard" offsetXY="376.75 32" />
+      <Image id="box_hunger_5_Red" image="box_red" class="box box_standard" offsetXY="389.25 32" />
+
+      <!-- ORANGE panel trackers -->
+      <Image id="box_health_1_Orange" image="box_white" class="box box_standard" offsetXY="451 107" active="false" />
+      <Image id="box_health_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 107" active="false" />
+      <Image id="box_health_3_Orange" image="box_white" class="box box_standard" offsetXY="476 107" active="false" />
+      <Image id="box_health_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 107" active="false" />
+      <Image id="box_health_5_Orange" image="box_white" class="box box_standard" offsetXY="501 107" active="false" />
+      <Image id="box_health_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 107" active="false" />
+      <Image id="box_health_7_Orange" image="box_white" class="box box_standard" offsetXY="526 107" active="false" />
+      <Image id="box_health_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 107" active="false" />
+      <Image id="box_health_9_Orange" image="box_white" class="box box_standard" offsetXY="551 107" active="false" />
+      <Image id="box_health_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 107" active="false" />
+      <Image id="box_willpower_1_Orange" image="box_white" class="box box_standard" offsetXY="451 82" active="false" />
+      <Image id="box_willpower_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 82" active="false" />
+      <Image id="box_willpower_3_Orange" image="box_white" class="box box_standard" offsetXY="476 82" active="false" />
+      <Image id="box_willpower_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 82" active="false" />
+      <Image id="box_willpower_5_Orange" image="box_white" class="box box_standard" offsetXY="501 82" active="false" />
+      <Image id="box_willpower_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 82" active="false" />
+      <Image id="box_willpower_7_Orange" image="box_white" class="box box_standard" offsetXY="526 82" active="false" />
+      <Image id="box_willpower_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 82" active="false" />
+      <Image id="box_willpower_9_Orange" image="box_white" class="box box_standard" offsetXY="551 82" active="false" />
+      <Image id="box_willpower_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 82" active="false" />
+      <Image id="box_humanity_1_Orange" image="box_white" class="box box_standard" offsetXY="451 57" active="false" />
+      <Image id="box_humanity_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 57" active="false" />
+      <Image id="box_humanity_3_Orange" image="box_white" class="box box_standard" offsetXY="476 57" active="false" />
+      <Image id="box_humanity_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 57" active="false" />
+      <Image id="box_humanity_5_Orange" image="box_white" class="box box_standard" offsetXY="501 57" active="false" />
+      <Image id="box_humanity_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 57" active="false" />
+      <Image id="box_humanity_7_Orange" image="box_white" class="box box_standard" offsetXY="526 57" active="false" />
+      <Image id="box_humanity_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 57" active="false" />
+      <Image id="box_humanity_9_Orange" image="box_white" class="box box_standard" offsetXY="551 57" active="false" />
+      <Image id="box_humanity_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 57" active="false" />
+      <Image id="box_hunger_1_Orange" image="box_red" class="box box_standard" offsetXY="482.25 32" />
+      <Image id="box_hunger_2_Orange" image="box_red" class="box box_standard" offsetXY="494.75 32" />
+      <Image id="box_hunger_3_Orange" image="box_red" class="box box_standard" offsetXY="507.25 32" />
+      <Image id="box_hunger_4_Orange" image="box_red" class="box box_standard" offsetXY="519.75 32" />
+      <Image id="box_hunger_5_Orange" image="box_red" class="box box_standard" offsetXY="532.25 32" />
+
+      <!-- BROWN panel trackers -->
+      <Image id="box_health_1_Brown" image="box_white" class="box box_standard" offsetXY="594 107" active="false" />
+      <Image id="box_health_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 107" active="false" />
+      <Image id="box_health_3_Brown" image="box_white" class="box box_standard" offsetXY="619 107" active="false" />
+      <Image id="box_health_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 107" active="false" />
+      <Image id="box_health_5_Brown" image="box_white" class="box box_standard" offsetXY="644 107" active="false" />
+      <Image id="box_health_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 107" active="false" />
+      <Image id="box_health_7_Brown" image="box_white" class="box box_standard" offsetXY="669 107" active="false" />
+      <Image id="box_health_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 107" active="false" />
+      <Image id="box_health_9_Brown" image="box_white" class="box box_standard" offsetXY="694 107" active="false" />
+      <Image id="box_health_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 107" active="false" />
+      <Image id="box_willpower_1_Brown" image="box_white" class="box box_standard" offsetXY="594 82" active="false" />
+      <Image id="box_willpower_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 82" active="false" />
+      <Image id="box_willpower_3_Brown" image="box_white" class="box box_standard" offsetXY="619 82" active="false" />
+      <Image id="box_willpower_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 82" active="false" />
+      <Image id="box_willpower_5_Brown" image="box_white" class="box box_standard" offsetXY="644 82" active="false" />
+      <Image id="box_willpower_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 82" active="false" />
+      <Image id="box_willpower_7_Brown" image="box_white" class="box box_standard" offsetXY="669 82" active="false" />
+      <Image id="box_willpower_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 82" active="false" />
+      <Image id="box_willpower_9_Brown" image="box_white" class="box box_standard" offsetXY="694 82" active="false" />
+      <Image id="box_willpower_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 82" active="false" />
+      <Image id="box_humanity_1_Brown" image="box_white" class="box box_standard" offsetXY="594 57" active="false" />
+      <Image id="box_humanity_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 57" active="false" />
+      <Image id="box_humanity_3_Brown" image="box_white" class="box box_standard" offsetXY="619 57" active="false" />
+      <Image id="box_humanity_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 57" active="false" />
+      <Image id="box_humanity_5_Brown" image="box_white" class="box box_standard" offsetXY="644 57" active="false" />
+      <Image id="box_humanity_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 57" active="false" />
+      <Image id="box_humanity_7_Brown" image="box_white" class="box box_standard" offsetXY="669 57" active="false" />
+      <Image id="box_humanity_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 57" active="false" />
+      <Image id="box_humanity_9_Brown" image="box_white" class="box box_standard" offsetXY="694 57" active="false" />
+      <Image id="box_humanity_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 57" active="false" />
+      <Image id="box_hunger_1_Brown" image="box_red" class="box box_standard" offsetXY="625.25 32" />
+      <Image id="box_hunger_2_Brown" image="box_red" class="box box_standard" offsetXY="637.75 32" />
+      <Image id="box_hunger_3_Brown" image="box_red" class="box box_standard" offsetXY="650.25 32" />
+      <Image id="box_hunger_4_Brown" image="box_red" class="box box_standard" offsetXY="662.75 32" />
+      <Image id="box_hunger_5_Brown" image="box_red" class="box box_standard" offsetXY="675.25 32" />
+
+      <!--
+UI.setAttributes("page_1_right_Pink", {padding = "8 8 160 20"})
+UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleLeft", offsetXY = "20 0"})
+-->
+      <VerticalLayout id="page_1_right" class="page page_right" padding = "8 8 160 50">
+
+
+    <!-- Status (Camarilla) dots-->
+    <Image id="dot_statusCamarilla_1" image="dot_yellow" class="dot dot_standard" offsetXY="100 -200" height="100" width="100" ignoreLayout="true" rectAlignment="UpperLeft" active="true" />
+    <Image id="dot_statusCamarilla_2" image="dot_yellow" class="dot dot_standard" offsetXY="319 -1256" />
+    <Image id="dot_statusCamarilla_3" image="dot_yellow" class="dot dot_standard" offsetXY="353 -1256" />
+    <Image id="dot_statusCamarilla_4" image="dot_yellow" class="dot dot_standard" offsetXY="387 -1256" />
+    <Image id="dot_statusCamarilla_5" image="dot_blank" class="dot dot_standard" offsetXY="421 -1256" />
+
+        <!-- Coterie Backgrounds -->
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@COTERIE_BACKGROUNDS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@COTERIE_BACKGROUNDS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@COTERIE_BACKGROUNDS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+
+        <Image id="divider_coterieMerits" image="divider_coterieMerits" class="divider_image" />
+
+
+        <!-- Coterie Merits -->
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@COTERIE_MERITS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@COTERIE_MERITS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@COTERIE_MERITS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+
+        <Image id="divider_coterieFlaws" image="divider_coterieFlaws" class="divider_image" />
+
+
+        <!-- Coterie Flaws -->
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@COTERIE_FLAWS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@COTERIE_FLAWS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@COTERIE_FLAWS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+      </VerticalLayout>
+      <!--
+UI.setAttributes("playerHud_navigate_page1_next_Red", {offsetXY = "40 0"})
+UI.setAttributes("playerHud_navigate_page2_prev_Red", {offsetXY = "-40 0"})
+UI.setAttributes("playerHud_navigate_page2_next_Red", {offsetXY = "40 0"})
+-->
+      <Image id="playerHud_navigate_page1_next" class="navButton navButton_right" image="navigate_right" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+
+    <!--
+  UI.hide("playerHud_refPanel_PrincesCourt_page1_Red")
+  UI.show("playerHud_refPanel_PrincesCourt_page2_Red")
+
+  UI.show("playerHud_refPanel_PrincesCourt_page1_Red")
+  UI.hide("playerHud_refPanel_PrincesCourt_page2_Red")
+  -->
+    <Panel id="playerHud_refPanel_PrincesCourt_page2" class="princesCourt-page" visibility="None" active="false">
+      <Image class="princeCourt_page" image="refPanel_PrincesCourt_page2" raycastTarget="false" />
+
+<!--
+UI.setAttributes("dot_on_chasse_1_Red", {offsetXY = "35 -96"})
+
+-->
+      <Image id="dot_on_chasse_1" image="dot_yellow" class="dot dot_large" offsetXY="35 -96" />
+      <Image id="dot_on_chasse_2" image="dot_yellow" class="dot dot_large" offsetXY="68 -96" />
+      <Image id="dot_on_chasse_3" image="dot_yellow" class="dot dot_large" offsetXY="101 -96" />
+      <Image id="dot_on_chasse_4" image="dot_yellow" class="dot dot_large" offsetXY="134 -96" />
+      <Image id="dot_on_chasse_5" image="dot_yellow" class="dot dot_large" offsetXY="167 -96" />
+
+      <Image id="dot_on_lien_1" image="dot_yellow" class="dot dot_large" offsetXY="280 -96" />
+      <Image id="dot_on_lien_2" image="dot_yellow" class="dot dot_large" offsetXY="313 -96" />
+      <Image id="dot_on_lien_3" image="dot_yellow" class="dot dot_large" offsetXY="346 -96" />
+      <Image id="dot_on_lien_4" image="dot_yellow" class="dot dot_large" offsetXY="379 -96" />
+      <Image id="dot_on_lien_5" image="dot_yellow" class="dot dot_large" offsetXY="412 -96" />
+
+      <Image id="dot_on_portillon_1" image="dot_yellow" class="dot dot_large" offsetXY="518 -96" />
+      <Image id="dot_on_portillon_2" image="dot_yellow" class="dot dot_large" offsetXY="551 -96" />
+      <Image id="dot_on_portillon_3" image="dot_yellow" class="dot dot_large" offsetXY="584 -96" />
+      <Image id="dot_on_portillon_4" image="dot_yellow" class="dot dot_large" offsetXY="617 -96" />
+      <Image id="dot_on_portillon_5" image="dot_yellow" class="dot dot_large" offsetXY="650 -96" />
+
+      <Image id="dot_on_haven_1" image="dot_yellow" class="dot dot_large" offsetXY="1030 -126" />
+      <Image id="dot_on_haven_2" image="dot_yellow" class="dot dot_large" offsetXY="1063 -126" />
+      <Image id="dot_on_haven_3" image="dot_yellow" class="dot dot_large" offsetXY="1096 -126" />
+      <Image id="dot_on_haven_4" image="dot_yellow" class="dot dot_large" offsetXY="1129 -126" />
+      <Image id="dot_on_haven_5" image="dot_yellow" class="dot dot_large" offsetXY="1162 -126" />
+<!--
+UI.setAttributes("page_2_left_Brown", {padding = "8 8 150 50"})
+UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleRight", offsetXY = "-20 0", padding = "0 0 200 0"})
+
+-->
+      <VerticalLayout id="page_2_left" class="page page_left" padding = "8 8 150 50">
+
+        <!-- Domain Backgrounds -->
+        <Image id="divider_domainBackgrounds" image="divider_domainBackgrounds" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@DOMAIN_BACKGROUNDS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@DOMAIN_BACKGROUNDS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@DOMAIN_BACKGROUNDS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+        <!-- Domain Claims -->
+        <Image id="divider_domainClaims" image="divider_domainClaims" class="divider_claims_image" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_domainClaimsDivider_hoverOn" onMouseExit="HUD_playerPrincesCourt_domainClaimsDivider_hoverOff" />
+
+        <!-- Domain Merits -->
+
+        <Image id="divider_domainMerits" image="divider_domainMerits" class="divider_image" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@DOMAIN_MERITS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@DOMAIN_MERITS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@DOMAIN_MERITS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+
+
+        <!-- Domain Flaws -->
+
+        <Image id="divider_domainFlaws" image="divider_domainFlaws" class="divider_image" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@DOMAIN_FLAWS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@DOMAIN_FLAWS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@DOMAIN_FLAWS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+
+      </VerticalLayout>
+
+      <VerticalLayout id="page_2_right" class="page page_right" padding = "8 8 200 50">
+
+        <!-- Haven Backgrounds -->
+        <Image id="divider_havenBackgrounds" image="divider_havenBackgrounds" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@HAVEN_BACKGROUNDS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@HAVEN_BACKGROUNDS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@HAVEN_BACKGROUNDS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+        <!-- Haven Merits -->
+        <Image id="divider_havenMerits" image="divider_havenMerits" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@HAVEN_MERITS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@HAVEN_MERITS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@HAVEN_MERITS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+
+        <!-- Haven Flaws -->
+        <Image id="divider_havenFlaws" image="divider_havenFlaws" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column">@@HAVEN_FLAWS_COLUMN_1@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@HAVEN_FLAWS_COLUMN_2@@</VerticalLayout>
+          <VerticalLayout class="box_column">@@HAVEN_FLAWS_COLUMN_3@@</VerticalLayout>
+        </HorizontalLayout>
+      </VerticalLayout>
+
+      <Image id="playerHud_navigate_page2_prev" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+      <Image id="playerHud_navigate_page2_next" class="navButton navButton_right" image="navigate_right" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+
+<!--
+UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%"})
+
+-->
+
+    <Panel id="playerHud_refPanel_PrincesCourt_page3" class="princesCourt-page" visibility="None" active="false">
+      <Image id="db_princeCourt_page" class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
+      <!-- TOR-371: same layout as CSHEET page 5 — VerticalLayout + project blocks; attribute-only reconcile. -->
+      <VerticalLayout id="page_3_left" class="vertical_project_container" width = "50%" padding = "30 40 70 150" childForceExpandWidth = "true">
+        @@COURT_PROJECT_BLOCKS@@
+      </VerticalLayout>
+      <Image id="playerHud_navigate_page3_prev" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+  </Panel>
+</Panel>

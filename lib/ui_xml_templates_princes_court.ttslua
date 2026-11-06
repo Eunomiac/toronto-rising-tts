@@ -34,10 +34,13 @@ M._byKey["princes_court/partials/bg_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
-  </VerticalLayout>
+  <HorizontalLayout childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperLeft" spacing="6">
+    <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_portrait_@@color@@" class="advantage_portrait" image="@@IMAGE_REF@@" active="@@PORTRAIT_ACTIVE@@" />
+    <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false" flexibleWidth="1">
+      <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
+      <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
+    </VerticalLayout>
+  </HorizontalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
   <Panel class="box_text_panel_source">
@@ -73,10 +76,13 @@ M._byKey["princes_court/partials/flaw_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
-  </VerticalLayout>
+  <HorizontalLayout childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperLeft" spacing="6">
+    <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_portrait_@@color@@" class="advantage_portrait" image="@@IMAGE_REF@@" active="@@PORTRAIT_ACTIVE@@" />
+    <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false" flexibleWidth="1">
+      <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
+      <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
+    </VerticalLayout>
+  </HorizontalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
   <Panel class="box_text_panel_source">
@@ -112,10 +118,13 @@ M._byKey["princes_court/partials/merit_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
-  </VerticalLayout>
+  <HorizontalLayout childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperLeft" spacing="6">
+    <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_portrait_@@color@@" class="advantage_portrait" image="@@IMAGE_REF@@" active="@@PORTRAIT_ACTIVE@@" />
+    <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false" flexibleWidth="1">
+      <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
+      <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
+    </VerticalLayout>
+  </HorizontalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
   <Panel class="box_text_panel_source">

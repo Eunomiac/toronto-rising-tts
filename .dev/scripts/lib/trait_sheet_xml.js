@@ -254,8 +254,8 @@ function isEntryIncluded(entry, opts) {
  * @param {object} opts
  */
 function applyTraitBodyTextParams(params, entry, flavor, rules, opts) {
-  const isBlankRuntimeTarget = opts.visibilityMode === "active" && entry.blank === true;
-  if (flavor !== null || rules !== null || isBlankRuntimeTarget) {
+  const isRuntimeTarget = opts.visibilityMode === "active";
+  if (flavor !== null || rules !== null || params.IMAGE_REF !== "" || isRuntimeTarget) {
     params.HAS_BODY_TEXT = "1";
     params.FLAVOR_TEXT = flavor ?? "";
     params.RULES_TEXT = rules ?? "";
@@ -274,6 +274,7 @@ function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts) {
   const pageNum = opts.pageNum || 3;
   const [slotCount, baseCount, tempCount, disabledCount] = slotBaseTempDisabled(entry);
   const filledImg = isFlaw ? "dot_red" : "dot_yellow";
+  const portrait = trimWhitespace(entry.portrait);
   /** @type {Record<string, string>} */
   const params = {
     TITLE_BAR_DOT_CLASS: titleBarDotClass(slotCount),
@@ -281,6 +282,8 @@ function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts) {
     PAGE_NUM: String(pageNum),
     INDEX: String(entryIndex),
     SECTION: sectionKey,
+    IMAGE_REF: portrait,
+    PORTRAIT_ACTIVE: portrait ? "true" : "false",
   };
   for (let i = 1; i <= slotCount; i += 1) {
     params[`DOT_IMG_${i}`] = dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg);
