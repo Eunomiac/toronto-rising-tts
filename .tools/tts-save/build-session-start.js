@@ -9,7 +9,8 @@ const { bundleString } = require("luabundle");
 const { loadCloudConfig } = require("../tts-cloud/lib/cloud_config.js");
 const { expandXmlFile } = require("../../.dev/scripts/embed_ui_global_xml_docs.js");
 const { escapeLuaString } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
-const { planSessionStart, readDecisions } = require("./session-start-assets.js");
+const { planSessionStart } = require("./session-start-assets.js");
+const { loadReview } = require("./session-start-review.js");
 
 const root = path.resolve(__dirname, "../..");
 
@@ -116,15 +117,11 @@ function bundleGlobal(objects) {
 function fullOptions() {
   const { saveFile: source, savesDir } = loadCloudConfig();
   const output = path.join(savesDir, "TS_Save_9001.json");
-  const decisions = path.join(root, ".dev", "session-start-decisions.local.csv");
-  if (!fs.existsSync(decisions)) {
-    throw new Error(`Download the Integrated assets tab as CSV and save it to ${decisions} before running FULL.`);
-  }
   assertSessionStartSlot(source, output);
-  return { source, output, decisions, report: path.join(root, ".dev", "build-logs", "session-start-report.json") };
+  return { source, output, report: path.join(root, ".dev", "build-logs", "session-start-report.json") };
 }
 
-function main() {
+async function main() {
   let { values } = parseArgs({ options: {
     decisions: { type: "string" }, source: { type: "string" }, output: { type: "string" },
     report: { type: "string" }, "dry-run": { type: "boolean" },
@@ -136,19 +133,23 @@ function main() {
     if (Object.keys(values).length !== 1) throw new Error("Pass the FULL session-start mode by itself.");
     values = fullOptions();
   }
-  if (!values.decisions || (values["dry-run"] ? values.output : !values.output)) {
-    throw new Error("Usage: npm run tts-save:session-start -- --decisions <Integrated assets.csv> (--dry-run | --output <new-save.json>) [--source <save.json>] [--report <new-report.json>]");
+  if (values["dry-run"] ? values.output : !values.output) {
+    throw new Error("Usage: npm run tts-save:session-start -- (--dry-run | --output <new-save.json>) [--source <save.json>] [--report <new-report.json>] [--decisions <explicit-offline-review.csv>]");
   }
   const source = path.resolve(values.source ?? loadCloudConfig().saveFile);
   const save = JSON.parse(fs.readFileSync(source, "utf8"));
-  const decisions = readDecisions(fs.readFileSync(values.decisions, "utf8"));
+  const review = await loadReview({ decisionsFile: values.decisions,
+    snapshotFile: replace || preflight ? process.env.TR_SESSION_START_REVIEW_SNAPSHOT : undefined, preflight });
+  const { decisions } = review;
+  console.log(`Loaded ${decisions.size} reviewed asset decisions from ${review.fetchedAt ? "Integrated assets (Google Sheets)" : review.source}.`);
   if (preflight) {
     readSourceState(save);
     return;
   }
   const plan = planSessionStart(save, decisions);
   const { report } = plan;
-  const reportData = { source, ...report, restoredObjects: plan.objects.map(({ GUID, Nickname }) => ({ guid: GUID, name: Nickname })) };
+  const reportData = { source, reviewSource: review.source, reviewFetchedAt: review.fetchedAt,
+    ...report, restoredObjects: plan.objects.map(({ GUID, Nickname }) => ({ guid: GUID, name: Nickname })) };
   const copy = values.output && createSessionStart(save, plan, bundleGlobal(plan.objects),
     expandXmlFile(root, path.join(root, "ui", "Global.xml"), new Set()));
   if (values.report) {
@@ -167,7 +168,7 @@ function main() {
 }
 
 if (require.main === module) {
-  try { main(); } catch (error) { console.error(error.message); process.exitCode = 1; }
+  main().catch(error => { console.error(error.message); process.exitCode = 1; });
 }
 
 module.exports = { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson };

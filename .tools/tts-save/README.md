@@ -21,15 +21,20 @@ Keep review decisions in the sheet's static area. When refreshing that area, mat
 
 ## Between-session start save
 
-Save the main game in Intermission with the latest scripts. Put a CSV export of the **Integrated assets** tab at `.dev/session-start-decisions.local.csv`, and update it whenever the review changes. FULL reads the static URL column beside **Manual decision** and, as its last step, regenerates `TS_Save_9001.json` in the configured Saves folder from the freshly built main save. The build replaces its own previous copy only after the new file is ready. It refuses to replace an unrelated save in slot 9001. The report is at `.dev/build-logs/session-start-report.json`.
+Save the main game in Intermission with the latest scripts. FULL downloads the static **AA:BF** review area from **Integrated assets** in [the asset review sheet](https://docs.google.com/spreadsheets/d/1lldquR2mq6_a2F8yJ5ygwPylzHJ5MOVYTUJ7y-rG26U/edit). Keep that workbook shared as **Anyone with the link — Viewer** so the build can read it. Edit **Manual decision** in the static review area before building. No CSV download is needed.
+
+Preflight downloads and validates the review before any save or Cloud work starts. The FULL wrapper gives that invocation its own temporary snapshot, reused by the final generation step and removed when the build exits. A download, access, or validation failure stops the build. The old `.dev/session-start-decisions.local.csv` is never read automatically. The report records the review source and fetch time.
+
+As its last step, FULL regenerates `TS_Save_9001.json` in the configured Saves folder from the freshly built main save. The build replaces its own previous copy only after the new file is ready. It refuses to replace an unrelated save in slot 9001. The report is at `.dev/build-logs/session-start-report.json`.
 
 The current `SkyURL` is always retained automatically, regardless of the selected skybox or its review decision. The report records it as `retainedSkybox` and excludes that use from missing decisions. Other uses of the same image, including Custom UI Assets and object textures, still require review.
 
-For a one-off preview or a different output file, run the generator directly. Use a new filename for a one-off save.
+For a one-off preview or a different output file, run the generator directly. It also reads the live review by default. Use a new filename for a one-off save. An explicit `--decisions` file is available for deliberate offline inspection.
 
 ```powershell
+npm run tts-save:session-start -- --dry-run
+npm run tts-save:session-start -- --output "TS_Save_9002.json" --report "session-start-report.json"
 npm run tts-save:session-start -- --decisions "Integrated assets.csv" --dry-run
-npm run tts-save:session-start -- --decisions "Integrated assets.csv" --output "TS_Save_9002.json" --report "session-start-report.json"
 ```
 
 The source defaults to the configured save. `--source` accepts a separate full save. Generation defers reviewed top-level Unity bundle objects and preserves their GUIDs and data for restore. A `Prune` URL that moved, appears in another kind of field, or shares an object with an asset outside the prune list stops generation for review. `Purge`, `Investigate`, and URLs without a decision stay in the copy and are accounted for separately in the report.

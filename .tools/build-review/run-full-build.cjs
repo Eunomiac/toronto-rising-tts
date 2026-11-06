@@ -9,6 +9,7 @@
  */
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { spawn, spawnSync } = require("child_process");
 const { REPO_ROOT, reviewLogPath, beginReview, appendEntry, readEntries, publishReview } = require("./log-file.cjs");
@@ -54,10 +55,12 @@ function openForReview(file) {
 }
 
 let finished = false;
+let reviewSnapshotDir;
 
 function finish(exitCode) {
   if (finished) return;
   finished = true;
+  if (reviewSnapshotDir) fs.rmSync(reviewSnapshotDir, { recursive: true, force: true });
   if (exitCode !== 0 && readEntries().length === 0) {
     appendEntry(
       `The Full build stopped with exit code ${exitCode} before it printed a warning or error this log collects. The terminal output above has the rest.`,
@@ -80,9 +83,10 @@ function finish(exitCode) {
 
 function main() {
   beginReview();
+  reviewSnapshotDir = fs.mkdtempSync(path.join(os.tmpdir(), "toronto-rising-review-"));
   const child = spawn(PIPELINE, {
     cwd: REPO_ROOT,
-    env: childEnv(),
+    env: { ...childEnv(), TR_SESSION_START_REVIEW_SNAPSHOT: path.join(reviewSnapshotDir, "review.json") },
     stdio: "inherit",
     shell: true,
   });
