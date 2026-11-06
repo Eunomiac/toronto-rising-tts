@@ -77,6 +77,7 @@ export type RollsCommand =
       readonly normal: number;
       readonly hunger: number;
       readonly rage: number;
+      readonly usesHungerTracker: boolean;
       readonly rouse: readonly RouseCheck[];
       readonly hungerOnFail: boolean;
       readonly heading: string;

@@ -15,7 +15,8 @@
     clock is dated from `presentDayClock`; while the active clock has no date at all, the night stays as
     recorded (records made undated join the next dated night).
 
-    A record is created the first time an NPC appears tonight (`ensure`): no damage, Hunger and Rage 1–2.
+    A record is created the first time an NPC appears tonight or starts a dashboard roll (`ensure`):
+    no damage, Hunger and Rage 1–2.
     Every mutator marks the dashboard `seats` push dirty.
 
     Push contract: .dev/Storyteller Dashboard Docs/Listening to TTS.md (`seats.trackers`).

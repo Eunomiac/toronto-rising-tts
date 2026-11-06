@@ -43,11 +43,12 @@ const input = (overrides: Partial<NpcRollInput>): NpcRollInput => ({
 describe("planNpcRoll", () => {
   it("splits a standard pool into normal and Hunger dice", () => {
     const plan = planNpcRoll(input({}));
-    expect(plan).toMatchObject({ kind: "roll", normal: 4, hunger: 2, rage: 0, rouse: [], heading: "Physical", line: "Mylene rolls Physical" });
+    expect(plan).toMatchObject({ kind: "roll", normal: 4, hunger: 2, rage: 0, usesHungerTracker: true,
+      rouse: [], heading: "Physical", line: "Mylene rolls Physical" });
   });
 
   it("takes no Hunger dice on roll types without them", () => {
-    expect(planNpcRoll(input({ rollType: "simpleCheck" }))).toMatchObject({ normal: 6, hunger: 0 });
+    expect(planNpcRoll(input({ rollType: "simpleCheck" }))).toMatchObject({ normal: 6, hunger: 0, usesHungerTracker: false });
   });
 
   it("caps Hunger dice at the pool size", () => {

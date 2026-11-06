@@ -231,6 +231,24 @@ local function seatRow(seatKey, row, isPc)
   return out
 end
 
+--- NPCs whose trackers the dashboard currently needs: the scene cast plus a roster-only NPC while it rolls.
+--- @return string[]
+local function dashboardTrackerKeys()
+  local keys = require("core.npc_trackers").sceneCastKeys()
+  local seen = {}
+  for _, key in ipairs(keys) do
+    seen[key] = true
+  end
+  local blackPid = S.getPlayerID("Black")
+  local active = blackPid ~= nil and S.getStateVal("playerData", blackPid, "hud", "rollData", "active") or nil
+  local activeKey = type(active) == "table" and active.npcCharacterKey or nil
+  if type(activeKey) == "string" and activeKey ~= "" and not seen[activeKey] then
+    keys[#keys + 1] = activeKey
+    table.sort(keys)
+  end
+  return keys
+end
+
 local function buildSeats()
   local slots = S.getStateVal("sessionScene", "seatSlots") or {}
   local seats = {}
@@ -289,8 +307,9 @@ local function buildSeats()
   end
   local spotlight = S.getStateVal("spotlight") or {}
   local NpcTrackers = require("core.npc_trackers")
+  local trackerKeys = dashboardTrackerKeys()
   local npcConditions = {}
-  for _, key in ipairs(NpcTrackers.sceneCastKeys()) do
+  for _, key in ipairs(trackerKeys) do
     npcConditions[key] = require("core.npc_conditions").snapshot(key)
   end
   return {
@@ -298,7 +317,7 @@ local function buildSeats()
     stage = stage,
     generics = generics,
     scatter = scatter,
-    trackers = NpcTrackers.snapshotForKeys(NpcTrackers.sceneCastKeys()),
+    trackers = NpcTrackers.snapshotForKeys(trackerKeys),
     npcConditions = npcConditions,
     spotlightOrder = spotlight.order or {},
     spotlightFrontIndex = tonumber(spotlight.frontIndex),

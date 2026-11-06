@@ -67,6 +67,7 @@ describe("applyDndAction", () => {
       normal: 3,
       hunger: 0,
       rage: 0,
+      usesHungerTracker: false,
       poolDice: 3,
       discBonus: 0,
       rouse: [],
@@ -87,7 +88,8 @@ describe("applyDndAction", () => {
       op: "npcStatRoll",
       rollType: "willpowerRoll",
       normal: 3,
-      hunger: 0
+      hunger: 0,
+      usesHungerTracker: false
     }));
   });
 

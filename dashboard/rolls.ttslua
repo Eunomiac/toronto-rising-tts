@@ -48,7 +48,8 @@
     npcConfirm    quiet?, secretSafe?   confirm (quiet = hold; secretSafe = broadcast without revealing dice)
     npcCancel                           cancel the live NPC roll (clears its drawer)
     npcReveal     broadcast?            clear secret dice on the live NPC postroll; optional broadcast
-    npcStatRoll   kind, rollType, normal, hunger, rage, rouse[{ dice, oblivion }], hungerOnFail,
+    npcStatRoll   kind, rollType, normal, hunger, rage, usesHungerTracker,
+                  rouse[{ dice, oblivion }], hungerOnFail,
                   heading, line, marginBonus, marginLabel
                                         set the live roll from a stat-block plan (dashboard `planNpcRoll`):
                                         each rouse check is judged on its own dice, failed checks raise
@@ -349,6 +350,9 @@ local function applyNpcCommand(cmd)
     if STR.initiateNpcRoll(cmd.label, rollType, characterKey) ~= true then
       return "No free Storyteller dice drawer, or an NPC roll is still in progress."
     end
+    if characterKey ~= nil then
+      require("core.npc_trackers").ensure(characterKey)
+    end
     return nil
   end
 
@@ -443,9 +447,18 @@ local function applyNpcCommand(cmd)
         RC.setDifficulty(ST_COLOR, difficulty)
       end
     end
+    local normal = cmd.normal
+    local hunger = cmd.hunger
+    if cmd.usesHungerTracker == true and type(active.npcCharacterKey) == "string" then
+      local record = require("core.npc_trackers").ensure(active.npcCharacterKey)
+      local total = math.max(0, math.floor(tonumber(normal) or 0))
+        + math.max(0, math.floor(tonumber(hunger) or 0))
+      hunger = math.min(total, math.max(0, math.floor(tonumber(record.hunger) or 0)))
+      normal = total - hunger
+    end
     local err = RC.applyNpcStatPlan({
-      normal = cmd.normal,
-      hunger = cmd.hunger,
+      normal = normal,
+      hunger = hunger,
       rage = cmd.rage,
       rouse = cmd.rouse,
       hungerOnFail = cmd.hungerOnFail == true,
