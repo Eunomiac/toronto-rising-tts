@@ -29,6 +29,15 @@
   },
 
   "jobs": [
+    {
+      "id": "stageControlBoard",
+      "folder": "Objects/Stage",
+      "output": "ObjectImage",
+      "field": "CustomImage.ImageURL",
+      "objects": { "stageControlBoardFront": "bea29a" },
+      "filenameToNameSearchPattern": "^ControlBoardMarble\\.webp$",
+      "filenameToNameReplacePattern": "stageControlBoardFront"
+    },
     // Deck records are assembled by complications:decks after this manifest is synced.
     {
       "id": "complicationsDeckSheets",

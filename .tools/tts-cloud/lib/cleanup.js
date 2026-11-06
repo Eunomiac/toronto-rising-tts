@@ -81,6 +81,22 @@ function survey(cfg, session, opts = {}) {
       remoteMissing: !file,
     };
   });
+  const currentByName = new Map();
+  for (const row of enriched.filter(row => row.area === "mirror" || row.area === "saveOnly")) {
+    const name = row.name.toLowerCase();
+    if (!currentByName.has(name)) currentByName.set(name, []);
+    currentByName.get(name).push(row);
+  }
+  for (const row of enriched) {
+    const candidates = (currentByName.get(row.name.toLowerCase()) ?? []).filter(other => other.key !== row.key);
+    const sameFolder = candidates.filter(other => other.folder.toLowerCase() === row.folder.toLowerCase());
+    const replacements = sameFolder.length ? sameFolder : candidates;
+    if (replacements.length === 1) {
+      const replacement = replacements[0];
+      const folder = localFolderFor(cfg.cloudRoot, replacement.folder);
+      row.replacement = { path: `assets/${folder ? `${folder}/` : ""}${replacement.name}`, sha1: replacement.sha1, job: replacement.job };
+    }
+  }
   const unindexedRemote = [...remote.values()].flat().map(({ name }) => name)
     .filter(name => !indexedRemote.has(name) && name !== "CloudInfo.bson");
   return { rows: enriched, ledger, inUse, saveKinds, unindexedRemote };

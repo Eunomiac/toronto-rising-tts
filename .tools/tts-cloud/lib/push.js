@@ -23,8 +23,9 @@ const {
 } = require("./assets_tree.js");
 const { editIndex, readIndex, remoteFilesByFoldedKey, rowsFromIndex, ugcMatchKey } = require("./cloud_index.js");
 const { uploadFiles, moveFiles, deleteFiles } = require("./cloud_ops.js");
-const { isTtsRunning, PROTECTED_CLOUD_FOLDER, SAVE_ONLY_FOLDER } = require("./cloud_config.js");
+const { isTtsRunning, PROTECTED_CLOUD_FOLDER, SAVE_ONLY_FOLDER, REPO_ROOT } = require("./cloud_config.js");
 const { buildInUseIndex } = require("./in_use.js");
+const { planOrphanRetirements } = require("./retired-assets.js");
 
 const PROTECTED_INDEX = "index.json";
 
@@ -195,12 +196,20 @@ function planPush(cfg, session) {
   }
 
   const ledgerKeys = new Set(Object.values(ledger.files).map((e) => e.key));
-  const cloudOnly = rows.filter((r) => {
+  const untracked = rows.filter((r) => {
     const folder = localFolderFor(cfg.cloudRoot, r.folder);
     if (folder === null || isPushExcluded(folder) || folder.split("/")[0] === SAVE_ONLY_FOLDER) return false;
     return !liveKeys.has(r.key) && !ledgerKeys.has(r.key) && !aliasKeys.has(r.key);
   });
 
+  const tokenCache = path.join(REPO_ROOT, ".cache", "npc-tokens.json");
+  const tokenKeys = fs.existsSync(tokenCache) ? Object.keys(JSON.parse(fs.readFileSync(tokenCache, "utf8"))) : [];
+  for (const candidate of planOrphanRetirements(untracked, local, cfg.cloudRoot, tokenKeys)) {
+    if (candidateKeys.has(candidate.row.key)) continue;
+    candidateKeys.add(candidate.row.key);
+    deleteCandidates.push(candidate);
+  }
+  const cloudOnly = untracked.filter(row => !candidateKeys.has(row.key));
   return { rows, ledger, local, inSync, uploads, moves, caseAliases, liveKeys, deleteCandidates, staleLedgerPaths, cloudOnly, localDuplicates };
 }
 

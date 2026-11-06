@@ -27,6 +27,7 @@ const MANIFEST_PATH = path.join(REPO_ROOT, "lib", "json", "cloud-assets.json");
 const { loadCloudConfig } = require("./tts-cloud/lib/cloud_config.js");
 const { loadLedger, scanAssets } = require("./tts-cloud/lib/assets_tree.js");
 const { planPush, applyPush, applyDeletes, refreshSaveOnly } = require("./tts-cloud/lib/push.js");
+const { readIndex, rowsFromIndex } = require("./tts-cloud/lib/cloud_index.js");
 const { resolveAssetTargets, writeAtomic, parseUserRegExp } = require("./custom-ui-assets/lib/custom-ui-assets-save.js");
 const { findExistingConfig, backupSaveBeforeWrite } = require("./custom-ui-assets/lib/tts-assets-config.js");
 
@@ -600,7 +601,7 @@ async function main() {
       for (const d of plan.localDuplicates) warn(`DUPLICATE LOCAL ${d.file}: same file as ${d.sameAs}`);
       if (!cli.dryRun) {
         await applyPush(cfg, session, plan, { label: "build", log });
-        const so = refreshSaveOnly(cfg, session, plan.rows);
+        const so = refreshSaveOnly(cfg, session, rowsFromIndex(readIndex(session).doc));
         if (so.written + so.removed > 0) log(`Save Only: ${so.written} updated, ${so.removed} removed.`);
       }
     }

@@ -1,6 +1,19 @@
 {
   "cloudRoot": "Vampire the Masquerade 5E",
   "jobs": {
+    "stageControlBoard": {
+      "output": "ObjectImage",
+      "folder": "Objects/Stage",
+      "rows": [
+        {
+          "path": "Objects/Stage/ControlBoardMarble.webp",
+          "name": "stageControlBoardFront",
+          "sha1": "7669357326F5E7E830C2D7CEDB43938A9C6A551D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12837831978345969135/7669357326F5E7E830C2D7CEDB43938A9C6A551D/",
+          "size": 152828
+        }
+      ]
+    },
     "complicationsDeckSheets": {
       "output": "Manifest",
       "folder": "Deck of Complications",

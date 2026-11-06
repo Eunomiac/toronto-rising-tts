@@ -51,6 +51,28 @@ test("plans index-only cleanup only for case aliases sharing one stored file and
   }
 });
 
+test("plans superseded Cloud versions even after the ledger moved to the current file", t => {
+  const assetsDir = fs.mkdtempSync(path.join(os.tmpdir(), "tr-cloud-version-"));
+  t.after(() => fs.rmSync(assetsDir, { recursive: true, force: true }));
+  const currentBytes = Buffer.from("current art"), oldBytes = Buffer.from("old art");
+  const currentHash = sha1Hex(currentBytes), oldHash = sha1Hex(oldBytes);
+  const cloudRoot = "Test Cloud";
+  const currentKey = `${currentHash}_card.webp`, oldKey = `${oldHash}_card.webp`;
+  const currentUrl = `https://steamusercontent-a.akamaihd.net/ugc/2/${currentHash}/`;
+  const oldUrl = `https://steamusercontent-a.akamaihd.net/ugc/1/${oldHash}/`;
+  fs.writeFileSync(path.join(assetsDir, "card.webp"), currentBytes);
+  saveLedger(assetsDir, { cloudRoot, files: { "card.webp": { key: currentKey, url: currentUrl, size: currentBytes.length } } });
+  const index = serializeIndex({
+    [currentKey]: makeIndexEntry({ name: "card.webp", url: currentUrl, folder: cloudRoot, size: currentBytes.length }),
+    [oldKey]: makeIndexEntry({ name: "card.webp", url: oldUrl, folder: cloudRoot, size: oldBytes.length }),
+  });
+  const session = { readFile: () => index };
+  const plan = planPush({ assetsDir, cloudRoot }, session);
+  assert.deepEqual(plan.inSync.map(x => x.row.key), [currentKey]);
+  assert.deepEqual(plan.deleteCandidates.map(x => x.row.key), [oldKey]);
+  assert.deepEqual(plan.cloudOnly, []);
+});
+
 test("safeProtectedRelPath rejects paths that can escape the mirror", () => {
   assert.equal(safeProtectedRelPath("NPC Art/old.webp"), "NPC Art/old.webp");
   assert.throws(() => safeProtectedRelPath("../old.webp"), /Unsafe/);

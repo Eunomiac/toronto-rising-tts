@@ -22,7 +22,7 @@ function printPlan(plan) {
   for (const { alias, canonical } of plan.caseAliases) console.log(`alias   ${alias.name} → ${canonical.name} (index only)`);
   for (const c of plan.deleteCandidates) console.log(`delete  ${c.row.folder}/${c.row.name} (${c.reason})`);
   if (plan.cloudOnly.length > 0) {
-    console.log(`${plan.cloudOnly.length} Cloud file(s) under the root were never synced from assets/ (see npm run cloud:strays).`);
+    console.log(`${plan.cloudOnly.length} Cloud version(s) under the root are not owned by the current mirror (see npm run cloud:strays).`);
   }
 }
 

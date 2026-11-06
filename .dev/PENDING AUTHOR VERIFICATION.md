@@ -26,6 +26,8 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### Reduced session-start save
 
+**Cloud version cleanup:** Run FULL, then `npm run cloud:strays`. There should be no unused Cloud versions from the obsolete token names or superseded token/deck images. Check that current Enzo and Lexi tokens, the Complications decks, and the control board front still render normally. The board front now comes from the stageControlBoard job in assets/Objects/Stage, with its existing image URL preserved.
+
 **ForcePurge and build wording:** With TTS closed, run FULL using the current review sheet. Check that the main save no longer contains the removed music-library entries or debug UI registrations, and that the session-start copy also omits them. Its summary should explicitly say that five bundle URLs (18 objects) were removed from the session-start save for staged onboarding. Load the copy and check the stage board, control board, roll-broadcast images, and both normal and Hunger dice. A remaining Resolve decision should stop preflight with a clear message.
 
 **Live review import:** Change a decision in the static review area of Integrated assets, then run FULL. Preflight should report loading the decisions from Google Sheets without asking for a CSV. The session-start report should include the review source and fetch time. If the sheet cannot be read, FULL should stop during preflight before modifying the save or Cloud assets.

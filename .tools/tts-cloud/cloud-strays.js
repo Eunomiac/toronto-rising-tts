@@ -24,6 +24,7 @@ const { isPushExcluded, loadLedger, saveLedger, scanAssets } = require("./lib/as
 const { survey, describe, confirmDeletes } = require("./lib/cleanup.js");
 const { stripJsonc, validateConfig } = require("../cloud-asset-sync.js");
 const { parseUserRegExp } = require("../custom-ui-assets/lib/custom-ui-assets-save.js");
+const { describeCloudStray } = require("./lib/retired-assets.js");
 
 const JOBS_CONFIG = path.resolve(__dirname, "..", "cloud-asset-sync.jsonc");
 
@@ -66,8 +67,11 @@ async function main() {
     }
 
     const cloudOnly = s.rows.filter((r) => r.area === "rootOnly" || r.area === "legacy");
-    console.log("\nCloud-only strays (under the root but not in assets/, or in the legacy folder):");
-    for (const r of cloudOnly) console.log(`  ${r.inUse ? "IN USE " : "unused "}${describe(r)}`);
+    console.log("\nCloud versions not tracked by the current mirror (may share filenames with current assets):");
+    for (const r of cloudOnly) {
+      console.log(`  ${r.inUse ? "IN USE " : "unused "}${describe(r)}`);
+      console.log(`    ${describeCloudStray(r, r.replacement)}`);
+    }
     if (cloudOnly.length === 0) console.log("  none");
 
     const delCloud = cloudOnly.filter((r) => !r.inUse);
