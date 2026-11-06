@@ -31,6 +31,7 @@ import {
   rollTypeLabel,
   toggleCondition,
   toggleStructural,
+  transferableMargin,
   withLocalPools,
   type RollOptionsDraft
 } from "./view";
@@ -384,7 +385,7 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
         event.dataTransfer.effectAllowed = "copyMove";
         const post = roll.done || roll.phase === "postRoll" || roll.phase === "resolved";
         startNativeDrag(event, {
-          dragKind: post ? "pcRollPostroll" : "pcRollPreroll", color, rollType: roll.rollType, margin: roll.result?.margin, summary: `${roll.name}: ${roll.result?.text ?? "Roll pending"}`
+          dragKind: post ? "pcRollPostroll" : "pcRollPreroll", color, rollType: roll.rollType, margin: transferableMargin(roll), summary: `${roll.name}: ${roll.result?.text ?? "Roll pending"}`
         }, { label: `${roll.name} · ${rollTypeLabel(roll.rollType)}` });
       }}
     >
