@@ -6,6 +6,7 @@ const { ugcMatchKey } = require("../tts-cloud/lib/cloud_index.js");
 const DECISIONS = new Set(["Keep", "Prune", "Purge", "Investigate"]);
 const SCRIPT_FIELDS = new Set(["LuaScript", "LuaScriptState", "XmlUI"]);
 const urlKey = (url) => ugcMatchKey(url) ?? url;
+const isSkyboxReference = ({ path }) => path.length === 1 && path[0] === "SkyURL";
 
 function readDecisions(csv) {
   const [headers, ...rows] = parseCsv(csv.replace(/^\uFEFF/, ""));
@@ -61,12 +62,15 @@ function scanAssetUrls(value) {
 function planSessionStart(save, decisions) {
   if (!Array.isArray(save.ObjectStates)) throw new Error("The source save has no ObjectStates array.");
   const urls = scanAssetUrls(save);
+  const skyboxKey = typeof save.SkyURL === "string" ? urlKey(save.SkyURL) : null;
+  const skybox = urls.get(skyboxKey)?.find(isSkyboxReference);
   const pruned = [];
   const purge = [];
   const investigate = [];
   const removedObjects = new Set();
   for (const [key, reviewed] of decisions) {
-    const references = urls.get(key) ?? [];
+    const references = (urls.get(key) ?? []).filter(ref => !isSkyboxReference(ref));
+    if (skybox && key === skyboxKey && !references.length) continue;
     const entry = { ...reviewed, references };
     if (reviewed.decision === "Purge") purge.push(entry);
     if (reviewed.decision === "Investigate") investigate.push(entry);
@@ -102,7 +106,9 @@ function planSessionStart(save, decisions) {
     report: {
       distinctAssetUrls: { before: urls.size, after: after.size },
       topLevelObjects: { before: save.ObjectStates.length, after: retained.length },
-      unreviewedUrls: [...urls.keys()].filter(key => !decisions.has(key)).length,
+      retainedSkybox: skybox?.url ?? null,
+      unreviewedUrls: [...urls].filter(([key, references]) =>
+        !decisions.has(key) && references.some(ref => !isSkyboxReference(ref))).length,
       pruned, purge, investigate,
       deferredKnownBytes: pruned.reduce((sum, entry) => sum + (entry.knownBytes ?? 0), 0),
       deferredUnknownSizes: pruned.filter(entry => entry.knownBytes === null).length,

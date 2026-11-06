@@ -41,6 +41,44 @@ test("fails closed for drift, unsupported placements, and collateral assets", ()
   assert.throws(() => planSessionStart({ ObjectStates: [] }, review), /no longer occurs/);
 });
 
+test("automatically keeps whichever image is the active SkyURL", () => {
+  for (const skybox of ["https://example.test/old-skybox.jpg", "https://example.test/another-skybox.webp"]) {
+    const source = fixture();
+    source.SkyURL = skybox;
+    source.LuaScriptState = JSON.stringify({ currentPhase: "Intermission" });
+    const plan = planSessionStart(source, review);
+    assert.equal(plan.report.retainedSkybox, skybox);
+    assert.equal(plan.report.unreviewedUrls, 0);
+    assert.equal(createSessionStart(source, plan, "lua", "xml").SkyURL, skybox);
+    assert.deepEqual(plan.report.distinctAssetUrls, { before: 3, after: 2 });
+  }
+});
+
+test("the active skybox is retained even when its review says Prune, Purge or Investigate", () => {
+  const source = { ...fixture(), SkyURL: "https://example.test/sky.jpg" };
+  for (const decision of ["Prune", "Purge", "Investigate"]) {
+    const decisions = new Map(review);
+    decisions.set(source.SkyURL, { url: source.SkyURL, decision });
+    const plan = planSessionStart(source, decisions);
+    assert.equal(plan.report.retainedSkybox, source.SkyURL);
+    assert.equal(plan.report.pruned.length, 1);
+    assert.equal(plan.report.purge.length, 0);
+    assert.equal(plan.report.investigate.length, 0);
+  }
+});
+
+test("the skybox allowance does not exempt another use of the same URL", () => {
+  const source = { ...fixture(), SkyURL: "https://example.test/shared-sky.jpg" };
+  source.CustomUIAssets.push({ Name: "other-use", URL: source.SkyURL });
+  assert.equal(planSessionStart(source, review).report.unreviewedUrls, 1);
+  const decisions = new Map(review);
+  decisions.set(source.SkyURL, { url: source.SkyURL, decision: "Purge" });
+  const plan = planSessionStart(source, decisions);
+  assert.deepEqual(plan.report.purge[0].references.map(ref => ref.path), [["CustomUIAssets", 1, "URL"]]);
+  decisions.set(source.SkyURL, { url: source.SkyURL, decision: "Prune" });
+  assert.throws(() => planSessionStart(source, decisions), /needs a restore handler/);
+});
+
 test("preserves chronicle state and UI assets while staging only restore metadata in saved state", () => {
   const source = fixture();
   source.LuaScriptState = JSON.stringify({ currentPhase: "Intermission", sessionNum: 42, debug: { assumeConnected: true } });

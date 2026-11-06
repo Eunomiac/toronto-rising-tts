@@ -26,6 +26,8 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### Reduced session-start save
 
+**Skybox retention:** Save the main game with any chosen skybox, then run FULL. The report should say the active skybox was kept automatically, even if that image has no review decision. Load the generated session-start copy and check that it uses that skybox. Other uses of the image still require a review decision.
+
 **How to verify:** Load the session-start copy from the TTS main menu. Check that only the host sees the centered onboarding bar. Once the host table is ready, connect a player. Check that their assigned color appears while their chair, camera, and HUD update wait. Click **1 Load Bundles**, **2 Refresh HUD**, then **3 Seat Players**, checking that each button becomes available after the previous one finishes. The bar should disappear and the player's chair, camera, and HUD should be ready. Check the soundscape, table fog, weather particles, and Hunger smoke. Connect again after finishing and check that seating works without rebuilding the Global HUD.
 
 #### Global blindfold during scene and table changes

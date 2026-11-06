@@ -162,6 +162,7 @@ function main() {
   }
   console.log(`Asset URLs ${report.distinctAssetUrls.before} → ${report.distinctAssetUrls.after}; top-level objects ${report.topLevelObjects.before} → ${report.topLevelObjects.after}.`);
   console.log(`Deferred ${report.pruned.length} reviewed bundles (${report.deferredKnownBytes.toLocaleString("en-CA")} known bytes, ${report.deferredUnknownSizes} unknown sizes).`);
+  if (report.retainedSkybox) console.log("Kept the active skybox automatically (SkyURL).");
   console.log(`Left ${report.purge.length} Purge and ${report.investigate.length} Investigate decisions for dependency review, plus ${report.unreviewedUrls} current URLs without a decision.`);
 }
 

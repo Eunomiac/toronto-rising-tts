@@ -13,9 +13,17 @@ Source of truth:
 Status:
 - current
 
+## Asset review inventory
+
+Refresh the raw input for the asset review sheet with `node .tools/tts-save/export-join-assets.js --source "<full-save.json>" --output ".dev/build-logs/join-assets-latest.csv"`. This read-only export includes save and object URL fields, Global and per-object UI assets, nested objects, and alternate states. It joins the current Cloud job manifest and ledger, reports known sizes and conflicting sizes, and lists mirror paths only when the files exist locally. Embedded Lua, saved script state, and XML are excluded from the direct-download inventory. Batch and Decision columns are left blank for review.
+
+Keep review decisions in the sheet's static area. When refreshing that area, match current URLs first and use a unique identical SHA-1 only for confirmed file-content matches. Preserve manual decisions, paths, labels, and notes together. Keep historical records explicitly marked when their URLs disappear from the current save. A new image with different contents needs review even when its filename resembles an older image.
+
 ## Between-session start save
 
 Save the main game in Intermission with the latest scripts. Put a CSV export of the **Integrated assets** tab at `.dev/session-start-decisions.local.csv`, and update it whenever the review changes. FULL reads the static URL column beside **Manual decision** and, as its last step, regenerates `TS_Save_9001.json` in the configured Saves folder from the freshly built main save. The build replaces its own previous copy only after the new file is ready. It refuses to replace an unrelated save in slot 9001. The report is at `.dev/build-logs/session-start-report.json`.
+
+The current `SkyURL` is always retained automatically, regardless of the selected skybox or its review decision. The report records it as `retainedSkybox` and excludes that use from missing decisions. Other uses of the same image, including Custom UI Assets and object textures, still require review.
 
 For a one-off preview or a different output file, run the generator directly. Use a new filename for a one-off save.
 
