@@ -6,6 +6,9 @@
  *
  * Run from repo root: node .dev/scripts/embed_ui_global_xml_docs.js
  * Also wired into npm run build:all-tooling / package.json script ui-global-xml:embed.
+ * Unchanged output is preserved; changed output replaces the module atomically.
+ * Windows file-access retries are bounded; persistent errors still stop the build.
+ * Writer checks: node --test .dev/scripts/lib/write_generated_file.test.js
  *
  * Include resolution (mirrors Rolandostar / TTS Save & Play for this repo):
  *   1. Relative to the including file's directory
@@ -17,6 +20,7 @@ const fs = require("fs");
 const path = require("path");
 
 const { makeLongBracketLiteral } = require("./generate_csheet_defaults_lua");
+const { writeGeneratedFile } = require("./lib/write_generated_file.js");
 
 const GENERATOR_REL = ".dev/scripts/embed_ui_global_xml_docs.js";
 const OUT_REL = ["lib", "ui_global_xml_docs.ttslua"];
@@ -180,13 +184,12 @@ function main() {
   const minimalAssetNames = extractCustomAssetNames(minimalXml);
   const lua = buildLuaModule(fullXml, minimalXml, minimalAssetNames);
 
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, lua, "utf8");
+  const changed = writeGeneratedFile(outPath, lua);
 
   const outRel = path.relative(projectRoot, outPath).split(path.sep).join("/");
   const sizeMb = (fs.statSync(outPath).size / (1024 * 1024)).toFixed(2);
   console.log(
-    `[ui_global_xml_docs] Wrote ${outRel} (${sizeMb} MB; full=${(fullXml.length / 1024).toFixed(0)} KB, minimal=${(minimalXml.length / 1024).toFixed(0)} KB; minimalAssets=${minimalAssetNames.length})`
+    `[ui_global_xml_docs] ${changed ? "Wrote" : "Unchanged"} ${outRel} (${sizeMb} MB; full=${(fullXml.length / 1024).toFixed(0)} KB, minimal=${(minimalXml.length / 1024).toFixed(0)} KB; minimalAssets=${minimalAssetNames.length})`
   );
 }
 
