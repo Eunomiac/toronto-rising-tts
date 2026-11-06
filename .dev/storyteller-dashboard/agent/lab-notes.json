@@ -1,3 +1,24 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "sketch": "scenes",
+      "x": 350,
+      "y": 403,
+      "text": "Reduce the spacing between tokens in expanded token groups; groups with seven tokens just barely overflow to the right.  Groups with more than seven tokens should wrap; currently, their tokens overflow to the right and are inaccessible.",
+      "status": "open",
+      "createdAt": "2026-11-06T16:43:23.992Z",
+      "updatedAt": "2026-11-06T16:43:23.992Z"
+    },
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 783,
+      "y": 579,
+      "text": "There is an excessively long delay between sending an action from the dashboard stage queue (e.g. changing an NPC's light mode, or moving them to a new location). Is there any way to speed this up, making the game stage more responsive to changes sent from the dashboard queue?",
+      "status": "open",
+      "createdAt": "2026-11-06T16:46:02.126Z",
+      "updatedAt": "2026-11-06T16:46:02.126Z"
+    }
+  ]
 }
