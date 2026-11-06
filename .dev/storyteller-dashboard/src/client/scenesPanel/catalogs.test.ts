@@ -42,11 +42,11 @@ describe("control-board polar families", () => {
     expect(snaps.stageBoard?.scaleZ).toBeGreaterThan(0);
   });
 
-  it("uses STAGE Transform scale as stagger half-extents (not scale/2)", () => {
+  it("uses the built-in stage block's full scale to calculate stagger half-extents", () => {
     const stage = snaps.stageBoard;
     expect(stage).toBeDefined();
-    expect(stage?.halfWidthX).toBeCloseTo(Math.abs(stage?.scaleX ?? 0), 5);
-    expect(stage?.halfDepthZ).toBeCloseTo(Math.abs(stage?.scaleZ ?? 0), 5);
+    expect(stage?.halfWidthX).toBeCloseTo(Math.abs(stage?.scaleX ?? 0) / 2, 5);
+    expect(stage?.halfDepthZ).toBeCloseTo(Math.abs(stage?.scaleZ ?? 0) / 2, 5);
   });
 
   it("matches in-game CONTROL_BOARD snap UVs from the coordinate CSV", () => {

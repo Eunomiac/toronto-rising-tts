@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { planSessionStart, readDecisions, forcePurgeAssets } = require("./session-start-assets.js");
-const { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson } = require("./build-session-start.js");
+const { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson, hasIncompleteOnboarding } = require("./build-session-start.js");
 
 const bundle = "https://steamusercontent-a.akamaihd.net/ugc/42/0123456789ABCDEF0123456789ABCDEF01234567/";
 const keep = "https://example.test/keep.png";
@@ -166,6 +166,13 @@ test("bundles identical emitter scripts once, separately from the per-object JSO
   assert.match(provider, /\["abcdef"\].*LuaScript = 1/);
   assert.match(provider, /\["012345"\].*LuaScript = 1, XmlUI = 2/);
   assert.match(provider, /function GlobalSessionStartRestoreData\(guid\)\n[^\n]+\n  local data = JSON.decode/);
+});
+
+test("unfinished onboarding is distinct from a completed session-start save", () => {
+  assert.equal(hasIncompleteOnboarding({ connectionControls: { generatedSessionStart: true, deferSetXml: true, sessionStartJoin: false } }), false);
+  for (const field of ["sessionStartJoin", "joinXmlArmed", "joinColdPoolsActive", "joinColdPoolsBackup", "joinXmlCustomAssetsBackup"]) {
+    assert.equal(hasIncompleteOnboarding({ connectionControls: { [field]: field.endsWith("Backup") ? {} : true } }), true);
+  }
 });
 
 test("FULL can replace its generated slot while one-off saves still refuse to overwrite", (t) => {

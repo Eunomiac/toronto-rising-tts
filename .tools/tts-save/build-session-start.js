@@ -12,15 +12,20 @@ const { expandXmlFile } = require("../../.dev/scripts/embed_ui_global_xml_docs.j
 const { escapeLuaString } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
 const { planSessionStart, assertReviewResolved } = require("./session-start-assets.js");
 const { loadReview } = require("./session-start-review.js");
+const { assertStageBlock } = require("./stage-geometry.js");
 
 const root = path.resolve(__dirname, "../..");
+
+function hasIncompleteOnboarding(state) {
+  const controls = state.connectionControls ?? {};
+  return Boolean(controls.sessionStartJoin || controls.joinXmlArmed || controls.joinColdPoolsActive ||
+    controls.joinColdPoolsBackup || controls.joinXmlCustomAssetsBackup);
+}
 
 function readSourceState(save) {
   const state = JSON.parse(save.LuaScriptState);
   if (state.currentPhase !== "Intermission") throw new Error("Save the source in Intermission before building a session-start copy.");
-  const controls = state.connectionControls ?? {};
-  if (controls.sessionStartJoin || controls.joinXmlArmed || controls.joinColdPoolsActive ||
-      controls.joinColdPoolsBackup || controls.joinXmlCustomAssetsBackup) {
+  if (hasIncompleteOnboarding(state)) {
     throw new Error("Use a full save with all join stages completed as the source.");
   }
   return state;
@@ -119,7 +124,6 @@ function bundleGlobal(objects) {
 function fullOptions() {
   const { saveFile: source, savesDir } = loadCloudConfig();
   const output = path.join(savesDir, "TS_Save_9001.json");
-  assertSessionStartSlot(source, output);
   return { source, output, report: path.join(root, ".dev", "build-logs", "session-start-report.json") };
 }
 
@@ -146,6 +150,19 @@ async function main() {
   const { decisions } = review;
   assertReviewResolved(decisions);
   console.log(`Loaded ${decisions.size} reviewed asset decisions from ${review.fetchedAt ? "Integrated assets (Google Sheets)" : review.source}.`);
+  if ((replace || preflight) && hasIncompleteOnboarding(JSON.parse(save.LuaScriptState))) {
+    const reason = "The source save has unfinished onboarding; complete it or restore a full source before generating a session-start copy.";
+    console.warn(`[session-start] SKIP ${preflight ? "session-start preflight" : "session-start generation"}: ${reason} ${preflight ? "FULL imports and asset tooling will continue." : "TS_Save_9001.json was not refreshed."}`);
+    if (replace) {
+      fs.mkdirSync(path.dirname(values.report), { recursive: true });
+      writeJson(values.report, { status: "skipped", reason, source, reviewSource: review.source, reviewFetchedAt: review.fetchedAt }, true);
+    }
+    return;
+  }
+  if (replace || preflight) assertSessionStartSlot(source, values.output);
+  const stageGuid = fs.readFileSync(path.join(root, "lib", "guids.ttslua"), "utf8").match(/STAGE_BOARD\s*=\s*"([0-9a-f]{6})"/i)?.[1];
+  if (!stageGuid) throw new Error("Missing G.GUIDS.STAGE_BOARD.");
+  assertStageBlock(save.ObjectStates.find(object => object.GUID === stageGuid));
   if (preflight) {
     readSourceState(save);
     return;
@@ -184,4 +201,4 @@ if (require.main === module) {
   main().catch(error => { console.error(error.message); process.exitCode = 1; });
 }
 
-module.exports = { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson };
+module.exports = { assertSessionStartSlot, createSessionStart, renderRestoreProvider, writeJson, hasIncompleteOnboarding };

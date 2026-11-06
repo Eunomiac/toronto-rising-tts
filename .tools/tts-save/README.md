@@ -27,6 +27,10 @@ Preflight downloads and validates the review before any save or Cloud work start
 
 As its last step, FULL regenerates `TS_Save_9001.json` in the configured Saves folder from the freshly built main save. The build replaces its own previous copy only after the new file is ready. It refuses to replace an unrelated save in slot 9001. The report is at `.dev/build-logs/session-start-report.json`.
 
+Unfinished onboarding no longer prevents FULL from running its imports and asset tooling. Preflight reports that session-start preparation is skipped, and the final step writes a `status: "skipped"` report. The existing `TS_Save_9001.json` stays unchanged. The source's deferred objects and onboarding flags are preserved; this does not turn a partial save into a full one. A direct one-off session-start generation still rejects an incomplete source.
+
+The stage floor is a black built-in `BlockSquare` with GUID `3d2aef` and nickname `STAGE_BOARD`. It has no CustomImage or download dependency. The repaired footprint uses position `(0, -200, 62.0977)`, rotation `(0, 0, 0)`, and scale `(1600, 1, 577.809692)`, retaining the calibrated half-extents `(800, 288.904846)`. The Dashboard generator uses the block's full size divided by two and rejects the obsolete Custom_Tile. Changing its footprint also changes the mapping; regenerate catalogs after saving a deliberate resize.
+
 The current `SkyURL` is always retained automatically, regardless of the selected skybox or its review decision. The report records it as `retainedSkybox` and excludes that use from missing decisions. Other uses of the same image, including Custom UI Assets and object textures, still require review.
 
 For a one-off preview or a different output file, run the generator directly. It also reads the live review by default. Use a new filename for a one-off save. An explicit `--decisions` file is available for deliberate offline inspection.

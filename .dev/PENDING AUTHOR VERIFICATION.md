@@ -26,6 +26,8 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### Reduced session-start save
 
+**Native stage and interrupted builds:** Run FULL on the repaired main save and load it. The stage floor should be black with no missing image prompt. Place an NPC in a center and a far stage group from the Dashboard; check its position and lighting, then enter and leave Scatter to check that the stage returns home. The replacement block retains stage GUID 3d2aef. FULL on an unfinished onboarding save should still run its imports and asset tooling, but clearly report that the session-start copy was not refreshed. It must preserve the unfinished source and the existing copy.
+
 **Cloud version cleanup:** Run FULL, then `npm run cloud:strays`. There should be no unused Cloud versions from the obsolete token names or superseded token/deck images. Check that current Enzo and Lexi tokens, the Complications decks, and the control board front still render normally. The board front now comes from the stageControlBoard job in assets/Objects/Stage, with its existing image URL preserved.
 
 **ForcePurge and build wording:** With TTS closed, run FULL using the current review sheet. Check that the main save no longer contains the removed music-library entries or debug UI registrations, and that the session-start copy also omits them. Its summary should explicitly say that five bundle URLs (18 objects) were removed from the session-start save for staged onboarding. Load the copy and check the stage board, control board, roll-broadcast images, and both normal and Hunger dice. A remaining Resolve decision should stop preflight with a clear message.

@@ -9,15 +9,16 @@
  *   .dev/storyteller-dashboard/data/control-board-snaps.json
  *
  * Run from repo root: node .dev/scripts/generate_dashboard_scene_catalogs.js
- * Polar snap stagger uses STAGE_BOARD Transform scale as UV half-extents (the
- * conversion that matches installed CONTROL_BOARD snap UVs). `scale / 2` and a
- * CONTROL_BOARD-aspect substitute for live `scaleZ` both miss neighbor snaps.
+ * Polar snap stagger uses the built-in STAGE_BOARD block's world half-extents.
+ * BlockSquare Transform scale is full width/depth. The migration doubles the
+ * old image tile's X/Z scales to preserve the calibrated footprint and snap UVs.
  * Chained from `npm run dashboard:scene-catalogs` (`build:all-tooling`) and from
  * Storyteller Dashboard `npm run dev` / `npm run build`.
  */
 
 const fs = require("fs");
 const path = require("path");
+const { stageWorldFromBlock } = require("../../.tools/tts-save/stage-geometry.js");
 const { resolveSavePath } = require("../../.tools/tts-save/resolve-save-path");
 
 const root = path.resolve(__dirname, "..", "..");
@@ -151,31 +152,6 @@ function extractBoardTransform(saveText, guid, nickname, label) {
 }
 
 /**
- * Lua `applyRadialStaggerUv` converts UV through STAGE world XZ, then back.
- * Installed CONTROL_BOARD snap UVs match when Transform scale is used as the
- * formula's half-extent (`u` 0–1 spans `2 * scale`), not `scale / 2` and not a
- * CONTROL_BOARD-aspect substitute for live `scaleZ`.
- *
- * @param {{ posX: number, posZ: number, scaleX: number, scaleZ: number, rotY: number }} stage
- */
-function staggerWorldFromStageScale(stage) {
-  const stageRotY = ((stage.rotY % 360) + 360) % 360;
-  let stageX = Math.abs(stage.scaleX);
-  let stageZ = Math.abs(stage.scaleZ);
-  if (Math.abs(stageRotY - 90) < 1 || Math.abs(stageRotY - 270) < 1) {
-    const swap = stageX;
-    stageX = stageZ;
-    stageZ = swap;
-  }
-  return {
-    centerX: stage.posX,
-    centerZ: stage.posZ,
-    halfWidthX: stageX,
-    halfDepthZ: stageZ,
-  };
-}
-
-/**
  * Site and District card images by UI asset name (`siteCard_<key>`, `districtCard_<key>`), from the
  * Cloud manifest (jobs siteCards, districtCards) — the same rows the save gets.
  *
@@ -203,7 +179,8 @@ function loadDashboardStageWorld(saveText, save) {
   const guidsSrc = fs.readFileSync(guidsPath, "utf8");
   const stageGuid = readGuidConstant(guidsSrc, "STAGE_BOARD");
   const stage = extractBoardTransform(saveText, stageGuid, "STAGE_BOARD", "G.GUIDS.STAGE_BOARD");
-  const world = staggerWorldFromStageScale(stage);
+  const stageObject = JSON.parse(saveText).ObjectStates.find(object => object.GUID === stageGuid);
+  const world = stageWorldFromBlock(stageObject);
   const where = save.source === "savesDir" ? "live TTS save" : "repo .dev snapshot";
   console.log(
     `STAGE_BOARD ${stageGuid} from ${save.saveFileName} (${where}): scale ${stage.scaleX} × ${stage.scaleZ}; stagger half-extents ${world.halfWidthX} × ${world.halfDepthZ}.`,
@@ -531,7 +508,7 @@ function snapUvPassesValidSnaps(group, u, v) {
 
 function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u, v, stage) {
   // Same formula as Lua applyRadialStaggerUv (STAGE world XZ inches, then back to u/v).
-  // `stage.halfWidthX/Z` are Transform scale (not scale/2); see staggerWorldFromStageScale.
+  // World half-extents of the built-in stage block, shared with Lua's bounds-based mapping.
   const k = familyK;
   const staggerStep = radialStagger;
   if (k === 0 || staggerStep === 0) {

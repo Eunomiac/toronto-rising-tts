@@ -70,7 +70,7 @@
     "tts-save:inject-global": "node .tools/tts-save/inject-bundled-global-from-save-name.js",
     "tts-save:inject-join-minimal": "node .tools/tts-save/inject-join-minimal-xml.js",
     "tts-save:session-start": "node .tools/tts-save/build-session-start.js",
-    "tts-save:session-start:test": "node --test .tools/tts-save/session-start-assets.test.js .tools/tts-save/session-start-review.test.js && fengari .tools/complications/run.lua .tools/tts-save/session-start-runtime.test.lua",
+    "tts-save:session-start:test": "node --test .tools/tts-save/session-start-assets.test.js .tools/tts-save/session-start-review.test.js .tools/tts-save/stage-geometry.test.js .tools/tts-save/full-onboarding.test.js && fengari .tools/complications/run.lua .tools/tts-save/session-start-runtime.test.lua && fengari .tools/complications/run.lua .tools/tts-save/stage-geometry-runtime.test.lua",
     "tts-save:measure-bundles": "node .tools/tts-save/measure-bundles.js",
     "tts-save:bundle-csheet-sample": "node .tools/tts-save/bundle-csheet-sample.js",
     "tts-save:migrate-seat-gmnotes:dry-run": "node .dev/scripts/migrate_seat_layout_gmnotes_save.js --dry-run --save .dev/TS_Save_230.json",
