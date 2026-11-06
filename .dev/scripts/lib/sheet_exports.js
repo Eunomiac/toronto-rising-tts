@@ -15,6 +15,7 @@ const list = (text) => String(text || "").split(",").map(s => s.trim()).filter(B
 const memoriamPeriods = row => list(row["Memoriam Periods"]).filter(period => period !== "~");
 const portraitOwners = row => list(row["Has Portrait"]).filter(owner => owner !== "~");
 const playerKeys = new Set(["lordLucien", "rashid", "aishe", "fomorach", "blackCaesar"]);
+const portraitRecipients = new Set([...playerKeys, "coterie"]);
 const bool = (text, label, blank = false) => {
   if (text === "" && blank) return false;
   if (!/^(TRUE|FALSE)$/i.test(text)) throw new Error(`${label}: expected TRUE or FALSE, got ${JSON.stringify(text)}`);
@@ -77,7 +78,7 @@ function validateSnapshot(snapshot) {
       throw new Error(`${key}: variant must be an NPC named ${parentKey}_<distinction> with a non-variant parent`);
     }
     const owners = portraitOwners(row);
-    if (owners.some(owner => !playerKeys.has(owner)) || new Set(owners).size !== owners.length) {
+    if (owners.some(owner => !portraitRecipients.has(owner)) || new Set(owners).size !== owners.length) {
       throw new Error(`${key}: invalid or duplicate portrait recipient`);
     }
     if (owners.length && row["Portrait Filename"] !== `npcPortrait_${key}.webp` &&

@@ -57,6 +57,22 @@ test("duplicate figure tiers, conflicting metadata, obsolete schemas and variant
   obsolete.tables.EXPORT_CHARACTERS_UNIQUE = obsolete.tables.EXPORT_CHARACTERS_NAMED;
   assert.throws(() => validateSnapshot(obsolete), /Unexpected export table EXPORT_CHARACTERS_UNIQUE/);
 });
+
+test("coterie portraits validate, render and inherit alongside PC portrait recipients", () => {
+  const snapshot = fixture();
+  const headers = spec("CHARACTERS_NAMED").headers;
+  for (const row of snapshot.tables.EXPORT_CHARACTERS_NAMED.slice(1)) {
+    row[headers.indexOf("Has Portrait")] = "coterie, rashid";
+    row[headers.indexOf("Portrait Filename")] = "npcPortrait_base.webp";
+  }
+  validateSnapshot(snapshot);
+  const { renderPortraitLua } = require("./lib/sheet_exports.js");
+  assert.match(renderPortraitLua(snapshot), /\["base_historical"\] = \{ \["coterie"\] = "npcPortrait_base", \["rashid"\] = "npcPortrait_base"/);
+  snapshot.tables.EXPORT_CHARACTERS_NAMED[1][headers.indexOf("Has Portrait")] = "unknown";
+  assert.throws(() => validateSnapshot(snapshot), /portrait recipient/);
+  snapshot.tables.EXPORT_CHARACTERS_NAMED[1][headers.indexOf("Has Portrait")] = "coterie, coterie";
+  assert.throws(() => validateSnapshot(snapshot), /duplicate portrait recipient/);
+});
 test("Compulsion numbers control variant identity, with one shared Influence", () => {
   const snapshot = fixture();
   assert.deepEqual(compulsions(snapshot).hunger.variants.map(v => v.card), [1, 2, 3, 4]);

@@ -266,10 +266,14 @@ function validateJob(job, targetGroups, seenIds) {
     throw new Error(`Job "${id}": targets / ownsAllRows are only valid on ${OUTPUT_OBJECT}.`);
   }
   if (j.portraitOwners !== undefined) {
-    if (output !== OUTPUT_OBJECT || !Array.isArray(j.portraitOwners) ||
-        j.portraitOwners.length !== out.targets.length || new Set(j.portraitOwners).size !== out.targets.length ||
+    const targetCount = output === OUTPUT_GLOBAL ? 1 : out.targets.length;
+    if ((output !== OUTPUT_OBJECT && output !== OUTPUT_GLOBAL) || !Array.isArray(j.portraitOwners) ||
+        j.portraitOwners.length !== targetCount || new Set(j.portraitOwners).size !== targetCount ||
         j.portraitOwners.some(owner => typeof owner !== "string" || !owner)) {
-      throw new Error(`Job "${id}": portraitOwners must name one distinct PC per object target.`);
+      throw new Error(`Job "${id}": portraitOwners must name one distinct recipient per UI asset target.`);
+    }
+    if (output === OUTPUT_GLOBAL && j.portraitOwners[0] !== "coterie") {
+      throw new Error(`Job "${id}": Global portrait recipient must be coterie.`);
     }
     out.portraitOwners = j.portraitOwners;
   }
@@ -499,6 +503,25 @@ function findLocalStrays(jobs, local) {
   return [...inScope].filter((rel) => !claimed.has(rel)).sort();
 }
 
+function collectPortraitAssignments(job, rows) {
+  const { portraitOwners } = require("../.dev/scripts/lib/sheet_exports.js");
+  const files = new Set();
+  const targets = new Map();
+  for (const row of rows) {
+    const owners = portraitOwners(row).filter(owner => job.portraitOwners.includes(owner));
+    if (!owners.length) continue;
+    const file = row["Portrait Filename"];
+    files.add(file);
+    const name = file.replace(/\.webp$/, "");
+    if (!targets.has(name)) targets.set(name, new Set());
+    for (const owner of owners) {
+      const target = job.output === OUTPUT_GLOBAL ? "global" : job.targets[job.portraitOwners.indexOf(owner)];
+      targets.get(name).add(target.toLowerCase());
+    }
+  }
+  return { files, targets };
+}
+
 async function main() {
   const cli = parseCli(process.argv.slice(2));
   const configRoot = JSON.parse(stripJsonc(fs.readFileSync(cli.configPath, "utf8")));
@@ -530,35 +553,31 @@ async function main() {
 
   const npcFiles = new Map();
   const portraitTargets = new Map();
+  const assignedPortraitFiles = new Set();
   const npcJobs = active.filter(job => job.portraitOwners || job.id === "npcFiguresNamed" || job.id === "npcFiguresGeneric");
   if (npcJobs.length) {
     const { loadSnapshot, dataOf, bool, portraitOwners } = require("../.dev/scripts/lib/sheet_exports.js");
     const snapshot = await loadSnapshot();
+    for (const row of dataOf(snapshot, "CHARACTERS_NAMED")) {
+      if (portraitOwners(row).length) assignedPortraitFiles.add(row["Portrait Filename"]);
+    }
     for (const job of npcJobs) {
       const kind = job.id === "npcFiguresGeneric" ? "GENERIC" : "NAMED";
-      const allowed = new Set();
-      const targets = new Map();
-      for (const row of dataOf(snapshot, `CHARACTERS_${kind}`)) {
-        if (job.portraitOwners) {
-          const owners = portraitOwners(row);
-          if (!owners.length) continue;
-          const file = row["Portrait Filename"];
-          allowed.add(file);
-          const name = file.replace(/\.webp$/, "");
-          if (!targets.has(name)) targets.set(name, new Set());
-          for (const owner of owners) {
-            const guid = job.targets[job.portraitOwners.indexOf(owner)];
-            if (!guid) throw new Error(`${file}: no Page 4 target for ${owner}`);
-            targets.get(name).add(guid.toLowerCase());
-          }
-        } else if (bool(row["Has Figurine"], row["API Key"])) {
-          allowed.add(row["Figurine Filename"]);
+      const rows = dataOf(snapshot, `CHARACTERS_${kind}`);
+      let allowed;
+      if (job.portraitOwners) {
+        const assignments = collectPortraitAssignments(job, rows);
+        allowed = assignments.files;
+        portraitTargets.set(job.id, assignments.targets);
+      } else {
+        allowed = new Set();
+        for (const row of rows) {
+          if (bool(row["Has Figurine"], row["API Key"])) allowed.add(row["Figurine Filename"]);
         }
       }
       const missing = [...allowed].filter(file => !fs.existsSync(path.join(cfg.assetsDir, job.folder, file)));
       if (missing.length) throw new Error(`Job "${job.id}": missing files in assets/${job.folder}: ${missing.join(", ")}`);
       npcFiles.set(job.id, allowed);
-      if (job.portraitOwners) portraitTargets.set(job.id, targets);
     }
   }
 
@@ -597,7 +616,8 @@ async function main() {
       const allowed = npcFiles.get(job.id);
       const jobFiles = allowed ? local.filter(file => file.folder === job.folder && allowed.has(file.name)) : local;
       if (allowed) {
-        for (const file of local) if (file.folder === job.folder && !allowed.has(file.name)) {
+        const assigned = job.portraitOwners ? assignedPortraitFiles : allowed;
+        for (const file of local) if (file.folder === job.folder && !assigned.has(file.name)) {
           warn(`STRAY assets/${job.folder}/${file.name}: no matching NPC export assignment`);
         }
       }
@@ -645,7 +665,7 @@ async function main() {
 
       for (const job of saveJobs.filter((j) => j.output !== OUTPUT_IMAGE)) {
         const rows = rowsByJob.get(job.id);
-        if (job.portraitOwners && saveRoot.LuaScriptState) {
+        if (job.output === OUTPUT_OBJECT && job.portraitOwners && saveRoot.LuaScriptState) {
           const state = JSON.parse(saveRoot.LuaScriptState);
           let changed = false;
           const seed = require("../lib/json/PC_Relationships.json");
@@ -783,4 +803,5 @@ module.exports = {
   renderLuaModule,
   parseCli,
   collectJobRows,
+  collectPortraitAssignments,
 };

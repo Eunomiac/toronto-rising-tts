@@ -5,6 +5,32 @@ const test = require("node:test");
 
 const { distinguishingLiteral, derivePurgePatterns, validateConfig, renderLuaModule, parseCli, collectJobRows } = require("./cloud-asset-sync.js");
 
+test("portrait jobs route shared and inherited art independently to Global and PC object assets", () => {
+  const { collectPortraitAssignments, stripJsonc } = require("./cloud-asset-sync.js");
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const jobs = validateConfig(JSON.parse(stripJsonc(fs.readFileSync(path.join(__dirname, "cloud-asset-sync.jsonc"), "utf8"))));
+  const globalJob = jobs.find(job => job.id === "coteriePortraits");
+  const pcJob = jobs.find(job => job.id === "csheetPage4Portraits");
+  const rows = [
+    { "Has Portrait": "coterie", "Portrait Filename": "npcPortrait_courtOnly.webp" },
+    { "Has Portrait": "rashid", "Portrait Filename": "npcPortrait_pcOnly.webp" },
+    { "Has Portrait": "coterie, rashid", "Portrait Filename": "npcPortrait_shared.webp" },
+    { "Has Portrait": "coterie, fomorach", "Portrait Filename": "npcPortrait_shared.webp" },
+    { "Has Portrait": "~", "Portrait Filename": "" },
+  ];
+  const court = collectPortraitAssignments(globalJob, rows);
+  const pc = collectPortraitAssignments(pcJob, rows);
+  assert.deepEqual([...court.files], ["npcPortrait_courtOnly.webp", "npcPortrait_shared.webp"]);
+  assert.deepEqual([...court.targets.get("npcPortrait_shared")], ["global"]);
+  assert.deepEqual([...pc.files], ["npcPortrait_pcOnly.webp", "npcPortrait_shared.webp"]);
+  assert.deepEqual(new Set(pc.targets.get("npcPortrait_shared")), new Set([pcJob.targets[1], pcJob.targets[0]]));
+  assert.equal(pc.targets.has("npcPortrait_courtOnly"), false);
+  assert.equal(court.targets.has("npcPortrait_pcOnly"), false);
+  assert.throws(() => validateConfig({ jobs: [{ id: "badPortrait", folder: "Portraits", output: "GlobalCustomUIAssets",
+    portraitOwners: ["rashid"], filenameToNameSearchPattern: "^npcPortrait_(.*)\\.webp$", filenameToNameReplacePattern: "npcPortrait_$1" }] }), /Global portrait recipient must be coterie/);
+});
+
 test("changed local art cannot publish a new hash paired with a stale Cloud URL when push is skipped", () => {
   const job = validateConfig({ jobs: [{ id: "sheets", folder: "Decks", output: "Manifest",
     filenameToNameSearchPattern: "^sheet_(.*)\\.png$", filenameToNameReplacePattern: "$1" }] })[0];

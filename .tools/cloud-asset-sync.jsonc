@@ -219,6 +219,14 @@
       "filenameToNameReplacePattern": "npcPortrait_$1"
     },
     {
+      "id": "coteriePortraits",
+      "folder": "NPC Art/Portraits",
+      "output": "GlobalCustomUIAssets",
+      "portraitOwners": ["coterie"],
+      "filenameToNameSearchPattern": "^npcPortrait_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "npcPortrait_$1"
+    },
+    {
       "id": "csheetPage5Dividers",
       "folder": "CSheets/Page5",
       "output": "ObjectCustomUIAssets",
