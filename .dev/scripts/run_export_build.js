@@ -35,7 +35,9 @@ async function main() {
     run(".dev/storyteller-dashboard/scripts/npc-stats/import.ts", env);
     console.log(full ? "[exports] All exports validated; asset joins follow cloud sync:" : "[exports] All exports generated successfully:", counts);
     if (full) {
-      const child = spawnSync(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "build:tooling-after-exports"], { cwd: root, env, stdio: "inherit", shell: process.platform === "win32" });
+      // This fixed command needs npm's platform shell launcher; pass no argument
+      // array with shell:true (Node DEP0190), and never interpolate input here.
+      const child = spawnSync("npm run build:tooling-after-exports", { cwd: root, env, stdio: "inherit", shell: true });
       if (child.error) throw child.error;
       if (child.status !== 0) throw new Error(`Remaining FULL tooling failed (${child.status})`);
       run(".tools/tts-save/build-session-start.js", env, ["--full"]);
