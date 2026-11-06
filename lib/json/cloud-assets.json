@@ -2361,6 +2361,13 @@
           "size": 1629008
         },
         {
+          "path": "HUD/CorePanel_Center/Coterie References/refPanel_Coteries_colorBlitz.webp",
+          "name": "refPanel_Coteries_colorBlitz",
+          "sha1": "DD19CC11476D26014A6D89174A22E2594D31666F",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14705930414339301236/DD19CC11476D26014A6D89174A22E2594D31666F/",
+          "size": 322162
+        },
+        {
           "path": "HUD/CorePanel_Center/Coterie References/refPanel_Coteries_fiveKeys.webp",
           "name": "refPanel_Coteries_fiveKeys",
           "sha1": "B95A1D8F6F27C98ACAD63FC72503C8537EAB44CB",
@@ -7967,6 +7974,13 @@
           "size": 12100
         },
         {
+          "path": "NPC Art/Portraits/npcPortrait_ahmadAlMasri.webp",
+          "name": "npcPortrait_ahmadAlMasri",
+          "sha1": "6D9BFEC75033557609D7A4EAE1D754499F2C6A73",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14763418646157425470/6D9BFEC75033557609D7A4EAE1D754499F2C6A73/",
+          "size": 25090
+        },
+        {
           "path": "NPC Art/Portraits/npcPortrait_christopherGiovanniJr.webp",
           "name": "npcPortrait_christopherGiovanniJr",
           "sha1": "A72600E6C8DA48116854F67F8DC28463C3423BAD",
@@ -8154,6 +8168,228 @@
           "sha1": "AA9F3F9B1E2481944DBD15E32E23071B6C665E80",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/12303567152679371914/AA9F3F9B1E2481944DBD15E32E23071B6C665E80/",
           "size": 22862
+        }
+      ]
+    },
+    "csheetPage3Portraits": {
+      "output": "ObjectCustomUIAssets",
+      "folder": "NPC Art/Portraits",
+      "rows": [
+        {
+          "path": "NPC Art/Portraits/npcPortrait_abbasFaruk.webp",
+          "name": "npcPortrait_abbasFaruk",
+          "sha1": "774EFAFBB4FB20DEDF5E768306F8B332FE994C7C",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10487442814128360440/774EFAFBB4FB20DEDF5E768306F8B332FE994C7C/",
+          "size": 12100
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_ahmadAlMasri.webp",
+          "name": "npcPortrait_ahmadAlMasri",
+          "sha1": "6D9BFEC75033557609D7A4EAE1D754499F2C6A73",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14763418646157425470/6D9BFEC75033557609D7A4EAE1D754499F2C6A73/",
+          "size": 25090
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_christopherGiovanniJr.webp",
+          "name": "npcPortrait_christopherGiovanniJr",
+          "sha1": "A72600E6C8DA48116854F67F8DC28463C3423BAD",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14981561135541419179/A72600E6C8DA48116854F67F8DC28463C3423BAD/",
+          "size": 13990
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_damienAbanda.webp",
+          "name": "npcPortrait_damienAbanda",
+          "sha1": "A7AD3CCCC31CD5655FF765C6FF3D59BBA9E8F392",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15849933657834596666/A7AD3CCCC31CD5655FF765C6FF3D59BBA9E8F392/",
+          "size": 13322
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_drake.webp",
+          "name": "npcPortrait_drake",
+          "sha1": "65729625D4F4BBB67AD0FDFE3874CE79D9EF34E5",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15030004288565134246/65729625D4F4BBB67AD0FDFE3874CE79D9EF34E5/",
+          "size": 10462
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_enzoCaruso.webp",
+          "name": "npcPortrait_enzoCaruso",
+          "sha1": "319B238CFFD40083F68316AF788E14D20FC640BB",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12073532777555459608/319B238CFFD40083F68316AF788E14D20FC640BB/",
+          "size": 12176
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_evanescentBlue.webp",
+          "name": "npcPortrait_evanescentBlue",
+          "sha1": "8799140281D9069F62692BA64EBEC9D41E86C840",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13371191972874684658/8799140281D9069F62692BA64EBEC9D41E86C840/",
+          "size": 26844
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_jeanDucheskiI.webp",
+          "name": "npcPortrait_jeanDucheskiI",
+          "sha1": "9AF0B926FBC37EE8FCFE5EE468BC4D9657F37A1D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9914088661581666492/9AF0B926FBC37EE8FCFE5EE468BC4D9657F37A1D/",
+          "size": 35568
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_jeanDucheskiIII.webp",
+          "name": "npcPortrait_jeanDucheskiIII",
+          "sha1": "22B04F253796D577B3D389D01EA80D3A5BA535FC",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17169004201520802354/22B04F253796D577B3D389D01EA80D3A5BA535FC/",
+          "size": 15230
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_jervaisDeLaCroix.webp",
+          "name": "npcPortrait_jervaisDeLaCroix",
+          "sha1": "F1F6B45B289E211805AE6BD421E36A62D4D33EC7",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16147957287790069285/F1F6B45B289E211805AE6BD421E36A62D4D33EC7/",
+          "size": 19356
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_jezdimirDucheski.webp",
+          "name": "npcPortrait_jezdimirDucheski",
+          "sha1": "A0596C9628EB0CCB3778CCD05FDF7901AE3EDDDC",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/18357903423449194012/A0596C9628EB0CCB3778CCD05FDF7901AE3EDDDC/",
+          "size": 19088
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_kadePhillips.webp",
+          "name": "npcPortrait_kadePhillips",
+          "sha1": "6B93C2281AEDB1E730276520FCAA8A4AB0CA9992",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16760692371760800788/6B93C2281AEDB1E730276520FCAA8A4AB0CA9992/",
+          "size": 12804
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_kieraVaughan.webp",
+          "name": "npcPortrait_kieraVaughan",
+          "sha1": "D81D2C3EBF5775AB3A65EC4EC4B09CF041D4EC3D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14511427966639448322/D81D2C3EBF5775AB3A65EC4EC4B09CF041D4EC3D/",
+          "size": 11614
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_ladyAvelineDubois.webp",
+          "name": "npcPortrait_ladyAvelineDubois",
+          "sha1": "4BF83C48D195347C6AF43849F49491D026CD9D9B",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9847290806492100945/4BF83C48D195347C6AF43849F49491D026CD9D9B/",
+          "size": 13174
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_lalehBintSaif.webp",
+          "name": "npcPortrait_lalehBintSaif",
+          "sha1": "889E92CE9B93087A2F7FDAA8CDA86CC6946D0EB0",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11915532262138991040/889E92CE9B93087A2F7FDAA8CDA86CC6946D0EB0/",
+          "size": 16842
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_mara.webp",
+          "name": "npcPortrait_mara",
+          "sha1": "C9B09A8848FC501E26910800FC40732A6CA269E6",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13575974190517922930/C9B09A8848FC501E26910800FC40732A6CA269E6/",
+          "size": 9688
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_marieBouschard.webp",
+          "name": "npcPortrait_marieBouschard",
+          "sha1": "46C9C374E23195A4CF36291F2CFB473D5E4B0009",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12617703259413708301/46C9C374E23195A4CF36291F2CFB473D5E4B0009/",
+          "size": 12170
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_merrickSingh.webp",
+          "name": "npcPortrait_merrickSingh",
+          "sha1": "11954C872D30679C5EDE05F0EC6A334763D62F24",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12504120810607687872/11954C872D30679C5EDE05F0EC6A334763D62F24/",
+          "size": 14904
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_miriamRavenscroft.webp",
+          "name": "npcPortrait_miriamRavenscroft",
+          "sha1": "F473121235D949DD8951ACC2EB8DE0BD2B52D028",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16157371698783230458/F473121235D949DD8951ACC2EB8DE0BD2B52D028/",
+          "size": 20436
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_oliverGagnon.webp",
+          "name": "npcPortrait_oliverGagnon",
+          "sha1": "96BB6B07BA2261C0CFFFD9FAFAE92812A35DE451",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11159901344934892982/96BB6B07BA2261C0CFFFD9FAFAE92812A35DE451/",
+          "size": 240528
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_palis.webp",
+          "name": "npcPortrait_palis",
+          "sha1": "05E645D96D9F2AD2653D979739232EA50D63598E",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12751621583182438210/05E645D96D9F2AD2653D979739232EA50D63598E/",
+          "size": 27552
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_percivalCavendish.webp",
+          "name": "npcPortrait_percivalCavendish",
+          "sha1": "202BCB973718F48BC0622377E2CB70E8AEA7BDE0",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15745706295453986992/202BCB973718F48BC0622377E2CB70E8AEA7BDE0/",
+          "size": 12272
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_ponticulus.webp",
+          "name": "npcPortrait_ponticulus",
+          "sha1": "338863C47182E45DDDB5A87EFA663F507CF7AE2B",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9732289644086337773/338863C47182E45DDDB5A87EFA663F507CF7AE2B/",
+          "size": 51068
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_rebeccaRossellini.webp",
+          "name": "npcPortrait_rebeccaRossellini",
+          "sha1": "F925C17E996517CB829EE5A4D09A08EFF93C7479",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15447956952229890592/F925C17E996517CB829EE5A4D09A08EFF93C7479/",
+          "size": 25268
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_robin.webp",
+          "name": "npcPortrait_robin",
+          "sha1": "D60DF64DD4E54ACE51CFBC1849CCC85D5875E4A9",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13358281326067497216/D60DF64DD4E54ACE51CFBC1849CCC85D5875E4A9/",
+          "size": 34382
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_severinKoslov.webp",
+          "name": "npcPortrait_severinKoslov",
+          "sha1": "A0D3BD72E346F4CBA0F130DED757910F291340C2",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14541237677182177083/A0D3BD72E346F4CBA0F130DED757910F291340C2/",
+          "size": 10490
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_sylvain.webp",
+          "name": "npcPortrait_sylvain",
+          "sha1": "4277B38D18CC2611BE6EAD188ADE6376E4F0D23D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12881716353916944516/4277B38D18CC2611BE6EAD188ADE6376E4F0D23D/",
+          "size": 31542
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_theBleakBokor.webp",
+          "name": "npcPortrait_theBleakBokor",
+          "sha1": "8CD6CA7E218D411D4D505CD2C4F40236CE61EB1C",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14156589489726167096/8CD6CA7E218D411D4D505CD2C4F40236CE61EB1C/",
+          "size": 25196
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_uwuByteMe.webp",
+          "name": "npcPortrait_uwuByteMe",
+          "sha1": "AA9F3F9B1E2481944DBD15E32E23071B6C665E80",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12303567152679371914/AA9F3F9B1E2481944DBD15E32E23071B6C665E80/",
+          "size": 22862
+        }
+      ]
+    },
+    "coteriePortraits": {
+      "output": "GlobalCustomUIAssets",
+      "folder": "NPC Art/Portraits",
+      "rows": [
+        {
+          "path": "NPC Art/Portraits/npcPortrait_theAristocrat.webp",
+          "name": "npcPortrait_theAristocrat",
+          "sha1": "6BD72DDEDCBFE3BC5F81E2AB36F429E187ABFA26",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15653375418067463558/6BD72DDEDCBFE3BC5F81E2AB36F429E187ABFA26/",
+          "size": 46726
         }
       ]
     },
@@ -9232,6 +9468,13 @@
           "sha1": "9F5440DD7F826E848A9CD2151C8EF9C05DD1EA36",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/14052157368943118944/9F5440DD7F826E848A9CD2151C8EF9C05DD1EA36/",
           "size": 37296
+        },
+        {
+          "path": "NPC Art/Figurines/Named/npc_ahmadAlMasri.webp",
+          "name": "rollFigure_ahmadAlMasri",
+          "sha1": "B06E3307DD3B076B6BCFBE6FCDB8C22E38DBC7F7",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/18176455601011732424/B06E3307DD3B076B6BCFBE6FCDB8C22E38DBC7F7/",
+          "size": 35902
         },
         {
           "path": "NPC Art/Figurines/Named/npc_aishe.webp",
@@ -14396,6 +14639,20 @@
           "sha1": "388A24EFE1E1730FB22242C8C8014D5975FF9073",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/16117226140691656792/388A24EFE1E1730FB22242C8C8014D5975FF9073/",
           "size": 18452
+        },
+        {
+          "path": "NPC Art/Tokens/npcToken_ahmadAlMasri.back.webp",
+          "name": "ahmadAlMasri.back",
+          "sha1": "8AC7EB85E20EADBB727FC7BCEBB9FE0E51ED24A3",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16297092705759178379/8AC7EB85E20EADBB727FC7BCEBB9FE0E51ED24A3/",
+          "size": 9396
+        },
+        {
+          "path": "NPC Art/Tokens/npcToken_ahmadAlMasri.front.webp",
+          "name": "ahmadAlMasri.front",
+          "sha1": "F6CF0838FF6B7298878939C50A67EB65B2ACF222",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13846072926626142594/F6CF0838FF6B7298878939C50A67EB65B2ACF222/",
+          "size": 17330
         },
         {
           "path": "NPC Art/Tokens/npcToken_aishe.back.webp",

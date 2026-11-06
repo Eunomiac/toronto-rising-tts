@@ -649,7 +649,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "wartimeStreet"
+      locationAudio = "horseDrawnTraffic"
     },
     panelB = {
       display = "Gagnon's townhouse",
@@ -750,7 +750,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "wartimeStreet"
+      locationAudio = "urbanChaos"
     },
     panelD = {
       display = "Intact Elysium",
@@ -816,7 +816,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "roadsideTraffic"
+      locationAudio = "cityTraffic"
     },
     panelB = {
       display = "Roadside diner",
@@ -835,7 +835,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "roadsideTraffic"
+      locationAudio = "cityTraffic"
     },
     panelD = {
       display = "Pine campsite",
@@ -862,7 +862,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "roadsideTraffic"
+      locationAudio = "cityTraffic"
     },
     panelB = {
       display = "Interstate restaurant",
@@ -916,7 +916,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "streetcarTraffic"
+      locationAudio = "cityTraffic"
     },
     panelC = {
       display = "Camarilla receiving room",
@@ -988,7 +988,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "windMax",
         "thunder"
       },
-      locationAudio = "roadsideTraffic"
+      locationAudio = "cityTraffic"
     },
     panelB = {
       display = "Illusory quarry campground",
@@ -1057,7 +1057,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet"
+      locationAudio = "horseDrawnTraffic"
     },
     panelB = {
       display = "Aveline's salon",
@@ -1125,7 +1125,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet"
+      locationAudio = "horseDrawnTraffic"
     },
     splashText = "Abandoned but unbroken, Aishe crosses Reconstruction New Orleans as reader, confidence artist, wanderer, and reluctant Anarch. A deck of stolen playing cards guides her back toward the city and into Prince Doran’s hopeful court, where recognition demands a terrible price. Over the decades, she turns visions into influence and fashions herself into the oracle the Camarilla cannot afford to dismiss."
   },
@@ -1202,7 +1202,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "streetcarTraffic"
+      locationAudio = "quietCity"
     },
     panelD = {
       display = "Doran's funeral Elysium",
@@ -1539,7 +1539,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "distantBattle"
+      locationAudio = "distantCivilWarBattle"
     },
     panelB = {
       display = "House High Saturday",
@@ -1699,7 +1699,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet"
+      locationAudio = "horseDrawnTraffic"
     },
     splashText = "In Gilded Age New Orleans, Caesar surrounds himself with the wealth and ceremony denied to his mortal life. Warehouses, river traffic, Creole parlors, cemeteries, mutual-aid societies, and Black religious networks feed a growing household and occult circle. Yet every lavish success remains entangled with Goratrix assignments, spirit bargains, predation, and the question of whether power can redeem the violence that purchased it."
   },
@@ -2339,7 +2339,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "distantBattle"
+      locationAudio = "distantCivilWarBattle"
     },
     panelB = {
       display = "Military camp",
@@ -2562,7 +2562,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet"
+      locationAudio = "horseDrawnTraffic"
     },
     panelD = {
       display = "International border station",
@@ -2597,7 +2597,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "streetcarTraffic"
+      locationAudio = "cityTraffic"
     },
     panelC = {
       display = "Training room",

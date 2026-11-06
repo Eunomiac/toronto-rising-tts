@@ -144,6 +144,10 @@ local Art = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/18282507058344642227/F8324C8FB9DD0052353504977CF2463D04DD560F/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/9758011542134185627/F10A2360B58793B626B36E607745E4975CC596FF/", back = "https://steamusercontent-a.akamaihd.net/ugc/18162254208664021951/36D2FE00CB033A9E621B5DDFE3CC7797F2564EA1/" },
   },
+  ahmadAlMasri = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/18176455601011732424/B06E3307DD3B076B6BCFBE6FCDB8C22E38DBC7F7/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/13846072926626142594/F6CF0838FF6B7298878939C50A67EB65B2ACF222/", back = "https://steamusercontent-a.akamaihd.net/ugc/16297092705759178379/8AC7EB85E20EADBB727FC7BCEBB9FE0E51ED24A3/" },
+  },
   aishe = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/16971061568121248423/3AD050C1806E6B0EB73CC95D11BCE91515224151/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/9469068494223449225/9F0D66522030E83A97683461767DFB0CBFD8B852/", back = "https://steamusercontent-a.akamaihd.net/ugc/13312061692452444443/DE6B706BDDFE9494666FA0876BE95A7C8C0C9A17/" },
