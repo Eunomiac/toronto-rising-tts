@@ -678,7 +678,9 @@ const RosterToken = ({ characterKey, name, className, color, tier, onConfigure }
   color?: string | undefined;
   tier?: NpcTier | undefined;
   onConfigure: ConfigureToken;
-}): ReactElement => (
+}): ReactElement => {
+  const scenes = useScenesCommand();
+  return (
   <span
     className="lab-group-token"
     title={`${name}: drag onto the stage or a slide-out bin; right-click for its settings`}
@@ -694,7 +696,7 @@ const RosterToken = ({ characterKey, name, className, color, tier, onConfigure }
       event.stopPropagation();
       event.dataTransfer.setData(NPC_DRAG_TYPE, characterKey);
       event.dataTransfer.effectAllowed = "move";
-      startRosterDrag(event, [{ characterKey, name }]);
+      startRosterDrag(event, [{ characterKey, name }], { scenes });
     }}
   >
     <Headshot className={className} characterKey={characterKey} />
@@ -702,7 +704,8 @@ const RosterToken = ({ characterKey, name, className, color, tier, onConfigure }
     <NpcLevelBadge characterKey={characterKey} where="bin" />
     <span className="lab-group-name">{name}</span>
   </span>
-);
+  );
+};
 
 const GENERIC_MATCH_LIMIT = 60;
 
@@ -1288,7 +1291,7 @@ export const MasonryRoster = (): ReactElement => {
             draggable={stackDrag}
             onDragStart={stackDrag ? (event) => {
               event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key);
-              startRosterDrag(event, leaderFirst(group), { groupKey: group.key });
+              startRosterDrag(event, leaderFirst(group), { groupKey: group.key, scenes: send });
               setDragging(true);
             } : undefined}
             onDragEnd={() => setDragging(false)}

@@ -22,8 +22,10 @@ export {
   beginDrag,
   cancelDrag,
   endDrag,
+  getDndPointer,
   getDndSession,
   moveDrag,
+  subscribeDndPointer,
   subscribeDndSession,
   type DragSessionState
 } from "./session";

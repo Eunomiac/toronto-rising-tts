@@ -26,7 +26,7 @@ const hasCoords = (target: DropTarget): boolean =>
 export const sessionTargetsAt = (
   point: ClientPoint,
   drag: DragKind
-): { readonly highlight: DropTarget | null; readonly hover: DropTarget | null } => {
+): { readonly highlight: DropTarget | null; readonly hover: DropTarget | null; readonly target: DropTarget } => {
   const target = hitTestDrop(point);
   const cell = matrixCell(drag, target.dropKind);
   const previous = getDndSession();
@@ -34,18 +34,18 @@ export const sessionTargetsAt = (
     && (target.dropKind === "out" || target.dropKind === "stage")
     && Math.hypot(point.x - previous.hoverPointer.x, point.y - previous.hoverPointer.y) <= 145) {
     // Keep the ring reachable across the empty space between its center and bins.
-    return { highlight: null, hover: previous.hover };
+    return { highlight: null, hover: previous.hover, target };
   }
   if (cell.kind === "hover") {
-    return { highlight: target.binId ? target : null, hover: target.binId ? getDndSession().hover : target };
+    return { highlight: target.binId ? target : null, hover: target.binId ? getDndSession().hover : target, target };
   }
   if (cell.kind === "panel") {
-    return { highlight: target.binId ? target : null, hover: null };
+    return { highlight: target.binId ? target : null, hover: null, target };
   }
   if (cell.kind === "noop" || cell.kind === "impossible") {
-    return { highlight: null, hover: null };
+    return { highlight: null, hover: null, target };
   }
-  return { highlight: target, hover: null };
+  return { highlight: target, hover: null, target };
 };
 
 /**

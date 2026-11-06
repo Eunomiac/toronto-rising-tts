@@ -1,6 +1,7 @@
 import type { DragEvent } from "react";
 import { beginDrag, type DragPreview } from "./session";
 import type { DragPayload } from "./types";
+import type { ScenesSend } from "../commands";
 
 const blank = new Image();
 blank.src =
@@ -10,6 +11,7 @@ export const startNativeDrag = (
   event: DragEvent<HTMLElement>,
   payload: DragPayload,
   preview?: DragPreview,
+  scenes?: ScenesSend,
 ): void => {
   event.dataTransfer.effectAllowed = "copyMove";
   event.dataTransfer.setDragImage(blank, 0, 0);
@@ -22,7 +24,7 @@ export const startNativeDrag = (
   };
   const frame = requestAnimationFrame(() => {
     document.removeEventListener("dragend", cancel, true);
-    beginDrag(payload, pointer, preview);
+    beginDrag(payload, pointer, preview, scenes);
   });
   document.addEventListener("dragend", cancel, true);
 };

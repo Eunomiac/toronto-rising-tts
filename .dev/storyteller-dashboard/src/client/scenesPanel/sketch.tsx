@@ -317,12 +317,14 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
               if (seat.kind === "pc" && seat.color) {
                 startNativeDrag(event,
                   { dragKind: "pcSeated", color: seat.color, seatKey, chair: seat.slot },
-                  { members: [{ characterKey: seat.characterKey ?? seat.color, name: seat.name ?? seat.color }] }
+                  { members: [{ characterKey: seat.characterKey ?? seat.color, name: seat.name ?? seat.color }] },
+                  send
                 );
               } else if (seat.kind === "npc" && seat.characterKey) {
                 startNativeDrag(event,
                   { dragKind: "npcSeated", characterKey: seat.characterKey, seatKey, chair: seat.slot },
-                  { members: [{ characterKey: seat.characterKey, name: seat.name ?? seat.characterKey }] }
+                  { members: [{ characterKey: seat.characterKey, name: seat.name ?? seat.characterKey }] },
+                  send
                 );
               }
             }}
@@ -632,6 +634,8 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
       seatNpc: (characterKey, chair) => command({ op: "seatNpc", characterKey, chair })
     }
     : null;
+  const seatOf = (characterKey: string): string | undefined =>
+    seats.find((seat) => seat.kind === "npc" && seat.characterKey === characterKey)?.seatKey;
   const edit = (changes: StageChanges): void => {
     if (Object.keys(changes).length === 0) {
       return;
@@ -685,12 +689,16 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     if (roller.kind === "pc" && seat.seatKey) {
       beginDrag(
         { dragKind: "pcSeated", color: roller.color, seatKey: seat.seatKey, chair: seat.slot },
-        { x: event.clientX, y: event.clientY }
+        { x: event.clientX, y: event.clientY },
+        undefined,
+        command
       );
     } else if (roller.kind === "npc" && seat.seatKey && seat.characterKey) {
       beginDrag(
         { dragKind: "npcSeated", characterKey: seat.characterKey, seatKey: seat.seatKey, chair: seat.slot },
-        { x: event.clientX, y: event.clientY }
+        { x: event.clientX, y: event.clientY },
+        undefined,
+        command
       );
     }
     if (seat.seatKey && seat.state !== "disconnected") {
@@ -716,11 +724,13 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
       if (seat?.seatKey) {
         beginDrag(
           { dragKind: "pcSeated", color, seatKey: seat.seatKey, chair: seat.slot },
-          { x: event.clientX, y: event.clientY }
+          { x: event.clientX, y: event.clientY },
+          undefined,
+          command
         );
       }
     } else {
-      beginDrag({ dragKind: "npcStaged", characterKey }, { x: event.clientX, y: event.clientY });
+      beginDrag({ dragKind: "npcStaged", characterKey }, { x: event.clientX, y: event.clientY }, undefined, command);
     }
     if (generic) {
       setCharRing({
@@ -775,6 +785,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
         onEdit={edit}
         onMenu={openTokenRing}
         {...(seating ? { onSeat: seating.seatNpc } : {})}
+        seatOf={seatOf}
         {...(npcLive ? { onOpen: (characterKey: string, client: { x: number; y: number }) => openNpcTrackers(client.x, client.y, characterKey) } : {})}
       />
     )}

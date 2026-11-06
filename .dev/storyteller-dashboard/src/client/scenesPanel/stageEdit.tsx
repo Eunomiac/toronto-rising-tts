@@ -125,12 +125,14 @@ type StageLayerProps = {
   readonly onMenu: TokenMenu;
   /** A token dropped on an empty chair (or the NPC's own) takes that chair; without it, the seat row is off the stage. */
   readonly onSeat?: (characterKey: string, chair: number) => void;
+  /** The seat whose holder also has a dark copy on the stage. */
+  readonly seatOf?: (characterKey: string) => string | undefined;
   /** A single click on a token (no drag, no second click): the live table opens the NPC's trackers. */
   readonly onOpen?: (characterKey: string, client: { x: number; y: number }) => void;
 };
 
 /** Standard placement: tokens anywhere on the stage, packs as mild snap points and group drop targets. */
-export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu, onSeat, onOpen }: StageLayerProps): ReactElement => {
+export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu, onSeat, seatOf, onOpen }: StageLayerProps): ReactElement => {
   const roster = useRosterLayout();
   const overrides = useNpcOverrides();
   const scenes = useScenesCommand();
@@ -198,6 +200,9 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
         }
         if (applyCtx) {
           tryCommitDrop(payload, { dropKind: "out" }, applyCtx);
+        } else if (payload.dragKind === "npcStaged" && payload.seated && payload.seatKey) {
+          scenes({ op: "seatPresence", seat: payload.seatKey, present: true });
+          onEdit({ [key]: { remove: true } });
         } else if (spots.some((spot) => spot.characterKey === key)) {
           onEdit({ [key]: { remove: true } });
         }
@@ -217,11 +222,13 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
         }
       : undefined,
     (key, _point, client) => {
-      const payload = { dragKind: "npcStaged" as const, characterKey: key };
-      if (!getDndSession().active) beginDrag(payload, client, { members: [{ characterKey: key, name: nameOf(key) }] });
+      const seatKey = seatOf?.(key);
+      const payload = { dragKind: "npcStaged" as const, characterKey: key, ...(seatKey ? { seated: true, seatKey } : {}) };
+      if (!getDndSession().active) beginDrag(payload, client, { members: [{ characterKey: key, name: nameOf(key) }] }, scenes);
       const { highlight, hover } = sessionTargetsAt(client, payload.dragKind);
       moveDrag(client, highlight, hover);
-    }
+    },
+    false
   );
   const packDrag = useBoardDrag<StagePack>(board, (pack, point) => {
     const keys = spots.filter((spot) => slotOf(spot, packs)?.pack === pack).map((spot) => spot.characterKey);
@@ -371,12 +378,13 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
         const payload: DragPayload = member.kind === "pc"
           ? { dragKind: "pcSeated", color: seat?.seat ?? member.key, seatKey: seat?.seat ?? member.key, chair: seat?.tableSlot ?? 0 }
           : { dragKind: "npcStaged", characterKey: member.key };
-        beginDrag(payload, client, { members: [{ characterKey: member.key, name: nameOf(member.key) }] });
+        beginDrag(payload, client, { members: [{ characterKey: member.key, name: nameOf(member.key) }] }, scenes);
       }
       const payload = getDndSession().payload!;
       const { highlight, hover } = sessionTargetsAt(client, payload.dragKind);
       moveDrag(client, highlight, hover);
-    }
+    },
+    false
   );
   return (
     <div
