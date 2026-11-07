@@ -44,14 +44,11 @@ local PARK_X0 = 140
 local PARK_Z = 0
 local PARK_SPACING = 14
 
---- Companion toggle tiles to park in Spotlight/End. Purple A/B/C must be listed
---- here: `C.CompanionToggleToFigurineMap` drops those keys when figurine GUIDs are nil.
+--- Companion toggle tiles to park in Spotlight/End.
 local COMPANION_TOGGLE_GUID_KEYS = {
     "COMPANION_TOGGLE_TOKEN_A_RED",
     "COMPANION_TOGGLE_TOKEN_A_BROWN",
     "COMPANION_TOGGLE_TOKEN_A_PURPLE",
-    "COMPANION_TOGGLE_TOKEN_B_PURPLE",
-    "COMPANION_TOGGLE_TOKEN_C_PURPLE",
 }
 
 local rotating = false

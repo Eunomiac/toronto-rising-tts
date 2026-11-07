@@ -120,6 +120,144 @@ function G.guidRefMatches(ref, guid)
     return false
 end
 
+--- Look up `G.GUIDS[roleKey]`; errors with a clear message if missing/empty.
+--- Prefer this (or `G.mapGuidKeys`) over raw `G.GUIDS.FOO` as a table key — a deleted
+--- GUID entry otherwise becomes `[nil] = …` ("table index is nil") and aborts Global
+--- mid-load, cascading into dozens of "function is not a function" errors.
+--- @param roleKey string
+--- @return string|table
+function G.requireGuid(roleKey)
+    if type(roleKey) ~= "string" or roleKey == "" then
+        error("G.requireGuid: roleKey must be a non-empty string", 2)
+    end
+    local ref = G.GUIDS[roleKey]
+    if not G.isGuidRef(ref) then
+        error(
+            "G.requireGuid: missing or empty G.GUIDS."
+                .. roleKey
+                .. " — restore the GUID entry, or remove call sites that still reference it",
+            2
+        )
+    end
+    return ref
+end
+
+--- Resolve a role key to a single GUID string. Multi-state refs require `stateIndex`.
+--- @param roleKey string
+--- @param stateIndex number|nil
+--- @return string
+function G.requireGuidString(roleKey, stateIndex)
+    local ref = G.requireGuid(roleKey)
+    if type(ref) == "string" then
+        return ref
+    end
+    if stateIndex ~= nil then
+        local guid = ref[stateIndex]
+        if type(guid) == "string" and guid ~= "" then
+            return guid
+        end
+        error(
+            "G.requireGuidString: G.GUIDS."
+                .. roleKey
+                .. "["
+                .. tostring(stateIndex)
+                .. "] is missing or empty",
+            2
+        )
+    end
+    error(
+        "G.requireGuidString: G.GUIDS."
+            .. roleKey
+            .. " is multi-state; pass a state index (1 or 2)",
+        2
+    )
+end
+
+--- Build a map keyed by resolved GUID strings from a table keyed by GUID role names.
+--- Collects **all** missing role keys before erroring (one clear message, not a cascade).
+--- @param byRoleKey table<string, any>
+--- @param label string|nil  Error prefix (e.g. "C.HiddenObjects")
+--- @param opts { expandStates?: boolean }|nil  When true, multi-state refs expand to every state GUID
+--- @return table
+function G.mapGuidKeys(byRoleKey, label, opts)
+    label = label or "G.mapGuidKeys"
+    opts = opts or {}
+    if type(byRoleKey) ~= "table" then
+        error(label .. ": expected a table keyed by GUID role names", 2)
+    end
+
+    local out = {}
+    local missing = {}
+    local multiState = {}
+
+    for roleKey, value in pairs(byRoleKey) do
+        if type(roleKey) ~= "string" then
+            error(label .. ": keys must be GUID role name strings", 2)
+        end
+        local ref = G.GUIDS[roleKey]
+        if type(ref) == "string" and ref ~= "" then
+            out[ref] = value
+        elseif G.isStateGuidTable(ref) then
+            if opts.expandStates == true then
+                for _, guid in ipairs(G.collectGuidStrings(ref)) do
+                    out[guid] = value
+                end
+            else
+                multiState[#multiState + 1] = roleKey
+            end
+        else
+            missing[#missing + 1] = roleKey
+        end
+    end
+
+    table.sort(missing)
+    table.sort(multiState)
+    if #missing > 0 or #multiState > 0 then
+        local parts = {}
+        if #missing > 0 then
+            parts[#parts + 1] = "missing G.GUIDS keys: " .. table.concat(missing, ", ")
+        end
+        if #multiState > 0 then
+            parts[#parts + 1] = "multi-state GUIDS need expandStates=true or a plain string key: "
+                .. table.concat(multiState, ", ")
+        end
+        error(
+            label
+                .. ": "
+                .. table.concat(parts, "; ")
+                .. " — restore GUID entries or remove these map rows",
+            2
+        )
+    end
+    return out
+end
+
+--- Fail loudly if a GUID-string list still contains nil/empty slots (deleted G.GUIDS
+--- entries listed as `G.GUIDS.FOO` or `G.GUIDS.FOO[n]` in array constructors).
+--- @param list any
+--- @param label string
+function G.assertGuidStringList(list, label)
+    if type(list) ~= "table" then
+        error((label or "G.assertGuidStringList") .. ": expected a list of GUID strings", 2)
+    end
+    local bad = {}
+    for i = 1, #list do
+        local guid = list[i]
+        if type(guid) ~= "string" or guid == "" then
+            bad[#bad + 1] = tostring(i)
+        end
+    end
+    if #bad > 0 then
+        error(
+            (label or "GUID list")
+                .. ": nil/empty GUID at index(es) "
+                .. table.concat(bad, ", ")
+                .. " — usually a deleted G.GUIDS entry still listed here",
+            2
+        )
+    end
+end
+
 G.GUIDS = {
     -- Table & Floor objects
     TABLES = {
@@ -193,8 +331,9 @@ G.GUIDS = {
     FAMULUS_LIGHT_2_BROWN = "c78daf",
     -- Multi-state: only the active state's GUID is live (TS_Save_230). State 2 is current when
     -- the object root GUID is listed under [2] and States["1"] holds the other look.
-    FAMULUS_FIGURINE_RED = { [1] = "2c2301", [2] = "745688" },
-    FAMULUS_FIGURINE_BROWN = { [1] = "923797", [2] = "41bdb9" },
+    FAMULUS_FIGURINE_RED = { [1] = "4f3c6c", [2] = "ce90f2" }, -- Visible / Invisible
+    FAMULUS_FIGURINE_BROWN = { [1] = "85a42b", [2] = "816633" }, -- Visible / Invisible
+    FAMULUS_FIGURINE_PURPLE = { [1] = "1f7a7b", [2] = "e73cfc" },
 
     -- Soundscape AssetBundle Objects
 
@@ -373,13 +512,9 @@ G.GUIDS = {
     TAROT_DECK_ANCHOR_PINK = "764db1",
     -- Companion toggle tiles (GMNotes role keys match save; TOKEN_* aliases kept for call sites)
     COMPANION_TOGGLE_A_PURPLE = "7b1ac2",
-    COMPANION_TOGGLE_B_PURPLE = "a61620",
-    COMPANION_TOGGLE_C_PURPLE = "12606b",
     COMPANION_TOGGLE_A_RED = "84f7d4",
     COMPANION_TOGGLE_A_BROWN = "b1f52e",
     COMPANION_TOGGLE_TOKEN_A_PURPLE = "7b1ac2",
-    COMPANION_TOGGLE_TOKEN_B_PURPLE = "a61620",
-    COMPANION_TOGGLE_TOKEN_C_PURPLE = "12606b",
     COMPANION_TOGGLE_TOKEN_A_RED = "84f7d4",
     COMPANION_TOGGLE_TOKEN_A_BROWN = "b1f52e",
 

@@ -600,66 +600,71 @@ C.LockedObjects = {
   G.GUIDS.TAROT_DRAWER_ANCHOR_ON_PINK,
   G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
   G.GUIDS.THE_FLOOR,
-  G.GUIDS.TABLE_PLINTH
+  G.GUIDS.TABLE_PLINTH,
+  G.GUIDS.FAMULUS_FIGURINE_RED[1],
+  G.GUIDS.FAMULUS_FIGURINE_RED[2],
+  G.GUIDS.FAMULUS_FIGURINE_BROWN[1],
+  G.GUIDS.FAMULUS_FIGURINE_BROWN[2],
+  G.GUIDS.FAMULUS_FIGURINE_PURPLE[1],
+  G.GUIDS.FAMULUS_FIGURINE_PURPLE[2]
 }
+G.assertGuidStringList(C.LockedObjects, "C.LockedObjects")
 
--- C.HiddenObjects is a table of all objects that should be `setInvisibleTo`, and the values contain the colors to hide the object from. Objects are presented as GUIDs.
-C.HiddenObjects = {
-  [G.GUIDS.GM_TABLE] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SEAT_CHAIR_RED] = { "Red" },
-  [G.GUIDS.SEAT_CHAIR_ORANGE] = { "Orange" },
-  [G.GUIDS.SEAT_CHAIR_PINK] = { "Pink" },
-  [G.GUIDS.SEAT_CHAIR_PURPLE] = { "Purple" },
-  [G.GUIDS.SEAT_CHAIR_BROWN] = { "Brown" },
-  [G.GUIDS.SEAT_FIGURE_BROWN] = { "Brown" },
-  [G.GUIDS.SEAT_FIGURE_ORANGE] = { "Orange" },
-  [G.GUIDS.SEAT_FIGURE_PINK] = { "Pink" },
-  [G.GUIDS.SEAT_FIGURE_PURPLE] = { "Purple" },
-  [G.GUIDS.SEAT_FIGURE_RED] = { "Red" },
-  [G.GUIDS.PRINCE_SIGNET_BORDER_RED] = { "Red" },
-  [G.GUIDS.PRINCE_SIGNET_RED] = { "Red" },
-  [G.GUIDS.PRINCE_CURTAIN_RED] = { "Red" },
-  [G.GUIDS.STAGE_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.CONTROL_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DEBUG_LIGHT_FOCAL_POINT] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_A_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_B_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_C_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_A_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_A_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_B_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_C_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.TAROT_BUTTON_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_HUNGER_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_HUNGER_ORANGE] = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_HUNGER_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
-  [G.GUIDS.DICEBAG_HUNGER_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_HUNGER_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_NORMAL_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_NORMAL_ORANGE] = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_NORMAL_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
-  [G.GUIDS.DICEBAG_NORMAL_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_NORMAL_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_ROUSE_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_ROUSE_ORANGE] = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_ROUSE_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
-  [G.GUIDS.DICEBAG_ROUSE_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_ROUSE_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.DICEBAG_OBLIVROUSE_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_MUSIC_A] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_MUSIC_B] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_MUSIC_C] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_FEATURED_A] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_FEATURED_B] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_LOCATION_A] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_LOCATION_B] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_WEATHER_RAIN] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_WEATHER_WIND] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.SOUNDSCAPE_WEATHER_THUNDER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" }
-}
+-- C.HiddenObjects: values are viewer colors for `setInvisibleTo`. Keys are GUID role
+-- names resolved through G.mapGuidKeys (missing G.GUIDS entries fail with one clear error
+-- instead of Lua's opaque "table index is nil").
+C.HiddenObjects = G.mapGuidKeys({
+  GM_TABLE = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SEAT_CHAIR_RED = { "Red" },
+  SEAT_CHAIR_ORANGE = { "Orange" },
+  SEAT_CHAIR_PINK = { "Pink" },
+  SEAT_CHAIR_PURPLE = { "Purple" },
+  SEAT_CHAIR_BROWN = { "Brown" },
+  SEAT_FIGURE_BROWN = { "Brown" },
+  SEAT_FIGURE_ORANGE = { "Orange" },
+  SEAT_FIGURE_PINK = { "Pink" },
+  SEAT_FIGURE_PURPLE = { "Purple" },
+  SEAT_FIGURE_RED = { "Red" },
+  PRINCE_SIGNET_BORDER_RED = { "Red" },
+  PRINCE_SIGNET_RED = { "Red" },
+  PRINCE_CURTAIN_RED = { "Red" },
+  STAGE_BOARD = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  CONTROL_BOARD = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  DEBUG_LIGHT_FOCAL_POINT = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  COMPANION_TOGGLE_A_PURPLE = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  COMPANION_TOGGLE_A_RED = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  COMPANION_TOGGLE_A_BROWN = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  COMPANION_TOGGLE_TOKEN_A_PURPLE = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  COMPANION_TOGGLE_TOKEN_A_RED = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  COMPANION_TOGGLE_TOKEN_A_BROWN = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  TAROT_BUTTON_PINK = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  DICEBAG_HUNGER_BROWN = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  DICEBAG_HUNGER_ORANGE = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
+  DICEBAG_HUNGER_RED = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  DICEBAG_HUNGER_PINK = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  DICEBAG_HUNGER_PURPLE = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  DICEBAG_NORMAL_BROWN = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  DICEBAG_NORMAL_ORANGE = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
+  DICEBAG_NORMAL_RED = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  DICEBAG_NORMAL_PINK = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  DICEBAG_NORMAL_PURPLE = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  DICEBAG_ROUSE_BROWN = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  DICEBAG_ROUSE_ORANGE = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
+  DICEBAG_ROUSE_RED = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  DICEBAG_ROUSE_PINK = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  DICEBAG_ROUSE_PURPLE = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  DICEBAG_OBLIVROUSE_PURPLE = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  SOUNDSCAPE_MUSIC_A = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_MUSIC_B = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_MUSIC_C = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_FEATURED_A = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_FEATURED_B = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_LOCATION_A = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_LOCATION_B = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_WEATHER_RAIN = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_WEATHER_WIND = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  SOUNDSCAPE_WEATHER_THUNDER = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+}, "C.HiddenObjects")
 -- #endregion
 
 -- #region Rolls
@@ -1360,23 +1365,7 @@ C.ObjectPositions = {
       position = { y = -200 }
     }
   },
-  COMPANION_A_FIGURINE_PURPLE = {
-    on = {
-      position = { y = -1.03}
-    },
-    off = {
-      position = { y = -200 }
-    }
-  },
-  COMPANION_B_FIGURINE_PURPLE = {
-    on = {
-      position = { y = -1.03}
-    },
-    off = {
-      position = { y = -200 }
-    }
-  },
-  COMPANION_C_FIGURINE_PURPLE = {
+  FAMULUS_FIGURINE_PURPLE = {
     on = {
       position = { y = -1.03}
     },
@@ -1386,14 +1375,11 @@ C.ObjectPositions = {
   }
 }
 
-C.CompanionToggleToFigurineMap = {
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = G.GUIDS.FAMULUS_FIGURINE_RED,
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = G.GUIDS.FAMULUS_FIGURINE_BROWN,
-  -- Purple figurine GUIDs are not in G.GUIDS yet. Use false (not nil) so Lua keeps the toggle keys.
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = G.GUIDS.COMPANION_A_FIGURINE_PURPLE or false,
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_B_PURPLE] = G.GUIDS.COMPANION_B_FIGURINE_PURPLE or false,
-  [G.GUIDS.COMPANION_TOGGLE_TOKEN_C_PURPLE] = G.GUIDS.COMPANION_C_FIGURINE_PURPLE or false,
-}
+C.CompanionToggleToFigurineMap = G.mapGuidKeys({
+  COMPANION_TOGGLE_TOKEN_A_RED = G.requireGuid("FAMULUS_FIGURINE_RED"),
+  COMPANION_TOGGLE_TOKEN_A_BROWN = G.requireGuid("FAMULUS_FIGURINE_BROWN"),
+  COMPANION_TOGGLE_TOKEN_A_PURPLE = G.requireGuid("FAMULUS_FIGURINE_PURPLE"),
+}, "C.CompanionToggleToFigurineMap")
 
 -- #endregion
 
@@ -2367,8 +2353,6 @@ C.TableSourceObjects = {
     G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN,
     G.GUIDS.DICEBAG_OBLIVROUSE_PURPLE,
     G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE,
-    G.GUIDS.COMPANION_TOGGLE_TOKEN_B_PURPLE,
-    G.GUIDS.COMPANION_TOGGLE_TOKEN_C_PURPLE,
   },
   -- Derived from C.ReferenceCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
   -- This avoids duplicating mode-key lists in multiple places.

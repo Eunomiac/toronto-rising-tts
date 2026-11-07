@@ -479,7 +479,7 @@ When working on this project:
 ### Common Issues
 
 - **Module not found**: Check require paths match file locations
-- **GUID errors**: Verify GUIDs in `lib/guids.ttslua` match actual TTS objects
+- **GUID errors**: Verify GUIDs in `lib/guids.ttslua` match actual TTS objects. When deleting a registered object, remove its `G.GUIDS` entry **and** every map/list row that still names that role. Keyed catalogs (`C.HiddenObjects`, companion maps) must use `G.mapGuidKeys({ ROLE = … }, "Label")` so a missing role fails with one clear error listing every bad key — not Lua's opaque `table index is nil` (which aborts Global mid-load and floods the log with follow-on "not a function" errors). Arrays of GUID strings: call `G.assertGuidStringList(list, "Label")` after construction. Build gate: `npm run check:guid-refs-gate` (also in `build:gates`)
 - **State persistence**: Ensure state is saved before game reload
 - **UI not updating**: Check UI element IDs match between XML and update functions
 
