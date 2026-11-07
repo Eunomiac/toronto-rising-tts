@@ -274,17 +274,12 @@ function DBV.reconcileForPlayer(color, active)
     local hungerOn, rouseOn, oblivOn
     if bagsOn then
         local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-        local meta = nil
-        if type(active) == "table" then
-            DK.ensureMeta(active)
-            meta = active.meta
-        end
         hungerOn = C.RollTypesBloodSurge[rollType] == true
-            and not DK.isHungerRouseComboBlocked(hunger, pool, "activateBloodSurge", meta)
-        -- Manual Rouse bag: hide only for Obliv exclusivity or Hunger 4+ surge mutual exclusion
-        -- (TOR-331). Do not hide merely because Blood Surge is active at Hunger 0–3.
+            and not DK.isVoluntaryRouseBlocked(hunger)
+        -- Manual Rouse is independent of Blood Surge. Only Oblivion exclusivity and
+        -- the maximum-Hunger voluntary-check rule can hide this bag.
         rouseOn = pool.oblivRouse == 0
-            and not DK.isHungerRouseComboBlocked(hunger, pool, DK.KIND_ROUSE, meta)
+            and not DK.isVoluntaryRouseBlocked(hunger)
         oblivOn = pool.rouse == 0
         if isAtMaxHunger(color) then
             oblivOn = false

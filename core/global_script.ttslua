@@ -1861,8 +1861,7 @@ function GlobalRollSpawnDieRequest(params)
             return nil
         end
         local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-        DK.ensureMeta(active)
-        if DK.isHungerRouseComboBlocked(hunger, pool, requested, active.meta) then
+        if DK.isVoluntaryRouseBlocked(hunger) then
             return nil
         end
         return requested
@@ -2259,14 +2258,13 @@ function GlobalDiceBagClick(params)
             -- Normal-bag auto-hunger redirect only, not from the Hunger bag.
             local meta = type(active.meta) == "table" and active.meta or {}
             local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-            local pool = DK.normalizePool(active.pool)
             if meta.bloodSurgeActive == true then
-                if DK.isHungerRouseComboBlocked(hunger, pool, "addBloodSurgeRouse", meta) then
+                if DK.isVoluntaryRouseBlocked(hunger) then
                     return
                 end
                 RC.addBloodSurgeRouse(color)
             else
-                if DK.isHungerRouseComboBlocked(hunger, pool, "activateBloodSurge", meta) then
+                if DK.isVoluntaryRouseBlocked(hunger) then
                     return
                 end
                 RC.activateBloodSurge(color)
@@ -2275,9 +2273,7 @@ function GlobalDiceBagClick(params)
         end
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
             local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-            local pool = DK.normalizePool(active.pool)
-            DK.ensureMeta(active)
-            if DK.isHungerRouseComboBlocked(hunger, pool, dieKind, active.meta) then
+            if DK.isVoluntaryRouseBlocked(hunger) then
                 return
             end
             spawnRequestedDie(color, dieKind)
@@ -6929,23 +6925,12 @@ function HUD_debugSeatColor(player, button, id)
     syncDebugSeatColorButtons()
 end
 
---- Debug panel: manual seat-assignment UI refresh (Host hotseat swaps skip auto-refresh).
+--- Debug panel: rewrite the complete Global UI document and rebuild its runtime state.
 function HUD_refreshUi(player, value, id)
-    local seatColor = hostCurrentSeatColor()
-    if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
-        if player ~= nil and type(player.color) == "string" and player.color ~= "Grey" then
-            seatColor = player.color
-        end
-    end
-    if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
-        if player ~= nil and type(player.color) == "string" then
-            broadcastToColor("Refresh UI: no seated color.", player.color, { 1, 0.5, 0 })
-        else
-            print("[HUD_refreshUi] Refresh UI: no seated color.")
-        end
+    if not requireStorytellerForMutation(player, "HUD_refreshUi") then
         return
     end
-    refreshGlobalUiAfterSeatAssignment(seatColor)
+    performFullUiResync("Storyteller debug Refresh UI", { mode = "full" })
 end
 
 --- Admin panel: arm a quick test roll for a player color (difficulty 2, Standard).

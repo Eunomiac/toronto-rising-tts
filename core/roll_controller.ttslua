@@ -2105,15 +2105,6 @@ function RC.startRolling(color)
         return false
     end
 
-    local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-    ensureActiveShape(active)
-    if DK.isCompoundRousePoolInvalid(hunger, active.pool, active.meta) then
-        print(string.format(
-            "[RC] startRolling blocked: Blood Surge and manual Rouse cannot combine at Hunger %d",
-            hunger))
-        return false
-    end
-
     active.phase       = C.RollPhase.ROLLING
     active.batonHolder = C.BatonHolder.AUTO
     active.result      = nil
@@ -3665,8 +3656,7 @@ function RC.activateBloodSurge(color)
 
     local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
     ensureActiveShape(active)
-    local pool = DK.normalizePool(active.pool)
-    if DK.isHungerRouseComboBlocked(hunger, pool, "activateBloodSurge", active.meta) then
+    if DK.isVoluntaryRouseBlocked(hunger) then
         return false
     end
 
@@ -3724,8 +3714,7 @@ function RC.addBloodSurgeRouse(color)
         return false
     end
     local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-    local pool = DK.normalizePool(active.pool)
-    if DK.isHungerRouseComboBlocked(hunger, pool, "addBloodSurgeRouse", active.meta) then
+    if DK.isVoluntaryRouseBlocked(hunger) then
         return false
     end
     Global.call("GlobalSpawnDieFromBag", {
