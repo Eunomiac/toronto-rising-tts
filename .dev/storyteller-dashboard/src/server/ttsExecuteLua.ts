@@ -58,7 +58,12 @@ export class DashboardTtsBridge {
       this.mode = status.mode;
       this.detail = status.detail;
       if (status.mode === "disconnected") {
-        this.session = undefined;
+        if (this.session === session) {
+          this.session = undefined;
+        }
+        // Must stop rejoin/heartbeat. Dropping the ref alone leaves an orphan that
+        // keeps re-registering as `storyteller-dashboard` and fights the next session.
+        void session.close().catch(() => undefined);
       }
     });
     session.on("customMessage", (payload) => {
@@ -107,7 +112,18 @@ export class DashboardTtsBridge {
       return this.session;
     }
     if (!this.connectPromise) {
-      this.connectPromise = this.openSession().finally(() => {
+      this.connectPromise = (async () => {
+        const stale = this.session;
+        this.session = undefined;
+        if (stale) {
+          try {
+            await stale.close();
+          } catch {
+            // ignore
+          }
+        }
+        return this.openSession();
+      })().finally(() => {
         this.connectPromise = undefined;
       });
     }

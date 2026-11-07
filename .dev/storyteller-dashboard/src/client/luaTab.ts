@@ -20,6 +20,10 @@ const requiredElement = <T extends HTMLElement>(id: string): T => {
   return element as T;
 };
 
+/** Idempotent — HMR / App remount must not stack bridge-status pollers. */
+let luaTabStarted = false;
+let bridgePollTimer: number | undefined;
+
 export const initLuaTab = (): void => {
   const script = requiredElement<HTMLTextAreaElement>("lua-script");
   const run = requiredElement<HTMLButtonElement>("lua-run");
@@ -103,6 +107,12 @@ export const initLuaTab = (): void => {
     }
   };
 
+  if (luaTabStarted) {
+    void refreshBridgeStatus();
+    return;
+  }
+  luaTabStarted = true;
+
   run.addEventListener("click", () => void execute());
   script.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
@@ -113,7 +123,10 @@ export const initLuaTab = (): void => {
   window.addEventListener("focus", () => {
     void refreshBridgeStatus();
   });
-  window.setInterval(() => {
+  if (bridgePollTimer !== undefined) {
+    window.clearInterval(bridgePollTimer);
+  }
+  bridgePollTimer = window.setInterval(() => {
     void refreshBridgeStatus();
   }, 5000);
   void refreshBridgeStatus();
