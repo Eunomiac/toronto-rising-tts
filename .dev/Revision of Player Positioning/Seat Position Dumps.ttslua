@@ -254,8 +254,8 @@ local DUMP_SEAT_ROLE_OFFSETS_RED = {
       guid = "2c2301",
       localXZ = { x = -9.0646, z = -35.5265 },
       localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
-      defaultY = -1.0300,
-      -- world 8.7940, -1.0300, -40.2420
+      defaultY = 0.74,
+      -- world 8.7940, 0.74, -40.2420
       scale = { x = 0.3000, y = 0.3000, z = 0.3000 },
     },
     ["FAMULUS_LIGHT_1"] = {
@@ -1536,8 +1536,8 @@ local DUMP_SEAT_ROLE_OFFSETS_BROWN = {
       guid = "923797",
       localXZ = { x = -9.0646, z = -35.5265 },
       localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
-      defaultY = -1.0300,
-      -- world 60.1574, -1.0300, -17.8384
+      defaultY = 0.74,
+      -- world 60.1574, 0.74, -17.8384
       scale = { x = 0.3000, y = 0.3000, z = 0.3000 },
     },
     ["FAMULUS_LIGHT_1"] = {

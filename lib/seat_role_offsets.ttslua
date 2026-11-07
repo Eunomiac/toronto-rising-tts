@@ -123,7 +123,7 @@ local offsets = {
       localRotation = { x = 0, y = -180, z = 0 },
       defaultY = 200
     },
-    FAMULUS_FIGURINE = { localXZ = { x = -8.2905, z = -32.4928 }, localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 }, defaultY = -1.0300 },
+    FAMULUS_FIGURINE = { localXZ = { x = -8.2905, z = -32.4928 }, localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 }, defaultY = 0.74 },
     FAMULUS_LIGHT_1 = { localXZ = { x = -8.8465, z = -39.1469 }, localRotation = { x = 31.8995, y = 0.0000, z = 180.0000 }, defaultY = 0.6400 },
     FAMULUS_LIGHT_2 = { localXZ = { x = -8.8465, z = -15.5552 }, localRotation = { x = 90.0000, y = 0.0000, z = 0.0000 }, defaultY = 14.8500 },
     COMPULSION_DECK = {
