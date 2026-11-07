@@ -284,6 +284,7 @@ function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts) {
     SECTION: sectionKey,
     IMAGE_REF: portrait,
     PORTRAIT_ACTIVE: portrait ? "true" : "false",
+    ...(portrait ? { PORTRAIT_PRESENT: "1" } : {}),
   };
   for (let i = 1; i <= (opts.fixedDotSlots || slotCount); i += 1) {
     params[`DOT_IMG_${i}`] = dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg);

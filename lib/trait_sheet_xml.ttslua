@@ -337,6 +337,10 @@ function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
     IMAGE_REF = portrait,
     PORTRAIT_ACTIVE = portrait ~= "" and "true" or "false",
   }
+  -- Template conditionals test key presence, not string truthiness. Keep the marker absent for "No portrait".
+  if portrait ~= "" then
+    params.PORTRAIT_PRESENT = "1"
+  end
   for i = 1, (opts.fixedDotSlots or slotCount) do
     params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(
       i, slotCount, baseCount, tempCount, disabledCount, filledImg, clampedProject
