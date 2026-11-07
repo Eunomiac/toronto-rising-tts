@@ -1,10 +1,10 @@
 --[[
-    Companion toggle tiles — Red/Brown famulus (lib/companion_toggle.ttslua)
+    Companion toggle tiles — Red/Brown/Purple famulus (lib/companion_toggle.ttslua)
 
     Host-only world I/O. Object scripts route via GlobalApplyCompanionToggleClick (TOR-288).
     Famulus figurines are multi-state objects (one live GUID); use setState to cycle looks.
     Enabled/disabled tile look = Custom Tile front/back image swap (tile stays face-up).
-    Purple tiles deferred (figurines not in save yet).
+    Object stubs: require("ui.ui_companion_toggle") on COMPANION_TOGGLE_A_{RED,BROWN,PURPLE}.
 ]]
 
 local C = require("lib.constants")
@@ -15,22 +15,25 @@ local O = require("core.objects")
 local CompanionToggle = {}
 
 local OFF_Y = C.HIDDEN_OBJECT_WORLD_Y
-local ON_Y = -1.03
+local ON_Y = C.ObjectPositions.FAMULUS_FIGURINE_RED.on.position.y
 local ACTIVE_Y_MIN = -50
 
 local OWNER_BY_TOGGLE_GUID = {
     [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = "Red",
     [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = "Brown",
+    [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = "Purple",
 }
 
 local POSE_KEY_BY_OWNER = {
     Red = "FAMULUS_FIGURINE_RED",
     Brown = "FAMULUS_FIGURINE_BROWN",
+    Purple = "FAMULUS_FIGURINE_PURPLE",
 }
 
 local GUIDS_KEY_BY_OWNER = {
     Red = "FAMULUS_FIGURINE_RED",
     Brown = "FAMULUS_FIGURINE_BROWN",
+    Purple = "FAMULUS_FIGURINE_PURPLE",
 }
 
 --- @param toggleGuid string
@@ -198,18 +201,72 @@ local function ensureFaceUpRotation(toggleObj)
     })
 end
 
+--- One-shot warnings so missing cloud rows do not spam the console every click.
+local missingFaceCatalogWarned = {}
+
 --- @param toggleObj Object
---- @return string enabledUrl, string disabledUrl
+--- @return string|nil enabledUrl, string|nil disabledUrl
 local function resolveFaceUrls(toggleObj)
-    local owner = OWNER_BY_TOGGLE_GUID[toggleObj.getGUID()]
+    local toggleGuid = toggleObj.getGUID()
+    local owner = OWNER_BY_TOGGLE_GUID[toggleGuid]
     local key = string.lower(tostring(owner))
     local enabled = CloudToggleFaces[key .. "_enabled"]
     local disabled = CloudToggleFaces[key .. "_disabled"]
-    if not enabled or not disabled then
-        error("[CompanionToggle] assets/Objects/Companion Toggle/companionToggle_" .. key
-            .. "_enabled / _disabled missing from lib/cloud_companion_toggle.ttslua (run npm run build:full with TTS closed).")
+    if enabled and disabled and type(enabled.URL) == "string" and type(disabled.URL) == "string" then
+        return enabled.URL, disabled.URL
     end
-    return enabled.URL, disabled.URL
+
+    -- Stable fallback: remember the tile's two CustomObject faces once (cloud catalog may lag
+    -- when a new seat color is wired before `npm run cloud-asset-sync -- --job companionToggle`).
+    local cached = S.getStateVal("runtime", "companionToggleFaceFallback", toggleGuid)
+    if type(cached) == "table"
+        and type(cached.enabled) == "string"
+        and cached.enabled ~= ""
+        and type(cached.disabled) == "string"
+        and cached.disabled ~= ""
+    then
+        return cached.enabled, cached.disabled
+    end
+
+    if type(toggleObj.getCustomObject) == "function" then
+        local co = toggleObj.getCustomObject()
+        if type(co) == "table" then
+            local top = co.image
+            local bottom = co.image_bottom or co.image_secondary
+            if type(top) == "string" and top ~= "" and type(bottom) == "string" and bottom ~= "" then
+                local en, dis
+                if isFigurineActive(owner) then
+                    en, dis = top, bottom
+                else
+                    en, dis = bottom, top
+                end
+                S.setStateVal({ enabled = en, disabled = dis }, "runtime", "companionToggleFaceFallback", toggleGuid)
+                if missingFaceCatalogWarned[key] ~= true then
+                    missingFaceCatalogWarned[key] = true
+                    print(
+                        "[CompanionToggle] Using tile CustomObject faces for "
+                            .. key
+                            .. " until cloud catalog has companionToggle_"
+                            .. key
+                            .. "_enabled/_disabled (`npm run cloud-asset-sync -- --job companionToggle`, TTS closed)."
+                    )
+                end
+                return en, dis
+            end
+        end
+    end
+
+    if missingFaceCatalogWarned[key] ~= true then
+        missingFaceCatalogWarned[key] = true
+        print(
+            "[CompanionToggle] No face URLs for companionToggle_"
+                .. key
+                .. "_enabled/_disabled — figurine toggle still works; tile art will not swap. "
+                .. "Add those .webp files under assets/Objects/Companion Toggle/ and run "
+                .. "`npm run cloud-asset-sync -- --job companionToggle` (TTS closed)."
+        )
+    end
+    return nil, nil
 end
 
 --- Show enabled/disabled art on the top face by swapping Custom Tile URLs (no rotX flip).
@@ -224,6 +281,9 @@ local function setToggleTokenFace(toggleObj, enabled)
         return
     end
     local enabledUrl, disabledUrl = resolveFaceUrls(toggleObj)
+    if type(enabledUrl) ~= "string" or type(disabledUrl) ~= "string" then
+        return
+    end
     local wantTop = enabled and enabledUrl or disabledUrl
     local wantBottom = enabled and disabledUrl or enabledUrl
     local co = toggleObj.getCustomObject()
@@ -308,7 +368,7 @@ end
 --- @type table<string, boolean>
 local trayFlippedCompanionByColor = {}
 
---- Seat has a famulus companion figurine in the save (Red/Brown today).
+--- Seat has a famulus companion figurine in the save (Red/Brown/Purple today).
 --- @param ownerColor string
 --- @return boolean
 local function hasCompanionFigurineSeat(ownerColor)
