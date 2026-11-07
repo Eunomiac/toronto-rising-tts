@@ -1,5 +1,6 @@
 "use strict";
 const { dataOf, bool } = require("./sheet_exports.js");
+const { resolveLocationTrack } = require("./locations_track_aliases.js");
 
 // Export cells contain values, never snippets of Lua. Catalog membership is
 // checked before rendering; conditions which lack a runtime implementation are
@@ -13,8 +14,8 @@ function locations(snapshot, catalogs) {
   });
   const districts = dataOf(snapshot, "LOCATIONS_DISTRICTS").map(row => ({ key: row.Key, name: row.Name.charAt(0).toUpperCase() + row.Name.slice(1), conditions: conditions(row) }));
   const sites = dataOf(snapshot, "LOCATIONS_SITES").map(row => {
-    const locationTrack = row["Sound - Location"], music = row["Sound - Music"];
-    if (!catalogs.trackKeys.has(locationTrack)) throw new Error(`${row.Key}: unknown location audio ${locationTrack}`);
+    const music = row["Sound - Music"];
+    const locationTrack = resolveLocationTrack(row["Sound - Location"], catalogs.trackKeys, warnings, row.Key);
     if (music && music !== "none" && !catalogs.musicKeys.has(music)) throw new Error(`${row.Key}: unknown music ${music}`);
     const offsetXY = row["Map Offset XY"] || null;
     if (offsetXY && !/^-?\d+(?:\.\d+)? -?\d+(?:\.\d+)?$/.test(offsetXY)) throw new Error(`${row.Key}: invalid map offset ${offsetXY}`);

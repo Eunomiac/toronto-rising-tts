@@ -9,15 +9,7 @@
  */
 
 const { escapeLuaString, LUA_IDENT_RE } = require("./skyboxes_sheet_csv.js");
-
-/**
- * Sheet location-track keys the soundscape catalog spells differently. The sheet's hidden `(data)`
- * tab maps raw track names to these keys; each alias prints a warning until the sheet is fixed.
- */
-const TRACK_ALIASES = {
-  // Sheet/bundle effect names that still differ from the soundscape catalog key.
-  warrensSafe: "warrens",
-};
+const { TRACK_ALIASES } = require("./locations_track_aliases.js");
 
 /**
  * Sheet background-music playlists the soundscape catalog does not have. `null` drops the site
