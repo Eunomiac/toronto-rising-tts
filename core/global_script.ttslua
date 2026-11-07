@@ -1220,6 +1220,12 @@ local function performFullUiResync(reason, opts)
     local xmlString = resolveGlobalXmlDoc(mode)
     local label = type(reason) == "string" and reason ~= "" and reason or "unspecified"
     pendingFullUiRemount = true
+    -- Dormant during ordinary play; Trace.report returns immediately unless an explicit trace/capture is on.
+    require("lib.sync_trace").report("GlobalUI.fullRemount", {
+        outcome = "ran",
+        mode = mode,
+        reason = label,
+    })
 
     local JoinColdPools = require("core.join_cold_pools")
     local chainSteps

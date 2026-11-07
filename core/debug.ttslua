@@ -1231,6 +1231,51 @@ function DEBUG.resetSyncTraceSummary()
     print("[SyncTrace] summary totals reset")
 end
 
+--- List the opt-in Pending Author Verification checks (TOR-759).
+--- The harness is lazy-loaded and has no timers, listeners, scans, or wrappers while idle.
+function DEBUG.verifyPavList()
+    return require("core.pav_verification").list()
+end
+
+--- Run one deterministic PAV contract check.
+--- @param issueId string e.g. "TOR-758"
+function DEBUG.verifyPav(issueId)
+    local result = require("core.pav_verification").run(issueId)
+    U.mcpEmitResult({ test = "pav_verification", result = result })
+    return result
+end
+
+--- Start a bounded, in-memory trace around one real action.
+--- @param issueId string
+function DEBUG.verifyPavStart(issueId)
+    local result = require("core.pav_verification").startCapture(issueId)
+    U.mcpEmitResult({ test = "pav_verification_start", result = result })
+    return result
+end
+
+--- Finish the active PAV capture and remove every temporary trace wrapper.
+function DEBUG.verifyPavFinish()
+    local result = require("core.pav_verification").finishCapture()
+    U.mcpEmitResult({ test = "pav_verification_finish", result = result })
+    return result
+end
+
+--- Emergency cleanup for an abandoned PAV capture. Safe when idle.
+function DEBUG.verifyPavStop()
+    local result = require("core.pav_verification").stopCapture()
+    U.mcpEmitResult({ test = "pav_verification_stop", result = result })
+    return result
+end
+
+--- Run an explicit, bounded UI/state/object/soundscape probe.
+--- @param kind string "ui"|"state"|"objects"|"soundscape"
+--- @param spec table|nil
+function DEBUG.pavProbe(kind, spec)
+    local result = require("core.pav_verification").probe(kind, spec)
+    U.mcpEmitResult({ test = "pav_probe", result = result })
+    return result
+end
+
 --- Print orchestrator reconcile skip-cache snapshot (fingerprints, layout, init-light retries).
 function DEBUG.dumpSyncCacheState()
     printTestHeader("Sync reconcile caches")
@@ -5916,6 +5961,13 @@ function DEBUG.help()
     print("                          - Position using cylindrical coords relative to stored center")
     print("  DEBUG.setPositionSpherical(obj, radius, angleDeg, angle2Deg, target?)")
     print("                          - Position using spherical coords relative to stored center")
+    print("\nAGENT VERIFICATION (opt-in; zero activity while idle):")
+    print("  DEBUG.verifyPavList()          - List registered PAV checks")
+    print("  DEBUG.verifyPav('TOR-758')     - Run a deterministic check")
+    print("  DEBUG.verifyPavStart('TOR-755') / DEBUG.verifyPavFinish()")
+    print("                                   - Capture one live action, then remove wrappers")
+    print("  DEBUG.verifyPavStop()          - Emergency capture cleanup")
+    print("  DEBUG.pavProbe(kind, spec)     - Bounded UI/state/object/soundscape snapshot")
     print("\nNPC OBJECTS:")
     print("  DEBUG.retirePreloadPools() - One-shot: destroy preload NPCs/lights, d10Preload dice, CB_ board; then File > Save")
     print("  DEBUG.exportObjectsBelowY(yMax?, path?) - Write every object below y (default -75) to .dev/.debug")

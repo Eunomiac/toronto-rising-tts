@@ -26,6 +26,7 @@ local STALE_ROOT_SEC = 10
 local MAX_BLOCK_LINES = 150
 local MAX_ARG_VALUES = 3
 local MAX_FLAG_KEYS = 6
+local MAX_CAPTURE_EVENTS = 200
 
 --- Open spans, innermost last.
 local stack = {}
@@ -35,6 +36,9 @@ local stats = {}
 local statsStartClock = nil
 --- { tbl, field, original } for every wrapper currently installed.
 local installed = {}
+--- Temporary agent-verification capture. Nil during ordinary play.
+--- This switch is deliberately in-memory only: Save & Play always clears it.
+local transientCapture = nil
 
 --- @return table|nil
 local function stateModule()
@@ -124,13 +128,46 @@ local function targetList()
 end
 
 --- @return boolean
-function Trace.isEnabled()
+local function persistedEnabled()
     local S = stateModule()
     if S == nil then
         return false
     end
     local dbg = S.getStateVal("debug")
     return type(dbg) == "table" and dbg.syncTraceEnabled == true
+end
+
+function Trace.isEnabled()
+    return transientCapture ~= nil or persistedEnabled()
+end
+
+--- Record a bounded, JSON-safe event only while an agent capture is active.
+--- @param label string
+--- @param fields table|nil
+--- @param ms number|nil
+local function captureEvent(label, fields, ms)
+    local capture = transientCapture
+    if capture == nil then
+        return
+    end
+    if #capture.events >= MAX_CAPTURE_EVENTS then
+        capture.droppedEvents = capture.droppedEvents + 1
+        return
+    end
+    local safeFields = {}
+    if type(fields) == "table" then
+        for key, value in pairs(fields) do
+            local valueType = type(value)
+            if valueType == "string" or valueType == "number" or valueType == "boolean" then
+                safeFields[tostring(key)] = value
+            end
+        end
+    end
+    capture.events[#capture.events + 1] = {
+        label = tostring(label),
+        fields = safeFields,
+        ms = ms,
+    }
 end
 
 --- @param ms number
@@ -432,6 +469,7 @@ function Trace.finish(span)
     end
     span.selfMs = math.max(0, span.ms - childMs)
     recordStats(span)
+    captureEvent(span.label, span.fields, span.ms)
     for i = #stack, 1, -1 do
         if stack[i] == span then
             for j = #stack, i, -1 do
@@ -464,6 +502,7 @@ function Trace.report(name, fields)
     end
     local event = { label = tostring(name), fields = fields, children = {}, instant = true }
     recordStats(event)
+    captureEvent(event.label, event.fields, nil)
     if top ~= nil then
         top.children[#top.children + 1] = event
         return
@@ -553,6 +592,88 @@ function Trace.resetStats()
     statsStartClock = os.clock()
 end
 
+--- JSON-safe totals for agent tooling; no printing and no mutation.
+--- @return table
+function Trace.snapshot()
+    local labels = {}
+    for label in pairs(stats) do
+        labels[#labels + 1] = label
+    end
+    table.sort(labels)
+    local rows = {}
+    for _, label in ipairs(labels) do
+        local source = stats[label]
+        rows[#rows + 1] = {
+            label = label,
+            calls = source.calls,
+            ran = source.ran,
+            skipped = source.skipped,
+            timedCalls = source.timedCalls,
+            totalMs = source.totalMs,
+            selfMs = source.selfMs,
+            maxMs = source.maxMs,
+        }
+    end
+    local capture = transientCapture
+    return {
+        active = capture ~= nil,
+        label = capture and capture.label or nil,
+        elapsedMs = statsStartClock and ((os.clock() - statsStartClock) * 1000) or 0,
+        rows = rows,
+        events = capture and capture.events or {},
+        droppedEvents = capture and capture.droppedEvents or 0,
+    }
+end
+
+--- Start a non-persisted capture for one verification action.
+--- Wrappers do not exist before this call and are removed by finish/cancel.
+--- @param label string
+--- @return table
+function Trace.beginTransientCapture(label)
+    if transientCapture ~= nil then
+        error("SyncTrace transient capture already active: " .. tostring(transientCapture.label))
+    end
+    if persistedEnabled() then
+        error("Turn off the saved Sync Trace switch before starting an agent verification capture")
+    end
+    transientCapture = {
+        label = tostring(label or "agent-verification"),
+        events = {},
+        droppedEvents = 0,
+    }
+    Trace.resetStats()
+    Trace.install()
+    return { active = true, label = transientCapture.label }
+end
+
+--- Finish the temporary capture, restore original functions, and return its evidence.
+--- @return table
+function Trace.finishTransientCapture()
+    if transientCapture == nil then
+        error("No SyncTrace transient capture is active")
+    end
+    local snapshot = Trace.snapshot()
+    transientCapture = nil
+    Trace.uninstall()
+    stats = {}
+    statsStartClock = nil
+    snapshot.active = false
+    return snapshot
+end
+
+--- Emergency cleanup for an abandoned capture. Safe to call when none is active.
+--- @return boolean stopped
+function Trace.cancelTransientCapture()
+    if transientCapture == nil then
+        return false
+    end
+    transientCapture = nil
+    Trace.uninstall()
+    stats = {}
+    statsStartClock = nil
+    return true
+end
+
 --- Per-function totals since the trace was turned on, slowest total first. One print.
 function Trace.printSummary()
     local labels = {}
@@ -601,12 +722,15 @@ end
 --- Off: print the session summary, remove wrappers.
 --- @param enabled boolean
 function Trace.setEnabled(enabled)
+    if transientCapture ~= nil then
+        error("Finish or stop the agent verification capture before changing saved Sync Trace")
+    end
     local S = stateModule()
     if S == nil or type(S.setStateVal) ~= "function" then
         return
     end
     local on = enabled == true
-    local wasOn = Trace.isEnabled()
+    local wasOn = persistedEnabled()
     S.setStateVal(on, "debug", "syncTraceEnabled")
     if on then
         Trace.install()
