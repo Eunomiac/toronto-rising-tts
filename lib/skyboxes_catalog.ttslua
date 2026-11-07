@@ -2098,7 +2098,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "urbanFire"
+      locationAudio = "urbanChaos"
     },
     panelC = {
       display = "Streetcar tunnel cache",
