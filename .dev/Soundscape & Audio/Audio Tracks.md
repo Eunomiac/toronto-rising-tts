@@ -37,6 +37,11 @@ The silent track is a 1-second silent audio file named `silent.wav`. It is used 
 
 Ambient audio is the location-based immersive background audio that plays over every scene and at all times. Ambient audio is generally determined by the Site at which the current scene is taking place. Each of the tracks below is meant to be looped until a different track is selected or triggered by movement to a different Site.
 
+Location ambience is split across two AssetBundles because of Steam Cloud upload size limits:
+
+- **Primary pack** (`tr_soundscape.unity3d`) — emitters `locationA` / `locationB`. Catalog tracks with no `emitterBank` (or bank `location`) play here.
+- **Overflow pack** (`tr_soundscape_c.unity3d`) — emitters `location2A` / `location2B`. Catalog tracks with `emitterBank = "location2"` play here (`bar`, `cityChatter`, `cityNight`, `distantBattle`, `distantCivilWarBattle`, `dungeon`, `fastClock`, `fireplace`, `frontierSettlement`, `horseDrawnTraffic`, `jazzClub`, `lowWindAmbient`, `marketCrowd`, `medicalClinic`, `militaryCamp`, `militaryOccupation`, `navalBattle`, `office`, `oldAlley`, `quietIndoor`, `quietWarehouse`, `railwayStation`, `residentialCourtyard`, `ritualDrums`, `shipDeck`, `tinkle`, `urbanChaos`, `warrensSafety`, `weaponsTraining`, plus `silent`).
+
 | Effect Name    | Effect List     | Name                 |    Size | Duration | isLoop | Preconvert                            | Load Type            | Compression Format | Preload Audio Data |
 | -------------- | --------------- | -------------------- | ------: | -------: | :----: | ------------------------------------- | -------------------- | ------------------ | ------------------ |
 | airport        | Looping Effects | Airport.mp3          | 5.76 MB |     4:07 |  true  | WAV 44.1kHz/16-bit PCM; trim loop gap | Compressed In Memory |                    | Disabled           |

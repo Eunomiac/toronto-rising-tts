@@ -17,7 +17,6 @@ const { escapeLuaString, LUA_IDENT_RE } = require("./skyboxes_sheet_csv.js");
 const TRACK_ALIASES = {
   // Sheet/bundle effect names that still differ from the soundscape catalog key.
   warrensSafe: "warrens",
-  bar: "diveBar",
 };
 
 /**

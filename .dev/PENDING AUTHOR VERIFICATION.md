@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### TOR-754 — Location 2 ambience pack plays catalog tracks
+
+**How to verify:** Save & Play so the new emitters and catalog load. From the Storyteller sound controls or by applying a site, start a Location 2 track such as `fireplace`, `office`, `bar`, or `distantBattle`. You should hear that bed from the Location 2 emitters. Switch to a primary-pack track such as `airport` or `diveBar` and confirm it still plays on the original Location A/B pair. Switching between a Location 1 bed and a Location 2 bed should crossfade without leaving both packs audible. Stop location audio and confirm both packs go quiet.
+
 #### TOR-753 — Autoshop and computer-lab ambience match the AssetBundle
 
 **How to verify:** Save & Play so the updated catalogs load. Apply **Auto Mechanic** or **Junkyard** and listen for the autoshop ambience loop. Apply **The St. Regis Toronto: Room 101** or **Union Station: Security Office** and listen for the computer-lab ambience loop. Neither should stay silent or fall back to a different bed because of a misspelled track name.

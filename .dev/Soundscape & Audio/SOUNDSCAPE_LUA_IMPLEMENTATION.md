@@ -30,12 +30,13 @@ remain stable.
 
 ## Current Runtime Shape
 
-The implemented Lua runtime uses ten GUID-registered AssetBundle emitters:
+The implemented Lua runtime uses twelve GUID-registered AssetBundle emitters:
 
 - `musicA` / `musicB`: alternating background music lanes for trigger-based mood or location-music playlists.
 - `musicC`: dedicated session-start overture lane (one-shot trigger; not a third Main ping-pong).
 - `featuredA` / `featuredB`: alternating featured music lanes for one-off songs and catalog-driven sequence handoffs.
-- `locationA` / `locationB`: alternating sustained site ambience loops.
+- `locationA` / `locationB`: alternating sustained site ambience loops on the primary soundscape pack.
+- `location2A` / `location2B`: alternating site ambience loops on the overflow pack (`tr_soundscape_c`). Catalog location tracks with `emitterBank = "location2"` route here.
 - `weatherRain`: sustained rain loops.
 - `weatherWind`: sustained wind loops.
 - `weatherThunder`: one-shot thunder Trigger Effects.

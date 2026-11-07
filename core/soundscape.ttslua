@@ -135,9 +135,39 @@ local function resolveActiveFeaturedChannel(state)
     return state.activeFeaturedChannel == "featuredB" and "featuredB" or "featuredA"
 end
 
-local function resolveActiveLocationChannel(state)
-    return state.activeLocationChannel == "locationB" and "locationB" or "locationA"
+local LOCATION_CHANNEL_KEYS = { "locationA", "locationB", "location2A", "location2B" }
+
+local function locationBankForChannel(channelKey)
+    if channelKey == "location2A" or channelKey == "location2B" then
+        return "location2"
+    end
+    return "location"
 end
+
+local function locationPairForBank(bank)
+    if bank == "location2" then
+        return "location2A", "location2B"
+    end
+    return "locationA", "locationB"
+end
+
+local function locationBankForTrack(track)
+    if type(track) == "table" and track.emitterBank == "location2" then
+        return "location2"
+    end
+    return "location"
+end
+
+local function resolveActiveLocationChannel(state)
+    local channelKey = state and state.activeLocationChannel or nil
+    if channelKey == "locationB" or channelKey == "location2A" or channelKey == "location2B" or channelKey == "locationA" then
+        return channelKey
+    end
+    return "locationA"
+end
+
+-- Defined after `silenceLoopChannel` (Lua local function order).
+local silenceAllLocationChannels
 
 local function resolveActiveMusicChannel(state)
     return state.activeMusicChannel == "musicB" and "musicB" or "musicA"
@@ -678,6 +708,17 @@ local function silenceLoopChannel(channelKey)
     }, 0, 0, 0)
 end
 
+silenceAllLocationChannels = function()
+    local okAll = true
+    local messages = {}
+    for _, channelKey in ipairs(LOCATION_CHANNEL_KEYS) do
+        local ok, message = silenceLoopChannel(channelKey)
+        okAll = okAll and ok
+        table.insert(messages, message)
+    end
+    return okAll, table.concat(messages, " | ")
+end
+
 local function scheduleNextBackgroundTrack(kind, key, track, generation)
     local duration = type(track) == "table" and tonumber(track.durationSeconds) or nil
     if duration == nil or duration <= 0 or track.effectList == Catalog.EFFECT_LIST.LOOPING then
@@ -866,6 +907,8 @@ local BOOTSTRAP_LOOP_CHANNELS = {
     "featuredB",
     "locationA",
     "locationB",
+    "location2A",
+    "location2B",
     "weatherRain",
     "weatherWind",
 }
@@ -1060,7 +1103,7 @@ local function pauseBackgroundForFeatured(fadeSecondsOverride)
     return true
 end
 
---- Fade site ambience (`locationA`/`locationB`) while featured music plays (TOR-494).
+--- Fade site ambience (Location 1 and Location 2 pairs) while featured music plays (TOR-494).
 -- Keeps `state.location` so the same track can fade back in afterward.
 -- @param fadeSecondsOverride number|nil when set, used instead of catalog location fade
 -- @return boolean
@@ -1079,7 +1122,7 @@ local function pauseLocationForFeatured(fadeSecondsOverride)
     if fadeSeconds == nil then
         fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0
     end
-    for _, channelKey in ipairs({ "locationA", "locationB" }) do
+    for _, channelKey in ipairs(LOCATION_CHANNEL_KEYS) do
         local obj = resolveEmitter(channelKey)
         if obj ~= nil then
             local channelState = state.channels and state.channels[channelKey] or {}
@@ -1090,8 +1133,7 @@ local function pauseLocationForFeatured(fadeSecondsOverride)
     state.locationPausedForFeatured = true
     waitTime(function()
         if thisGeneration == locationPauseGeneration then
-            silenceLoopChannel("locationA")
-            silenceLoopChannel("locationB")
+            silenceAllLocationChannels()
         end
     end, fadeSeconds)
     return true
@@ -1183,14 +1225,44 @@ end
 
 local function playLocationEntry(location)
     local state = ensureState()
+    local bank = locationBankForTrack(location)
+    local channelA, channelB = locationPairForBank(bank)
     local oldChannel = resolveActiveLocationChannel(state)
+    local oldBank = locationBankForChannel(oldChannel)
     local targetVolume = savedTrackVolume(location) or tonumber(location.volume) or 0.55
     local fadeSeconds = transitionFade(tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0)
 
+    if oldBank ~= bank then
+        local oldA, oldB = locationPairForBank(oldBank)
+        for _, channelKey in ipairs({ oldA, oldB }) do
+            local obj = resolveEmitter(channelKey)
+            if obj ~= nil then
+                local channelState = state.channels and state.channels[channelKey] or {}
+                fadeEmitterVolume(obj, tonumber(channelState.volume) or 0, 0, fadeSeconds)
+                updateChannelState(channelKey, { volume = 0 })
+            end
+        end
+        waitTime(function()
+            silenceLoopChannel(oldA)
+            silenceLoopChannel(oldB)
+        end, fadeSeconds)
+
+        local okPlay, message = playCatalogEntry(channelA, location, targetVolume, fadeSeconds, 0)
+        if okPlay then
+            state.activeLocationChannel = channelA
+        end
+        return okPlay, message
+    end
+
+    local pairedOldChannel = oldChannel
+    if pairedOldChannel ~= channelA and pairedOldChannel ~= channelB then
+        pairedOldChannel = channelA
+    end
+
     local okPlay, message, newChannel = playPairedEmitterEntry(location, {
-        channelA = "locationA",
-        channelB = "locationB",
-        oldChannel = oldChannel,
+        channelA = channelA,
+        channelB = channelB,
+        oldChannel = pairedOldChannel,
         volume = targetVolume,
         fadeSeconds = fadeSeconds,
         canSilenceOld = function(channelKey)
@@ -1468,9 +1540,10 @@ local function applySilentSiteAmbient()
     cancelSingleEmitterTransition("weatherRain")
     cancelSingleEmitterTransition("weatherWind")
 
-    for _, channelKey in ipairs({ "musicA", "musicB", "locationA", "locationB", "weatherRain", "weatherWind" }) do
+    for _, channelKey in ipairs({ "musicA", "musicB", "weatherRain", "weatherWind" }) do
         silenceLoopChannel(channelKey)
     end
+    silenceAllLocationChannels()
     updateChannelState("weatherThunder", {
         effect = nil,
         effectList = Catalog.EFFECT_LIST.TRIGGER,
@@ -1741,8 +1814,7 @@ function Soundscape.fadeOutTransitionAmbient(opts)
         U.await(function()
             silenceLoopChannel("musicA")
             silenceLoopChannel("musicB")
-            silenceLoopChannel("locationA")
-            silenceLoopChannel("locationB")
+            silenceAllLocationChannels()
             silenceLoopChannel("weatherRain")
             silenceLoopChannel("weatherWind")
         end, seconds)
@@ -2744,14 +2816,13 @@ function Soundscape.setLocationAudio(locationKey)
         clearSiteSilentLatch()
     end
     if locationKey == "none" then
-        local okStopA, messageA = silenceLoopChannel("locationA")
-        local okStopB, messageB = silenceLoopChannel("locationB")
+        local okStop, message = silenceAllLocationChannels()
         local state = ensureState()
-        if okStopA and okStopB then
+        if okStop then
             state.location = Catalog.DEFAULTS.location
             state.activeLocationChannel = "locationA"
         end
-        return okStopA and okStopB, table.concat({ messageA, messageB }, " | ")
+        return okStop, message
     end
     local location = Catalog.getLocationTrack(locationKey)
     if location == nil then
@@ -2842,10 +2913,15 @@ function Soundscape.stopAll()
 
     local messages = {}
     local ok = true
-    for _, channelKey in ipairs({ "musicA", "musicB", "musicC", "featuredA", "featuredB", "locationA", "locationB", "weatherRain", "weatherWind" }) do
+    for _, channelKey in ipairs({ "musicA", "musicB", "musicC", "featuredA", "featuredB", "weatherRain", "weatherWind" }) do
         local channelOk, message = silenceLoopChannel(channelKey)
         ok = ok and channelOk
         table.insert(messages, message)
+    end
+    do
+        local locationOk, locationMessage = silenceAllLocationChannels()
+        ok = ok and locationOk
+        table.insert(messages, locationMessage)
     end
     updateChannelState("weatherThunder", {
         effect = nil,

@@ -173,9 +173,13 @@ test("soundscape catalog defines generated playlists, channels, and context defa
     "SOUNDSCAPE_FEATURED_B",
     "SOUNDSCAPE_LOCATION_A",
     "SOUNDSCAPE_LOCATION_B",
+    "SOUNDSCAPE_LOCATION_2_A",
+    "SOUNDSCAPE_LOCATION_2_B",
     "SOUNDSCAPE_WEATHER_RAIN",
     "SOUNDSCAPE_WEATHER_WIND",
     "SOUNDSCAPE_WEATHER_THUNDER",
+    "emitterBank",
+    "location2",
     "main",
     "intrigue",
     "combat",
@@ -336,6 +340,8 @@ test("soundscape GUID registry contains all runtime emitters", () => {
     "SOUNDSCAPE_FEATURED_B",
     "SOUNDSCAPE_LOCATION_A",
     "SOUNDSCAPE_LOCATION_B",
+    "SOUNDSCAPE_LOCATION_2_A",
+    "SOUNDSCAPE_LOCATION_2_B",
     "SOUNDSCAPE_WEATHER_RAIN",
     "SOUNDSCAPE_WEATHER_WIND",
     "SOUNDSCAPE_WEATHER_THUNDER",
@@ -386,18 +392,24 @@ test("soundscape featured and location lanes use paired emitters", () => {
     "featuredB",
     "locationA",
     "locationB",
+    "location2A",
+    "location2B",
     "SOUNDSCAPE_FEATURED_A",
     "SOUNDSCAPE_FEATURED_B",
     "SOUNDSCAPE_LOCATION_A",
     "SOUNDSCAPE_LOCATION_B",
+    "SOUNDSCAPE_LOCATION_2_A",
+    "SOUNDSCAPE_LOCATION_2_B",
   ].forEach((needle) => {
     assert.ok(catalog.includes(needle) || guids.includes(needle) || runtime.includes(needle) || state.includes(needle), `missing paired emitter support: ${needle}`);
   });
 
   assert.ok(runtime.includes("activeFeaturedChannel"), "featured lane should track the active featured emitter");
   assert.ok(runtime.includes("activeLocationChannel"), "location lane should track the active location emitter");
+  assert.ok(runtime.includes("locationBankForTrack"), "location playback should choose Location 1 vs Location 2 from catalog emitterBank");
   assert.ok(runtime.includes("playFeaturedEntry"), "featured playback should use paired emitter handoff helper");
   assert.ok(runtime.includes("playLocationEntry"), "location playback should use paired emitter crossfade helper");
+  assert.ok(runtime.includes("silenceAllLocationChannels"), "location silence should cover both Location packs");
   const oldDelayKey = ["featuredLoop", "HandoffDelaySeconds"].join("");
   const oldFeaturedGuidKey = ["guidKey = \"SOUNDSCAPE", "FEATURED\""].join("_");
   const oldLocationGuidKey = ["guidKey = \"SOUNDSCAPE", "LOCATION\""].join("_");
