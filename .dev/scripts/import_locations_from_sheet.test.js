@@ -5,12 +5,19 @@ const test = require("node:test");
 
 const { parseDistrictRows, parseSiteRows, renderLocationsCatalogLua } = require("./lib/locations_sheet_csv.js");
 
+const LABEL_MAP = new Map([
+  ["ComputerLab", "computer"],
+  ["Autoshop", "autoShop"],
+  ["Warrens", "warrens"],
+]);
+
 const CATALOGS = {
   districtKeys: new Set(["Annex", "Sewers"]),
   skyboxKeys: new Set(["AnarchBar"]),
   musicKeys: new Set(["casaLoma"]),
-  trackKeys: new Set(["diveBar", "warrens"]),
+  trackKeys: new Set(["diveBar", "warrens", "computer", "autoShop"]),
   conditionIds: new Set(["bestialNull", "bumpBloodPotency"]),
+  labelMap: LABEL_MAP,
 };
 
 /** Build a sheet: `sections` = [[title, [header, …]], …]; `data` rows are objects keyed by header. */
@@ -120,19 +127,20 @@ test("sites: reads the TTS output fragments", () => {
   assert.equal(sites[0].isIndoors, false);
 });
 
-test("sites: accent-free keys, track aliases and missing playlists warn", () => {
+test("sites: accent-free keys, (data) label map and missing playlists warn", () => {
   const rows = sheet(SITE_SECTIONS, [
     siteRow("WarrensFom\u00f3rach", {
       district: "    district = C.Districts.Sewers,",
       "soundscape\nmusic": '      backgroundMusic = {playlist = "nosWarrens"},',
-      "soundscape\nlocation": '      location = {playlist = "location", track = "warrensSafe"}\n    },',
+      "soundscape\nlocation": '      location = {playlist = "location", track = "computerLab"}\n    },',
     }),
   ]);
   const { sites, warnings } = parseSiteRows(rows, CATALOGS);
   assert.equal(sites[0].key, "WarrensFomorach");
-  assert.equal(sites[0].locationTrack, "warrens");
+  assert.equal(sites[0].locationTrack, "computer");
   assert.equal(sites[0].backgroundMusic, null);
   assert.equal(warnings.length, 3);
+  assert.match(warnings.join("\n"), /\(data\) map to "computer"/);
 });
 
 test("sites: unknown catalog values fail loudly", () => {
@@ -140,7 +148,7 @@ test("sites: unknown catalog values fail loudly", () => {
     assert.throws(() => parseSiteRows(sheet(SITE_SECTIONS, [siteRow("X", overrides)]), CATALOGS), pattern);
   bad({ Skybox: '    skybox = "Nope",' }, /skybox "Nope"/);
   bad({ district: "    district = C.Districts.Nowhere," }, /district "Nowhere"/);
-  bad({ "soundscape\nlocation": '      location = {playlist = "location", track = "nope"}' }, /location track "nope"/);
+  bad({ "soundscape\nlocation": '      location = {playlist = "location", track = "nope"}' }, /unknown location audio nope/);
   bad({ "soundscape\nmusic": '      backgroundMusic = {playlist = "nope"},' }, /background music "nope"/);
   bad({ "is\nindoors": "" }, /isIndoors: missing value/);
   bad({ "Weather\nDucking": "    weatherDucking = 2," }, /between 0 and 1/);

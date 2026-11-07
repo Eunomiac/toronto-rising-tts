@@ -1,34 +1,55 @@
 "use strict";
 
 /**
- * Sheet location-track keys the soundscape catalog spells differently.
- * Each alias prints a warning until the sheet row uses the catalog key.
- *
- * Keep in sync with AssetBundle effect names in lib/soundscape_catalog.ttslua.
+ * Resolve EXPORT / authored location-track values to soundscape catalog keys.
+ * Prefer a catalog key; otherwise use Districts & Sites `(data)` label→key map
+ * (direct label, or camelCased label as emitted by today's broken Sound - Location export).
  */
-const TRACK_ALIASES = {
-  warrensSafe: "warrens",
-  computerLab: "computer",
-  autoshop: "autoShop",
-};
+
+/**
+ * @param {string} label
+ * @returns {string}
+ */
+function lowerFirst(label) {
+  if (!label) return label;
+  return label.charAt(0).toLowerCase() + label.slice(1);
+}
 
 /**
  * @param {string} locationTrack
  * @param {Set<string>} trackKeys
  * @param {string[]} warnings
- * @param {string} label
+ * @param {string} siteLabel
+ * @param {Map<string, string>} [labelMap]
  * @returns {string}
  */
-function resolveLocationTrack(locationTrack, trackKeys, warnings, label) {
-  if (trackKeys.has(locationTrack)) {
-    return locationTrack;
+function resolveLocationTrack(locationTrack, trackKeys, warnings, siteLabel, labelMap = new Map()) {
+  const raw = String(locationTrack ?? "").trim();
+  if (trackKeys.has(raw)) {
+    return raw;
   }
-  const alias = TRACK_ALIASES[locationTrack];
-  if (alias === undefined || !trackKeys.has(alias)) {
-    throw new Error(`${label}: unknown location audio ${locationTrack}`);
+
+  /** @type {string | undefined} */
+  let mapped;
+  if (labelMap.has(raw)) {
+    mapped = labelMap.get(raw);
+  } else {
+    for (const [label, key] of labelMap) {
+      if (lowerFirst(label) === raw) {
+        mapped = key;
+        break;
+      }
+    }
   }
-  warnings.push(`${label}: location track "${locationTrack}" aliased to "${alias}" (update the sheet)`);
-  return alias;
+
+  if (mapped && trackKeys.has(mapped)) {
+    warnings.push(
+      `${siteLabel}: location track "${raw}" resolved via (data) map to "${mapped}" (update Sound - Location export to emit catalog keys)`,
+    );
+    return mapped;
+  }
+
+  throw new Error(`${siteLabel}: unknown location audio ${raw}`);
 }
 
-module.exports = { TRACK_ALIASES, resolveLocationTrack };
+module.exports = { resolveLocationTrack, lowerFirst };

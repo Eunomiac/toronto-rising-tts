@@ -21,6 +21,7 @@ function loadCatalogs() {
   const tracks = readLuaTable(lib("soundscape_catalog.ttslua"), "Catalog.TRACKS");
   const playlists = readLuaTable(lib("soundscape_catalog.ttslua"), "Catalog.PLAYLISTS");
   const defs = readLuaTable(lib("condition_defs.ttslua"), "CD.Defs");
+  const { getSoundscapeLabelMap } = require("./lib/locations_soundscape_map.js");
   return {
     skyboxKeys: new Set(Object.keys(readLuaTable(lib("skyboxes_catalog.ttslua"), "SkyboxesCatalog.Skyboxes"))),
     musicKeys: new Set(Object.keys(playlists.backgroundMusic)),
@@ -30,6 +31,7 @@ function loadCatalogs() {
         .filter(([, d]) => d.canApplyManually === true)
         .map(([k, d]) => (typeof d.id === "string" ? d.id : k)),
     ),
+    labelMap: getSoundscapeLabelMap(),
   };
 }
 

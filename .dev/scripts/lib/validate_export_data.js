@@ -44,10 +44,12 @@ function validateExportData(snapshot) {
   }
   const audioWarnings = [...missingMemoriamTracks].map(([key, panels]) =>
     `EXPORT_MEMORIAM: missing location audio "${key}" in soundscape catalog (${panels.join(", ")})`);
+  const { getSoundscapeLabelMap } = require("./locations_soundscape_map.js");
   const result = locations(snapshot, {
     trackKeys,
     musicKeys: new Set(Object.keys(playlists.backgroundMusic)),
     conditionIds: new Set(Object.entries(defs).filter(([, d]) => d.canApplyManually === true).map(([k, d]) => typeof d.id === "string" ? d.id : k)),
+    labelMap: getSoundscapeLabelMap(),
   });
   snapshot.warnings = [...new Set([...snapshot.warnings, ...result.warnings, ...audioWarnings])];
   return { disciplinePowers: disciplines.size, unique: Object.keys(uniqueCharacters(snapshot)).length, genericFigures: genericFigures(snapshot).length, namedStats, genericTiers: genericTiers.length, weatherHours: weather.reduce((n, m) => n + m.days.length * 24, 0), districts: result.districts.length, sites: result.sites.length, skyboxes: skyboxes.length, memoriam: Object.keys(memoriam).length, complications: cards.length, compulsions: Object.keys(compulsions(snapshot)).length };

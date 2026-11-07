@@ -9,7 +9,8 @@
  */
 
 const { escapeLuaString, LUA_IDENT_RE } = require("./skyboxes_sheet_csv.js");
-const { TRACK_ALIASES } = require("./locations_track_aliases.js");
+const { resolveLocationTrack } = require("./locations_track_aliases.js");
+const { getSoundscapeLabelMap } = require("./locations_soundscape_map.js");
 
 /**
  * Sheet background-music playlists the soundscape catalog does not have. `null` drops the site
@@ -152,7 +153,7 @@ function fragment(raw, re, label, required) {
 
 /**
  * @param {string[][]} rows SITES tab
- * @param {{ districtKeys: Set<string>, skyboxKeys: Set<string>, musicKeys: Set<string>, trackKeys: Set<string>, conditionIds: Set<string> }} catalogs
+ * @param {{ districtKeys: Set<string>, skyboxKeys: Set<string>, musicKeys: Set<string>, trackKeys: Set<string>, conditionIds: Set<string>, labelMap?: Map<string, string> }} catalogs
  * @returns {{ sites: SheetSite[], warnings: string[] }}
  */
 function parseSiteRows(rows, catalogs) {
@@ -172,8 +173,8 @@ function parseSiteRows(rows, catalogs) {
   };
   /** @type {string[]} */
   const warnings = [];
-  const trackAliasUse = new Map();
   const musicGapUse = new Map();
+  const labelMap = catalogs.labelMap instanceof Map ? catalogs.labelMap : getSoundscapeLabelMap();
   /** @type {SheetSite[]} */
   const sites = [];
   const seen = new Set();
@@ -205,15 +206,13 @@ function parseSiteRows(rows, catalogs) {
       backgroundMusic = MUSIC_GAPS[backgroundMusic];
     }
 
-    let locationTrack = f("location", /^location = \{\s*playlist = "location", track = "([^"]+)"\s*\}/, true);
-    if (!catalogs.trackKeys.has(locationTrack)) {
-      const alias = TRACK_ALIASES[locationTrack];
-      if (alias === undefined || !catalogs.trackKeys.has(alias)) {
-        throw new Error(`${label}: location track "${locationTrack}" is not a location track in lib/soundscape_catalog.ttslua.`);
-      }
-      trackAliasUse.set(locationTrack, [...(trackAliasUse.get(locationTrack) || []), key]);
-      locationTrack = alias;
-    }
+    const locationTrack = resolveLocationTrack(
+      f("location", /^location = \{\s*playlist = "location", track = "([^"]+)"\s*\}/, true),
+      catalogs.trackKeys,
+      warnings,
+      label,
+      labelMap,
+    );
 
     const isIndoors = f("isIndoors", /^isIndoors = (true|false),$/, true) === "true";
     const weatherDucking = Number(f("ducking", /^weatherDucking = ([\d.]+),$/, true));
@@ -229,9 +228,6 @@ function parseSiteRows(rows, catalogs) {
     const conditions = parseConditions(cell(row[col.condition]), label, catalogs.conditionIds, warnings);
 
     sites.push({ key, name, skybox, districtKey, backgroundMusic, locationTrack, isIndoors, weatherDucking, isTopFogActive, offsetXY, conditions });
-  }
-  for (const [from, keys] of trackAliasUse) {
-    warnings.push(`SITES: location track "${from}" is not in the catalog; using "${TRACK_ALIASES[from]}" for ${keys.join(", ")}. Fix the sheet's (data) track mapping.`);
   }
   for (const [from, keys] of musicGapUse) {
     warnings.push(`SITES: background music "${from}" has no playlist; using the default mood for ${keys.join(", ")}.`);
@@ -288,7 +284,6 @@ function renderLocationsCatalogLua({ districts, sites }) {
 }
 
 module.exports = {
-  TRACK_ALIASES,
   MUSIC_GAPS,
   findColumn,
   parseDistrictRows,

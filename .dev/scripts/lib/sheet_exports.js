@@ -130,6 +130,7 @@ function exportUrl(name) {
   return `https://docs.google.com/spreadsheets/d/${contract.spreadsheetId}/export?format=csv&gid=${contract.sheetId}&range=${encodeURIComponent(name)}`;
 }
 async function fetchSnapshot() {
+  await require("./locations_soundscape_map.js").loadSoundscapeLabelMap();
   const entries = await Promise.all(contract.exports.map(async spec => {
     let csv;
     if (process.env.TR_EXPORT_CSV_DIR) csv = fs.readFileSync(path.join(process.env.TR_EXPORT_CSV_DIR, `${spec.name}.csv`), "utf8");
@@ -146,9 +147,19 @@ async function fetchSnapshot() {
 }
 let pending;
 function loadSnapshot() {
-  return pending ||= (process.env.TR_EXPORT_SNAPSHOT
-    ? Promise.resolve().then(() => validateSnapshot(JSON.parse(fs.readFileSync(process.env.TR_EXPORT_SNAPSHOT, "utf8"))))
-    : fetchSnapshot()).then(snapshot => { require("./validate_export_data.js").validateExportData(snapshot); return snapshot; });
+  return pending ||= (async () => {
+    await require("./locations_soundscape_map.js").loadSoundscapeLabelMap();
+    if (process.env.TR_EXPORT_SNAPSHOT) {
+      return validateSnapshot(JSON.parse(fs.readFileSync(process.env.TR_EXPORT_SNAPSHOT, "utf8")));
+    }
+    return fetchSnapshot();
+  })().then(snapshot => {
+    // fetchSnapshot already validated; snapshot-replay path still needs preflight.
+    if (process.env.TR_EXPORT_SNAPSHOT) {
+      require("./validate_export_data.js").validateExportData(snapshot);
+    }
+    return snapshot;
+  });
 }
 const q = value => `"${escapeLuaString(String(value))}"`;
 function uniqueCharacters(snapshot) {

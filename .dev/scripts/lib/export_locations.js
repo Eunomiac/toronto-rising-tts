@@ -1,12 +1,14 @@
 "use strict";
 const { dataOf, bool } = require("./sheet_exports.js");
 const { resolveLocationTrack } = require("./locations_track_aliases.js");
+const { getSoundscapeLabelMap } = require("./locations_soundscape_map.js");
 
 // Export cells contain values, never snippets of Lua. Catalog membership is
 // checked before rendering; conditions which lack a runtime implementation are
 // reported explicitly, as in the original location importer.
 function locations(snapshot, catalogs) {
   const warnings = [];
+  const labelMap = catalogs.labelMap instanceof Map ? catalogs.labelMap : getSoundscapeLabelMap();
   const conditions = (row) => (row.Conditions || "").split(/[|,\s]+/).filter(Boolean).filter(id => {
     if (catalogs.conditionIds.has(id)) return true;
     warnings.push(`${row.Key}: condition ${id} has no manual runtime implementation; omitted`);
@@ -15,7 +17,7 @@ function locations(snapshot, catalogs) {
   const districts = dataOf(snapshot, "LOCATIONS_DISTRICTS").map(row => ({ key: row.Key, name: row.Name.charAt(0).toUpperCase() + row.Name.slice(1), conditions: conditions(row) }));
   const sites = dataOf(snapshot, "LOCATIONS_SITES").map(row => {
     const music = row["Sound - Music"];
-    const locationTrack = resolveLocationTrack(row["Sound - Location"], catalogs.trackKeys, warnings, row.Key);
+    const locationTrack = resolveLocationTrack(row["Sound - Location"], catalogs.trackKeys, warnings, row.Key, labelMap);
     if (music && music !== "none" && !catalogs.musicKeys.has(music)) throw new Error(`${row.Key}: unknown music ${music}`);
     const offsetXY = row["Map Offset XY"] || null;
     if (offsetXY && !/^-?\d+(?:\.\d+)? -?\d+(?:\.\d+)?$/.test(offsetXY)) throw new Error(`${row.Key}: invalid map offset ${offsetXY}`);
