@@ -1,0 +1,320 @@
+--[[
+    Opt-in Pending Author Verification (PAV) harness (TOR-759).
+
+    Nothing in this module runs until DEBUG.verifyPav*, DEBUG.pavProbe, or the host CLI calls it.
+    Live capture is in-memory only. It temporarily installs SyncTrace wrappers, keeps at most 200
+    events, then restores the original functions and discards the ledger when finished/stopped.
+]]
+
+local PAV = {}
+
+local MAX_PROBE_ROWS = 50
+local MAX_UI_ATTRIBUTES = 10
+local activeCaptureId = nil
+
+local function assertion(name, pass, expected, actual)
+    return {
+        name = name,
+        pass = pass == true,
+        expected = expected,
+        actual = actual,
+    }
+end
+
+local function resultFor(id, assertions, remainingHumanCheck, evidence)
+    local passed = true
+    for _, row in ipairs(assertions) do
+        if row.pass ~= true then
+            passed = false
+            break
+        end
+    end
+    return {
+        id = id,
+        status = passed and "pass" or "fail",
+        assertions = assertions,
+        evidence = evidence or {},
+        remainingHumanCheck = remainingHumanCheck,
+    }
+end
+
+local function runTor755Contract()
+    local narrow = require("core.npc_stage_apply").narrowReconcileKeys
+    local previous = {
+        alpha = { u = 0.2, v = 0.3, yaw = 0, npcLightMode = "STANDARD" },
+        beta = { u = 0.7, v = 0.4, yaw = 15, npcLightMode = "OFF" },
+    }
+    local moved = {
+        alpha = { u = 0.4, v = 0.6, yaw = 90, npcLightMode = "SPOTLIGHT" },
+        beta = previous.beta,
+    }
+    local narrowKeys = narrow(moved, previous, { alpha = moved.alpha }, {})
+    local membership = {
+        alpha = moved.alpha,
+        beta = previous.beta,
+        gamma = { u = 0.5, v = 0.5, yaw = 0, npcLightMode = "STANDARD" },
+    }
+    local membershipKeys = narrow(membership, previous, { gamma = membership.gamma }, {})
+    return resultFor("TOR-755", {
+        assertion("An existing staged-NPC edit narrows to that NPC", type(narrowKeys) == "table" and narrowKeys.alpha == true and narrowKeys.beta ~= true, "alpha only", narrowKeys),
+        assertion("A stage membership change refuses the narrow path", membershipKeys == nil, "full reconcile required", membershipKeys),
+    }, "A live capture can additionally prove that one real Dashboard edit moves only the edited NPC.")
+end
+
+local function runTor756Contract()
+    local TraitXml = require("lib.trait_sheet_xml")
+    local blank = TraitXml.buildTraitBlockParams({
+        name = "Resources",
+        base = 2,
+        max = 2,
+        portrait = "  ",
+    }, "bg", 0, false, { pageNum = 3 })
+    local filled = TraitXml.buildTraitBlockParams({
+        name = "Resources",
+        base = 2,
+        max = 2,
+        portrait = "npcPortrait_test",
+    }, "bg", 0, false, { pageNum = 3 })
+    return resultFor("TOR-756", {
+        assertion("No portrait leaves the conditional marker absent", blank.PORTRAIT_PRESENT == nil, "absent", blank.PORTRAIT_PRESENT),
+        assertion("No portrait leaves no image reference", blank.IMAGE_REF == "", "empty", blank.IMAGE_REF),
+        assertion("A selected portrait enables the image branch", filled.PORTRAIT_PRESENT == "1", "1", filled.PORTRAIT_PRESENT),
+        assertion("A selected portrait keeps its asset id", filled.IMAGE_REF == "npcPortrait_test", "npcPortrait_test", filled.IMAGE_REF),
+    }, "The live character sheet still needs a brief visual check for layout and text expansion.")
+end
+
+local function runTor758Contract()
+    local DK = require("lib.dice_kinds")
+    local bloodSurge = { bloodSurgeRouse = 1 }
+    return resultFor("TOR-758", {
+        assertion("Hunger 4 permits voluntary Rouse actions", DK.isVoluntaryRouseBlocked(4) == false, false, DK.isVoluntaryRouseBlocked(4)),
+        assertion("Hunger 5 blocks voluntary Rouse actions", DK.isVoluntaryRouseBlocked(5) == true, true, DK.isVoluntaryRouseBlocked(5)),
+        assertion("Blood Surge does not block normal Rouse", DK.rouseKindBlockedByPool(bloodSurge, DK.KIND_ROUSE) == false, false, DK.rouseKindBlockedByPool(bloodSurge, DK.KIND_ROUSE)),
+        assertion("Blood Surge does not block Oblivion Rouse", DK.rouseKindBlockedByPool(bloodSurge, DK.KIND_OBLIV_ROUSE) == false, false, DK.rouseKindBlockedByPool(bloodSurge, DK.KIND_OBLIV_ROUSE)),
+        assertion("Oblivion Rouse still blocks normal Rouse", DK.rouseKindBlockedByPool({ oblivRouse = 1 }, DK.KIND_ROUSE) == true, true, DK.rouseKindBlockedByPool({ oblivRouse = 1 }, DK.KIND_ROUSE)),
+        assertion("Normal Rouse still blocks Oblivion Rouse", DK.rouseKindBlockedByPool({ rouse = 1 }, DK.KIND_OBLIV_ROUSE) == true, true, DK.rouseKindBlockedByPool({ rouse = 1 }, DK.KIND_OBLIV_ROUSE)),
+    }, nil)
+end
+
+local checks = {
+    ["TOR-755"] = {
+        title = "Dashboard staged-NPC edit uses bounded reconciliation",
+        run = runTor755Contract,
+        capture = true,
+        captureInstruction = "Move or change the light mode of exactly one NPC that is already on the stage, then finish the capture.",
+    },
+    ["TOR-756"] = {
+        title = "Page 3 no-portrait conditional",
+        run = runTor756Contract,
+        capture = false,
+    },
+    ["TOR-757"] = {
+        title = "Storyteller Refresh UI performs a full remount",
+        capture = true,
+        captureInstruction = "Click Refresh UI once in the Storyteller debug toolbar, wait for the UI to return, then finish the capture.",
+    },
+    ["TOR-758"] = {
+        title = "Blood Surge Rouse remains independent",
+        run = runTor758Contract,
+        capture = false,
+    },
+}
+
+function PAV.list()
+    local ids = {}
+    for id in pairs(checks) do
+        ids[#ids + 1] = id
+    end
+    table.sort(ids)
+    local rows = {}
+    for _, id in ipairs(ids) do
+        local check = checks[id]
+        rows[#rows + 1] = {
+            id = id,
+            title = check.title,
+            instant = type(check.run) == "function",
+            capture = check.capture == true,
+            captureInstruction = check.captureInstruction,
+        }
+    end
+    return rows
+end
+
+function PAV.run(id)
+    local check = checks[tostring(id)]
+    if check == nil then
+        error("Unknown PAV check: " .. tostring(id))
+    end
+    if type(check.run) ~= "function" then
+        error(tostring(id) .. " requires a live capture; use DEBUG.verifyPavStart")
+    end
+    return check.run()
+end
+
+local function traceRow(trace, label)
+    for _, row in ipairs(trace.rows or {}) do
+        if row.label == label then
+            return row
+        end
+    end
+    return { label = label, calls = 0, ran = 0, skipped = 0 }
+end
+
+local function traceEvent(trace, label, fieldName, fieldValue)
+    for _, event in ipairs(trace.events or {}) do
+        if event.label == label then
+            if fieldName == nil or (type(event.fields) == "table" and event.fields[fieldName] == fieldValue) then
+                return event
+            end
+        end
+    end
+    return nil
+end
+
+function PAV.startCapture(id)
+    id = tostring(id)
+    local check = checks[id]
+    if check == nil or check.capture ~= true then
+        error("PAV check does not support live capture: " .. id)
+    end
+    if activeCaptureId ~= nil then
+        error("PAV capture already active: " .. activeCaptureId)
+    end
+    require("lib.sync_trace").beginTransientCapture("PAV " .. id)
+    activeCaptureId = id
+    return {
+        id = id,
+        status = "capturing",
+        instruction = check.captureInstruction,
+        safety = "In-memory only; finish or stop removes every temporary wrapper.",
+    }
+end
+
+function PAV.finishCapture()
+    if activeCaptureId == nil then
+        error("No PAV capture is active")
+    end
+    local id = activeCaptureId
+    local trace = require("lib.sync_trace").finishTransientCapture()
+    activeCaptureId = nil
+    local assertions = {}
+    local remaining = nil
+    if id == "TOR-755" then
+        local full = traceRow(trace, "NPCS.reconcileAllFromState")
+        local moves = traceRow(trace, "NPCS.moveNpcToStagePlacement")
+        assertions = {
+            assertion("The broad NPC reconciler did not run", full.calls == 0, 0, full.calls),
+            assertion("Exactly one staged NPC was moved", moves.calls == 1, 1, moves.calls),
+        }
+        remaining = "A quick visual check should still confirm that the other staged NPCs and occupied chairs did not move."
+    elseif id == "TOR-757" then
+        local remount = traceEvent(trace, "GlobalUI.fullRemount", "mode", "full")
+        assertions = {
+            assertion("One full Global UI remount was observed", remount ~= nil, "full remount event", remount),
+            assertion("The Global UI is no longer loading", UI == nil or UI.loading ~= true, false, UI and UI.loading or nil),
+        }
+        remaining = "A connected client should still confirm that its visible panels and overlays returned correctly."
+    end
+    return resultFor(id, assertions, remaining, { trace = trace })
+end
+
+function PAV.stopCapture()
+    local id = activeCaptureId
+    activeCaptureId = nil
+    local stopped = require("lib.sync_trace").cancelTransientCapture()
+    return { id = id, status = stopped and "stopped" or "idle" }
+end
+
+local function boundedRows(rows, label)
+    if type(rows) ~= "table" then
+        error(label .. " must be an array")
+    end
+    if #rows > MAX_PROBE_ROWS then
+        error(label .. " is limited to " .. tostring(MAX_PROBE_ROWS) .. " rows")
+    end
+    return rows
+end
+
+local function probeUi(spec)
+    local elements = boundedRows(spec.elements or {}, "UI probe")
+    local rows = {}
+    for _, element in ipairs(elements) do
+        local attrs = element.attributes or {}
+        if #attrs > MAX_UI_ATTRIBUTES then
+            error("Each UI probe element is limited to " .. tostring(MAX_UI_ATTRIBUTES) .. " attributes")
+        end
+        local values = {}
+        for _, attr in ipairs(attrs) do
+            values[tostring(attr)] = UI.getAttribute(tostring(element.id), tostring(attr))
+        end
+        rows[#rows + 1] = {
+            id = tostring(element.id),
+            value = element.value == true and UI.getValue(tostring(element.id)) or nil,
+            attributes = values,
+        }
+    end
+    local xml = spec.includeXmlLength == true and UI.getXml() or nil
+    return { kind = "ui", loading = UI.loading == true, xmlLength = xml and #xml or nil, rows = rows }
+end
+
+local function probeState(spec)
+    local paths = boundedRows(spec.paths or {}, "State probe")
+    local S = require("core.state")
+    local unpackArgs = table.unpack or unpack
+    local rows = {}
+    for _, path in ipairs(paths) do
+        if type(path) ~= "table" or #path < 1 then
+            error("Each state probe path must be a non-empty array")
+        end
+        rows[#rows + 1] = { path = path, value = S.getStateVal(unpackArgs(path)) }
+    end
+    return { kind = "state", rows = rows }
+end
+
+local function probeObjects(spec)
+    local guids = boundedRows(spec.guids or {}, "Object probe")
+    local rows = {}
+    local function plainVector(value)
+        if value == nil then
+            return nil
+        end
+        return {
+            x = tonumber(value.x or value[1]),
+            y = tonumber(value.y or value[2]),
+            z = tonumber(value.z or value[3]),
+        }
+    end
+    for _, guidValue in ipairs(guids) do
+        local guid = tostring(guidValue)
+        local obj = getObjectFromGUID(guid)
+        rows[#rows + 1] = {
+            guid = guid,
+            found = obj ~= nil,
+            name = obj and obj.getName and obj.getName() or nil,
+            position = obj and obj.getPosition and plainVector(obj.getPosition()) or nil,
+            rotation = obj and obj.getRotation and plainVector(obj.getRotation()) or nil,
+            locked = obj and obj.getLock and obj.getLock() or nil,
+        }
+    end
+    return { kind = "objects", rows = rows }
+end
+
+function PAV.probe(kind, spec)
+    kind = tostring(kind)
+    spec = type(spec) == "table" and spec or {}
+    if kind == "ui" then
+        return probeUi(spec)
+    end
+    if kind == "state" then
+        return probeState(spec)
+    end
+    if kind == "objects" then
+        return probeObjects(spec)
+    end
+    if kind == "soundscape" then
+        return { kind = "soundscape", rows = require("core.soundscape").inspectEmitters() }
+    end
+    error("Unknown PAV probe kind: " .. kind)
+end
+
+return PAV

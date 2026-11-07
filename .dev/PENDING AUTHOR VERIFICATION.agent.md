@@ -22,6 +22,7 @@ Verification:
 - every checklist entry has a live `TOR-*` (**Awaiting Author Review** / verification-gate In Progress, **or** open follow-up work marked **⌚**)
 - every entry’s **How to verify** uses plain English (see **Writing style** below) — for **⌚** entries, how-to-verify is the future re-test after the fix ships
 - every `####` entry keeps its agent-assessment mark after any Author/Agent status mark: **🟢** definite agent validation, **🔵** practical-confidence agent validation, **🟡** partial agent validation, or **🔴** entirely human validation
+- use [`PAV_AGENT_VERIFICATION.md`](PAV_AGENT_VERIFICATION.md) when structured checks, temporary traces, or bounded probes can replace guesswork; update the assessment circle only for evidence the current harness can actually collect
 - process author marks **✅** / **❌** / **⚠️** on checklist headers during **`/tr-inbox`** only; maintain **⌚** on entries that are not ready to test yet
 - remove an entry when the author marks **✅** (or confirms in chat / Linear during an inbox pass); then update the tasklist bullet and move Linear to **Fully Complete** by default or **Complete (KEEP)** sparingly
 - when promoting an ❌/⚠️ follow-up to Linear instead of shipping in-session, keep/add the Outstanding entry with **⌚** until that follow-up ships and is ready to re-verify
@@ -119,6 +120,8 @@ As the author works through the checklist in Tabletop Simulator, they will prefi
 ```
 
 The assessment circle is advisory and is **not** an issue-status mark. Preserve it while processing an Author mark. When a follow-up materially changes what agents can validate, update the circle and any 🟡/🔴 assessment note in the same session.
+
+The opt-in harness does not automatically make every row green. Use 🟢 only when a registered check or concrete bounded probe covers the important behavior. Use 🔵 when the harness gives practical confidence but leaves a low-risk visual or environmental uncertainty. Listening, subjective visual quality, and real multi-client behavior stay 🟡 when they are central to the result. Harness workflow and performance safeguards: [PAV_AGENT_VERIFICATION.md](PAV_AGENT_VERIFICATION.md).
 
 | Mark | Who sets it | Meaning | What the agent must do (**`/tr-inbox`**) |
 | --- | --- | --- | --- |

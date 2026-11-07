@@ -23,13 +23,21 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 
 Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row and set Linear to **Awaiting Author Review** whenever they ship in-game code. They process your **✅** / **❌** / **⚠️** marks on the next inbox. A **✅** moves the Linear issue to **Fully Complete** by default, or **Complete (KEEP)** when its Linear history should be retained. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
 
+Agents can now collect structured evidence with the opt-in harness in [PAV_AGENT_VERIFICATION.md](PAV_AGENT_VERIFICATION.md). It is inactive during ordinary play and only installs temporary trace wrappers between an explicit start and finish/stop.
+
 Some rows cover two or three issues that are tested together (the header lists every id). Mark such a row **✅** only when every step passes; otherwise mark it **❌** and say which step failed.
 
 ---
 
 ## Outstanding
 
-#### 🔵 TOR-755 — Dashboard stage edits respond without a full NPC reconcile
+#### 🟢 TOR-759 — Opt-in agent verification harness stays dormant and cleans up after itself
+
+**How to verify:** Save & Play, then run `lua log(DEBUG.verifyPav("TOR-758"))` in the TTS console. The returned report should say `status = pass` and list the six Rouse-policy assertions. Next run `lua log(DEBUG.verifyPavStart("TOR-757"))`, click **Refresh UI** once in the Storyteller debug toolbar, wait for the UI to return, and run `lua log(DEBUG.verifyPavFinish())`. That report should pass the full-remount and loading-settled checks. Finally, run `lua log(DEBUG.verifyPavStop())`; it should safely report that the harness is idle. Continue using the table normally and confirm that no PAV capture or Sync Trace output appears unless you explicitly start one.
+
+#### 🟢 TOR-755 — Dashboard stage edits respond without a full NPC reconcile
+
+> **Agent-assessment note:** The new harness can run the pure narrowing contract and capture one real Dashboard edit, proving that the broad NPC reconciler did not run and exactly one staged-NPC move occurred. Explicit object probes can compare any other staged figurines or occupied chairs before and after.
 
 **How to verify:** Save & Play, start a scene, and place several NPCs on the stage. In the Dashboard, move one NPC to another stage location and click **Send**. Then change only that NPC's light mode and send again. Each change should begin promptly instead of waiting for every seat, every staged NPC, and the table layout to reconcile. Confirm that moving an NPC already on stage does not disturb any other staged NPC or occupied chair. Finally, add a new NPC and remove one; those membership changes should still seat, light, or clear the affected NPC correctly.
 
