@@ -1123,8 +1123,8 @@ U.chain({
     rollCancel("Brown")
   end,
   function() printHeader("", 2) end,
-  function() printHeader("K2h - Blood Surge rouse + manual rouse coexist", 2) end,
-  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2h compound rouse", { hunger = 0, skipOpen = true }) end,
+  function() printHeader("K2h - Hunger 4: Blood Surge rouse + manual rouse coexist", 2) end,
+  function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2h compound rouse", { hunger = 4, skipOpen = true }) end,
   function()
     rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")

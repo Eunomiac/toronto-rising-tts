@@ -66,6 +66,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## Dice Roller
 
+- [x] **Blood Surge Rouse no longer blocks other Rouse checks at Hunger 4:** Blood Surge Rouse is tracked independently from manual and Oblivion Rouse checks. Manual Rouse and Oblivion Rouse remain mutually exclusive, and Hunger 5 still blocks voluntary Rouse-family actions. Pending Save & Play. _(TOR-758)_
 - [x] **Staged NPC steps to the Storyteller dice tray:** Outside Scatter, when the Storyteller rolls for an NPC standing on the stage, that figurine and spotlight walk to the drawer's X, the Center group's stand height, and just in front of the Center spot (SPOTLIGHT) while the tray is up, then walk back (including their original height) when the roll is cleared. Seated NPCs and Scatter rolls are unchanged. Pending Save & Play. _(TOR-738)_
 - [x] **Retire the player dice preload pool:** Dice come from the bag at roll time and are destroyed on release; `core/dice_preload_pool.ttslua` and the `d10Preload` tag are gone. Re-test the brief placeholder flash. relatedTo **TOR-707**. Pending Save & Play (run `DEBUG.retirePreloadPools()` once, then File → Save). _(TOR-708)_
 - [x] **Willpower reroll leaves dice locked and ungrabbable:** Recycled dice stay non-interactable after the physics lock is cleared, so Spend Willpower could not be used to pick dice up. Eligible dice are now interactable for the reroll (and when a roll is released for a manual throw). Hunger and Rouse stay locked. Pending Save & Play. Linear quota blocked a new issue; noted on **TOR-31** (dice epic) and related to **TOR-165** (willpower reroll wave) / **TOR-287** (dice preload pool).
@@ -143,7 +144,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 - [x] **Take Half auto-broadcast:** Pure Take Half confirms/broadcasts without extra Confirm; tray force-closes on cleanup. Author verified 2026-07-08. _(TOR-306)_
 - [x] **Take Half with Rouse auto-rolls:** Rouse / Obliv-Rouse leftover dice toss automatically (same as right-click Roll). After settle, sole Confirm auto-broadcasts (TOR-328). Dice-E2E H2/H2b assert `noActive` (no Confirm click). relatedTo **TOR-317**. Author confirmed 2026-08-18. _(TOR-487)_
 - [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. Auto-open + no Cancel completed in **TOR-499**. _(TOR-203 ? 2026-06-15)_
-- [x] **Hunger 4 ? block Blood Surge + manual Rouse combo; Hunger 5 ? block Blood Surge:** At Hunger 4, disallow Blood Surge + separate manual Rouse in one roll; at Hunger 5, block Blood Surge (forced Rouse OK). Extends **TOR-203**. _(TOR-331)_
+- [x] **Blood Surge Rouse is independent:** The former TOR-331 Hunger 4 mutual exclusion was removed after play exposed it as the wrong rule. Blood Surge Rouse now coexists with manual Rouse or Oblivion-Rouse; manual Rouse and Oblivion-Rouse remain mutually exclusive. Hunger 5 still blocks voluntary Blood Surge and Rouse-family bag actions (forced Rouse remains available). Extends **TOR-203**. _(TOR-331, corrected 2026-11-07)_
 - [x] **Hide player Cancel on Storyteller-initiated rolls:** Player roll panel hides Cancel when roll is ST-initiated; single-button auto-proceed when only one action remains (**TOR-328** / **TOR-306**). _(TOR-332)_
 - [x] **ST roll dash ? sync baked-in roll conditions on initiate:** Baked-in roll-type conditions green on Roll Conditions; dash summary complete; This Roll ? Roll Conditions linked; resync on type change. _(TOR-335)_
 - [x] **Structural overlay sync once after effective state:** Drop redundant pre-compute `syncStructuralOverlayFromActive` in initiate / change type / promote-rouse. _(TOR-337)_
@@ -166,6 +167,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## NPC Spawning
 
+- [x] **Existing dashboard stage edits use a bounded reconcile:** Moving an NPC already on stage or changing their light mode runs Step Five for the changed character keys only. Stage membership changes retain the complete NPC reconcile. Pending Save & Play. _(TOR-755)_
 See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Object%20Overview.md).
 
 - [x] **NPC figurines spawn on demand; retire the preload pool:** Figurine front/back URLs live in generated `lib/npc_figurine_hosted_urls.ttslua` (extracted from the save). Scene transitions spawn needed figurines + lights behind the blindfold and destroy the rest; mid-scene stage adds spawn hidden, wait for the image, then move. Generic NPCs share the spawner. Pending Save & Play (run `DEBUG.retirePreloadPools()` once, then File → Save). Figurine URLs now come from `lib/npc_art_urls.ttslua` (TOR-709 below). _(TOR-707)_
@@ -425,6 +427,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## UI Panels
 
+- [x] **Storyteller Refresh UI performs a complete Global UI rewrite:** The debug-toolbar button now uses the same full remount and post-mount reconciliation path as staged onboarding, so it can clear stale client overlays. Pending Save & Play. _(TOR-757)_
 - [x] **Later Downtime shows the session title on the location line:** Prologue and Epilogue keep the spaced gold title on the date line. Every other Downtime keeps the date and the word DOWNTIME, and writes that same spaced title (uppercase, one space between letters, three spaces between words, gold, bold italic, location-line size) into the district/site gap. Style is `setClass` only. Pending Save & Play. _(TOR-744)_
 
 - [x] **Refresh XML keeps The Court on the right audience:** After a full Global remount, Court pages use `U.setVisibleTo` plus `active` only (no `UI.show` / `UI.hide`), so an open Court stays on its spread for the players who had it open and a closed Court stays closed — not visible to everyone. relatedTo **TOR-444**. Pending Save & Play. _(TOR-663)_
@@ -522,6 +525,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Character Sheets
 
+- [x] **No-portrait Page 3 traits omit the image element:** Backgrounds, Merits, and Flaws only render a portrait block when a nonempty portrait was selected, so **No portrait** no longer produces a white box. Pending Save & Play. _(TOR-756)_
 - [x] **NPC portraits in The Court.** The `coterie` portrait recipient uploads to Global UI assets. Court Advantages accept the same `portrait` reference field as player relationships and can show or clear the image through their normal refresh. XML/FULL rebuild the Court from its dedicated source template. Pending FULL and in-game confirmation. _(TOR-751)_
 
 _Blocked: author must define data binding approach before substantial implementation._

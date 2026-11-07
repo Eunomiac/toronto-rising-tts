@@ -1101,6 +1101,12 @@ input.lab-cat-rename {
   gap: 4px;
 }
 
+// Keep the group being browsed unmistakably foregrounded across every roster category.
+.lab-mroster-body:has(.lab-group.open) .lab-group:not(.open) {
+  opacity: 0.5;
+  filter: saturate(0.6) brightness(0.72);
+}
+
 // A closed group is at least as wide as its token stack and its name in three lines; rows stretch to full width.
 .lab-group {
   --group: #7a7a86;
@@ -1213,6 +1219,7 @@ input.lab-cat-rename {
     width: auto;
     align-items: stretch;
     border-color: var(--group);
+    background: color-mix(in srgb, var(--group) 14%, #17171e);
     animation: roster-open-pulse 1.8s ease-in-out infinite;
     cursor: default;
 
@@ -1225,7 +1232,8 @@ input.lab-cat-rename {
 
   &-tokens {
     display: flex;
-    gap: 3px;
+    flex-wrap: wrap;
+    gap: 3px 0;
     padding-top: 4px;
   }
 

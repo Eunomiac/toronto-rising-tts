@@ -2717,7 +2717,7 @@ end
 
 --- Step Five (a): gameboard `placements` on STAGE_BOARD.
 --- @param intent table
---- @param opts table|nil `{ reason?, animateStageMoves?, deferUiRefresh? }`
+--- @param opts table|nil `{ reason?, animateStageMoves?, deferUiRefresh?, onlyStageCharacterKeys? }`
 --- @return boolean allOk
 local function reconcileStepFiveStagePlacements(intent, opts)
     opts = U.Type(opts) == "table" and opts or {}
@@ -2730,9 +2730,12 @@ local function reconcileStepFiveStagePlacements(intent, opts)
     local lerpCandidates = {}
     local skipCounts = {}
     local stageTargetCount = 0
+    local onlyStageCharacterKeys = U.Type(opts.onlyStageCharacterKeys) == "table"
+        and opts.onlyStageCharacterKeys or nil
     local NPCStageLerp = require("core.npc_stage_lerp")
     for name, ci in pairs(intent.byCharacter) do
-        if U.Type(ci) == "table" and ci.target == "stage" then
+        local selected = onlyStageCharacterKeys == nil or onlyStageCharacterKeys[name] == true
+        if selected and U.Type(ci) == "table" and ci.target == "stage" then
             local placement = {
                 u = ci.u,
                 v = ci.v,
@@ -2800,7 +2803,7 @@ local function reconcileStepFiveDespawnUntargeted(intent)
 end
 
 --- Unified NPC reconcile orchestrator (Steps Zero–Five). See `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`.
---- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps?, reason?, animateStageMoves? }`
+--- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps?, reason?, animateStageMoves?, onlyStageCharacterKeys? }`
 function NPCS.reconcileAllFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
     local deferUiRefresh = opts.deferUiRefresh == true
@@ -2851,7 +2854,9 @@ function NPCS.reconcileAllFromState(opts)
         if not reconcileStepFiveStagePlacements(intent, opts) then
             allOk = false
         end
-        reconcileStepFiveDespawnUntargeted(intent)
+        if U.Type(opts.onlyStageCharacterKeys) ~= "table" then
+            reconcileStepFiveDespawnUntargeted(intent)
+        end
     end
 
     npcReconcileInProgress = false

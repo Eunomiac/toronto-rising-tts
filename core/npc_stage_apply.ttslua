@@ -95,6 +95,48 @@ local function placementsMapsEqual(nextMap, prevMap)
     return true
 end
 
+--- Return the exact changed character keys when an edit only changes placement details for
+--- NPCs that were already on stage. Membership changes still need the full NPC reconciler.
+--- @param nextMap table|nil
+--- @param prevMap table|nil
+--- @param changes table|nil
+--- @param opts table|nil
+--- @return table<string, boolean>|nil
+local function narrowReconcileKeys(nextMap, prevMap, changes, opts)
+    nextMap = type(nextMap) == "table" and nextMap or {}
+    prevMap = type(prevMap) == "table" and prevMap or {}
+    changes = type(changes) == "table" and changes or {}
+    opts = type(opts) == "table" and opts or {}
+    if opts.clear == true or type(opts.base) == "table" then
+        return nil
+    end
+    for key in pairs(nextMap) do
+        if prevMap[key] == nil then
+            return nil
+        end
+    end
+    for key in pairs(prevMap) do
+        if nextMap[key] == nil then
+            return nil
+        end
+    end
+    local keys = {}
+    local count = 0
+    for key in pairs(changes) do
+        if not placementRowsEqual(nextMap[key], prevMap[key]) then
+            keys[key] = true
+            count = count + 1
+        end
+    end
+    if count < 1 then
+        return nil
+    end
+    return keys
+end
+
+--- Pure placement-policy helper exposed for contract tests.
+StageApply.narrowReconcileKeys = narrowReconcileKeys
+
 --- A seated NPC standing on the stage leaves their seat dark (TOR-250); one leaving the stage gets the seat
 --- lit again.
 --- @param staged table<string, table> placements after the change
@@ -196,17 +238,23 @@ local function commitStageChanges(changes, opts)
             leaving[ck] = row
         end
     end
-    reconcileHomelandSeats(nextMap, leaving)
+    local onlyStageCharacterKeys = narrowReconcileKeys(nextMap, existing, changes, opts)
+    if onlyStageCharacterKeys == nil then
+        reconcileHomelandSeats(nextMap, leaving)
+    end
     S.setStateVal(nextMap, "sessionScene", "npcWorld", "placements")
     if opts.clear == true then
         require("core.generic_npcs").destroyAllLiveAndClearMembership()
     end
-    -- Steps Two–Four keep homeland chairs and lights in step with the stage (TOR-178).
+    -- A move or light change for NPCs already on stage only needs their Step Five work.
+    -- Membership changes still run the full pass so homeland chairs and lights stay correct.
     require("core.sync").npcs({
         reason = "stage_apply",
         force = false,
         deferUiRefresh = true,
         animateStageMoves = true,
+        onlySteps = onlyStageCharacterKeys ~= nil and { 5 } or nil,
+        onlyStageCharacterKeys = onlyStageCharacterKeys,
     })
     -- The overlay camera's right-click walk over stage NPCs restarts from the first (TOR-538 / TOR-562).
     require("core.hud_player").resetStageLookCycle()

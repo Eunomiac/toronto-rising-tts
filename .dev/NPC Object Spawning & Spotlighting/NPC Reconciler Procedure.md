@@ -240,6 +240,8 @@ Step Five runs two passes (implementation order):
 
 **Stage lerp eligibility (Dashboard stage edits only):** figurine already on `STAGE_BOARD`; no blindfold/transition; start or end light involves `STANDARD` (or `SPOTLIGHT` when held); position/yaw and/or mode change. Same-snap mode-only changes animate light (G/H timing) with frozen position. Escape hatch: blindfold or re-Apply mid-flight → snap all to committed state. Large batches stay on the lerp path; `staggerCandidateScale` / `staggerScaleMax` stretch **between-family** delays only. **Grouping:** anchor-family `familyId` (same as anchor spread / `tryAnchorFamilyGroupSpread`); leader (`familyK == 0`) moves first, siblings follow in `orderFamilySnapsForAnchorSpread` center-out order with even `withinFamilyStaggerSec`. Multiple families order center-out on destination anchor distance (tie-break: anchor travel). Tunables: `lib/npc_gameboard_data.ttslua` → `D.STAGE_PLACEMENT_LERP`.
 
+**Existing-stage fast path:** A Dashboard edit that only moves or changes the light mode of NPCs already on the stage calls Step Five for the changed character keys only. It does not repeat seat removal, table layout, narrative presence, or unrelated stage placement work. Adding, removing, clearing, or replacing stage membership deliberately keeps the complete Steps One–Five pass.
+
 Characters with active **placements** rows are never despawned; they leave the world only after Clear / empty `placements`. Spotlight tokens on the Stage Control board mirror `placements` in `StageTokens.reconcileFromState`.
 
 ### Stage-bound characters who were seated or tagged for a seat
