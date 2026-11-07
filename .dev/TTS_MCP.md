@@ -86,6 +86,12 @@ These issues showed up while running Toronto Rising Lua through **`tts_execute_l
 
 **Manual E2E:** Periodic in-table verification uses [`.dev/E2E Playbooks/`](E2E%20Playbooks/README.md) (not automated MCP easing tests).
 
+### PAV verification commands
+
+The opt-in PAV harness is documented in [PAV_AGENT_VERIFICATION.md](PAV_AGENT_VERIFICATION.md). Through `tts_execute_lua`, call `DEBUG.verifyPav("TOR-758")` for an instant check or bracket one real action with `DEBUG.verifyPavStart("TOR-755")` and `DEBUG.verifyPavFinish()`. Call `DEBUG.verifyPavStop()` after an interrupted capture. The capture switch is in-memory only and its wrappers do not exist during ordinary play.
+
+The convenience command `npm run verify:pav -- ...` uses the repo-local direct bridge, so it needs port 39998 released. When the shared gateway is already running, prefer `tts_execute_lua` rather than displacing it.
+
 ## Return values (`messageID` 5) and structured data
 
 The [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) states that executed Lua may send a **return** back as inbound **`messageID` 5** with a **`returnValue`** field. In practice TTS sends `messageID` 5 after **every** execute (verified 2026-10-01 through the gateway, ~1.3 s round trip), but treat the **value** as **best-effort**:

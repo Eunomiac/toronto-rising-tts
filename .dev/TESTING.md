@@ -20,6 +20,12 @@ Status: current workflow index; verify specific playbook claims against code.
 
 **Storyteller Dashboard** (web app, not TTS): Vitest + Playwright MCP — [`.dev/storyteller-dashboard/TESTING.md`](storyteller-dashboard/TESTING.md), [toronto-rising-dashboard-testing.mdc](../.cursor/rules/toronto-rising-dashboard-testing.mdc). Do not use Save & Play playbooks for dashboard-only UI.
 
+## PAV agent verification harness
+
+For Pending Author Verification items that can be checked through deterministic state, UI, object, trace, or output evidence, use the opt-in harness in [PAV_AGENT_VERIFICATION.md](PAV_AGENT_VERIFICATION.md). It provides instant contract checks, bounded one-action capture windows, and explicit probes without leaving game-night polling or tracing active.
+
+Start with `npm run verify:pav -- list`. A capture must always end with `finish` or `stop`; Save & Play is the final recovery path if the bridge is interrupted. The harness supplements the manual E2E playbooks below and does not turn subjective appearance, listening, or genuine multi-client checks into automated facts.
+
 ## E2E playbooks (primary)
 
 Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR-141). This file indexes **remaining** console helpers in [`core/debug.ttslua`](../core/debug.ttslua).
