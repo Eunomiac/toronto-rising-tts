@@ -358,6 +358,61 @@ try {
   assert.equal(rollsBefore(), countBefore);
   console.log("PASS Escape cancels captured stage gesture");
   await page.locator(".lab-dock-rail").click();
+
+  // Roster browsing: the open group is foregrounded, its compact tokens wrap instead of overflowing.
+  const rosterGroups = page.locator('.lab-group[draggable="true"]');
+  let largestGroup = rosterGroups.first();
+  let largestCount = 0;
+  for (let index = 0; index < await rosterGroups.count(); index += 1) {
+    const candidate = rosterGroups.nth(index);
+    const count = await candidate.locator(".lab-group-head").count();
+    if (count > largestCount) {
+      largestCount = count;
+      largestGroup = candidate;
+    }
+  }
+  assert(largestCount > 1, "roster fixture needs a multi-member group");
+  await largestGroup.click();
+  const openGroup = page.locator(".lab-group.open");
+  await openGroup.locator(".lab-group-token").first().waitFor();
+  // The current catalog tops out at seven members. Clone its rendered tokens to exercise the >7 layout
+  // without changing the author's roster data or application state.
+  const rosterMetrics = await openGroup.evaluate((node) => {
+    const tokens = [...node.querySelectorAll(".lab-group-token")];
+    while (node.querySelectorAll(".lab-group-token").length < 9) {
+      node.querySelector(".lab-group-tokens").append(tokens[node.querySelectorAll(".lab-group-token").length % tokens.length].cloneNode(true));
+    }
+    const container = node.querySelector(".lab-group-tokens");
+    const rendered = [...container.querySelectorAll(".lab-group-token")];
+    const rects = rendered.map((token) => token.getBoundingClientRect());
+    const firstRow = rects.filter((rect) => Math.abs(rect.top - rects[0].top) < 1);
+    return {
+      flexWrap: getComputedStyle(container).flexWrap,
+      columnGap: parseFloat(getComputedStyle(container).columnGap),
+      rows: new Set(rects.map((rect) => Math.round(rect.top))).size,
+      overflow: Math.max(...rects.map((rect) => rect.right)) - container.getBoundingClientRect().right,
+      firstRowGap: firstRow.length > 1 ? firstRow[1].left - firstRow[0].right : null,
+      openBackground: getComputedStyle(node).backgroundColor,
+    };
+  });
+  const mutedGroup = page.locator(".lab-mroster-body .lab-group:not(.open)").first();
+  const mutedStyle = await mutedGroup.evaluate((node) => ({
+    opacity: parseFloat(getComputedStyle(node).opacity),
+    filter: getComputedStyle(node).filter,
+    background: getComputedStyle(node).backgroundColor,
+  }));
+  assert.equal(rosterMetrics.flexWrap, "wrap");
+  assert(rosterMetrics.rows > 1, "nine open roster tokens should wrap onto another row");
+  assert(rosterMetrics.overflow <= 1, "open roster tokens overflowed their group");
+  assert((rosterMetrics.firstRowGap ?? 99) <= 1, "open roster token horizontal spacing is not compact");
+  assert.equal(rosterMetrics.columnGap, 0);
+  assert(mutedStyle.opacity <= 0.5, "closed roster groups were not dimmed behind the open group");
+  assert.notEqual(mutedStyle.filter, "none", "closed roster groups were not visually subdued");
+  assert.notEqual(rosterMetrics.openBackground, mutedStyle.background, "open roster group did not gain foreground contrast");
+  await page.screenshot({ path: path.join(output, "dnd-roster-open.png") });
+  await openGroup.locator(".lab-group-label").click();
+  console.log("PASS open roster group wraps compactly and subdues the closed groups");
+
   const group = page
     .locator('.lab-group[draggable="true"]')
     .filter({ has: page.locator(".lab-group-cluster") })
