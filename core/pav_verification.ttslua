@@ -67,19 +67,23 @@ local function runTor756Contract()
         name = "Resources",
         base = 2,
         max = 2,
+        description = { "A useful background." },
         portrait = "  ",
     }, "bg", 0, false, { pageNum = 3 })
     local filled = TraitXml.buildTraitBlockParams({
         name = "Resources",
         base = 2,
         max = 2,
+        description = { "A useful background." },
         portrait = "npcPortrait_test",
     }, "bg", 0, false, { pageNum = 3 })
     return resultFor("TOR-756", {
         assertion("No portrait leaves the conditional marker absent", blank.PORTRAIT_PRESENT == nil, "absent", blank.PORTRAIT_PRESENT),
         assertion("No portrait leaves no image reference", blank.IMAGE_REF == "", "empty", blank.IMAGE_REF),
+        assertion("No portrait selects the full-width body branch", blank.BODY_WITHOUT_PORTRAIT == "1" and blank.BODY_WITH_PORTRAIT == nil, "body without portrait", blank.BODY_WITHOUT_PORTRAIT),
         assertion("A selected portrait enables the image branch", filled.PORTRAIT_PRESENT == "1", "1", filled.PORTRAIT_PRESENT),
         assertion("A selected portrait keeps its asset id", filled.IMAGE_REF == "npcPortrait_test", "npcPortrait_test", filled.IMAGE_REF),
+        assertion("A selected portrait selects the portrait row", filled.BODY_WITH_PORTRAIT == "1" and filled.BODY_WITHOUT_PORTRAIT == nil, "body with portrait", filled.BODY_WITH_PORTRAIT),
     }, "The live character sheet still needs a brief visual check for layout and text expansion.")
 end
 

@@ -82,7 +82,7 @@
     "tts-save:silence-emitters": "node .tools/tts-save/silence-soundscape-emitters.js",
     "tts-bridge:build": "tsc -p .tools/tts-bridge/tsconfig.build.json",
     "tts-bridge:test": "vitest run --config .tools/tts-bridge/vitest.config.ts",
-    "verify:pav:test": "fengari .tools/complications/run.lua .dev/scripts/sync_trace_transient.test.lua && fengari .tools/complications/run.lua .dev/scripts/pav_verification.test.lua",
+    "verify:pav:test": "fengari .tools/complications/run.lua .dev/scripts/sync_trace_transient.test.lua && fengari .tools/complications/run.lua .dev/scripts/pav_verification.test.lua && fengari .tools/complications/run.lua .dev/scripts/csheet_page3_portraits_runtime.test.lua",
     "tts-bridge:run-sequence-test": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/run-sequence-live-test.mjs",
     "verify:pav": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/verify-pav.mjs",
     "build:gates": "npm run check:tts-object-stub-guids -- --quiet && npm run check:guid-refs-gate -- --quiet && npm run check:bundle-size-gate -- --quiet && npm run check:pcall-gate && npm run check:effective-stats-gate && npm run check:lua-local-limit-gate -- --quiet",

@@ -6,7 +6,7 @@
 @@DOT_IMG_1@@ .. @@DOT_IMG_6@@ - dot image id when slot active (omit key when unused)
 @@FLAVOR_TEXT@@ - description (newline-separated in one Text)
 @@RULES_TEXT@@ - rules (newline-separated in one Text)
-@@HAS_BODY_TEXT@@ - set when description and/or rules body should render
+@@BODY_WITH_PORTRAIT@@ / @@BODY_WITHOUT_PORTRAIT@@ - mutually exclusive body branches (never nest ##IF blocks)
 @@SOURCE_TEXT@@ - source line (omit key when absent)
 -->
 
@@ -34,16 +34,20 @@
       ##ENDIF##
     </Panel>
   </HorizontalLayout>
-  ##IF @@HAS_BODY_TEXT@@##
+  ##IF @@BODY_WITH_PORTRAIT@@##
   <HorizontalLayout childForceExpandHeight="false" childForceExpandWidth="true" childAlignment="UpperLeft" spacing="8">
-    ##IF @@PORTRAIT_PRESENT@@##
     <Image image="@@IMAGE_REF@@" minWidth="100" preferredWidth="100" minHeight="150" preferredHeight="150" flexibleWidth="0" flexibleHeight="0" preserveAspect="true" raycastTarget="false" />
-    ##ENDIF##
   <VerticalLayout class="box_text_panel_body">
     <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
     <Text class="box_text rules_text" text="@@RULES_TEXT@@"  />
   </VerticalLayout>
   </HorizontalLayout>
+  ##ENDIF##
+  ##IF @@BODY_WITHOUT_PORTRAIT@@##
+  <VerticalLayout class="box_text_panel_body">
+    <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
+    <Text class="box_text rules_text" text="@@RULES_TEXT@@"  />
+  </VerticalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
   <Panel class="box_text_panel_source">

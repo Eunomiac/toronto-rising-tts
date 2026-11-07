@@ -33,7 +33,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### 🟢 TOR-759 — Opt-in agent verification harness stays dormant and cleans up after itself
 
-**How to verify:** Save & Play, then run `lua log(DEBUG.verifyPav("TOR-758"))` in the TTS console. The returned report should say `status = pass` and list the six Rouse-policy assertions. Next run `lua log(DEBUG.verifyPavStart("TOR-757"))`, click **Refresh UI** once in the Storyteller debug toolbar, wait for the UI to return, and run `lua log(DEBUG.verifyPavFinish())`. That report should pass the full-remount and loading-settled checks. Finally, run `lua log(DEBUG.verifyPavStop())`; it should safely report that the harness is idle. Continue using the table normally and confirm that no PAV capture or Sync Trace output appears unless you explicitly start one.
+**How to verify:** Save & Play, then run `lua log(DEBUG.verifyPav("TOR-758"))` in the TTS console. The returned report should say `status = pass` and list the Rouse-policy assertions. Next run `lua log(DEBUG.verifyPavStart("TOR-757"))`, click **Refresh UI** once in the Storyteller debug toolbar, wait for the UI to return, and run `lua log(DEBUG.verifyPavFinish())`. That report should pass the full-remount and loading-settled checks. Finally, run `lua log(DEBUG.verifyPavStop())`; it should safely report that the harness is idle. Continue using the table normally and confirm that no PAV capture or Sync Trace output appears unless you explicitly start one.
 
 #### 🟢 TOR-755 — Dashboard stage edits respond without a full NPC reconcile
 
@@ -42,6 +42,8 @@ Some rows cover two or three issues that are tested together (the header lists e
 **How to verify:** Save & Play, start a scene, and place several NPCs on the stage. In the Dashboard, move one NPC to another stage location and click **Send**. Then change only that NPC's light mode and send again. Each change should begin promptly instead of waiting for every seat, every staged NPC, and the table layout to reconcile. Confirm that moving an NPC already on stage does not disturb any other staged NPC or occupied chair. Finally, add a new NPC and remove one; those membership changes should still seat, light, or clear the affected NPC correctly.
 
 #### 🔵 TOR-756 — Page 3 Advantages with no portrait have no white image box
+
+**Context:** The first portrait fix exposed a template-engine limitation and could leave Page 3 XML unbalanced when an entry had no portrait. The follow-up uses separate portrait/no-portrait body branches and now checks the complete XML tag stack for Backgrounds, Merits, Flaws, and Lord Lucien's current Page 3 data.
 
 **How to verify:** Save & Play, open a player's in-game character sheet to Page 3, and inspect Backgrounds, Merits, and Flaws whose Dashboard setting is **No portrait**. Their text should use the full trait box with no empty white rectangle. Then assign a portrait to one entry and confirm that its image appears; switch it back to **No portrait** and confirm that the image disappears and the text expands again.
 
