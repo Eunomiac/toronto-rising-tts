@@ -9,6 +9,8 @@
  *   npm run verify:pav -- stop
  */
 import { TtsExternalEditorBridge } from "../dist/index.js";
+import { existsSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const args = process.argv.slice(2);
 const usage = `PAV verification commands:
@@ -54,16 +56,51 @@ const script = [
   "return encoded",
 ].join("\n");
 
-const bridge = new TtsExternalEditorBridge();
+const gatewayClientPath = fileURLToPath(new URL(
+  "../../../.dev/storyteller-dashboard/node_modules/@tts-tools/gateway-client/dist/index.js",
+  import.meta.url,
+));
+
+const execute = async () => {
+  if (existsSync(gatewayClientPath)) {
+    const { connectGateway } = await import(pathToFileURL(gatewayClientPath).href);
+    const session = await connectGateway({
+      routeTag: "PAVVERIFY",
+      clientId: `pav-verification-${process.pid}`,
+      failover: true,
+    });
+    const prints = [];
+    let luaError;
+    session.on("print", (message) => prints.push(message));
+    session.on("error", (payload) => {
+      luaError = payload?.error ?? payload?.errorMessagePrefix ?? "Tabletop Simulator reported a Lua error.";
+    });
+    try {
+      const returnValue = await session.executeLua(script);
+      return { prints, returnValue, error: luaError, timedOut: false, transport: session.mode };
+    } finally {
+      await session.close();
+    }
+  }
+
+  const bridge = new TtsExternalEditorBridge();
+  try {
+    const response = await bridge.executeWithOutput({
+      script,
+      guid: "-1",
+      maxWaitMs: 20_000,
+      idleTimeoutMs: 1_000,
+    });
+    return { ...response, transport: "direct" };
+  } finally {
+    await bridge.close();
+  }
+};
+
 try {
-  const response = await bridge.executeWithOutput({
-    script,
-    guid: "-1",
-    maxWaitMs: 20_000,
-    idleTimeoutMs: 1_000,
-  });
+  const response = await execute();
   if (response.error) {
-    throw new Error(response.error.errorMessagePrefix || response.error.message);
+    throw new Error(response.error.errorMessagePrefix || response.error.message || String(response.error));
   }
   if (response.timedOut) {
     throw new Error("The PAV command timed out waiting for Tabletop Simulator.");
@@ -81,8 +118,6 @@ try {
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
-  console.error("If port 39998 is held by another editor bridge, release it before retrying.");
+  console.error("Start the shared TTS gateway, or release port 39998 so the direct fallback can connect.");
   process.exitCode = 1;
-} finally {
-  await bridge.close();
 }

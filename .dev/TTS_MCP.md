@@ -90,7 +90,7 @@ These issues showed up while running Toronto Rising Lua through **`tts_execute_l
 
 The opt-in PAV harness is documented in [PAV_AGENT_VERIFICATION.md](PAV_AGENT_VERIFICATION.md). Through `tts_execute_lua`, call `DEBUG.verifyPav("TOR-758")` for an instant check or bracket one real action with `DEBUG.verifyPavStart("TOR-755")` and `DEBUG.verifyPavFinish()`. Call `DEBUG.verifyPavStop()` after an interrupted capture. The capture switch is in-memory only and its wrappers do not exist during ordinary play.
 
-The convenience command `npm run verify:pav -- ...` uses the repo-local direct bridge, so it needs port 39998 released. When the shared gateway is already running, prefer `tts_execute_lua` rather than displacing it.
+The convenience command `npm run verify:pav -- ...` prefers the same shared gateway used by the Dashboard, extension, and MCP. It falls back to the repo-local direct bridge only when the Dashboard gateway-client dependency is unavailable; that fallback needs port 39998 released.
 
 ## Return values (`messageID` 5) and structured data
 

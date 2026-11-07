@@ -65,7 +65,7 @@ Emergency cleanup:
 npm run verify:pav -- stop
 ```
 
-The runner binds the External Editor inbound port directly. If the TTS gateway or another editor owns port 39998, use the ordinary gateway `tts_execute_lua` route instead, or deliberately release the port before running the command. Do not kill or displace another bridge implicitly.
+The runner prefers the shared TTS gateway when the Dashboard's gateway-client dependency is installed. If it is unavailable, the runner falls back to the repo-local direct bridge, which needs port 39998 free. It never kills or displaces another bridge implicitly.
 
 Equivalent gateway Lua:
 
