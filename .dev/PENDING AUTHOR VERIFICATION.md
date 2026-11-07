@@ -29,6 +29,22 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🔵 TOR-755 — Dashboard stage edits respond without a full NPC reconcile
+
+**How to verify:** Save & Play, start a scene, and place several NPCs on the stage. In the Dashboard, move one NPC to another stage location and click **Send**. Then change only that NPC's light mode and send again. Each change should begin promptly instead of waiting for every seat, every staged NPC, and the table layout to reconcile. Confirm that moving an NPC already on stage does not disturb any other staged NPC or occupied chair. Finally, add a new NPC and remove one; those membership changes should still seat, light, or clear the affected NPC correctly.
+
+#### 🔵 TOR-756 — Page 3 Advantages with no portrait have no white image box
+
+**How to verify:** Save & Play, open a player's in-game character sheet to Page 3, and inspect Backgrounds, Merits, and Flaws whose Dashboard setting is **No portrait**. Their text should use the full trait box with no empty white rectangle. Then assign a portrait to one entry and confirm that its image appears; switch it back to **No portrait** and confirm that the image disappears and the text expands again.
+
+#### 🔵 TOR-757 — Storyteller Refresh UI performs a complete UI rewrite
+
+**How to verify:** Save & Play with a connected player. Open the Storyteller debug toolbar and click **Refresh UI**. The complete Global UI should disappear and rebuild, then return with the correct panels, overlays, and per-colour visibility. If you can reproduce an overlay that remains stuck on a connected client, click **Refresh UI** and confirm that the stale overlay is cleared without reloading the save.
+
+#### 🟢 TOR-758 — Blood Surge Rouse is independent from manual and Oblivion Rouse
+
+**How to verify:** Save & Play and start a standard player roll at Hunger 4. Add a normal Rouse die, then activate Blood Surge from the Hunger bag; both checks should remain in the live roll. Clear and repeat in the opposite order: activate Blood Surge first, then add a normal Rouse die. Repeat once with an Oblivion Rouse die instead of the normal Rouse die. Blood Surge should not block either kind. Manual Rouse and Oblivion Rouse should still block each other, and Hunger 5 should still prevent voluntary Blood Surge and Rouse-family bag actions.
+
 #### 🟡 TOR-754 — Location 2 ambience pack plays catalog tracks
 
 > **Agent-assessment note:** The gateway can prove which track and bundle each emitter receives, measure the crossfade state, and confirm that Stop silences both packs. You still need to listen for the intended ambience, a smooth crossfade, and the absence of two audible beds.
