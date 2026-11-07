@@ -1560,7 +1560,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "autoshop",
+      "locationTrack": "autoShop",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14335046324871681649/A858335DED30A4A218B0CC6E0C155AC6802069EA/"
     },
@@ -2204,7 +2204,7 @@
       "isTopFogActive": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "autoshop",
+      "locationTrack": "autoShop",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11079011169911748363/4A438CDE2EB5A4E7E9E06C4C7104D22C8058EB25/"
     },
@@ -3246,7 +3246,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": "StRegisRoom101",
-      "locationTrack": "computerLab",
+      "locationTrack": "computer",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10603813245369786115/57CB1F93CC82602E9B950D60DDFE38EC5F279088/"
     },
@@ -3400,7 +3400,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": "UnionSecOffice",
-      "locationTrack": "computerLab",
+      "locationTrack": "computer",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10084483676462010758/FBEB52ED8E53037ACE507369427031E4D03A47E1/"
     },
@@ -5345,7 +5345,7 @@
     "silent",
     "airport",
     "apothecary",
-    "autoshop",
+    "autoShop",
     "church",
     "cityChatter",
     "cityPark",
@@ -5353,7 +5353,7 @@
     "citySuburb",
     "cityTraffic",
     "cityWalking",
-    "computerLab",
+    "computer",
     "crickets",
     "diveBar",
     "dungeon",

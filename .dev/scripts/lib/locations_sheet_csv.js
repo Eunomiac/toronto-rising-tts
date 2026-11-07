@@ -15,8 +15,7 @@ const { escapeLuaString, LUA_IDENT_RE } = require("./skyboxes_sheet_csv.js");
  * tab maps raw track names to these keys; each alias prints a warning until the sheet is fixed.
  */
 const TRACK_ALIASES = {
-  autoShop: "autoshop",
-  computer: "computerLab",
+  // Sheet/bundle effect names that still differ from the soundscape catalog key.
   warrensSafe: "warrens",
   bar: "diveBar",
 };

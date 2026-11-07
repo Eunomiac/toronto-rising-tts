@@ -20,6 +20,10 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### TOR-753 — Autoshop and computer-lab ambience match the AssetBundle
+
+**How to verify:** Save & Play so the updated catalogs load. Apply **Auto Mechanic** or **Junkyard** and listen for the autoshop ambience loop. Apply **The St. Regis Toronto: Room 101** or **Union Station: Security Office** and listen for the computer-lab ambience loop. Neither should stay silent or fall back to a different bed because of a misspelled track name.
+
 #### TOR-751 — NPC portraits in The Court
 
 **How to verify:** Run FULL with TTS closed, then load the updated save and scripts. In the Dashboard, open **PCs → III · IV → The Court**. Add or edit an Advantage, choose **The Aristocrat** in **Portrait**, and save. Check the image beside its text in the Dashboard and in TTS's Court sidebar. Clear the portrait and check that the text fills the available width again. Repeat on **Character Advantages** using a portrait assigned to that PC. Check creating, editing, and deleting a Court entry, including changing its category and dot slots. Existing portraits should reopen selected in the editor. No Advantage has been assigned to The Aristocrat by this change.

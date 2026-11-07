@@ -185,7 +185,7 @@ LocationsCatalog.Sites = {
   AutoMechanic = {
     name = "Auto Mechanic",
     soundscape = {
-      location = { playlist = "location", track = "autoshop" },
+      location = { playlist = "location", track = "autoShop" },
     },
     isIndoors = true,
     weatherDucking = 0.25,
@@ -926,7 +926,7 @@ LocationsCatalog.Sites = {
   Junkyard = {
     name = "Junkyard",
     soundscape = {
-      location = { playlist = "location", track = "autoshop" },
+      location = { playlist = "location", track = "autoShop" },
     },
     isIndoors = false,
     weatherDucking = 1,
@@ -1687,7 +1687,7 @@ LocationsCatalog.Sites = {
     skybox = "StRegisRoom101",
     district = Districts.BayStFinancial,
     soundscape = {
-      location = { playlist = "location", track = "computerLab" },
+      location = { playlist = "location", track = "computer" },
     },
     isIndoors = true,
     weatherDucking = 0,
@@ -1930,7 +1930,7 @@ LocationsCatalog.Sites = {
     skybox = "UnionSecOffice",
     district = Districts.Waterfront,
     soundscape = {
-      location = { playlist = "location", track = "computerLab" },
+      location = { playlist = "location", track = "computer" },
     },
     isIndoors = true,
     weatherDucking = 0,

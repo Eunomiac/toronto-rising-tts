@@ -48,8 +48,8 @@ Catalog.TRACKS = {
     duration = 300,
     volume = 0.05,
   },
-  autoshop = {
-    key = "autoshop",
+  autoShop = {
+    key = "autoShop",
     type = "location",
     isLooping = true,
     duration = 300,
@@ -104,8 +104,8 @@ Catalog.TRACKS = {
     duration = 224,
     volume = 0.05,
   },
-  computerLab = {
-    key = "computerLab",
+  computer = {
+    key = "computer",
     type = "location",
     isLooping = true,
     duration = 300,
