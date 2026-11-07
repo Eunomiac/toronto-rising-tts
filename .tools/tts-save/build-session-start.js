@@ -12,6 +12,7 @@ const { expandXmlFile } = require("../../.dev/scripts/embed_ui_global_xml_docs.j
 const { escapeLuaString } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
 const { planSessionStart, assertReviewResolved } = require("./session-start-assets.js");
 const { loadReview } = require("./session-start-review.js");
+const { readManifest } = require("../cloud-asset-sync.js");
 const { assertStageBlock } = require("./stage-geometry.js");
 
 const root = path.resolve(__dirname, "../..");
@@ -167,7 +168,7 @@ async function main() {
     readSourceState(save);
     return;
   }
-  const plan = planSessionStart(save, decisions);
+  const plan = planSessionStart(save, decisions, readManifest());
   const { report } = plan;
   const reportData = { source, reviewSource: review.source, reviewFetchedAt: review.fetchedAt,
     ...report, restoredObjects: plan.objects.map(({ GUID, Nickname }) => ({ guid: GUID, name: Nickname })) };
@@ -194,6 +195,7 @@ async function main() {
   console.log(`Known download size of those bundles: ${report.deferredKnownBytes.toLocaleString("en-CA")} bytes; ${report.deferredUnknownSizes} URLs have an unknown size.`);
   if (!replace && report.forcePurgedReferences) console.log(`ForcePurge ${values["dry-run"] ? "would remove" : "removed"} ${report.forcePurgedReferences} URL references and ${report.forcePurgedRegistrations} registrations${values["dry-run"] ? "" : " from the output copy"}.`);
   if (report.retainedSkybox) console.log("Kept the active skybox automatically (SkyURL).");
+  if (report.inheritedDecisions.length) console.log(`Reused existing decisions for ${report.inheritedDecisions.length} replaced Cloud asset(s) at the same job paths.`);
   console.log(`Left ${report.purge.length} Purge and ${report.investigate.length} Investigate decisions for dependency review, plus ${report.unreviewedUrls} current URLs without a decision.`);
 }
 

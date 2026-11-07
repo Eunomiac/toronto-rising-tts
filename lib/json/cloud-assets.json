@@ -1,6 +1,33 @@
 {
   "cloudRoot": "Vampire the Masquerade 5E",
   "jobs": {
+    "soundscapeBundles": {
+      "output": "ObjectImage",
+      "folder": "AssetBundles",
+      "rows": [
+        {
+          "path": "AssetBundles/tr_sessionStart_tracks.unity3d",
+          "name": "tr_sessionStart_tracks",
+          "sha1": "292F085D5A1929F1388206E345E1BCDA2C93461B",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10049578148842998748/292F085D5A1929F1388206E345E1BCDA2C93461B/",
+          "size": 42253839
+        },
+        {
+          "path": "AssetBundles/tr_soundscape_c.unity3d",
+          "name": "tr_soundscape_c",
+          "sha1": "F43A9D053DBEA9A82F656C48AC0FA545C5429B63",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11642298854229466969/F43A9D053DBEA9A82F656C48AC0FA545C5429B63/",
+          "size": 158914860
+        },
+        {
+          "path": "AssetBundles/tr_soundscape.unity3d",
+          "name": "tr_soundscape",
+          "sha1": "A00601CFE828EECE69FFF07F94E93FE201FEEFF6",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13243373661002252654/A00601CFE828EECE69FFF07F94E93FE201FEEFF6/",
+          "size": 418320657
+        }
+      ]
+    },
     "stageControlBoard": {
       "output": "ObjectImage",
       "folder": "Objects/Stage",

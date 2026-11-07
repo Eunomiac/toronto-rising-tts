@@ -41,6 +41,72 @@ test("fails closed for drift, unsupported placements, and collateral assets", ()
   assert.throws(() => planSessionStart({ ObjectStates: [] }, review), /no longer occurs/);
 });
 
+test("keeps review decisions for replacement uploads and uses the new bundle size", () => {
+  const newBundle = bundle.replace("/42/", "/43/");
+  const oldCard = bundle.replace("/42/", "/44/");
+  const newCard = bundle.replace("/42/", "/45/");
+  const bundlePath = "AssetBundles/soundscape.unity3d";
+  const cardPath = "HUD/districtCard_Test.webp";
+  const decisions = readDecisions([
+    "URL,Known bytes,Existing mirror paths,Manual decision",
+    `${bundle},10,assets/${bundlePath},Prune`,
+    `${oldCard},5,assets/${cardPath},Keep`,
+  ].join("\n"));
+  const source = fixture();
+  source.ObjectStates[0].CustomAssetbundle.AssetbundleURL = newBundle;
+  source.CustomUIAssets[0].URL = newCard;
+  const manifest = { jobs: {
+    soundscape: { rows: [{ path: bundlePath, url: newBundle, size: 20 }] },
+    districts: { rows: [{ path: cardPath, url: newCard, size: 6 }] },
+  } };
+  const { report, objects } = planSessionStart(source, decisions, manifest);
+  assert.equal(report.unreviewedUrls, 0);
+  assert.equal(report.deferredKnownBytes, 20);
+  assert.equal(report.pruned[0].url, newBundle);
+  assert.equal(objects[0].CustomAssetbundle.AssetbundleURL, newBundle);
+  assert.deepEqual(report.inheritedDecisions.map(entry => entry.decision), ["Prune", "Keep"]);
+  assert.equal(decisions.size, 2);
+
+  // A new decision for the exact URL overrides the inherited one.
+  const explicit = readDecisions([
+    "URL,Known bytes,Existing mirror paths,Manual decision",
+    `${bundle},10,assets/${bundlePath},Prune`,
+    `${newBundle},20,assets/${bundlePath},Keep`,
+    `${oldCard},5,assets/${cardPath},Keep`,
+    `${newCard},6,assets/${cardPath},ForcePurge`,
+    `${bundle.replace("/42/", "/46/")},10,,Prune`,
+  ].join("\n"));
+  source.ObjectStates[1].CustomAssetbundle = { AssetbundleURL: bundle.replace("/42/", "/46/") };
+  const overridden = planSessionStart(source, explicit, manifest);
+  assert.deepEqual(overridden.objects.map(o => o.GUID), ["012345"]);
+  assert.deepEqual(overridden.source.CustomUIAssets, []);
+  assert.deepEqual(overridden.report.inheritedDecisions, []);
+
+  // The old Prune still fails loudly if the replacement moved to a different path.
+  manifest.jobs.soundscape.rows[0].path = "AssetBundles/new.unity3d";
+  assert.throws(() => planSessionStart(source, decisions, manifest), /Prune URL no longer occurs/);
+});
+
+test("leaves a replacement unreviewed when the previous URL is live or was marked for removal", () => {
+  const oldCard = bundle.replace("/42/", "/44/");
+  const newCard = bundle.replace("/42/", "/45/");
+  const cardPath = "HUD/districtCard_Test.webp";
+  const manifest = { jobs: { districts: { rows: [{ path: cardPath, url: newCard, size: 6 }] } } };
+  const decide = decision => readDecisions([
+    "URL,Known bytes,Existing mirror paths,Manual decision",
+    `${bundle},10,,Prune`,
+    `${oldCard},5,assets/${cardPath},${decision}`,
+  ].join("\n"));
+  const source = fixture();
+  source.CustomUIAssets[0].URL = newCard;
+  assert.equal(planSessionStart(source, decide("ForcePurge"), manifest).report.unreviewedUrls, 1);
+  source.CustomUIAssets.push({ Name: "Old", URL: oldCard });
+  assert.equal(planSessionStart(source, decide("Keep"), manifest).report.unreviewedUrls, 1);
+  source.CustomUIAssets.pop();
+  manifest.jobs.districts.rows.push({ path: "HUD/other.webp", url: newCard, size: 6 });
+  assert.equal(planSessionStart(source, decide("Keep"), manifest).report.unreviewedUrls, 1);
+});
+
 test("ForcePurge removes registrations and clears direct URLs without mutating the source", () => {
   const source = fixture();
   source.SkyURL = keep;

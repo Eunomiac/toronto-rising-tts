@@ -47,7 +47,7 @@ Status:
 | `targets` | ObjectCustomUIAssets | Target group name, GUID, or a list mixing both. |
 | `ownsAllRows` | no (ObjectCustomUIAssets) | Purge every row on the target that no job wrote. |
 | `purgePatterns` | no (save-row jobs) | Extra regexps of names this job owns. `[]` is rejected. |
-| `field` + `objects` | ObjectImage | Dotted save field (`CustomImage.ImageURL`) and `{ assetName: GUID \| list \| group }`. |
+| `field` + `objects` | ObjectImage | Dotted save field (e.g. `CustomImage.ImageURL` or `CustomAssetbundle.AssetbundleURL`) and `{ assetName: GUID \| list \| group }`. |
 | `module` | LuaModule | `lib/cloud_<name>.ttslua`, returning `{ [name] = { filename, URL } }`. |
 
 `targetGroups` (top of the config) names reusable GUID lists, such as `csheetPage1` and `pcSeatFigurines`.
@@ -61,6 +61,7 @@ Status:
 - **DUPLICATE LOCAL**: one Cloud key (SHA1 + name) can live in one folder only. A second identical file gets no ledger entry and holds its job forever; shared art needs one home folder (for example `CSheets/Shared`).
 - **STRAY**: a file in a job folder that matches no job's pattern.
 - Fallback sources never override job-owned names.
+- Replace a job-managed file in place to keep its save bindings. For the session-start audit, when the old URL is gone and the new URL uniquely maps to the reviewed `Existing mirror paths` entry, the build reuses an agreed `Keep` or `Prune` decision and reads size from the new upload. An explicit decision on the new URL wins. Purge and investigation decisions stay attached to their reviewed URLs.
 
 ## Consumers
 

@@ -30,6 +30,20 @@
 
   "jobs": [
     {
+      "id": "soundscapeBundles",
+      "folder": "AssetBundles",
+      "output": "ObjectImage",
+      "field": "CustomAssetbundle.AssetbundleURL",
+      "objects": {
+        // Featured A/B, Location A/B, Music A/B, Rain/Thunder/Wind; Music C; Location 2 A/B.
+        "tr_soundscape": ["ef76cf", "7a1f69", "8ecefd", "4f352f", "2870fb", "ed206e", "c0b9d4", "c7a6c5", "290128"],
+        "tr_sessionStart_tracks": "e1366c",
+        "tr_soundscape_c": ["81c6cf", "5855d5"]
+      },
+      "filenameToNameSearchPattern": "^tr_(soundscape(?:_c)?|sessionStart_tracks)\\.unity3d$",
+      "filenameToNameReplacePattern": "tr_$1"
+    },
+    {
       "id": "stageControlBoard",
       "folder": "Objects/Stage",
       "output": "ObjectImage",

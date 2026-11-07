@@ -34,6 +34,7 @@ function readDecisions(csv) {
       url, decision, label: cell(row, "Helper Label"), notes: cell(row, "Manual notes"),
       resolutionInstructions: cell(row, "Author Resolution Instructions"),
       knownBytes: /^\d+$/.test(bytes) ? Number(bytes) : null,
+      mirrorPaths: cell(row, "Existing mirror paths").split(" | ").filter(Boolean),
     });
   }
   if (!decisions.size) throw new Error("No manual asset decisions in the CSV.");
@@ -58,6 +59,55 @@ function scanAssetUrls(value) {
   };
   visit(value, []);
   return found;
+}
+
+// A new upload changes the URL, but the job's mirror path identifies the asset
+// being replaced. Keep URL-specific actions tied to the URL the author reviewed.
+function resolveReviewedReplacements(urls, decisions, manifest) {
+  const pathsByUrl = new Map();
+  const urlsByPath = new Map();
+  const add = (map, key, value) => {
+    if (!map.has(key)) map.set(key, new Set());
+    map.get(key).add(value);
+  };
+  const current = new Map();
+  for (const job of Object.values(manifest.jobs)) {
+    for (const row of job.rows) {
+      const key = ugcMatchKey(row.url);
+      if (!key) continue;
+      const mirror = `assets/${row.path}`;
+      add(pathsByUrl, key, mirror);
+      add(urlsByPath, mirror, key);
+      current.set(key, row);
+    }
+  }
+  const byPath = new Map();
+  for (const [key, row] of decisions) {
+    if (!ugcMatchKey(row.url) || row.mirrorPaths?.length !== 1) continue;
+    add(byPath, row.mirrorPaths[0].trim().replaceAll("\\", "/"), key);
+  }
+  const effective = new Map(decisions);
+  const inherited = [];
+  for (const [mirror, keys] of byPath) {
+    const matches = urlsByPath.get(mirror);
+    if (matches?.size !== 1) continue;
+    const [key] = matches;
+    if (!urls.has(key) || pathsByUrl.get(key).size !== 1) continue;
+    const previous = [...keys].filter(old => old !== key);
+    if (!previous.length || previous.some(old => urls.has(old))) continue;
+    if (!decisions.has(key)) {
+      const rows = previous.map(old => decisions.get(old));
+      const { decision } = rows[0];
+      if (!["Keep", "Prune"].includes(decision) || rows.some(row => row.decision !== decision)) continue;
+      const { url, size } = current.get(key);
+      effective.set(key, {
+        ...rows[0], url, knownBytes: Number.isSafeInteger(size) && size >= 0 ? size : null,
+      });
+      inherited.push({ path: mirror, url, decision, previousUrls: rows.map(row => row.url) });
+    }
+    for (const old of previous) if (decisions.get(old).decision === "Prune") effective.delete(old);
+  }
+  return { effective, inherited };
 }
 
 function assertReviewResolved(decisions) {
@@ -107,10 +157,13 @@ function forcePurgeAssets(save, decisions) {
   return { save: cleaned, entries, registrationsRemoved };
 }
 
-function planSessionStart(save, decisions) {
+function planSessionStart(save, decisions, manifest = { jobs: {} }) {
   assertReviewResolved(decisions);
   if (!Array.isArray(save.ObjectStates)) throw new Error("The source save has no ObjectStates array.");
-  const originalUrlCount = scanAssetUrls(save).size;
+  const originalUrls = scanAssetUrls(save);
+  const originalUrlCount = originalUrls.size;
+  const { effective, inherited } = resolveReviewedReplacements(originalUrls, decisions, manifest);
+  decisions = effective;
   const forced = forcePurgeAssets(save, decisions);
   save = forced.save;
   const urls = scanAssetUrls(save);
@@ -159,6 +212,7 @@ function planSessionStart(save, decisions) {
       distinctAssetUrls: { before: originalUrlCount, after: after.size },
       topLevelObjects: { before: save.ObjectStates.length, after: retained.length },
       retainedSkybox: skybox?.url ?? null,
+      inheritedDecisions: inherited,
       unreviewedUrls: [...urls].filter(([key, references]) =>
         !decisions.has(key) && references.some(ref => !isSkyboxReference(ref))).length,
       pruned, purge, investigate,
