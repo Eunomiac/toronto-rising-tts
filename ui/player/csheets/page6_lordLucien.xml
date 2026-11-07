@@ -242,8 +242,8 @@
     <Text id="xp_sessionDate_0" class="xp_session_date" text="July 29, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_0" class="xp_summation" text="0 XP + 18 =" />
-    <Text id="xp_total_0" class="xp_total" text="18 XP" />
+    <Text id="xp_summation_0" class="xp_summation" text="0 XP + 18 − 18 =" />
+    <Text id="xp_total_0" class="xp_total" text="0 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
 <HorizontalLayout id="xp_listing_wrapper_0" class="xp_listing_wrapper" active="true">
@@ -256,7 +256,18 @@
 
   </GridLayout>
   <GridLayout id="xp_listing_right_0" class="xp_listing">
-    
+    <!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_0_1" class="xp_item" active="true">
+  <Text id="xp_spendNum_0_1" class="xp_spend_num" text="−6 XP" />
+  <Text id="xp_spendDesc_0_1" class="xp_spend_desc" text="Background: Mawla (Evanescent Blue) 2 → 4" />
+</HorizontalLayout>
+
+<!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_0_2" class="xp_item" active="true">
+  <Text id="xp_spendNum_0_2" class="xp_spend_num" text="−12 XP" />
+  <Text id="xp_spendDesc_0_2" class="xp_spend_desc" text="Background: Resources 4" />
+</HorizontalLayout>
+
   </GridLayout>
 </HorizontalLayout>
 

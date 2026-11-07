@@ -242,8 +242,8 @@
     <Text id="xp_sessionDate_0" class="xp_session_date" text="July 29, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_0" class="xp_summation" text="5 XP + 18 =" />
-    <Text id="xp_total_0" class="xp_total" text="23 XP" />
+    <Text id="xp_summation_0" class="xp_summation" text="5 XP + 18 − 18 =" />
+    <Text id="xp_total_0" class="xp_total" text="5 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
 <HorizontalLayout id="xp_listing_wrapper_0" class="xp_listing_wrapper" active="true">
@@ -256,7 +256,18 @@
 
   </GridLayout>
   <GridLayout id="xp_listing_right_0" class="xp_listing">
-    
+    <!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_0_1" class="xp_item" active="true">
+  <Text id="xp_spendNum_0_1" class="xp_spend_num" text="−12 XP" />
+  <Text id="xp_spendDesc_0_1" class="xp_spend_desc" text="Background: Ally (Legbreaker) 4" />
+</HorizontalLayout>
+
+<!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_0_2" class="xp_item" active="true">
+  <Text id="xp_spendNum_0_2" class="xp_spend_num" text="−6 XP" />
+  <Text id="xp_spendDesc_0_2" class="xp_spend_desc" text="Background: Influence (Criminal) 2" />
+</HorizontalLayout>
+
   </GridLayout>
 </HorizontalLayout>
 
@@ -423,7 +434,7 @@
 </HorizontalLayout>
 
 <!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
-<HorizontalLayout id="xp_title_line_m5" class="xp_title_line" active="true">
+<HorizontalLayout id="xp_title_line_m5" class="xp_title_line" active="false">
   <HorizontalLayout class="xp_title_line_left">
     <Text id="xp_sessionNum_m5" class="xp_session_num" text="TIME OF LINEAGE" />
     <Text id="xp_sessionDate_m5" class="xp_session_date" text="Mar. 27, 2026" />
@@ -433,7 +444,7 @@
     <Text id="xp_total_m5" class="xp_total" text="8 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
-<HorizontalLayout id="xp_listing_wrapper_m5" class="xp_listing_wrapper" active="true">
+<HorizontalLayout id="xp_listing_wrapper_m5" class="xp_listing_wrapper" active="false">
   <GridLayout id="xp_listing_left_m5" class="xp_listing">
     <!-- Gain row for one session slot. -->
 <HorizontalLayout id="xp_item_left_m5_1" class="xp_item" active="true">
