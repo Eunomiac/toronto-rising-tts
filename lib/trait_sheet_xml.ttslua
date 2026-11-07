@@ -351,6 +351,15 @@ function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
   local flavor = M.joinMultilineField(entry.description)
   local rules = M.joinMultilineField(entry.rules)
   applyTraitBodyTextParams(params, entry, flavor, rules, opts)
+  -- Page 3 templates use sibling body branches because the small template engine intentionally
+  -- consumes the next ##ENDIF## and therefore cannot safely nest portrait IF inside body IF.
+  if params.HAS_BODY_TEXT ~= nil then
+    if portrait ~= "" then
+      params.BODY_WITH_PORTRAIT = "1"
+    else
+      params.BODY_WITHOUT_PORTRAIT = "1"
+    end
+  end
   local sourceLine = M.formatSourceLine(entry)
   if sourceLine ~= nil then
     params.SOURCE_TEXT = sourceLine

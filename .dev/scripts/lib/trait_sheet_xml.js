@@ -294,6 +294,11 @@ function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts) {
   const flavor = joinMultilineField(entry.description);
   const rules = joinMultilineField(entry.rules);
   applyTraitBodyTextParams(params, entry, flavor, rules, opts);
+  // Keep these as sibling template branches. The runtime/build template engines do not support
+  // nested ##IF blocks, so nesting the portrait check inside HAS_BODY_TEXT creates malformed XML.
+  if (params.HAS_BODY_TEXT !== undefined) {
+    params[portrait ? "BODY_WITH_PORTRAIT" : "BODY_WITHOUT_PORTRAIT"] = "1";
+  }
 
   if (opts.visibilityMode === "active") {
     params.BLOCK_ACTIVE = entry.active === false ? "false" : "true";

@@ -81,7 +81,7 @@ For capture windows, call `DEBUG.verifyPavStart("TOR-755")`, perform the action,
 | Item | Instant contract | Live capture | Remaining human check |
 | --- | --- | --- | --- |
 | TOR-755 | Existing stage edits select the narrow path; membership changes refuse it | Proves no broad NPC reconcile and exactly one staged-NPC move | Optional glance that the visible table stayed composed correctly |
-| TOR-756 | Proves the no-portrait template branch omits the marker and image id | — | Brief Page 3 layout check |
+| TOR-756 | Proves the no-portrait template selects a balanced full-width body with no image | — | Brief Page 3 layout check |
 | TOR-757 | — | Proves a full Global UI remount event and that loading settled | Connected-client panel/overlay appearance |
 | TOR-758 | Proves Hunger boundaries and Rouse-family independence/exclusivity | — | None for the policy itself |
 
