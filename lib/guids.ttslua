@@ -258,6 +258,31 @@ function G.assertGuidStringList(list, label)
     end
 end
 
+--- Like `assertGuidStringList`, but also accepts multi-state GUID tables (`G.isStateGuidTable`).
+--- Use for `C.LockedObjects` where famulus-style entries must be the state table, not both [1]/[2].
+--- @param list any
+--- @param label string
+function G.assertGuidRefList(list, label)
+    if type(list) ~= "table" then
+        error((label or "G.assertGuidRefList") .. ": expected a list of GUID refs", 2)
+    end
+    local bad = {}
+    for i = 1, #list do
+        if not G.isGuidRef(list[i]) then
+            bad[#bad + 1] = tostring(i)
+        end
+    end
+    if #bad > 0 then
+        error(
+            (label or "GUID ref list")
+                .. ": nil/empty/invalid GUID ref at index(es) "
+                .. table.concat(bad, ", ")
+                .. " — usually a deleted G.GUIDS entry still listed here",
+            2
+        )
+    end
+end
+
 G.GUIDS = {
     -- Table & Floor objects
     TABLES = {

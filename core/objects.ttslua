@@ -33,6 +33,39 @@ end
 
 local lockedObjectGuidSet = nil
 
+--- True when every GUID string in a ref is marked deferred (join cold-pool, etc.).
+--- @param ref string|table
+--- @param deferredGuids table|nil
+--- @return boolean
+local function lockedRefIsDeferred(ref, deferredGuids)
+    if type(deferredGuids) ~= "table" then
+        return false
+    end
+    local guids = G.collectGuidStrings(ref)
+    if #guids == 0 then
+        return false
+    end
+    for i = 1, #guids do
+        if deferredGuids[guids[i]] ~= true then
+            return false
+        end
+    end
+    return true
+end
+
+--- Human-readable label for a LockedObjects entry (string GUID or multi-state table).
+--- @param ref string|table
+--- @return string
+local function lockedRefLabel(ref)
+    if type(ref) == "string" then
+        return ref
+    end
+    if G.isStateGuidTable(ref) then
+        return "state{" .. table.concat(G.collectGuidStrings(ref), ",") .. "}"
+    end
+    return tostring(ref)
+end
+
 --- @return number listed, number nilSlots
 local function countLockedObjectListEntries()
     local locked = C.LockedObjects
@@ -40,9 +73,9 @@ local function countLockedObjectListEntries()
         return 0, 0
     end
     local listed, nilSlots = 0, 0
-    for _, guid in pairs(locked) do
+    for _, ref in pairs(locked) do
         listed = listed + 1
-        if U.Type(guid) ~= "string" or guid == "" then
+        if not G.isGuidRef(ref) then
             nilSlots = nilSlots + 1
         end
     end
@@ -55,8 +88,9 @@ local function rebuildLockedObjectGuidSet()
     if U.Type(locked) ~= "table" then
         return
     end
-    for _, guid in pairs(locked) do
-        if U.Type(guid) == "string" and guid ~= "" then
+    for _, ref in pairs(locked) do
+        -- Index every state GUID so either multi-state id matches isLockedObjectGuid.
+        for _, guid in ipairs(G.collectGuidStrings(ref)) do
             lockedObjectGuidSet[guid] = true
         end
     end
@@ -70,25 +104,73 @@ function O.isLockedObjectGuid(guid)
     return U.Type(guid) == "string" and guid ~= "" and lockedObjectGuidSet[guid] == true
 end
 
---- True when every `C.LockedObjects` GUID resolves and custom assets finished loading (`loading_custom == false`).
---- @return boolean
-function O.areLockedObjectsReadyForInteractableLock(deferredGuids)
+--- Classify LockedObjects refs that are not ready to lock.
+--- Multi-state entries only need the *active* state object.
+--- `missing` = no object in the world (will not resolve by waiting).
+--- `loading` = object exists but `loading_custom` is still true (brief wait OK).
+--- @param deferredGuids table|nil
+--- @return { missing: string[], loading: string[] }
+function O.classifyUnresolvedLockedObjectRefs(deferredGuids)
+    local missing, loading = {}, {}
     local locked = C.LockedObjects
     if U.Type(locked) ~= "table" then
-        return true
+        return { missing = missing, loading = loading }
     end
-    for _, guid in pairs(locked) do
-        if U.Type(guid) == "string" and guid ~= "" then
-            local obj = G.getObject(guid)
-            if obj == nil and not (deferredGuids and deferredGuids[guid]) then
-                return false
-            end
-            if obj ~= nil and obj.loading_custom == true then
-                return false
+    for _, ref in pairs(locked) do
+        if G.isGuidRef(ref) then
+            local obj = G.getObject(ref)
+            if obj == nil then
+                if not lockedRefIsDeferred(ref, deferredGuids) then
+                    missing[#missing + 1] = lockedRefLabel(ref)
+                end
+            elseif obj.loading_custom == true then
+                loading[#loading + 1] = lockedRefLabel(ref)
             end
         end
     end
-    return true
+    table.sort(missing)
+    table.sort(loading)
+    return { missing = missing, loading = loading }
+end
+
+--- All unresolved labels (missing + loading). Prefer `classifyUnresolvedLockedObjectRefs`.
+--- @param deferredGuids table|nil
+--- @return string[]
+function O.listUnresolvedLockedObjectRefs(deferredGuids)
+    local classified = O.classifyUnresolvedLockedObjectRefs(deferredGuids)
+    local out = {}
+    for i = 1, #classified.missing do
+        out[#out + 1] = classified.missing[i]
+    end
+    for i = 1, #classified.loading do
+        out[#out + 1] = classified.loading[i] .. " (loading_custom)"
+    end
+    return out
+end
+
+--- True when every resolvable LockedObjects entry is loaded (`loading_custom == false`).
+--- Permanently missing GUIDs do **not** block — callers must report those loudly and continue.
+--- @return boolean
+function O.areLockedObjectsReadyForInteractableLock(deferredGuids)
+    local classified = O.classifyUnresolvedLockedObjectRefs(deferredGuids)
+    return #classified.loading == 0
+end
+
+--- Broadcast + print a clear startup fault for LockedObjects problems (does not throw —
+--- throwing would abort the rest of the readiness gate and leave the cover down).
+--- @param kind string
+--- @param labels string[]
+function O.reportLockedObjectsStartupFault(kind, labels)
+    if type(labels) ~= "table" or #labels == 0 then
+        return
+    end
+    local msg = "Startup LockedObjects "
+        .. tostring(kind)
+        .. ": "
+        .. table.concat(labels, ", ")
+        .. " — fix G.GUIDS / C.LockedObjects or restore the objects, then Save & Play"
+    print((U.loadElapsedPrefix and U.loadElapsedPrefix() or "") .. "ERROR: " .. msg)
+    U.AlertGM(msg)
 end
 
 --- @param options table|nil `{ warnMissing?: boolean }`
@@ -100,20 +182,21 @@ local function applyLockedObjectsFromConstants(options)
     local missingGuids = {}
     local locked = C.LockedObjects
     if U.Type(locked) == "table" then
-        for _, guid in pairs(locked) do
-            if U.Type(guid) == "string" and guid ~= "" then
-                local obj = G.getObject(guid)
+        for _, ref in pairs(locked) do
+            if G.isGuidRef(ref) then
+                local obj = G.getObject(ref)
                 if obj ~= nil then
                     obj.interactable = false
                     applied = applied + 1
-                elseif not (options.deferredGuids and options.deferredGuids[guid]) then
+                elseif not lockedRefIsDeferred(ref, options.deferredGuids) then
                     missing = missing + 1
-                    missingGuids[#missingGuids + 1] = guid
+                    local label = lockedRefLabel(ref)
+                    missingGuids[#missingGuids + 1] = label
                     if warnMissing then
                         print(
                             string.format(
-                                "[O.ApplyLockedObjectsFromConstants] Warning: C.LockedObjects — no object for GUID %s",
-                                guid
+                                "[O.ApplyLockedObjectsFromConstants] Warning: C.LockedObjects — no object for %s",
+                                label
                             )
                         )
                     end

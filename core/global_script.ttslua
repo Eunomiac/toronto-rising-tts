@@ -3279,13 +3279,45 @@ function onLoad(saved_data)
             return 0
         end,
         function()
+            -- Missing LockedObjects GUIDs never appear by waiting — fail loud immediately.
+            -- Only `loading_custom` objects get a short wait; then fail loud and continue.
             setStartupAction("startup-ready-wait-locked-objects")
-            if O ~= nil and type(O.areLockedObjectsReadyForInteractableLock) == "function" then
-                return function()
-                    return O.areLockedObjectsReadyForInteractableLock(deferredGuids)
-                end
+            if O == nil or type(O.classifyUnresolvedLockedObjectRefs) ~= "function" then
+                return true
             end
-            return true
+            local classified = O.classifyUnresolvedLockedObjectRefs(deferredGuids)
+            if #classified.missing > 0 then
+                O.reportLockedObjectsStartupFault("missing (will not resolve by waiting)", classified.missing)
+            end
+            if #classified.loading == 0 then
+                return true
+            end
+            local waitStarted = os.clock()
+            local loadingWaitSec = 30
+            local lastFingerprint = nil
+            return function()
+                local still = O.classifyUnresolvedLockedObjectRefs(deferredGuids)
+                if #still.loading == 0 then
+                    return true
+                end
+                local fingerprint = table.concat(still.loading, ",")
+                if fingerprint ~= lastFingerprint then
+                    lastFingerprint = fingerprint
+                    print(
+                        U.loadElapsedPrefix()
+                            .. "Startup waiting on LockedObjects still loading: "
+                            .. fingerprint
+                    )
+                end
+                if (os.clock() - waitStarted) >= loadingWaitSec then
+                    O.reportLockedObjectsStartupFault(
+                        "still loading_custom after " .. tostring(loadingWaitSec) .. "s (continuing)",
+                        still.loading
+                    )
+                    return true
+                end
+                return false
+            end
         end,
         function()
             setStartupAction("apply-locked-objects-at-startup-gate")

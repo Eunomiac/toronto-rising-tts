@@ -601,14 +601,13 @@ C.LockedObjects = {
   G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
   G.GUIDS.THE_FLOOR,
   G.GUIDS.TABLE_PLINTH,
-  G.GUIDS.FAMULUS_FIGURINE_RED[1],
-  G.GUIDS.FAMULUS_FIGURINE_RED[2],
-  G.GUIDS.FAMULUS_FIGURINE_BROWN[1],
-  G.GUIDS.FAMULUS_FIGURINE_BROWN[2],
-  G.GUIDS.FAMULUS_FIGURINE_PURPLE[1],
-  G.GUIDS.FAMULUS_FIGURINE_PURPLE[2]
+  -- Multi-state figurines: store the state table (not both [1] and [2]). Only the active
+  -- state's GUID exists in the world; listing both hung startup on areLockedObjectsReady.
+  G.GUIDS.FAMULUS_FIGURINE_RED,
+  G.GUIDS.FAMULUS_FIGURINE_BROWN,
+  G.GUIDS.FAMULUS_FIGURINE_PURPLE,
 }
-G.assertGuidStringList(C.LockedObjects, "C.LockedObjects")
+G.assertGuidRefList(C.LockedObjects, "C.LockedObjects")
 
 -- C.HiddenObjects: values are viewer colors for `setInvisibleTo`. Keys are GUID role
 -- names resolved through G.mapGuidKeys (missing G.GUIDS entries fail with one clear error
