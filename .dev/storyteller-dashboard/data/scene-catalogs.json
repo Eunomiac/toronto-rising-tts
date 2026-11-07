@@ -1295,11 +1295,9 @@
       "key": "DupontByTheCastle",
       "name": "Dupont by the Castle",
       "conditions": [
-        "messyCompulsion",
-        "bumpBloodPotency",
-        "fullWPReroll"
+        "bumpBloodPotency"
       ],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14368791366422288324/C98A69FB4A81117D321C62BF4767B5F9FD0B677F/"
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12916688558363208936/9423B4DE34C88D73AF05DC1543A53BB1CE9C7D14/"
     },
     {
       "key": "HarbordVillage",
@@ -1397,8 +1395,10 @@
     {
       "key": "Danforth",
       "name": "The Danforth",
-      "conditions": [],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15742204983254703010/22251BA5A3A9FA5B0AD0F3886D5DDFA86C3DBC62/"
+      "conditions": [
+        "messyCompulsion"
+      ],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11329945080409202229/38D83DC8369F168F7A145AC9EE3B8A5748AC1971/"
     },
     {
       "key": "Discovery",
@@ -1447,8 +1447,10 @@
     {
       "key": "Subway",
       "name": "The Subway",
-      "conditions": [],
-      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9947108115033477423/3971078C8431F359ED21A988833C9CA8C5770245/"
+      "conditions": [
+        "fullWPReroll"
+      ],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17149430997106238779/507F7A9CFE461328FBE34657B68631B1AF870E36/"
     },
     {
       "key": "Waterfront",
@@ -1514,7 +1516,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11899005525681881950/CE7007C7B6767E1B773A3E4C19041F220406CDF9/"
     },
@@ -1615,7 +1617,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "diveBar",
+      "locationTrack": "bar",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17906930619870945149/08267405C905604BC29FD5AFB15294B3DEEBB90C/"
     },
@@ -1971,7 +1973,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9626748842416581390/C81AD6452D75719E34A2D539A6FCC82EE675F2BE/"
     },
@@ -2083,7 +2085,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18137878224466682724/32CBB776B80D983B03199A415EC7DA4214A75863/"
     },
@@ -2512,7 +2514,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14721196193095727996/310F4A575B3F7861AABDE545C1E66A526509F283/"
     },
@@ -2534,7 +2536,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": "ReconciliationHouse",
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16919616518345376669/BCFBDBEB8A69F24FF214172E7701F18CB39C3D0D/"
     },
@@ -2545,7 +2547,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": "RedemptionHouse",
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [
         "resolveHalved"
       ],
@@ -2859,7 +2861,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13095412765740342657/F0196BF43A93ED73E16BD25658F3868D1F047F18/"
     },
@@ -3213,7 +3215,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": "StRegisGrandSalon",
-      "locationTrack": "softIndoor",
+      "locationTrack": "quietIndoor",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13192765498046180975/0B9DDF2D9988647D85C06AAF9A0C9E6294E52B0E/"
     },
@@ -3345,7 +3347,7 @@
       "isTopFogActive": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor",
+      "locationTrack": "medicalClinic",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18180179724193668092/5E5952D4CB6D7A872D1D805021D1009E7253D5FE/"
     },
@@ -5359,6 +5361,7 @@
     "dungeon",
     "eerieForest",
     "fastClock",
+    "fieldHospital",
     "fireplace",
     "hospital",
     "indoorMarket",

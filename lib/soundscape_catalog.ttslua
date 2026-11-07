@@ -149,6 +149,14 @@ Catalog.TRACKS = {
     duration = 119,
     volume = 0.05,
   },
+  fieldHospital = {
+    key = "fieldHospital",
+    type = "location",
+    emitterBank = "location2",
+    isLooping = true,
+    duration = 300,
+    volume = 0.05,
+  },
   fireplace = {
     key = "fireplace",
     type = "location",
