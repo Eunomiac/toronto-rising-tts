@@ -21,6 +21,7 @@ Verification:
 - every shipped TTS-observable change that still needs in-game confirmation has an Outstanding row **before the implementation session ends**
 - every checklist entry has a live `TOR-*` (**Awaiting Author Review** / verification-gate In Progress, **or** open follow-up work marked **⌚**)
 - every entry’s **How to verify** uses plain English (see **Writing style** below) — for **⌚** entries, how-to-verify is the future re-test after the fix ships
+- every `####` entry keeps its agent-assessment mark after any Author/Agent status mark: **🟢** definite agent validation, **🔵** practical-confidence agent validation, **🟡** partial agent validation, or **🔴** entirely human validation
 - process author marks **✅** / **❌** / **⚠️** on checklist headers during **`/tr-inbox`** only; maintain **⌚** on entries that are not ready to test yet
 - remove an entry when the author marks **✅** (or confirms in chat / Linear during an inbox pass); then update the tasklist bullet and move Linear to **Fully Complete** by default or **Complete (KEEP)** sparingly
 - when promoting an ❌/⚠️ follow-up to Linear instead of shipping in-session, keep/add the Outstanding entry with **⌚** until that follow-up ships and is ready to re-verify
@@ -58,7 +59,7 @@ The author often prefixes headers with **✅** / **❌** / **⚠️** between in
 
 When adding:
 
-- **Append** a new `#### TOR-XXX` entry (or refresh the matching `TOR-*` row if you just shipped that follow-up)
+- **Append** a new `#### <assessment> TOR-XXX` entry (or refresh the matching `TOR-*` row if you just shipped that follow-up). Put **✅ / ❌ / ⚠️ / ⌚ / 🚫 before the assessment mark** when one applies.
 - **Do not** strip **✅** / **❌** / **⚠️** from other headers
 - **Do not** reorder, rewrite, or delete other Outstanding bodies
 - Update the `_Last populated_` line
@@ -105,17 +106,19 @@ Linear **Awaiting Author Review** means the code and docs were shipped but the a
 
 As the author works through the checklist in Tabletop Simulator, they will prefix issue headings with one of these symbols. **During `/tr-inbox` only**, scan every `####` heading under **Outstanding** in [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) for these marks and act on them. Outside inbox: if the author says they marked items, remind them that mark processing runs on the next **`/tr-inbox`** (or ask them to run it), unless they explicitly ask you to process marks now. You may still **append** newly shipped rows in any session.
 
-**Where the mark appears:** on the issue header line, for example:
+**Where the status mark appears:** first on the issue header line, before the persistent agent-assessment mark, for example:
 
 ```markdown
-#### ✅ TOR-384 — Global HUD missing on first save load
-#### ❌ TOR-449 — Scenes preview deselect and THERE close guard
+#### ✅ 🔵 TOR-384 — Global HUD missing on first save load
+#### ❌ 🟢 TOR-449 — Scenes preview deselect and THERE close guard
 **Verification Failures:** Closing the Scenes panel while THERE did not block…
 **Verified:** Selecting a blue pending row and closing the panel while HERE restored the green live selection. End scene deselected as expected.
-#### ⚠️ TOR-402 — Skybox-only Apply Location
+#### ⚠️ 🟡 TOR-402 — Skybox-only Apply Location
 **Corrections:** …
-#### ⌚ TOR-476 — Scene transition audio crossfade (aligned with district/site cards)
+#### ⌚ 🟡 TOR-476 — Scene transition audio crossfade (aligned with district/site cards)
 ```
+
+The assessment circle is advisory and is **not** an issue-status mark. Preserve it while processing an Author mark. When a follow-up materially changes what agents can validate, update the circle and any 🟡/🔴 assessment note in the same session.
 
 | Mark | Who sets it | Meaning | What the agent must do (**`/tr-inbox`**) |
 | --- | --- | --- | --- |
@@ -124,7 +127,7 @@ As the author works through the checklist in Tabletop Simulator, they will prefi
 | **⚠️** | Author | The issue definition or expected validation is wrong or misleading (for example, “End scene should remain selected” when End should deselect). | Expect **`**Corrections:**`**. Fix inaccurate verify text / docs immediately when that is the whole correction. If the correction implies product/code change, handle under **§ Immediate disposition** below. After doc-only corrections are applied, **remove the ⚠️ mark and the Corrections paragraph** (or replace with a short **Context** note that verify text was corrected and re-test is still owed). Leave the entry until the author marks **✅** or **❌** on a fresh pass. If code work remains unshipped, use **⌚**. |
 | **⌚** | Agent | **Not ready to verify.** The fix was promoted to Linear / Focus instead of shipping during inbox (or the follow-up is still open). | Set or keep **⌚** when adding/keeping an Outstanding row for open follow-up work. Do **not** ask the author to Save & Play that issue yet. Keep plain-English how-to-verify for the future re-test. When the follow-up ships **in that implementation session**, **remove ⌚**, set **Awaiting Author Review**, and make the row a normal ready-to-verify entry (unmarked until the author tests). Never leave a shipped-and-ready entry under **⌚**. |
 
-**Unmarked headers** (no ✅ / ❌ / ⚠️ / ⌚) mean “shipped or verification-gate — not yet tested by the author.” Leave them alone unless you are adding a new shipped entry or the author confirmed elsewhere and inbox is syncing that fact.
+**Headers without an Author/Agent status mark** (no ✅ / ❌ / ⚠️ / ⌚ / 🚫 before the assessment circle) mean “shipped or verification-gate — not yet tested by the author.” The 🟢 / 🔵 / 🟡 / 🔴 assessment circle does not change that status. Leave these entries alone unless you are adding newly shipped work or the author confirmed elsewhere and inbox is syncing that fact.
 
 **If both a mark and detail paragraphs appear**, trust the mark for status and the paragraphs for specifics. For **❌**, use **Verified:** to shrink scope and **Verification Failures:** to define remaining work. If a mark is present but the expected failure/correction paragraph is missing (**Verification Failures:** / **Corrections:**), ask the author in plain English what failed or what to correct before guessing. A missing **Verified:** on **❌** is allowed when nothing passed — do not invent successes.
 
