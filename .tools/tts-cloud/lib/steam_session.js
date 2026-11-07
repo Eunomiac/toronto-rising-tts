@@ -23,6 +23,10 @@ const DLL_PATH = path.join(TOOLS_DIR, "node_modules", "steamworks.js", "dist", "
 const FILE_SHARE_RESULT_SIZE = 280;
 const FILE_SHARE_RESULT_CALLBACK = 1307;
 const SHARE_TIMEOUT_MS = 120000;
+/** Steam ISteamRemoteStorage::FileWrite rejects payloads above 100 MB; stream in smaller chunks. */
+const FILE_WRITE_MAX_BYTES = 100 * 1024 * 1024;
+const FILE_WRITE_STREAM_CHUNK_BYTES = 50 * 1024 * 1024;
+const UGC_FILE_STREAM_HANDLE_INVALID = 0xffffffffffffffffn;
 
 /**
  * @param {string} name
@@ -80,6 +84,18 @@ function openSteamSession() {
   );
   const FileWrite = lib.func(
     "bool SteamAPI_ISteamRemoteStorage_FileWrite(void *self, const char *pchFile, const uint8_t *pvData, int32 cubData)",
+  );
+  const FileWriteStreamOpen = lib.func(
+    "uint64 SteamAPI_ISteamRemoteStorage_FileWriteStreamOpen(void *self, const char *pchFile)",
+  );
+  const FileWriteStreamWriteChunk = lib.func(
+    "bool SteamAPI_ISteamRemoteStorage_FileWriteStreamWriteChunk(void *self, uint64 writeHandle, const uint8_t *pvData, int32 cubData)",
+  );
+  const FileWriteStreamClose = lib.func(
+    "bool SteamAPI_ISteamRemoteStorage_FileWriteStreamClose(void *self, uint64 writeHandle)",
+  );
+  const FileWriteStreamCancel = lib.func(
+    "bool SteamAPI_ISteamRemoteStorage_FileWriteStreamCancel(void *self, uint64 writeHandle)",
   );
   const FileShare = lib.func("uint64 SteamAPI_ISteamRemoteStorage_FileShare(void *self, const char *pchFile)");
   const FileDelete = lib.func("bool SteamAPI_ISteamRemoteStorage_FileDelete(void *self, const char *pchFile)");
@@ -141,8 +157,43 @@ function openSteamSession() {
     },
 
     writeFile(name, bytes) {
-      if (!FileWrite(remote, name, bytes, bytes.length)) {
-        throw new Error(`FileWrite(${name}, ${bytes.length} bytes) failed (quota or Steam error).`);
+      if (!Buffer.isBuffer(bytes)) {
+        throw new Error(`writeFile(${name}) requires a Buffer.`);
+      }
+      if (bytes.length <= FILE_WRITE_MAX_BYTES) {
+        if (!FileWrite(remote, name, bytes, bytes.length)) {
+          throw new Error(
+            `FileWrite(${name}, ${bytes.length} bytes) failed (quota, Steam error, or file over the single-write limit).`,
+          );
+        }
+        return;
+      }
+
+      const handleRaw = FileWriteStreamOpen(remote, name);
+      const handle = typeof handleRaw === "bigint" ? handleRaw : BigInt(handleRaw);
+      if (handle === 0n || handle === UGC_FILE_STREAM_HANDLE_INVALID) {
+        throw new Error(`FileWriteStreamOpen(${name}) returned an invalid handle.`);
+      }
+      try {
+        for (let offset = 0; offset < bytes.length; offset += FILE_WRITE_STREAM_CHUNK_BYTES) {
+          const end = Math.min(offset + FILE_WRITE_STREAM_CHUNK_BYTES, bytes.length);
+          const chunk = bytes.subarray(offset, end);
+          if (!FileWriteStreamWriteChunk(remote, handle, chunk, chunk.length)) {
+            throw new Error(
+              `FileWriteStreamWriteChunk(${name}) failed at offset ${offset} (${chunk.length} bytes).`,
+            );
+          }
+        }
+        if (!FileWriteStreamClose(remote, handle)) {
+          throw new Error(`FileWriteStreamClose(${name}) failed after writing ${bytes.length} bytes.`);
+        }
+      } catch (err) {
+        try {
+          FileWriteStreamCancel(remote, handle);
+        } catch (_) {
+          // Best-effort cancel after a failed stream write.
+        }
+        throw err;
       }
     },
 

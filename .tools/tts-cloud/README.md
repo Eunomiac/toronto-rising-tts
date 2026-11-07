@@ -44,6 +44,7 @@ npm install
 ## Safety rules
 
 - Writes are refused while Tabletop Simulator is open (TTS keeps its own copy of the index). The build skips the push and warns instead.
+- Steam `FileWrite` rejects files over **100 MB**. Uploads larger than that (for example AssetBundles) use `FileWriteStream*` in 50 MB chunks.
 - Every index write snapshots first, re-reads, and checks that no untouched entry changed; on a mismatch it restores the snapshot and stops.
 - When a case-only rename leaves two index entries for the same URL and Steam confirms a single shared file, the push keeps the entry that matches the local filename and removes the redundant index entry. The file and its URL stay in place.
 - `assets/.cloud-ledger.json` records what was synced. Push also retires untracked older Cloud contents at a current local path, and obsolete generated NPC token outputs when the generator cache and all expected token fronts are present. The current local file identity is preserved. Deletion still checks the current save, repo code, and saves of other mods; older Toronto Rising saves do not veto cleanup.
