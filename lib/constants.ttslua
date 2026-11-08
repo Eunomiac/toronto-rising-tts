@@ -609,6 +609,15 @@ C.LockedObjects = {
 }
 G.assertGuidRefList(C.LockedObjects, "C.LockedObjects")
 
+-- These props stay physically locked but must accept clicks whenever restored to play.
+C.ClickableSeatControls = {}
+for _, color in ipairs(C.PlayerColors) do
+  C.ClickableSeatControls[G.GUIDS["SIGNAL_CANDLE_" .. string.upper(color)]] = true
+  for _, guid in pairs(G.GetAllPlayerDiceBagGUIDs(color)) do
+    C.ClickableSeatControls[guid] = true
+  end
+end
+
 -- C.HiddenObjects: values are viewer colors for `setInvisibleTo`. Keys are GUID role
 -- names resolved through G.mapGuidKeys (missing G.GUIDS entries fail with one clear error
 -- instead of Lua's opaque "table index is nil").

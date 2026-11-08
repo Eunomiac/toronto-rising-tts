@@ -19,6 +19,7 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local S = require("core.state")
 local SRI = require("lib.seat-role-identity")
+local clickableSeatControls = C.ClickableSeatControls
 
 --- lib.object_positions requires this module (hide/restore), so it cannot be a top-level
 --- require here: luabundle hands the second module of a require cycle a permanent nil.
@@ -650,7 +651,7 @@ local function writeHideSnapshot(obj, opts)
     if snapPos == nil and livePos ~= nil and not yLooksParked(livePos.y) and row.position == nil then
         snapPos = livePos
     end
-    -- When live Y is already parked: omit position (never snapshot -200); still refresh lock/interactable.
+    -- When live Y is already parked, omit position (never snapshot -200).
 
     if snapPos ~= nil then
         if row.position == nil or opts.refreshSnapshotPosition == true then
@@ -660,8 +661,12 @@ local function writeHideSnapshot(obj, opts)
     if row.invisibleTo == nil then
         row.invisibleTo = snapshotActiveVisibilityForHide(guid)
     end
-    row.interactable = obj.interactable == true
-    if obj.getLock ~= nil then
+    -- A second hide sees the parking protocol's lock and click flags, not the active values.
+    local alreadyHidden = O.isHiddenObject(obj)
+    if not alreadyHidden or row.interactable == nil then
+        row.interactable = obj.interactable == true
+    end
+    if obj.getLock ~= nil and (not alreadyHidden or row.locked == nil) then
         row.locked = obj.getLock() == true
     end
     return row
@@ -761,6 +766,9 @@ function O.restoreObject(obj, opts)
     local interactable = opts.interactable
     if interactable == nil and guid ~= nil and O.isLockedObjectGuid(guid) then
         interactable = false
+    end
+    if interactable == nil and clickableSeatControls[guid] == true then
+        interactable = true
     end
     if interactable == nil and type(snap) == "table" and type(snap.interactable) == "boolean" then
         interactable = snap.interactable

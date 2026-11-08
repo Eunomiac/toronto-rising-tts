@@ -66,6 +66,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## Dice Roller
 
+- [x] **Restore dice bag and signal candle clicks after seating:** Repeated parking preserves the active click state, and restoring seat controls repairs disabled click flags from earlier saves. Pending Save & Play and Orange client verification. _(TOR-761)_
 - [x] **Blood Surge Rouse no longer blocks other Rouse checks at Hunger 4:** Blood Surge Rouse is tracked independently from manual and Oblivion Rouse checks. Manual Rouse and Oblivion Rouse remain mutually exclusive, and Hunger 5 still blocks voluntary Rouse-family actions. Pending Save & Play. _(TOR-758)_
 - [x] **Staged NPC steps to the Storyteller dice tray:** Outside Scatter, when the Storyteller rolls for an NPC standing on the stage, that figurine and spotlight walk to the drawer's X, the Center group's stand height, and just in front of the Center spot (SPOTLIGHT) while the tray is up, then walk back (including their original height) when the roll is cleared. Seated NPCs and Scatter rolls are unchanged. Pending Save & Play. _(TOR-738)_
 - [x] **Retire the player dice preload pool:** Dice come from the bag at roll time and are destroyed on release; `core/dice_preload_pool.ttslua` and the `d10Preload` tag are gone. Re-test the brief placeholder flash. relatedTo **TOR-707**. Pending Save & Play (run `DEBUG.retirePreloadPools()` once, then File → Save). _(TOR-708)_

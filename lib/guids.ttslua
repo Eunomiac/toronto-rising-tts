@@ -453,7 +453,13 @@ G.GUIDS = {
     PLAYER_STORAGE_CONTAINER_PINK = "e57e55",
     PLAYER_STORAGE_CONTAINER_PURPLE = "4afa4a",
 
-    -- Signal fires (for players to signal need for Storyteller attention)
+    -- Signal candle click targets and their separate fire effects.
+    SIGNAL_CANDLE_BROWN = "083515",
+    SIGNAL_CANDLE_ORANGE = "31adbe",
+    SIGNAL_CANDLE_RED = "c81772",
+    SIGNAL_CANDLE_PINK = "e6836c",
+    SIGNAL_CANDLE_PURPLE = "99d5f2",
+
     SIGNAL_FIRE_BROWN = "b0ffa8",
     SIGNAL_FIRE_ORANGE = "7aa4ed",
     SIGNAL_FIRE_RED = "cc2959",

@@ -135,6 +135,9 @@ local function setBagEnabled(guid, enabled, color)
     end
     local active = isBagActiveAtRest(bag)
     if enabled and active then
+        if bag.interactable ~= true then
+            bag.interactable = true
+        end
         return
     end
     if not enabled and not active then

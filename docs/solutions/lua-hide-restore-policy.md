@@ -14,7 +14,7 @@ One pair of functions owns the full hide protocol and the matching restore path:
 | --- | --- | --- |
 | World Y | Park at `C.HIDDEN_OBJECT_WORLD_Y` (default: same X/Z) | Caller `opts.position` → `keepWorldPose` live pose → snapshot → stay put |
 | Lock | `setLock(true)` | `opts.locked` → snapshot → catalog default |
-| Interactable | `false` | `opts.interactable` → `C.LockedObjects` → snapshot → `true` |
+| Interactable | `false` | `opts.interactable` → `C.LockedObjects` / `C.ClickableSeatControls` → snapshot → `true` |
 | Visibility (parked) | All viewer colors (PC seats + White/Grey/Black) | — |
 | Visibility (active) | — | Always `C.HiddenObjects[guid]` when catalogued; else snapshot / `{}` |
 | Tag | Add `HiddenObject` | Remove `HiddenObject` |
@@ -70,7 +70,7 @@ When `O.restoreObject` runs, each field resolves in this order (first win):
 
 1. **Caller `opts`** (`position`, `rotation`, `locked`, `interactable`)
 2. **`opts.keepWorldPose`** — if true, fill missing pose from the object’s live `getPosition` / `getRotation` (unhide after layout already placed it; do not replay the hide snapshot)
-3. **Catalogs** — `C.LockedObjects` forces `interactable = false` when no explicit opts; **`C.HiddenObjects[guid]` always wins for active visibility** when the GUID is catalogued
+3. **Catalogs** — `C.LockedObjects` forces `interactable = false` when no explicit opts. `C.ClickableSeatControls` restores click access for dice bags and signal candles, even if an older snapshot has it disabled. **`C.HiddenObjects[guid]` always wins for active visibility** when the GUID is catalogued
 4. **`gameState.hiddenObjects[guid]` snapshot** (`position` / `invisibleTo`)
 5. **Defaults** — `{}` (visible to all); interactable `true` unless locked catalog says otherwise
 
@@ -100,7 +100,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 ## Idempotency
 
 - `O.hideObject` **always** re-applies lock, non-interactable, parked visibility, and `HiddenObject` tag — even when the object is already at `y = -200` or already tagged.
-- Repeat calls merge into the existing `gameState.hiddenObjects` row: **position** and **invisibleTo** are captured once; **locked** / **interactable** refresh from live pre-hide state each call.
+- Repeat calls keep the pre-hide lock and click flags. Layout can still update a parked object's saved position via `refreshSnapshotPosition`.
 - When live Y is already parked, **omit** a position move when X/Z matches the target; visibility and lock still apply.
 - Safe for reconcilers and Spotlight re-park — second call refreshes invisibility instead of skipping.
 

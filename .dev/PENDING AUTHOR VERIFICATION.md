@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-761 — Dice bags and signal candle accept clicks after seating
+
+**How to verify:** Load the prepared save with the updated scripts and have Rashid join as Orange. Finish staged seating, then have him toggle his signal candle before applying a scene. In Play, have him start a Standard roll, add at least six dice from the Standard bag, and try Blood Surge while the pool is open. Repeat after a scene change. If a click stops working, note which bag it was and the pool count when it stopped.
+
+The automated test checks that repeated parking preserves click access and that an older saved lockout is repaired. Click delivery from a real Orange client still needs this check.
+
 #### 🟢 TOR-759 — Opt-in agent verification harness stays dormant and cleans up after itself
 
 **How to verify:** Save & Play, then run `lua log(DEBUG.verifyPav("TOR-758"))` in the TTS console. The returned report should say `status = pass` and list the Rouse-policy assertions. Next run `lua log(DEBUG.verifyPavStart("TOR-757"))`, click **Refresh UI** once in the Storyteller debug toolbar, wait for the UI to return, and run `lua log(DEBUG.verifyPavFinish())`. That report should pass the full-remount and loading-settled checks. Finally, run `lua log(DEBUG.verifyPavStop())`; it should safely report that the harness is idle. Continue using the table normally and confirm that no PAV capture or Sync Trace output appears unless you explicitly start one.
