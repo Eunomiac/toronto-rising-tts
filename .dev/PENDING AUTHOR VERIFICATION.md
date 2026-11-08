@@ -33,9 +33,9 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### 🟡 TOR-761 — Dice bags and signal candle accept clicks after seating
 
-**How to verify:** Load the prepared save with the updated scripts and have Rashid join as Orange. Finish staged seating, then have him toggle his signal candle before applying a scene. In Play, have him start a Standard roll, add at least six dice from the Standard bag, and try Blood Surge while the pool is open. Repeat after a scene change. If a click stops working, note which bag it was and the pool count when it stopped.
+**How to verify:** After Save & Play, have Rashid toggle the signal candle before the first scene change. During a Standard roll, have him click the Standard bag repeatedly in quick succession, past his Hunger rating, both before and after you Open the roll. Each click while building the pool should add one die, and the Standard bag should stay clear. Repeat after a scene change and with another player seat if available.
 
-The automated test checks that repeated parking preserves click access and that an older saved lockout is repaired. Click delivery from a real Orange client still needs this check.
+Automated checks cover click access after repeated parking and the spawn positions for Standard and Hunger dice across all five seats. If the bag still misses clicks, turn on **Trace Sync**, repeat a few clicks, and turn it off. The console will show whether the host received each click, requested a die, and registered the spawn.
 
 #### 🟢 TOR-759 — Opt-in agent verification harness stays dormant and cleans up after itself
 

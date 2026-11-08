@@ -66,7 +66,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## Dice Roller
 
-- [x] **Restore dice bag and signal candle clicks after seating:** Repeated parking preserves the active click state, and restoring seat controls repairs disabled click flags from earlier saves. Pending Save & Play and Orange client verification. _(TOR-761)_
+- [x] **Restore dice bag and signal candle clicks after seating:** Repeated parking preserves the active click state. New dice appear directly in the pool so they cannot hover over the Standard bag's click target. Pending Save & Play and verification with a connected player. _(TOR-761)_
 - [x] **Blood Surge Rouse no longer blocks other Rouse checks at Hunger 4:** Blood Surge Rouse is tracked independently from manual and Oblivion Rouse checks. Manual Rouse and Oblivion Rouse remain mutually exclusive, and Hunger 5 still blocks voluntary Rouse-family actions. Pending Save & Play. _(TOR-758)_
 - [x] **Staged NPC steps to the Storyteller dice tray:** Outside Scatter, when the Storyteller rolls for an NPC standing on the stage, that figurine and spotlight walk to the drawer's X, the Center group's stand height, and just in front of the Center spot (SPOTLIGHT) while the tray is up, then walk back (including their original height) when the roll is cleared. Seated NPCs and Scatter rolls are unchanged. Pending Save & Play. _(TOR-738)_
 - [x] **Retire the player dice preload pool:** Dice come from the bag at roll time and are destroyed on release; `core/dice_preload_pool.ttslua` and the `d10Preload` tag are gone. Re-test the brief placeholder flash. relatedTo **TOR-707**. Pending Save & Play (run `DEBUG.retirePreloadPools()` once, then File → Save). _(TOR-708)_
@@ -138,7 +138,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 - [x] **Right-click ROLL auto-rolls:** Player roll panel right-click ROLL immediately rolls the staged pool. _(TOR-317)_
 - [x] **Idle Rouse bag right-click auto-rolls a 1-die Rouse:** No live roll → right-click Rouse bag initiates, Opens, and auto-tosses a standard Rouse check. Live-roll right-click (remove / cancel) unchanged. relatedTo **TOR-317**. Author confirmed 2026-08-18. _(TOR-490)_
 - [x] **Idle Oblivion-Rouse bag right-click auto-rolls a 1-die check:** Same shortcut as **TOR-490** on the Oblivion-Rouse bag (Purple). Hunger 5 still locked out. relatedTo **TOR-490**. Author confirmed 2026-08-18. _(TOR-491)_
-- [x] **Spawn above bag then smooth-move into arc:** Dice appear above bag first, then smooth-move into staging arc. _(TOR-318)_
+- [x] **Spawn above bag then smooth-move into arc:** Superseded by TOR-761. New dice appear directly in the arc so repeated clicks can reach the Standard bag. _(TOR-318)_
 - [x] **Difficulty-0 roll results display:** No difficulty/margin; successes-focused copy for opposed/extended contests (refines **TOR-163**). _(TOR-309)_
 - [x] **Narrative roll broadcast successes:** Frenzy/Willpower/etc. show success count + difficulty; split from hidesDifficulty margin strip. _(TOR-312)_
 - [x] **Open player dice tray on roll initiate:** Tray on player bag click + ST `openRoll`; ST SETUP defers bags/tray; `changeRollType`?PRE_ROLL opens tray. Author verified 2026-07-08. _(TOR-305)_

@@ -91,7 +91,7 @@ DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
 --- Loose-die scan tag (table layout guard).
 DK.TAG_D10 = "d10"
 
---- Bag arc staging uses TTS `setPositionSmooth` from the hover point (TOR-318 / TOR-591).
+--- Existing staged dice use TTS `setPositionSmooth` as the arc changes size.
 DK.SPAWN_SMOOTH_COLLIDE = false
 DK.SPAWN_SMOOTH_FAST = true
 

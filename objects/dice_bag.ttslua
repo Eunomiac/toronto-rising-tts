@@ -23,8 +23,6 @@ ROTATION = 180
 HEIGHT   = 1.5
 --- Fixed world Y for player-seat staged dice (bag pivot is near table height; arc faces via Y rotation).
 STAGING_WORLD_Y = 8
---- World Y for bag-anchored spawn hover before smooth move into arc (TOR-318).
-SPAWN_HOVER_WORLD_Y = 8
 SCALE    = 1.75
 
 -- Spawn-arc overflow layering: a single arc holds at most MAX_DICE_PER_ARC dice. Overflow
@@ -228,30 +226,6 @@ local function destroyStagedDie(die)
     end
 end
 
---- @param bagColor string|nil
---- @return table|nil
-local function spawnHoverWorldPoint(bagColor)
-    local bag = getPlayerNormalBag(bagColor)
-    if bag == nil and self ~= nil and self.getPosition ~= nil then
-        bag = self
-    end
-    if bag == nil or bag.getPosition == nil then
-        return nil
-    end
-    local pos = bag.getPosition()
-    if type(pos) ~= "table" or type(pos.x) ~= "number" or type(pos.z) ~= "number" then
-        return nil
-    end
-    return { x = pos.x, y = SPAWN_HOVER_WORLD_Y, z = pos.z }
-end
-
---- Smooth-move a locked staged die to its arc slot.
--- @param die Object|nil
--- @param arcPos table|nil
-local function smoothStageDieToArc(die, arcPos)
-    DK.smoothMoveDieToPosition(die, arcPos)
-end
-
 --- Take a die out of the bag at `position`, locked and not grabbable until `releaseDice`.
 -- @param position table
 -- @param rotation table|nil
@@ -323,7 +297,8 @@ function spawnDie(bagColor, dieType, opts)
     end
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
-    -- The die appears at the hover point; this bag owns the single smooth into the arc (TOR-318 / TOR-591).
+    -- Spawn straight into the arc. A die above the Standard button can intercept
+    -- the next click while TTS finishes spawning and initializes movement.
     local ringCount = 0
     for _, staged in ipairs(spawnedDice) do
         if staged ~= nil and radiusForStagedDie(staged, bagKind, false) == spawnRadius then
@@ -337,13 +312,8 @@ function spawnDie(bagColor, dieType, opts)
         [spawnRadius] = ringTotal,
     })
 
-    local hoverPos = spawnHoverWorldPoint(bagColor)
     local arcPos = worldArcPoint(bagColor, ringSlot, ringTotal, spawnRadius)
-    local die = acquireDie(hoverPos or arcPos, randomRotation())
-    finishSpawnedDie(die)
-    if die ~= nil and hoverPos ~= nil and arcPos ~= nil then
-        smoothStageDieToArc(die, arcPos)
-    end
+    finishSpawnedDie(acquireDie(arcPos, randomRotation()))
 end
 
 --- POST_ROLL correction: one die on a random arc slot (no reposition of existing pool dice).
