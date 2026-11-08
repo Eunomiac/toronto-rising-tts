@@ -8,7 +8,7 @@
   - Connect (incl. late join): clear the flag and seat the PC at once.
   - Mid-session disconnect: darken the seat only (effective presence false).
   - Connection checkpoint (under blindfold cover / end of startup): a PC still disconnected becomes
-    an unoccupied seat — no chair, satellites parked.
+    an unoccupied seat — no chair, satellites parked. The hand zone stays on the table (TOR-763).
 
   Debug connection mode (`debug.assumeConnected`): "Assume Connected" reads per-seat
   `debug.simulatedConnection[color]` (default connected) instead of Steam.
@@ -274,7 +274,7 @@ local function markDisconnectedSeatsUnoccupied()
 end
 
 --- Connection checkpoint (under blindfold cover): every occupied PC seat that is not connected
---- becomes unoccupied (`absentFromSession`, no chair, satellites parked).
+--- becomes unoccupied (`absentFromSession`, no chair, satellites parked, hand zone left in place).
 --- @return string[] colors newly unoccupied
 function PC.applyConnectionCheckpoint()
   local FSL = require("lib.figurine_seat_layout")

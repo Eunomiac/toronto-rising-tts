@@ -31,6 +31,14 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-763 — Disconnected player's hand stays on the table
+
+> **Agent-assessment note:** The code no longer aims a hand zone under the table when a seat is parked. You still need to watch the cards, because Tabletop Simulator dropping a hand is something only the live table shows.
+
+**How to verify:** Save & Play. Turn on **Assume Connected** in the debug panel. Put a few cards in one player's hand. On the PCs panel, mark that player Disconnected. The seat should only go dark, and the hand should stay. Apply a scene, or any other change that brings the blindfold down. When the cover lifts, that player's chair, sheet, bags, and the rest of the seat should be gone. The hand zone should still be where it was, with the same cards still in it. Mark them Connected again. The chair and the rest of the seat should come back, and the hand should move to the new chair with those cards still in it.
+
+While they are still disconnected, a table change leaves that hand where it was until they connect. It should not dive under the table. If a hand is already under the table from an earlier disconnect, connecting that player should still bring the hand and those stored cards back.
+
 #### 🟡 TOR-762 — Preload NPCs for a later entrance
 
 **How to verify:** Save & Play, then add an NPC to the scene editor's Offstage list and click **Preload now**. Their token should appear on the right of the Stage Control board with “(Offstage)” in its tooltip. Play the scene and check that the figurine stays hidden. Hold **Spotlight NPC (hold)** over a stage token, then move the pointer to the offstage token. The preview should clear and the offstage NPC should stay dark. Place the offstage NPC from the roster and check that the figurine appears, the same token moves into the stage rows, and the hotkey works there. Remove the NPC from the stage and check that the token returns to the right.

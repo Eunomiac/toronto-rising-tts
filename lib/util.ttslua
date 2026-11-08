@@ -2657,10 +2657,12 @@ end
 --- smooth-moving a hand zone or its cards breaks the hand (Hand Lab). Never lock the cards: a
 --- locked card leaves the hand.
 ---
---- Parking (TOR-631): a target at `C.HIDDEN_OBJECT_WORLD_Y` moves the zone alone — the in-hand
---- cards are tagged `STASHED_HAND_CARD_TAG` and put into the player's storage container
---- (`G.GetPlayerStorageContainerGUID`). Moving a parked zone back to the table deals those tagged
---- cards (only those) back into the hand after `HAND_DEAL_SETTLE_SECONDS` (the only wait here).
+--- Parking: a target at `C.HIDDEN_OBJECT_WORLD_Y` moves the zone alone — the in-hand cards are
+--- tagged `STASHED_HAND_CARD_TAG` and put into the player's storage container
+--- (`G.GetPlayerStorageContainerGUID`). Seat occupancy must not use that path (TOR-763): it
+--- scatters the hand. It remains so a zone already under the table (an older session) can be
+--- brought back. Moving a parked zone up to the table deals those tagged cards (only those)
+--- back into the hand after `HAND_DEAL_SETTLE_SECONDS` (the only wait here).
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone

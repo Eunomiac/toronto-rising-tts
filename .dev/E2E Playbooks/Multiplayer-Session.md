@@ -115,7 +115,7 @@ print("placements=" .. tostring(#(U.getKeys(S.getStateVal("sessionScene","npcWor
 | --- | --- | --- | --- |
 | E1 | — | Disconnect cleanly | Host stable; no console spam; friend's seat **darkens** but chair, sheet and hand stay (no table rearrangement) |
 | E2 | Optional | Rejoin; **do not** pick color | Same chronicle color; stable join; no bootstrap thrash; blindfold matches A4 for current phase; seat lights back up |
-| E3 | Disconnect friend again, then run any blindfold transition (scene Apply / table toggle) | Stay disconnected | Under the cover the friend's seat becomes unoccupied: pile, hand and cards go under the table, token goes beneath the control board, other seats do not move |
+| E3 | Disconnect friend again, then run any blindfold transition (scene Apply / table toggle) | Stay disconnected | Under the cover the friend's seat becomes unoccupied: the pile goes under the table, the hand zone and the cards in it stay where they were, the token goes beneath the control board, other seats do not move |
 | E4 | — | Rejoin | Friend's chair, pile and hand come back immediately (no blindfold); Table B has a free chair for them |
 
 ---
