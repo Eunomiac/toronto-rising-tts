@@ -8008,6 +8008,13 @@
           "size": 25090
         },
         {
+          "path": "NPC Art/Portraits/npcPortrait_anast.webp",
+          "name": "npcPortrait_anast",
+          "sha1": "DA9C4978AF338DA53067B4B8632722CF0F486FAA",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9251666334620110822/DA9C4978AF338DA53067B4B8632722CF0F486FAA/",
+          "size": 33158
+        },
+        {
           "path": "NPC Art/Portraits/npcPortrait_christopherGiovanniJr.webp",
           "name": "npcPortrait_christopherGiovanniJr",
           "sha1": "A72600E6C8DA48116854F67F8DC28463C3423BAD",
@@ -8215,6 +8222,13 @@
           "sha1": "6D9BFEC75033557609D7A4EAE1D754499F2C6A73",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/14763418646157425470/6D9BFEC75033557609D7A4EAE1D754499F2C6A73/",
           "size": 25090
+        },
+        {
+          "path": "NPC Art/Portraits/npcPortrait_anast.webp",
+          "name": "npcPortrait_anast",
+          "sha1": "DA9C4978AF338DA53067B4B8632722CF0F486FAA",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9251666334620110822/DA9C4978AF338DA53067B4B8632722CF0F486FAA/",
+          "size": 33158
         },
         {
           "path": "NPC Art/Portraits/npcPortrait_christopherGiovanniJr.webp",
@@ -8741,9 +8755,9 @@
         {
           "path": "CSheets/Faces/CSHEET PAGE 1 - FOMORACH.webp",
           "name": "1_FOMORACH",
-          "sha1": "F0E1941E412DA3EAB0C0E965859D0C971DD77BE3",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13281698257191002283/F0E1941E412DA3EAB0C0E965859D0C971DD77BE3/",
-          "size": 293700
+          "sha1": "81F55851548E4C8971AD9350ECA3DB1DA6508A9E",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15949158164806325698/81F55851548E4C8971AD9350ECA3DB1DA6508A9E/",
+          "size": 293676
         },
         {
           "path": "CSheets/Faces/CSHEET PAGE 1 - LUCIEN.webp",
@@ -8776,9 +8790,9 @@
         {
           "path": "CSheets/Faces/CSHEET PAGE 2 - FOMORACH.webp",
           "name": "2_FOMORACH",
-          "sha1": "B8BD9DA1EBC479C4D89233987BD81D59E583AEF6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9782491824632132888/B8BD9DA1EBC479C4D89233987BD81D59E583AEF6/",
-          "size": 285332
+          "sha1": "C7D96B0E38E916D10C284653CC59AE4B9970C495",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17268983672057396107/C7D96B0E38E916D10C284653CC59AE4B9970C495/",
+          "size": 277502
         },
         {
           "path": "CSheets/Faces/CSHEET PAGE 2 - LUCIEN.webp",
@@ -9530,6 +9544,13 @@
           "sha1": "3F6E914AB920A9479116247169C65DA32A47E991",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/10352390907772518193/3F6E914AB920A9479116247169C65DA32A47E991/",
           "size": 61846
+        },
+        {
+          "path": "NPC Art/Figurines/Named/npc_anast.webp",
+          "name": "rollFigure_anast",
+          "sha1": "3CFA8E61B1800B4280EA0CFC89BC6963EA65E72D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14144010159214627371/3CFA8E61B1800B4280EA0CFC89BC6963EA65E72D/",
+          "size": 101846
         },
         {
           "path": "NPC Art/Figurines/Named/npc_andreiStrandza.webp",
@@ -14736,6 +14757,20 @@
           "sha1": "E659CACB87351E3D1EC7BA4B7A364866E85E11EA",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/13680997987361438184/E659CACB87351E3D1EC7BA4B7A364866E85E11EA/",
           "size": 19210
+        },
+        {
+          "path": "NPC Art/Tokens/npcToken_anast.back.webp",
+          "name": "anast.back",
+          "sha1": "0A01A5F20606F1262F3F91DE8A56B7B69451F16F",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17806370737254890439/0A01A5F20606F1262F3F91DE8A56B7B69451F16F/",
+          "size": 9854
+        },
+        {
+          "path": "NPC Art/Tokens/npcToken_anast.front.webp",
+          "name": "anast.front",
+          "sha1": "F170D5984DF37D84D70CEF511A00C80D2020B67B",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17862893542288454680/F170D5984DF37D84D70CEF511A00C80D2020B67B/",
+          "size": 29116
         },
         {
           "path": "NPC Art/Tokens/npcToken_andreiStrandza.back.webp",

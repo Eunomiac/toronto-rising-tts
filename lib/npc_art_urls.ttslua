@@ -164,6 +164,10 @@ local Art = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/10352390907772518193/3F6E914AB920A9479116247169C65DA32A47E991/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/13680997987361438184/E659CACB87351E3D1EC7BA4B7A364866E85E11EA/", back = "https://steamusercontent-a.akamaihd.net/ugc/9903267013251130095/B23623A7FBB2B63521BEC9FE533E73A770ADBE79/" },
   },
+  anast = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/14144010159214627371/3CFA8E61B1800B4280EA0CFC89BC6963EA65E72D/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/17862893542288454680/F170D5984DF37D84D70CEF511A00C80D2020B67B/", back = "https://steamusercontent-a.akamaihd.net/ugc/17806370737254890439/0A01A5F20606F1262F3F91DE8A56B7B69451F16F/" },
+  },
   andreiStrandza = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/11276111184942404020/C23687B7115FD3FB719120555548F43D98C04368/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/10062895575304075374/3928213D487FE2223ED055BDB0E04AF32FF07C77/", back = "https://steamusercontent-a.akamaihd.net/ugc/14830853281303735693/875EEC0250583F4FE4E6EE5D74D4923DA46F8C87/" },

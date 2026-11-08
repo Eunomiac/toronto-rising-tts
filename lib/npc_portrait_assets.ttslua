@@ -2,6 +2,7 @@
 return {
   ["abbasFaruk"] = { ["rashid"] = "npcPortrait_abbasFaruk" },
   ["ahmadAlMasri"] = { ["rashid"] = "npcPortrait_ahmadAlMasri" },
+  ["anast"] = { ["rashid"] = "npcPortrait_anast" },
   ["christopherGiovanniJr"] = { ["blackCaesar"] = "npcPortrait_christopherGiovanniJr" },
   ["damienAbanda"] = { ["lordLucien"] = "npcPortrait_damienAbanda" },
   ["damienAbanda_1900"] = { ["lordLucien"] = "npcPortrait_damienAbanda" },

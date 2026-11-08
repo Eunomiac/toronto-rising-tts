@@ -9,6 +9,7 @@ local Characters = {
   alexandra = { name = "alexandra", fullName = "Alexandra", isPC = false, catalog = true, werewolf = false, filename = "npc_alexandra.webp", portraitAsset = "", variantOfUnique = "" },
   alexisHoltt = { name = "alexisHoltt", fullName = "Alexis Hoitt", isPC = false, catalog = true, werewolf = false, filename = "npc_alexisHoltt.webp", portraitAsset = "", variantOfUnique = "" },
   alistairEtrata = { name = "alistairEtrata", fullName = "Alistair Etrata", isPC = false, catalog = true, werewolf = false, filename = "npc_alistairEtrata.webp", portraitAsset = "", variantOfUnique = "" },
+  anast = { name = "anast", fullName = "Anast", isPC = false, catalog = true, werewolf = false, filename = "npc_anast.webp", portraitAsset = "npcPortrait_anast", variantOfUnique = "" },
   anitaMorris = { name = "anitaMorris", fullName = "Anita Morris", isPC = false, catalog = true, werewolf = false, filename = "npc_anitaMorris.webp", portraitAsset = "", variantOfUnique = "" },
   anitaMorrisDaeva = { name = "anitaMorrisDaeva", fullName = "Daeva: Anita Morris", isPC = false, catalog = true, werewolf = false, filename = "npc_anitaMorrisDaeva.webp", portraitAsset = "", variantOfUnique = "" },
   averyInnis = { name = "averyInnis", fullName = "Avery Innis", isPC = false, catalog = true, werewolf = false, filename = "npc_averyInnis.webp", portraitAsset = "", variantOfUnique = "" },
