@@ -25,6 +25,7 @@ local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDBF = require("core.hud_blindfold")
 local MapPins = require("core.map_pins")
 local NPCS = require("core.npcs")
+local LoadTrace = require("core.scene_load_trace")
 
 --- @return boolean
 local function isPlayDowntime()
@@ -1666,6 +1667,12 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             end
         end,
         work = function()
+        local function mark(name)
+            if LoadTrace.isRecording() then
+                LoadTrace.mark(name)
+            end
+        end
+        mark("apply work")
         local clockOkPre, clockErrPre = SceneLibrary.validateSessionSceneClock(ent.sessionScene.clock)
         if not clockOkPre then
             return false, "Apply failed: " .. tostring(clockErrPre)
@@ -1678,6 +1685,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             local GenericNpcs = require("core.generic_npcs")
             GenericNpcs.destroyAllLiveObjectsKeepMembership()
         end
+        mark("generic npcs")
 
         -- Deep copy so live seat rows never share tables with the library row.
         local bundle = U.clone(ent.sessionScene, true)
@@ -1775,6 +1783,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         elseif Occupancy.isScatterLayoutActive() then
             RSL.SetTableTo("Table A", { skipTransitionBlindfold = true, skipScatterRestore = true })
         end
+        mark("table")
 
         if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
             GameStateOverlay.resetRealTimeCarry()
@@ -1806,10 +1815,12 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         -- Soundscape (incl. weather) is applied authoritatively in the staged `fadeIn` phase with the
         -- transition fade window open; skip it here so the work-phase reconcile cannot slam weather to
         -- full volume via the immediate held-volume path (TOR-147 weather fade-in regression).
+        mark("before sync")
         syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply", {
             skipSoundscape = true,
             changedSeatColors = changedSeatColors,
         })
+        mark("after sync")
         if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
             GameStateOverlay.stopTicker()
         end

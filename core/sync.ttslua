@@ -20,6 +20,7 @@ local HUDP = require("core.hud_player")
 local Coterie = require("core.coterie")
 local HO = require("core.hud_overlays")
 local RSL = require("lib.rotational-seat-layout")
+local LoadTrace = require("core.scene_load_trace")
 
 local didBootstrapFullSync = false
 --- Incremented when a new bootstrap retry schedule starts; stale callbacks no-op.
@@ -363,6 +364,12 @@ function Sync.ui(delta)
     end
 end
 
+local function traceLoadMark(name)
+    if LoadTrace.isRecording() then
+        LoadTrace.mark(name)
+    end
+end
+
 --- Full orchestration pass.
 --- @param opts table|nil `{ force = boolean?, reason = string? }` — `force` bypasses scene/soundscape fingerprints and runs full `UpdateUIDisplays`.
 function Sync.full(opts)
@@ -386,6 +393,7 @@ function Sync.full(opts)
     callIfFunction(Scenes.reconcileFromState, reconcileOpts)
     callIfFunction(Scenes.reconcileTopFogFromState, reconcileOpts)
     callIfFunction(Scenes.reconcileSkyboxFromState, reconcileOpts)
+    traceLoadMark("sync scenes, fog, sky")
     do
         local Phases = require("core.phases")
         callIfFunction(Phases.reconcileParticleEmitterFromPhase)
@@ -393,6 +401,7 @@ function Sync.full(opts)
     if not skipSoundscape then
         callIfFunction(Soundscape.reconcileFromState, reconcileOpts)
     end
+    traceLoadMark(skipSoundscape and "sync soundscape skipped" or "sync soundscape")
 
     local presentationSkippedThisPass = false
     local presentationOpts = U.clone(reconcileOpts, true)
@@ -407,22 +416,26 @@ function Sync.full(opts)
     else
         presentationSkippedThisPass = reconcileSeatPresentationFromState(presentationOpts) == false
     end
+    traceLoadMark("sync seat presentation")
 
     callIfFunction(NPCS.reconcileAllFromState, {
         deferUiRefresh = true,
         force = force,
     })
+    traceLoadMark("sync npc reconcile")
 
     -- TOR-98: hide-list is phase-derived. Run after seat layout so bags/companions/decks
     -- stay stashed in Spotlight and End (restore on Intermission after the cover).
     local Spotlight = require("core.spotlight")
     callIfFunction(Spotlight.reconcileFromState)
+    traceLoadMark("sync spotlight")
 
     if not didBootstrapFullSync then
         callIfFunction(HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults)
     end
 
     callIfFunction(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked)
+    traceLoadMark("sync library mirror")
 
     callIfFunction(Coterie.reconcileAll)
 
@@ -435,6 +448,7 @@ function Sync.full(opts)
     else
         Sync.ui(SYNC_INCREMENTAL_UI_DELTA)
     end
+    traceLoadMark("sync ui")
 
     if not didBootstrapFullSync then
         if type(RUI) == "table" and type(RUI.refreshAll) == "function" then

@@ -31,6 +31,18 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-767 — Moving one player between Scatter groups leaves the NPCs where they are
+
+> **Agent-assessment note:** The code path for a player group change no longer poses NPC figurines. You still need to watch the table, because only the live move shows whether the player arrives promptly and the NPCs stay put.
+
+**How to verify:** Save & Play. Enter Scatter mode with several NPCs and at least two groups. Note where the NPC figurines are standing. Move one player to another group, from that player's group strip or from the Storyteller Dashboard. That player's figurine, hand, bags, and sheet should move to the new group, and the table should not sit frozen for about a minute first. The NPC figurines should not move at all. Moving an NPC between groups should still shift the NPCs, because their spacing depends on how many are in the group.
+
+#### 🟡 TOR-766 — Preload, scene cover, and Scatter group moves print a timing report
+
+> **Agent-assessment note:** The report's bookkeeping is covered by a script test. You still need to run it in the game, because only Tabletop Simulator shows the real waits.
+
+**How to verify:** Save & Play. On the scene library, click **Preload** for a scene, then play that scene, then in Scatter mode move one player to another group. Each of those three actions should print one `[SceneLoad]` block in the game console when it finishes, and the same text should appear in `.dev/.debug/scene-load-report.txt`. `lua DEBUG.sceneLoadReport()` reprints the recent blocks. The scene block should list the cover's scheduled waits separately from the world work, and it should say how many NPC figurines were reused, spawned, still loading, or reloaded. This report does not by itself mean the scene cover is fast; it is there so the next slow transition can be read. The NPC preload itself is still **TOR-760**.
+
 #### 🟡 TOR-765 — Character sheet Experience Log follows a dashboard JSON edit
 
 > **Agent-assessment note:** The sheet still cannot invent rows the last bake did not create. You need to look at page 6, because only the table shows whether the rewritten lines land in the right session.

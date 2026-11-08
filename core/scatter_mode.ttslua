@@ -11,6 +11,7 @@ local U = require("lib.util")
 local S = require("core.state")
 local G = require("lib.guids")
 local ScatterLayout = require("lib.scatter_layout")
+local LoadTrace = require("core.scene_load_trace")
 
 local ScatterMode = {}
 
@@ -744,8 +745,29 @@ local function applyPcRigs(framesBySlot, occupants)
     end
 end
 
---- Apply PC satellites + NPC stage poses from live scatterPlacements.
-function ScatterMode.applyWorldLayout()
+--- Pose every Scatter NPC from the live pack. NPC slots depend on who is in the group, not on which
+--- player is standing there, so a player group change must not call this.
+local function applyScatterNpcPoses()
+    local pack = livePlacements()
+    for i = 1, ScatterLayout.groupCount() do
+        local npcKeys = npcKeysInJoinOrder(i)
+        local npcPoses = ScatterLayout.npcPoses(i, #npcKeys)
+        for n = 1, #npcKeys do
+            local pose = npcPoses[n]
+            if pose ~= nil then
+                local area = pack[ScatterLayout.areaKeyForGroup(i)]
+                local row = area and area.orbitCharacters and area.orbitCharacters[npcKeys[n]]
+                if U.Type(row) == "table" then
+                    row.npcLightMode = "STANDARD"
+                end
+                placeNpcAtScatterPose(npcKeys[n], pose, "STANDARD")
+            end
+        end
+    end
+end
+
+--- Pose PC figurines, hands, sheets and cameras from the live pack. Does not move NPC figurines.
+local function applyScatterPcPoses()
     local pack = livePlacements()
     local framesBySlot = {}
     local occupants = {}
@@ -778,19 +800,6 @@ function ScatterMode.applyWorldLayout()
                 end
             end
         end
-        local npcKeys = npcKeysInJoinOrder(i)
-        local npcPoses = ScatterLayout.npcPoses(i, #npcKeys)
-        for n = 1, #npcKeys do
-            local pose = npcPoses[n]
-            if pose ~= nil then
-                local area = pack[ScatterLayout.areaKeyForGroup(i)]
-                local row = area and area.orbitCharacters and area.orbitCharacters[npcKeys[n]]
-                if U.Type(row) == "table" then
-                    row.npcLightMode = "STANDARD"
-                end
-                placeNpcAtScatterPose(npcKeys[n], pose, "STANDARD")
-            end
-        end
     end
     local FSL = require("lib.figurine_seat_layout")
     if #occupants > 0 then
@@ -806,6 +815,13 @@ function ScatterMode.applyWorldLayout()
     -- PC rig layout restores HiddenObject satellites to catalog visibility; re-park chairs/Prince props.
     applyScatterObjectsToHide()
     ScatterMode.reconcileControlHudFromState()
+end
+
+--- Apply PC satellites + NPC stage poses from live scatterPlacements.
+--- Entering Scatter and moving an NPC use this. A player changing groups uses `applyScatterPcPoses` only.
+function ScatterMode.applyWorldLayout()
+    applyScatterNpcPoses()
+    applyScatterPcPoses()
 end
 
 function ScatterMode.enter(opts)
@@ -909,7 +925,8 @@ end
 
 
 --- Move a PC into a scatter group. No-op if they are already there.
---- Poses the figurine/seat objects and refreshes the HUD.
+--- Poses every player's figurine and seat objects from the live groups, and refreshes the HUD.
+--- NPC figurines are not moved: their places depend on the NPC roster, not on which player changed groups.
 --- @param pcKey string
 --- @param groupIndex number
 --- @return boolean moved
@@ -951,10 +968,17 @@ function ScatterMode.movePcToGroup(pcKey, groupIndex)
     if area.centerCharacters[pcKey].isPlayingNPC ~= true then
         area.centerCharacters[pcKey].characterKey = nil
     end
-    ScatterMode.applyWorldLayout()
+    LoadTrace.start("scatter-group", {
+        label = tostring(pcKey) .. " → group " .. tostring(gi),
+        note = "Player group changes pose the player seat objects. NPC figurines are left where they are.",
+    })
+    applyScatterPcPoses()
+    LoadTrace.mark("player seat objects")
     mirrorLiveScatterToLibrary()
-    ScatterMode.reconcileControlHudFromState()
+    LoadTrace.mark("library mirror")
     markDashboardScatterDirty()
+    LoadTrace.mark("dashboard")
+    LoadTrace.finishAndPrint({ ok = true })
     return true
 end
 

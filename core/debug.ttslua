@@ -1913,6 +1913,17 @@ function DEBUG.inspectSoundscapeAudio()
     return health
 end
 
+--- Reprint the recent Preload, scene-transition, and Scatter group-move timing reports.
+--- Also rewrites `.dev/.debug/scene-load-report.txt` when the TTS bridge can write files.
+--- @return string
+function DEBUG.sceneLoadReport()
+    local Trace = require("core.scene_load_trace")
+    local text = Trace.reportText()
+    print(text)
+    DEBUG.writeWorkspaceFile("scene-load-report.txt", text, "none", true)
+    return text
+end
+
 --- Print the opt-in NPC preload pool without scheduling or spawning any work.
 --- @return table
 function DEBUG.inspectNpcPreloadPool()
@@ -5984,6 +5995,7 @@ function DEBUG.help()
     print("  DEBUG.verifyPavStop()          - Emergency capture cleanup")
     print("  DEBUG.pavProbe(kind, spec)     - Bounded UI/state/object/soundscape snapshot")
     print("\nNPC OBJECTS:")
+    print("  DEBUG.sceneLoadReport()    - Reprint recent Preload, scene transition, and Scatter group timing")
     print("  DEBUG.retirePreloadPools() - One-shot: destroy preload NPCs/lights, d10Preload dice, CB_ board; then File > Save")
     print("  DEBUG.exportObjectsBelowY(yMax?, path?) - Write every object below y (default -75) to .dev/.debug")
     print("\nSPOTLIGHT WORKSHOP:")

@@ -22,6 +22,7 @@ local SRI = require("lib.seat-role-identity")
 local G = require("lib.guids")
 local MapPins = require("core.map_pins")
 local O = require("core.objects")
+local LoadTrace = require("core.scene_load_trace")
 
 --- NPC-only roster (PCs flagged `isPC` are excluded). Spawning and stage tokens are keyed off this,
 --- so PC characters never generate NPC figurines or stage tokens.
@@ -1697,6 +1698,46 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
     ))
 end
 
+--- Record one NPC observation while a scene-load / Scatter timing report is open.
+--- `started` is `os.clock()` at the beginning of the call. Nil refreshes image state without adding a call.
+--- @param npcName string
+--- @param started number|nil
+--- @param fields table|nil `{ action?, reused?, spawned?, reloaded?, parked? }`
+local function noteLoadTraceNpc(npcName, started, fields)
+    if not LoadTrace.isRecording() or type(npcName) ~= "string" or npcName == "" then
+        return
+    end
+    fields = type(fields) == "table" and fields or {}
+    local rec = getInstances()[npcName]
+    local fig = nil
+    if U.Type(rec) == "table" then
+        fig = G.getObject(rec.figurineGuid or "")
+    end
+    local payload = {
+        action = fields.action,
+        reused = fields.reused == true,
+        spawned = fields.spawned == true,
+        reloaded = fields.reloaded == true,
+        parked = fields.parked == true,
+        loading = U.isGameObject(fig) and fig.loading_custom == true,
+        spawning = U.isGameObject(fig) and fig.spawning == true,
+        areaKey = U.Type(rec) == "table" and rec.areaKey or "",
+        slot = U.Type(rec) == "table" and rec.preloadSlot or nil,
+        imageScalar = U.isGameObject(fig) and readFigurineImageScalar(fig) or nil,
+        targetScalar = figurineImageScalarForNpc(npcName),
+    }
+    if started ~= nil then
+        payload.ms = (os.clock() - started) * 1000
+    end
+    LoadTrace.noteNpc(npcName, payload)
+end
+
+local function traceLoadMark(name, fields)
+    if LoadTrace.isRecording() then
+        LoadTrace.mark(name, fields)
+    end
+end
+
 --- Place an NPC figurine at a Scatter Mode world pose (not STAGE_BOARD u/v), spawning the pair first when needed.
 --- World Y is stage/playfield `FLOOR_Y` (NPC feet). Seated PC piles do not use this.
 --- @param npcName string
@@ -1708,6 +1749,9 @@ function NPCS.moveNpcToScatterPose(npcName, pose, opts)
     if type(npcName) ~= "string" or npcName == "" or U.Type(pose) ~= "table" then
         return false, "Invalid scatter pose."
     end
+    local traceStarted = LoadTrace.isRecording() and os.clock() or nil
+    local before = getInstances()[npcName]
+    local reused = traceStarted ~= nil and U.Type(before) == "table" and G.getObject(before.figurineGuid or "") ~= nil
     local rec = ensureLiveNpcInstance(npcName)
     if isNpcLocked(rec) then
         return false, "NPC is locked in place. Unlock before moving."
@@ -1736,6 +1780,14 @@ function NPCS.moveNpcToScatterPose(npcName, pose, opts)
     local rot = Vector(pose.rotation)
     -- Unhide / scale before the final pose so restoreObject cannot overwrite FLOOR_Y.
     local reloaded = applyNpcPairPhysicalPresentation(fig, lit, SCATTER_AREA_KEY, npcName)
+    if traceStarted ~= nil then
+        noteLoadTraceNpc(npcName, traceStarted, {
+            action = "scatter",
+            reused = reused == true,
+            spawned = reused ~= true,
+            reloaded = reloaded == true,
+        })
+    end
     fig.setPosition(pos)
     fig.setRotation(rot)
     ensureNpcFigurinePhysicsLocked(fig)
@@ -2861,26 +2913,32 @@ function NPCS.reconcileAllFromState(opts)
         if not reconcileStepOneAreaRemovals(intent) then
             allOk = false
         end
+        traceLoadMark("npc removals")
     end
     if reconcileStepEnabled(opts, 2) then
         if not reconcileStepTwoSeatRemovals(intent) then
             allOk = false
         end
+        traceLoadMark("npc seat removals")
     end
     if reconcileStepEnabled(opts, 3) then
         if not reconcileStepThreeSeatPlacements(intent, force) then
             allOk = false
         end
+        traceLoadMark("npc seat placements")
     end
     if reconcileStepEnabled(opts, 4) then
         reconcileSeatNarrativePresenceFromIntent(intent)
+        traceLoadMark("npc seat presence")
     end
     if reconcileStepEnabled(opts, 5) then
         if not reconcileStepFiveStagePlacements(intent, opts) then
             allOk = false
         end
+        traceLoadMark("npc stage or scatter poses")
         if U.Type(opts.onlyStageCharacterKeys) ~= "table" then
             reconcileStepFiveDespawnUntargeted(intent)
+            traceLoadMark("npc untargeted release")
         end
     end
 
@@ -3010,8 +3068,18 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         require("core.npc_roll_present").retargetHomeFromPlacement(npcName)
         return true, nil
     end
+    local traceStarted = LoadTrace.isRecording() and os.clock() or nil
+    local before = getInstances()[npcName]
+    local reused = traceStarted ~= nil and U.Type(before) == "table" and G.getObject(before.figurineGuid or "") ~= nil
     local rec = ensureLiveNpcInstance(npcName)
     if isNpcLocked(rec) then
+        if traceStarted ~= nil then
+            noteLoadTraceNpc(npcName, traceStarted, {
+                action = "stage",
+                reused = reused == true,
+                spawned = reused ~= true,
+            })
+        end
         return false, "NPC is locked in place. Unlock before moving."
     end
     local didUnseat = false
@@ -3037,12 +3105,26 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         and stagePlacementMatchesRecord(rec.stagePlacement, placement)
     then
         if rec.npcLightMode == desiredMode then
+            if traceStarted ~= nil then
+                noteLoadTraceNpc(npcName, traceStarted, {
+                    action = "stage",
+                    reused = reused == true,
+                    spawned = reused ~= true,
+                })
+            end
             return true, nil
         end
         rec.npcLightMode = desiredMode
         setInstanceRecord(npcName, rec)
         applyStageNpcSpotlightNow(npcName, fig, lit, 0)
         deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
+        if traceStarted ~= nil then
+            noteLoadTraceNpc(npcName, traceStarted, {
+                action = "stage",
+                reused = reused == true,
+                spawned = reused ~= true,
+            })
+        end
         return true, nil
     end
     NPCS.applyFigurinePlacementAtWorld(fig, placement)
@@ -3061,7 +3143,15 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     }
     rec.npcLightMode = desiredMode
     setInstanceRecord(npcName, rec)
-    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    local reloaded = applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    if traceStarted ~= nil then
+        noteLoadTraceNpc(npcName, traceStarted, {
+            action = "stage",
+            reused = reused == true,
+            spawned = reused ~= true,
+            reloaded = reloaded == true,
+        })
+    end
     applyStageNpcSpotlightNow(npcName, fig, lit, 0)
     deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
     if didUnseat and not skipSeatSync then
@@ -3270,11 +3360,20 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
     end
     local steps = {}
     local batchSize = 2
+    local preloadLabel = U.Type(sceneTitle) == "string" and sceneTitle ~= "" and sceneTitle or "the scene"
+    LoadTrace.start("preload", {
+        label = preloadLabel .. " (" .. tostring(#keys) .. " NPCs)",
+        note = "The image-wait budget starts when Preload is clicked, so spawning uses that same budget. A budget of 0 means the wait gave up as soon as spawning finished.",
+    })
+    local preloadTraceId = LoadTrace.currentId()
     for first = 1, #keys, batchSize do
         local batchFirst = first
         steps[#steps + 1] = function()
             for index = batchFirst, math.min(#keys, batchFirst + batchSize - 1) do
                 local key = keys[index]
+                local before = getInstances()[key]
+                local reused = U.Type(before) == "table" and G.getObject(before.figurineGuid or "") ~= nil
+                local npcStarted = os.clock()
                 local rec = ensureLiveNpcInstance(key)
                 local slot, reserveErr = Pool.reserveSlot(key, rec, getInstances())
                 if slot == nil then
@@ -3288,15 +3387,25 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
                     releaseOrDespawnNpcInstance(key)
                 end
                 local live = getInstances()[key]
+                local parked = U.Type(live) == "table" and live.areaKey == Pool.AREA_KEY
+                noteLoadTraceNpc(key, npcStarted, {
+                    action = "preload",
+                    reused = reused == true,
+                    spawned = reused ~= true,
+                    parked = parked == true,
+                })
                 if U.Type(live) == "table" then
                     loadedGuids[#loadedGuids + 1] = live.figurineGuid
                 end
             end
+            LoadTrace.mark("batch " .. tostring(batchFirst) .. "-" .. tostring(math.min(#keys, batchFirst + batchSize - 1)))
             return 0.15
         end
     end
     local deadline = os.time() + NPC_PREWARM_MAX_WAIT_SEC
+    local imageWaitBudgetSec = nil
     steps[#steps + 1] = function()
+        imageWaitBudgetSec = deadline - os.time()
         return function()
             if os.time() >= deadline then return true end
             for _, guid in ipairs(loadedGuids) do
@@ -3307,10 +3416,14 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
         end
     end
     steps[#steps + 1] = function()
+        LoadTrace.mark("image wait", { budgetSec = imageWaitBudgetSec })
+        for _, key in ipairs(keys) do
+            noteLoadTraceNpc(key, nil, { action = "preload" })
+        end
         releaseHolds()
         require("core.stage_tokens").reconcileFromState()
-        local label = U.Type(sceneTitle) == "string" and sceneTitle ~= "" and sceneTitle or "the scene"
-        require("dashboard.push").notice("Preloaded " .. tostring(#keys) .. " NPC package(s) for " .. label .. ".")
+        LoadTrace.mark("stage tokens")
+        require("dashboard.push").notice("Preloaded " .. tostring(#keys) .. " NPC package(s) for " .. preloadLabel .. ".")
     end
     U.chain(steps, {
         maxWait = NPC_PREWARM_MAX_WAIT_SEC + 5,
@@ -3323,6 +3436,12 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
                 require("dashboard.push").notice(
                     "NPC preload did not finish; ordinary on-demand spawning is still available."
                 )
+            end
+            if LoadTrace.currentId() == preloadTraceId then
+                LoadTrace.finishAndPrint({
+                    ok = ok == true,
+                    detail = ok == true and nil or tostring(detail or ""),
+                })
             end
         end,
     })

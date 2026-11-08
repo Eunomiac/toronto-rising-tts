@@ -19,6 +19,7 @@ local C = require("lib.constants")
 local Conditions = require("core.conditions")
 local HO = require("core.hud_overlays")
 local Main = require("core.main")
+local LoadTrace = require("core.scene_load_trace")
 
 local TRANSITION_SETTLE_DELAY_SEC = 10
 --- Parent Panel SlideIn_Top (`animationDuration` on `overlay_globalBlindfold_panel`) — cards delay longer on purpose
@@ -482,6 +483,13 @@ end
 ---     `M.snapDefaultCamerasAfterLayout`
 ---   - `fadeIn(workSucceeded)` runs even when work reports failure, so callers can restore audio
 --- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, skipLocationCardGate?, variant?, districtKey?, siteKey? }`
+local function publishLoadTrace(fields, traceId)
+  if LoadTrace.currentId() ~= traceId then
+    return
+  end
+  LoadTrace.finishAndPrint(fields)
+end
+
 function HUDBF.runStagedTransition(phases, opts)
   if type(phases) ~= "table" then
     error("hud_blindfold.runStagedTransition: phases must be a table")
@@ -498,7 +506,21 @@ function HUDBF.runStagedTransition(phases, opts)
       or math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
   local cancel = supersedeTransitionChain()
 
+  LoadTrace.start("scene-transition", {
+    label = tostring(opts.districtKey or "no district") .. " / " .. tostring(opts.siteKey or "no site"),
+    schedule = string.format(
+      "Scheduled holds: lead-in %.2fs, fade-out %.2fs, card gate %.2fs, fade-in %.2fs, settle after fade-in %.2fs. Time beyond those holds is world work.",
+      leadInDelaySec,
+      fadeOutSec,
+      siteCardGateSec,
+      fadeInSec,
+      math.max(0, settleDelaySec - workSettleSec - fadeInSec)
+    ),
+    note = "NPC lines below are figurines touched while this cover was up. Reused means the figurine already existed. Image reload means the mesh was sent to load again.",
+  })
   HUDBF.beginTransition(opts)
+  LoadTrace.mark("cover shown")
+  local traceId = LoadTrace.currentId()
 
   local workFailed = false
   local recoveryRan = false
@@ -524,15 +546,18 @@ function HUDBF.runStagedTransition(phases, opts)
       if cancel.cancelled then
         return
       end
+      LoadTrace.mark("lead-in")
       if type(phases.fadeOut) == "function" then
         phases.fadeOut()
       end
+      LoadTrace.mark("fade-out work")
       return fadeOutSec
     end,
     function()
       if cancel.cancelled then
         return
       end
+      LoadTrace.mark("fade-out hold")
       -- Quiet hold until site card FadeIn finishes (+ pad; audio may already be fading out).
       return siteCardGateSec
     end,
@@ -540,10 +565,12 @@ function HUDBF.runStagedTransition(phases, opts)
       if cancel.cancelled then
         return 0
       end
+      LoadTrace.mark("site-card gate")
       -- TOR-368: snap default cameras in this covered window, not during card FadeIns.
       -- TOR-603: run layout work first so new seat cameraAngles exist, then
       -- `M.snapDefaultCamerasAfterLayout` recopies the occupied seat and lookAts.
       applyConnectionCheckpointUnderCover()
+      LoadTrace.mark("connection checkpoint")
       if type(phases.work) == "function" then
         local ok, errMsg = phases.work()
         if ok ~= true then
@@ -551,7 +578,9 @@ function HUDBF.runStagedTransition(phases, opts)
           reportTransitionFailure(errMsg)
         end
       end
+      LoadTrace.mark("scene work tail")
       setDefaultCameraForSeatedPlayers()
+      LoadTrace.mark("cameras")
       -- Fade-in starts immediately after work (no workSettle silence first).
       return 0
     end,
@@ -563,15 +592,18 @@ function HUDBF.runStagedTransition(phases, opts)
       if type(phases.fadeIn) == "function" then
         phases.fadeIn(not workFailed)
       end
+      LoadTrace.mark("fade-in work")
       return fadeInSec
     end,
     function()
       if cancel.cancelled then
         return
       end
+      LoadTrace.mark("fade-in hold")
       recoverTransition()
       if workFailed then
         HUDBF.scheduleEnd(0)
+        publishLoadTrace({ ok = false, detail = "scene work failed" }, traceId)
         return
       end
       -- Same remaining post-work hold as before (workSettle no longer gates fade-in).
@@ -579,13 +611,17 @@ function HUDBF.runStagedTransition(phases, opts)
     end,
     function()
       if cancel.cancelled then
+        publishLoadTrace({ ok = false, detail = "cancelled" }, traceId)
         return
       end
       HUDBF.scheduleEnd(0)
+      LoadTrace.mark("settle")
+      publishLoadTrace({ ok = not workFailed }, traceId)
     end,
   }, transitionChainOptions(cancel, function()
     workFailed = true
     recoverTransition()
+    publishLoadTrace({ ok = false, detail = "chain stopped" }, traceId)
   end))
 end
 

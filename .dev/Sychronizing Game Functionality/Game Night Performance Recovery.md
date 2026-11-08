@@ -53,6 +53,8 @@ Each library scene now has a **Preload** button. It reserves and creates only th
 
 The pool is deliberately cold until the button is clicked. A bad reservation or failed preload sequence disables pool reuse for the session, tells the Storyteller that ordinary spawning remains available, and leaves the normal on-demand path intact. Full NPC-world reset also disables it. `DEBUG.inspectNpcPreloadPool()` prints a one-shot record of reserved, parked, complete, and image-ready pairs.
 
+Preload, a covered scene transition, and a Scatter player group change each print one `[SceneLoad]` timing block when they finish. `DEBUG.sceneLoadReport()` reprints the recent blocks and writes `.dev/.debug/scene-load-report.txt`. The block separates the cover's scheduled holds from world work, and it lists NPC figurines that were spawned, reused, still loading, or sent through an image reload. A player group change does not pose NPC figurines; its block should show player seat objects only.
+
 ## 3. Spotlight transitions
 
 ### Previous work and delay
@@ -77,7 +79,9 @@ Play → Spotlight inherited the ordinary location-card gate even though its des
 ```powershell
 npx fengari .tools/complications/run.lua .dev/scripts/npc_stage_apply_policy.test.lua
 npx fengari .tools/complications/run.lua .dev/scripts/npc_preload_pool.test.lua
+npx fengari .tools/complications/run.lua .dev/scripts/scene_load_trace.test.lua
 node .dev/scripts/npc_preload_integration_policy.test.mjs
+node .dev/scripts/scatter_pc_move_policy.test.mjs
 node .dev/scripts/spotlight_transition_policy.test.mjs
 node --test .dev/scripts/soundscape_contract.test.js
 npm run check:pcall-gate
