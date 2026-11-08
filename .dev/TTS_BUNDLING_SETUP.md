@@ -51,8 +51,8 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 
 ### Global script source of truth (read this)
 
-- **TTS may overwrite** `.tts/objects/Global.lua` when you reload the game or sync from TTS. Treat that file as **volatile**.
-- It should stay a **stub** only: `require("core.global_script")`.
+- `.tts/objects/Global.lua` stays a **stub** only: `require("core.global_script")`. With TTS Tools **Preserve Global Stubs** on, a game load keeps that stub. Sync will replace a bundled `Global.lua` only when reversing the bundle yields that same `require` line. It will not copy a session-start restore block, or the raw bundle, over the stub.
+- The session-start save's Global script is a bundle and includes luabundle's metadata comment, so tools can tell it is already bundled. That comment is required. The restore block is generated into the save. It does not belong in the editor stub.
 - **All global game logic** lives in **`core/global_script.ttslua`** (same `require()` roots as `lib/`, `core/`, and `dashboard/`). Edit that file, not the stub, when adding `onLoad`, HUD handlers, etc.
 - **Local function order (top recurring runtime bug):** In **every** `.ttslua` file you edit (especially `core/global_script.ttslua`), declare each **`local function`** **before** any `Global.*` / `HUD_*` / `local function` / callback that calls it — or **forward-declare** (`local foo` at top, assign later). Otherwise Lua treats the name as a global → **`attempt to call a nil value`** at Save & Play. **`npm run build` does not catch this.** Agents: grep helper vs caller line numbers before marking work done. See [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md) and `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
 
@@ -97,7 +97,7 @@ Official reference: [Module resolution](https://github.com/rolandostar/tabletops
 
 1. **Edit global logic**: Use **`core/global_script.ttslua`** (not the `.tts/objects/Global.lua` stub).
 2. **Edit other modules**: Edit files in `lib/` and `core/` directly.
-3. **Keep the stub**: If TTS overwrote the synced Global entry script, set it back to only `require("core.global_script")` (one line). The stub is **not** tracked in git (see [`.gitignore`](../.gitignore)).
+3. **Keep the stub**: `.tts/objects/Global.lua` is one line, `require("core.global_script")`. It is **not** tracked in git (see [`.gitignore`](../.gitignore)). TTS Tools keeps that line when **Preserve Global Stubs** is on.
 4. **Bundle and send**: Use "Save and Play" - extension will:
    - Read `.tts/objects/Global.lua`
    - Resolve all `require()` calls from workspace directory (including `core.global_script`)
@@ -197,11 +197,11 @@ See [TTS_MCP.md](TTS_MCP.md) for the bundled MCP server and agent guidance.
 
 **Symptom**: Changes don't appear in TTS
 
-**Root Cause**: The extension reads from `.tts/objects/Global.lua` for the bundle **entry**, but TTS may have replaced that file. Logic belongs in `core/global_script.ttslua`.
+**Root Cause**: Save & Play bundles from `.tts/objects/Global.lua`. If that file is the full bundled script instead of the stub, the extension bundles the bundle. Logic belongs in `core/global_script.ttslua`.
 
 **Solution**:
 
-- Restore the Global entry script the extension uses (often under `.tts/objects/`) to only `require("core.global_script")` if TTS replaced it with bundled code.
+- Restore `.tts/objects/Global.lua` to only `require("core.global_script")` if it is no longer that line. With **Preserve Global Stubs** on, a later sync keeps the stub.
 - Edit **`core/global_script.ttslua`** for global script changes.
 - Module files in `lib/` and `core/` are resolved automatically during bundling.
 

@@ -119,7 +119,9 @@ function bundleGlobal(objects) {
   const resolveModule = (name) => ["ttslua", "lua"]
     .map(ext => path.join(root, `${name.replaceAll(".", "/")}.${ext}`)).find(file => fs.existsSync(file)) ?? null;
   const entry = renderRestoreProvider(objects) + 'require("core.global_script")\n';
-  return bundleString(entry, { rootModuleName: "__root", resolveModule, metadata: false });
+  // Keep the luabundle metadata comment. Without it, tools cannot tell this script is
+  // already a bundle and will treat the whole payload as Global's source.
+  return bundleString(entry, { rootModuleName: "__root", resolveModule });
 }
 
 function fullOptions() {
