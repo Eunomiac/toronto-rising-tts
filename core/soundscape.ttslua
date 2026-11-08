@@ -2994,6 +2994,8 @@ function Soundscape.inspectEmitters()
             loopingEffects = {},
             triggerEffects = {},
             audioSourceCount = 0,
+            bundleUrl = nil,
+            bootComponentFound = false,
             capabilities = {
                 volumeControl = false,
             },
@@ -3008,6 +3010,18 @@ function Soundscape.inspectEmitters()
             row.loopingEffects = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.LOOPING))
             row.triggerEffects = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.TRIGGER))
             row.audioSourceCount = #getAudioSources(obj)
+            if obj.getCustomObject ~= nil then
+                local custom = obj.getCustomObject()
+                if type(custom) == "table" then
+                    row.bundleUrl = custom.assetbundle
+                        or custom.assetBundle
+                        or custom.AssetbundleURL
+                        or custom.assetbundle_url
+                end
+            end
+            if obj.getComponentInChildren ~= nil then
+                row.bootComponentFound = obj.getComponentInChildren("TorontoRisingSoundscapeEmitterBoot") ~= nil
+            end
             local volumeOk = setEmitterVolume(obj, ensureState().channels[channelKey].volume or 0)
             row.capabilities.volumeControl = volumeOk
         end
@@ -3020,6 +3034,64 @@ function Soundscape.inspectEmitters()
         table.insert(rows, row)
     end
     return rows
+end
+
+--- One-shot agent/onboarding health report built from the configured-emitter inspection.
+--- Missing Unity boot components are warnings because older bundles remain usable; missing objects,
+--- tags, effects, AudioSources, or volume control make the runtime health check fail.
+--- @return table `{ ok, expected, found, usable, bundleCount, bundles, problems, warnings, rows }`
+function Soundscape.validateEmitterHealth()
+    local rows = Soundscape.inspectEmitters()
+    local expected = 0
+    for _, _ in pairs(Catalog.CHANNELS) do expected = expected + 1 end
+    local found = 0
+    local usable = 0
+    local bundleSet = {}
+    local problems = {}
+    local warnings = {}
+    for _, row in ipairs(rows) do
+        if row.found == true then found = found + 1 end
+        if type(row.bundleUrl) == "string" and row.bundleUrl ~= "" then bundleSet[row.bundleUrl] = true end
+        local hasEffects = #(row.loopingEffects or {}) > 0 or #(row.triggerEffects or {}) > 0
+        local rowOk = row.found == true
+            and row.tagFound == true
+            and row.tagMatchesGuid == true
+            and (tonumber(row.audioSourceCount) or 0) > 0
+            and row.capabilities ~= nil
+            and row.capabilities.volumeControl == true
+            and hasEffects
+        if rowOk then
+            usable = usable + 1
+        else
+            local why = {}
+            if row.found ~= true then why[#why + 1] = "object missing" end
+            if row.tagFound ~= true then why[#why + 1] = "tag missing" end
+            if row.tagFound == true and row.tagMatchesGuid ~= true then why[#why + 1] = "tag points at another GUID" end
+            if (tonumber(row.audioSourceCount) or 0) < 1 then why[#why + 1] = "no AudioSource" end
+            if row.capabilities == nil or row.capabilities.volumeControl ~= true then why[#why + 1] = "volume control unavailable" end
+            if not hasEffects then why[#why + 1] = "no effects reported" end
+            problems[#problems + 1] = tostring(row.channel) .. ": " .. table.concat(why, ", ")
+        end
+        if row.found == true and row.bootComponentFound ~= true then
+            warnings[#warnings + 1] = tostring(row.channel) .. ": TorontoRisingSoundscapeEmitterBoot not reported"
+        end
+    end
+    local bundles = U.getKeys(bundleSet)
+    table.sort(bundles)
+    if #bundles > 0 and #bundles ~= 3 then
+        warnings[#warnings + 1] = "Expected three distinct soundscape bundle URLs; inspection reported " .. tostring(#bundles)
+    end
+    return {
+        ok = found == expected and usable == expected,
+        expected = expected,
+        found = found,
+        usable = usable,
+        bundleCount = #bundles,
+        bundles = bundles,
+        problems = problems,
+        warnings = warnings,
+        rows = rows,
+    }
 end
 
 --- Runs a live smoke test for simultaneous music/weather/location playback.

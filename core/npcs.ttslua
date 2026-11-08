@@ -3299,6 +3299,45 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle)
     return nil
 end
 
+--- Explicit diagnostic snapshot of the opt-in preload pool. This scans only the NPC instance
+--- registry and is never called by normal reconciliation or transition paths.
+--- @return table
+function NPCS.inspectPreloadPool()
+    local Pool = require("core.npc_preload_pool")
+    local status = Pool.status()
+    local rows = {}
+    local reserved = 0
+    local parked = 0
+    local ready = 0
+    for _, name in ipairs(U.getKeys(getInstances())) do
+        local rec = getInstances()[name]
+        if U.Type(rec) == "table" and rec.preloadSlot ~= nil then
+            reserved = reserved + 1
+            local fig = G.getObject(rec.figurineGuid or "")
+            local lit = G.getObject(rec.lightGuid or "")
+            local loaded = U.isGameObject(fig) and NpcSpawn.figurineLoaded(fig)
+            local complete = U.isGameObject(fig) and U.isGameObject(lit)
+            if rec.areaKey == Pool.AREA_KEY then parked = parked + 1 end
+            if complete and loaded then ready = ready + 1 end
+            rows[#rows + 1] = {
+                name = name,
+                slot = rec.preloadSlot,
+                areaKey = rec.areaKey,
+                figurineFound = U.isGameObject(fig),
+                lightFound = U.isGameObject(lit),
+                figurineLoaded = loaded == true,
+                ready = complete and loaded == true,
+            }
+        end
+    end
+    table.sort(rows, function(a, b) return (tonumber(a.slot) or 0) < (tonumber(b.slot) or 0) end)
+    status.reserved = reserved
+    status.parked = parked
+    status.ready = ready
+    status.rows = rows
+    return status
+end
+
 function NPCS.destroyAllWorldAndState()
     require("core.npc_preload_pool").disable("NPC world reset")
     for _, name in ipairs(U.getKeys(getInstances())) do

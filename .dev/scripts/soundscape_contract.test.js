@@ -111,6 +111,7 @@ test("soundscape runtime module exposes the planned API", () => {
     "function Soundscape.setIndoors(isIndoors)",
     "function Soundscape.stopAll()",
     "function Soundscape.inspectEmitters()",
+    "function Soundscape.validateEmitterHealth()",
     "function Soundscape.testLayeredPlayback()",
     "function Soundscape.playDebugTrack(categoryKey, trackKey)",
     "function Soundscape.setDebugTrackVolume(categoryKey, trackKey, volume)",
@@ -662,7 +663,7 @@ test("outdoor rain particles map live weather to 0-based looping indexes (TOR-49
   [
     "local function applyRainParticlesFromState()",
     "local function finishWeatherLayer(ok, message)",
-    "G.GUIDS.PARTICLES_WEATHER_RAIN",
+    "G.GUIDS.PARTICLE_EMITTER",
     "ab.getLoopingEffectIndex",
     "ab.playLoopingEffect(desired)",
     "return finishWeatherLayer(okRain, message)",

@@ -1905,12 +1905,24 @@ end
 -- @return table
 function DEBUG.inspectSoundscapeAudio()
     printTestHeader("Soundscape Audio Emitters")
-    local rows = Soundscape.inspectEmitters()
-    print(JSON.encode_pretty(rows))
+    local health = Soundscape.validateEmitterHealth()
+    print(JSON.encode_pretty(health))
     if U.mcpEmitResult ~= nil then
-        U.mcpEmitResult({ test = "inspectSoundscapeAudio", emitters = rows })
+        U.mcpEmitResult({ test = "inspectSoundscapeAudio", health = health })
     end
-    return rows
+    return health
+end
+
+--- Print the opt-in NPC preload pool without scheduling or spawning any work.
+--- @return table
+function DEBUG.inspectNpcPreloadPool()
+    printTestHeader("NPC Preload Pool")
+    local status = NPCS.inspectPreloadPool()
+    print(JSON.encode_pretty(status))
+    if U.mcpEmitResult ~= nil then
+        U.mcpEmitResult({ test = "inspectNpcPreloadPool", status = status })
+    end
+    return status
 end
 
 --- Dump Music C GUID, live trigger/loop names, and how TR_SessionStart would resolve (no playback).

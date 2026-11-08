@@ -432,6 +432,15 @@ function JoinColdPools.beginWarmEmitters()
         if type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
             SS.bootstrapSilenceStrayEmitterLoops()
         end
+        if type(SS.validateEmitterHealth) == "function" then
+            local health = SS.validateEmitterHealth()
+            print("[JoinColdPools] Emitter health after warm: " .. JSON.encode(health))
+            if health.ok ~= true then
+                require("dashboard.push").notice(
+                    "Soundscape emitters restored incompletely; play can continue, but inspect the TTS console."
+                )
+            end
+        end
     end)
 end
 
