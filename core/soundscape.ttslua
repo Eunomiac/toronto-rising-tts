@@ -1719,6 +1719,21 @@ function Soundscape.endTransitionFadeWindow()
     transitionFadeSecondsOverride = nil
 end
 
+--- Always closes a transition fade window. On a failed transition, immediately reapply the
+--- authoritative soundscape state so a half-faded or silent emitter cannot remain latched.
+--- This is deliberately cheap on successful transitions: callers that already applied and
+--- primed the new soundscape only clear the temporary fade override.
+--- @param opts table|nil `{ reconcile = boolean? }`
+function Soundscape.recoverAfterTransition(opts)
+    opts = type(opts) == "table" and opts or {}
+    Soundscape.endTransitionFadeWindow()
+    if opts.reconcile ~= true then
+        return
+    end
+    Soundscape.invalidateReconcileCache()
+    Soundscape.reconcileFromState({ force = true, deferApplySeconds = 0 })
+end
+
 --- Resolves the incoming weather rain/wind keys + natural volumes from a merged applyContext-style
 --- table, so the blindfold-down fade-out can compare outgoing vs incoming (TOR-147 weather policy).
 --- Returns `none`/0 for layers the incoming scene does not specify.

@@ -1025,11 +1025,12 @@ function Spotlight.applyEnterWorld()
 
     local Sync = syncModule()
     if type(Sync.full) == "function" then
-        Sync.full({ force = true, skipSoundscape = true, reason = "spotlight_enter" })
+        -- The state mutations above invalidate only the slices that changed. An incremental pass
+        -- applies the carousel/toys/overlay once; a forced pass repeated every presentation slice.
+        Sync.full({ skipSoundscape = true, reason = "spotlight_enter" })
     end
 
     if ok == true then
-        applyCarouselSnapFromState()
         local ringGuids = {}
         for i = 1, #(C.PlayerColors or {}) do
             local color = C.PlayerColors[i]
@@ -1039,12 +1040,6 @@ function Spotlight.applyEnterWorld()
             end
         end
         print("[Spotlight] Stand-ins on the ring: " .. table.concat(ringGuids, ", "))
-    end
-    applyPlayfieldToysFromPhase()
-
-    local GameStateOverlay = require("core.game_state_overlay")
-    if type(GameStateOverlay.reconcileFromState) == "function" then
-        GameStateOverlay.reconcileFromState()
     end
     return ok == true, err
 end

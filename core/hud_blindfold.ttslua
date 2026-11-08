@@ -380,7 +380,9 @@ function HUDBF.estimateStagedTransitionSec(opts)
   local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, BLINDFOLD_DOWN_COMPLETE_SEC)
   local fadeOutSec = resolveOptSec(opts.fadeOutSec, TRANSITION_FADE_OUT_SEC)
   local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
-  local siteGateSec = math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
+  local siteGateSec = opts.skipLocationCardGate == true
+      and 0
+      or math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
   return leadInDelaySec + fadeOutSec + siteGateSec + settleDelaySec
 end
 
@@ -414,12 +416,15 @@ local function reportTransitionFailure(errMsg)
   require("dashboard.push").notice(errMsg)
 end
 
-local function transitionChainOptions(cancel)
+local function transitionChainOptions(cancel, onFailure)
   return {
     cancelRegistry = cancel,
     onComplete = function(ok, reason)
       if ok or cancel ~= activeTransitionCancel then
         return
+      end
+      if type(onFailure) == "function" then
+        onFailure()
       end
       HUDBF.scheduleEnd(0)
       reportTransitionFailure("The transition stopped (" .. tostring(reason) .. "). Check the TTS console for details.")
@@ -469,14 +474,14 @@ end
 --- fade-out → wait until site card FadeIn completes (+ pad) → heavy work → fade-in immediately → settle → lift.
 --- Each phase is isolated in time via `U.chain` so XmlUI FadeIn and resource-heavy
 --- reconcile never compete (prevents animation hitch).
---- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
+--- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun(boolean) }`
 ---   - `fadeOut` runs at the district-card FadeIn window (same lead-in when cards are Clear)
 ---   - `work` starts after site-card FadeIn + 0.25s pad (~5.75s); returns `ok, errMsg`; on failure lifts immediately
 ---   - default camera snaps **after** `work` (under full cover; TOR-368 / TOR-603) so layout can
 ---     rewrite seat cameraAngles — including the Storyteller occupancy copy — before
 ---     `M.snapDefaultCamerasAfterLayout`
----   - `fadeIn` runs immediately after work (no silent workSettle first) so new ambient fills the settle window
---- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, variant?, districtKey?, siteKey? }`
+---   - `fadeIn(workSucceeded)` runs even when work reports failure, so callers can restore audio
+--- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, skipLocationCardGate?, variant?, districtKey?, siteKey? }`
 function HUDBF.runStagedTransition(phases, opts)
   if type(phases) ~= "table" then
     error("hud_blindfold.runStagedTransition: phases must be a table")
@@ -488,12 +493,25 @@ function HUDBF.runStagedTransition(phases, opts)
   local fadeInSec = resolveOptSec(opts.fadeInSec, TRANSITION_FADE_IN_SEC)
   local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
   -- Keep heavy work off the site-card FadeIn (complete 5.5) plus a 0.25s pad → start ~5.75.
-  local siteCardGateSec = math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
+  local siteCardGateSec = opts.skipLocationCardGate == true
+      and 0
+      or math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
   local cancel = supersedeTransitionChain()
 
   HUDBF.beginTransition(opts)
 
   local workFailed = false
+  local recoveryRan = false
+  local function recoverTransition()
+    if recoveryRan then
+      return
+    end
+    recoveryRan = true
+    local Soundscape = require("core.soundscape")
+    if type(Soundscape.recoverAfterTransition) == "function" then
+      Soundscape.recoverAfterTransition({ reconcile = workFailed })
+    end
+  end
   U.chain({
     function()
       if cancel.cancelled then
@@ -542,11 +560,8 @@ function HUDBF.runStagedTransition(phases, opts)
         return 0
       end
       -- New-location ambient under the blindfold; wait fadeInSec so volume is full before remaining settle.
-      if workFailed then
-        return 0
-      end
       if type(phases.fadeIn) == "function" then
-        phases.fadeIn()
+        phases.fadeIn(not workFailed)
       end
       return fadeInSec
     end,
@@ -554,6 +569,7 @@ function HUDBF.runStagedTransition(phases, opts)
       if cancel.cancelled then
         return
       end
+      recoverTransition()
       if workFailed then
         HUDBF.scheduleEnd(0)
         return
@@ -567,7 +583,10 @@ function HUDBF.runStagedTransition(phases, opts)
       end
       HUDBF.scheduleEnd(0)
     end,
-  }, transitionChainOptions(cancel))
+  }, transitionChainOptions(cancel, function()
+    workFailed = true
+    recoverTransition()
+  end))
 end
 
 return HUDBF
