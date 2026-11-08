@@ -189,7 +189,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `onObjectHover` | `core/global_script.ttslua` | **Very high** | **Pass** | `next(glowByGuid) == nil` and no prior hovered glow → return before any `getGUID` / repaint (TOR-673) |
 | `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `d10` die path **or** `type==Card` + `Compulsion:` notes prefix before `require("core.compulsions")` |
 | `onObjectEnterZone` | `core/global_script.ttslua` | Medium | **Pass** | `type==Card` + `Compulsion:` prefix + hand `FogColor` in `C.PlayerColors` before finish selection (TOR-204) |
-| `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; world I/O in `Gameboard.onControlBoardSpotlightHotkey` (`npc_gameboard_spotlight`); hover must be a `stage_token` |
+| `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`. World I/O in `Gameboard.onControlBoardSpotlightHotkey` requires an active stage token. Tag and instance checks exclude parked NPCs. |
 
 ## Module handlers (called from Global)
 

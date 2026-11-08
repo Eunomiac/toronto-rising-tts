@@ -1,15 +1,15 @@
 --[[
     Spotlight tokens on the Stage Control board (TOR-687).
 
-    One token per NPC in `sessionScene.npcWorld.placements`, face down when the NPC stands dark. Tokens
-    exist only for the Storyteller's spotlight hold hotkey (`core.npc_gameboard_spotlight`); moving one does
-    nothing. Hidden from PC seats.
+    One token per stage NPC or parked preload NPC. Stage tokens are face down when the NPC stands dark.
+    Offstage tokens are face up, labelled, and parked at the Storyteller's right. Only stage tokens
+    accept the spotlight hold hotkey (`core.npc_gameboard_spotlight`).
 
     Tokens spawn in horizontal rows across CONTROL_BOARD, read from the Storyteller's seat: top-left corner
     first, left to right, then down (world +X to -X along the -Z edge, rows stepping toward +Z, where the
     Storyteller sits), grouped by stage area in `POLAR_FAMILY_ORDER` (in Scatter, by
-    scatter group). Position is set only at spawn: a later move on the stage leaves the token where it is,
-    and a light change only flips it.
+    scatter group). A move within the stage leaves the token where it is. Entering or leaving the stage
+    moves the same token between the two areas.
 
     `reconcileFromState` spawns / flips / destroys only the rows that changed since the last pass.
     Token art (both sides, name baked in) comes from generated `lib/npc_art_urls.ttslua`.
@@ -24,8 +24,11 @@ local DATA = require("lib.npc_gameboard_data")
 local ART = require("lib.npc_art_urls")
 local Board = require("core.npc_gameboard_board")
 local ScatterOccupancy = require("lib.scatter_occupancy")
+local Pool = require("core.npc_preload_pool")
 
 local TAG = DATA.TAG_STAGE_TOKEN
+local OFFSTAGE_TAG = "stage_token_offstage"
+local OFFSTAGE_ROW = {}
 local GM_PREFIX = DATA.TOKEN_GM_PREFIX
 local TOKEN_LIFT_LOCAL_Y = 0.05
 --- World units between token centers in a row, extra gap between stage areas, and between rows.
@@ -99,6 +102,7 @@ local function ensureIndex()
         else
             tokenGuidByKey[key] = obj.getGUID()
             obj.tooltip = true
+            obj.setInvisibleTo(C.HideFromPcSeatsAndSpectators)
         end
     end
 end
@@ -115,7 +119,8 @@ end
 --- @return string
 local function rowSig(key, row)
     local art = tokenArt(key)
-    return tostring(row.npcLightMode) .. "|" .. tostring(art and art.front or "")
+    local presentation = row == OFFSTAGE_ROW and "offstage" or tostring(row.npcLightMode)
+    return presentation .. "|" .. tostring(art and art.front or "")
 end
 
 --- @param row table
@@ -124,15 +129,31 @@ local function tokenRotation(row)
     return Vector(0, 0, row.npcLightMode ~= "OFF" and 0 or 180)
 end
 
---- Row slots for every stage NPC (sorted by stage area, then name) plus spare slots after the last.
+--- Apply the board role when spawning a token or moving it between stage and offstage.
+local function applyRole(obj, key, row)
+    local offstage = row == OFFSTAGE_ROW
+    obj.setName(displayName(key) .. (offstage and " (Offstage)" or ""))
+    if offstage then
+        obj.addTag(OFFSTAGE_TAG)
+    else
+        obj.removeTag(OFFSTAGE_TAG)
+    end
+    obj.setLock(offstage)
+end
+
+--- Row slots for the stage cast and a separate column for parked preload NPCs.
 --- @param board Object
---- @param placements table
+--- @param rows table
 --- @return table<string, Vector> slotByKey
---- @return Vector[] spare
-local function layoutSlots(board, placements)
+--- @return Vector[] stageSpare
+--- @return function offstageSlot
+local function layoutSlots(board, rows)
     local entries = {}
-    for key, row in pairs(placements) do
-        if type(row) == "table" then
+    local offstage = {}
+    for key, row in pairs(rows) do
+        if row == OFFSTAGE_ROW then
+            offstage[#offstage + 1] = { key = key, name = displayName(key) }
+        else
             local area = ScatterOccupancy.polarAreaNameAt(row.u, row.v)
             entries[#entries + 1] = {
                 key = key,
@@ -150,15 +171,29 @@ local function layoutSlots(board, placements)
         end
         return a.key < b.key
     end)
+    table.sort(offstage, function(a, b)
+        if a.name ~= b.name then return a.name < b.name end
+        return a.key < b.key
+    end)
     local bounds = board.getBounds()
     local leftX = bounds.center.x + bounds.size.x / 2 - EDGE_MARGIN
     local rightX = bounds.center.x - bounds.size.x / 2 + EDGE_MARGIN
+    local stageRightX = #offstage > 0 and math.min(leftX, rightX + TOKEN_SPACING + AREA_GAP) or rightX
     local y = Board.worldOnControlBoard(board, 0.5, 0.5, { extraLocalY = TOKEN_LIFT_LOCAL_Y }).y
+    local firstZ = bounds.center.z - bounds.size.z / 2 + EDGE_MARGIN
+    local rowsPerColumn = math.max(1, math.floor((bounds.size.z - 2 * EDGE_MARGIN) / ROW_SPACING) + 1)
     local x = leftX
-    local z = bounds.center.z - bounds.size.z / 2 + EDGE_MARGIN
+    local z = firstZ
+    local function offstageSlot(index)
+        local col = math.floor((index - 1) / rowsPerColumn)
+        local row = (index - 1) % rowsPerColumn
+        -- Locked overflow tiles continue beside the board if its right column is full.
+        local offstageX = col == 0 and rightX or rightX - 2 * EDGE_MARGIN - col * TOKEN_SPACING
+        return Vector(offstageX, y, firstZ + row * ROW_SPACING)
+    end
     local function nextSlot(gap)
         x = x - gap
-        if x < rightX then
+        if x < stageRightX then
             x = leftX
             z = z + ROW_SPACING
         end
@@ -172,11 +207,14 @@ local function layoutSlots(board, placements)
         slotByKey[entry.key] = nextSlot((prevRank ~= nil and entry.rank ~= prevRank) and AREA_GAP or 0)
         prevRank = entry.rank
     end
+    for index, entry in ipairs(offstage) do
+        slotByKey[entry.key] = offstageSlot(index)
+    end
     local spare = {}
     for i = 1, SPARE_SLOTS do
         spare[i] = nextSlot(i == 1 and AREA_GAP or 0)
     end
-    return slotByKey, spare
+    return slotByKey, spare, offstageSlot
 end
 
 --- @param slot Vector
@@ -222,19 +260,31 @@ local function spawnToken(key, position, row)
         stackable = false,
         stretch = true,
     })
-    obj.setName(displayName(key))
+    applyRole(obj, key, row)
     obj.tooltip = true
     obj.setGMNotes(GM_PREFIX .. key)
     obj.addTag(TAG)
-    obj.setInvisibleTo(C.PlayerColors)
+    obj.setInvisibleTo(C.HideFromPcSeatsAndSpectators)
     return obj
 end
 
---- Spawn, flip and destroy spotlight tokens so they match the stage placements.
+--- Spawn, flip, move and remove tokens to match the stage and the parked preload pool.
 --- @param opts table|nil `{ force?: boolean }` — force re-applies every token's flip
 function StageTokens.reconcileFromState(opts)
-    local placements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
-    placements = type(placements) == "table" and placements or {}
+    local S = stateModule()
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    local rows = {}
+    for key, row in pairs(type(placements) == "table" and placements or {}) do
+        if type(row) == "table" then rows[key] = row end
+    end
+    if Pool.isEnabled() then
+        local instances = S.getStateVal("npcs", "instances")
+        for key, rec in pairs(type(instances) == "table" and instances or {}) do
+            if Pool.shouldRetain(rec) and rec.areaKey == Pool.AREA_KEY then
+                rows[key] = OFFSTAGE_ROW
+            end
+        end
+    end
     local board = G.getObject(G.GUIDS.CONTROL_BOARD)
     if not U.isGameObject(board) then
         return
@@ -242,7 +292,7 @@ function StageTokens.reconcileFromState(opts)
     ensureIndex()
     local force = type(opts) == "table" and opts.force == true
     for key, guid in pairs(tokenGuidByKey) do
-        if type(placements[key]) ~= "table" then
+        if rows[key] == nil then
             local obj = G.getObject(guid)
             if U.isGameObject(obj) then
                 obj.destruct()
@@ -251,7 +301,7 @@ function StageTokens.reconcileFromState(opts)
         end
     end
     for key in pairs(appliedSigByKey) do
-        if type(placements[key]) ~= "table" then
+        if rows[key] == nil then
             appliedSigByKey[key] = nil
         end
     end
@@ -259,7 +309,7 @@ function StageTokens.reconcileFromState(opts)
     local layout = nil
     local function spawnPosition(key)
         if layout == nil then
-            local slotByKey, spare = layoutSlots(board, placements)
+            local slotByKey, spare, offstageSlot = layoutSlots(board, rows)
             local taken = {}
             for _, guid in pairs(tokenGuidByKey) do
                 local obj = G.getObject(guid)
@@ -267,9 +317,18 @@ function StageTokens.reconcileFromState(opts)
                     taken[#taken + 1] = obj.getPosition()
                 end
             end
-            layout = { slotByKey = slotByKey, spare = spare, taken = taken }
+            layout = { slotByKey = slotByKey, spare = spare, taken = taken, offstageSlot = offstageSlot }
         end
         local slot = layout.slotByKey[key]
+        if rows[key] == OFFSTAGE_ROW then
+            if slotTaken(slot, layout.taken) then
+                for index = 1, #layout.taken + 1 do
+                    slot = layout.offstageSlot(index)
+                    if not slotTaken(slot, layout.taken) then break end
+                end
+            end
+            return slot
+        end
         if slotTaken(slot, layout.taken) then
             slot = nil
             for _, candidate in ipairs(layout.spare) do
@@ -285,7 +344,7 @@ function StageTokens.reconcileFromState(opts)
         end
         return slot
     end
-    for key, row in pairs(placements) do
+    for key, row in pairs(rows) do
         if type(row) == "table" then
             local sig = rowSig(key, row)
             local guid = tokenGuidByKey[key]
@@ -302,12 +361,22 @@ function StageTokens.reconcileFromState(opts)
                 end
                 appliedSigByKey[key] = sig
             elseif force or appliedSigByKey[key] ~= sig then
+                local changedRole = obj.hasTag(OFFSTAGE_TAG) ~= (row == OFFSTAGE_ROW)
+                local position = nil
+                if changedRole then
+                    position = spawnPosition(key)
+                    layout.taken[#layout.taken + 1] = position
+                end
                 if not tokenCurrent(obj, key) then
-                    local position = obj.getPosition()
+                    position = position or obj.getPosition()
                     obj.destruct()
                     obj = spawnToken(key, position, row)
                     tokenGuidByKey[key] = obj and obj.getGUID() or nil
                 else
+                    if changedRole then
+                        obj.setPosition(position)
+                        applyRole(obj, key, row)
+                    end
                     obj.setRotationSmooth(tokenRotation(row), false, true)
                 end
                 appliedSigByKey[key] = sig
@@ -323,12 +392,21 @@ function StageTokens.refreshName(key)
     local guid = tokenGuidByKey[key]
     local obj = guid and G.getObject(guid) or nil
     if U.isGameObject(obj) then
-        obj.setName(displayName(key))
+        obj.setName(displayName(key) .. (obj.hasTag(OFFSTAGE_TAG) and " (Offstage)" or ""))
     end
 end
 
 --- @param obj Object|nil
 --- @return string|nil characterKey when `obj` is a spotlight token
 StageTokens.characterKeyForToken = characterKeyForToken
+
+--- A parked token can be inspected by the Storyteller but cannot drive the light preview.
+function StageTokens.characterKeyForSpotlight(obj)
+    local key = characterKeyForToken(obj)
+    if key ~= nil and not obj.hasTag(OFFSTAGE_TAG) then
+        return key
+    end
+    return nil
+end
 
 return StageTokens

@@ -11,7 +11,7 @@ Read this when:
 
 Source of truth:
 - `core/npc_stage_apply.ttslua` — Storyteller Dashboard stage edits → `sessionScene.npcWorld.placements` → `Sync.npcs`
-- `core/stage_tokens.ttslua` — spotlight tokens on CONTROL_BOARD (spawn in rows / flip / destroy from placements)
+- `core/stage_tokens.ttslua` — tokens on CONTROL_BOARD for stage placements and parked preload NPCs
 - `core/npc_gameboard_spotlight.ttslua` — Storyteller hold-to-spotlight hotkey (TOR-238)
 - `core/npc_gameboard.ttslua` — thin `Gameboard` facade (u,v maths + hotkey entry)
 - `core/npc_gameboard_board.ttslua` — board accessors, u,v ↔ world
@@ -33,8 +33,10 @@ Status: current (TOR-687 retired control-board Apply, the token palette, PC toke
 | --- | --- |
 | **Stage authority** | `sessionScene.npcWorld.placements` — `{ characterKey = { u, v, yaw, npcLightMode } }` in 0–1 stage-map coordinates. Written only by `StageApply.applyStageChanges` (Dashboard) and by scene activation. |
 | **Dashboard edit** | `dashboard/scenes.ttslua` → `StageApply.applyStageChanges(changes)` → `Sync.npcs({ animateStageMoves = true })`. Bundled edits animate together (one lerp batch). Homeland seats stay dark while their NPC stands on the stage. |
-| **Spotlight tokens** | `StageTokens.reconcileFromState` runs from the NPC reconcile. One `Custom_Tile` per stage NPC, tagged `stage_token`, GM notes `npcToken:<characterKey>`, scale `D.STAGE_TOKEN_SCALE` (1.5), yaw 0, face down when the NPC stands dark. Spawned in horizontal rows across the board, read from the Storyteller's seat starting in the top-left corner, left to right, then down (world +X → −X along the −Z edge, rows stepping toward +Z): 3 world units apart, grouped by stage area in `C.Scatter.POLAR_FAMILY_ORDER` (`ScatterOccupancy.polarAreaNameAt`; in Scatter that is scatter-group order) with 1 extra unit between areas. Position is set **only at spawn** — a later stage move leaves the token in place, a light change only flips it, and a newcomer whose sorted slot is held by an older token takes the next free spare slot past the end. Saved tokens at another scale are respawned on load. Hidden from PC seats. Moving a token does nothing. |
-| **Spotlight hotkey** | Only purpose of the tokens — see § Hold-to-spotlight. |
+| **NPC tokens** | `StageTokens.reconcileFromState` runs after the NPC reconcile and after an explicit preload. It keeps one `Custom_Tile` per stage NPC or parked preload NPC, tagged `stage_token`, with GM notes `npcToken:<characterKey>`, scale `D.STAGE_TOKEN_SCALE` (1.5), and yaw 0. Tokens are hidden from PC seats and spectators. |
+| **Stage rows** | Stage tokens fill from the top-left, left to right, then down (world +X → −X along the −Z edge, rows stepping toward +Z). They are 3 world units apart, grouped by stage area in `C.Scatter.POLAR_FAMILY_ORDER` with 1 extra unit between areas. A move within the stage keeps the token in place. A change in light mode flips it. |
+| **Offstage column** | Parked preload tokens are face up, locked, and labelled “(Offstage)” in the tooltip. They use the rightmost column from the Storyteller's seat, with overflow beside the board. When an NPC enters the stage or goes back into the preload pool, the same token moves between the two areas. |
+| **Spotlight hotkey** | Only stage tokens accept the hold preview. Moving a token by hand never moves a figurine. |
 
 Reconcile uses **`placements` only**. Legacy **`byArea`** in an old save or library row is not converted: `S.validateState` drops it (`lib/npc_placements_convert.ttslua`) and prints each NPC it held, so the Storyteller can place them on the stage again.
 
@@ -72,14 +74,14 @@ Dashboard stage applies pass `animateStageMoves` into `NPCS.reconcileAllFromStat
 
 ## Hold-to-spotlight (TOR-238)
 
-Transient "who's speaking" cue — **not** game-phase Spotlight (TOR-98), **not** persisted `npcLightMode`. On load, Global registers `addHotkey("Spotlight NPC (hold)", …, triggerOnKeyUp=true)`; bind it under **Options → Game → Game Keys**. **Storyteller steam player only** (`isStorytellerSteamPlayer` in the callback). While held, poll `Player[color].getHoverObject()` every 80 ms; when the hover is a `stage_token` (`StageTokens.characterKeyForToken`) whose NPC has a row in `sessionScene.npcWorld.placements`, apply:
+This temporary speaking cue leaves the saved `npcLightMode` untouched. Global registers **Spotlight NPC (hold)** on load. Bind it under **Options → Game → Game Keys**. The callback is restricted to the Storyteller Steam player. While held, the poll checks `Player[color].getHoverObject()` every 80 ms. The preview requires a stage token (`StageTokens.characterKeyForSpotlight`), a placement in `sessionScene.npcWorld.placements`, and a live instance outside the preload pool and seat rows.
 
 | Target | Behavior |
 | --- | --- |
 | Stage figurine pooled spotlight | `NPCS.buildResolvedLightModeTable(characterKey, "SPOTLIGHT")` via `L.applyTransientLightMode` (restores prior `gameState.lights[ref]` — preview does not save) |
 | Storyteller board indicator (`G.GUIDS.STORYTELLER_SPOTLIGHT`, registry `storytellerSpotlight`) | Moves to token **X/Z** (Y unchanged); `STANDARD` while previewing, **OFF** otherwise |
 
-Key-up or hovering off the tokens clears both previews. Entry: `Gameboard.onControlBoardSpotlightHotkey`. **Multiclient:** solo host verified; join-client ST hotkey is the P10 gap.
+Releasing the key or hovering away from a stage token, including onto an offstage token, clears both previews. The entry point is `Gameboard.onControlBoardSpotlightHotkey`. The solo host hotkey has been verified, and the join-client Storyteller hotkey remains the P10 gap.
 
 ## Token art
 

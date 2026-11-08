@@ -3308,6 +3308,7 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
     end
     steps[#steps + 1] = function()
         releaseHolds()
+        require("core.stage_tokens").reconcileFromState()
         local label = U.Type(sceneTitle) == "string" and sceneTitle ~= "" and sceneTitle or "the scene"
         require("dashboard.push").notice("Preloaded " .. tostring(#keys) .. " NPC package(s) for " .. label .. ".")
     end
@@ -3318,6 +3319,7 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
             releaseHolds()
             if not ok then
                 Pool.disable("preload sequence " .. tostring(detail))
+                require("core.stage_tokens").reconcileFromState()
                 require("dashboard.push").notice(
                     "NPC preload did not finish; ordinary on-demand spawning is still available."
                 )

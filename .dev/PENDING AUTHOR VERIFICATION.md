@@ -33,9 +33,9 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### 🟡 TOR-762 — Preload NPCs for a later entrance
 
-**How to verify:** Save & Play, then open a scene in the dashboard editor. Add an NPC who is neither on its stage nor in its seating plan. Click Preload now and wait for the preload notice. Play the scene and confirm that NPC is still offstage. Then place them from the roster and check that the figurine and light appear normally.
+**How to verify:** Save & Play, then add an NPC to the scene editor's Offstage list and click **Preload now**. Their token should appear on the right of the Stage Control board with “(Offstage)” in its tooltip. Play the scene and check that the figurine stays hidden. Hold **Spotlight NPC (hold)** over a stage token, then move the pointer to the offstage token. The preview should clear and the offstage NPC should stay dark. Place the offstage NPC from the roster and check that the figurine appears, the same token moves into the stage rows, and the hotkey works there. Remove the NPC from the stage and check that the token returns to the right.
 
-The browser check covers saving the list, picking and dragging NPCs, and the command sent to TTS. The live check confirms the hidden figurine and light can be reused after a transition.
+The browser check covers saving the list, picking and dragging NPCs, and the command sent to TTS. The Lua check covers token reuse and the Spotlight guard. The live check confirms the layout and how the figurine and lights look during the transition.
 
 #### 🟡 TOR-761 — Dice bags and signal candle accept clicks after seating
 

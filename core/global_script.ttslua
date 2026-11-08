@@ -4465,6 +4465,7 @@ function HUD_resetGame(player, button, id)
         NPCS.destroyAllWorldAndState()
     end
     S.resetGameState()
+    require("core.stage_tokens").reconcileFromState()
 
     Scenes.resetScene()
 

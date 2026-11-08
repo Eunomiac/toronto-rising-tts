@@ -10,6 +10,7 @@ local Spotlight = {}
 local U = require("lib.util")
 local G = require("lib.guids")
 local StageTokens = require("core.stage_tokens")
+local Pool = require("core.npc_preload_pool")
 
 local STORYTELLER_SPOTLIGHT_REF = "storytellerSpotlight"
 local controlBoardSpotlightPollGen = 0
@@ -26,22 +27,19 @@ end
 
 --- @param playerColor string
 --- @return Object|nil
-local function hoveredStageToken(playerColor)
+local function hoveredObjectForPlayer(playerColor)
     local player = Player[playerColor]
     if player == nil or player.getHoverObject == nil then
         return nil
     end
-    local obj = player.getHoverObject()
-    if StageTokens.characterKeyForToken(obj) == nil then
-        return nil
-    end
-    return obj
+    return player.getHoverObject()
 end
 
 local function clearControlBoardSpotlightPreview()
+    local prev = controlBoardSpotlightNpcName
+    if prev == nil then return end
     local L = require("core.lighting")
     local NPCS = require("core.npcs")
-    local prev = controlBoardSpotlightNpcName
     controlBoardSpotlightNpcName = nil
     if type(NPCS.syncFamilyOffSpotlightPreview) == "function" then
         NPCS.syncFamilyOffSpotlightPreview(nil, 0.12)
@@ -84,8 +82,16 @@ end
 --- @param token Object
 --- @return boolean applied
 local function applyControlBoardSpotlightPreviewForToken(token)
-    local characterKey = StageTokens.characterKeyForToken(token)
+    local characterKey = StageTokens.characterKeyForSpotlight(token)
     if characterKey == nil or not npcStandsOnStage(characterKey) then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local rec = NPCS.getInstanceRecord(characterKey)
+    if type(rec) ~= "table" or type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
+        return false
+    end
+    if rec.areaKey == Pool.AREA_KEY or (type(rec.seatedSeatKey) == "string" and rec.seatedSeatKey ~= "") then
         return false
     end
     if controlBoardSpotlightNpcName == characterKey then
@@ -94,15 +100,6 @@ local function applyControlBoardSpotlightPreviewForToken(token)
     end
 
     local L = require("core.lighting")
-    local NPCS = require("core.npcs")
-    local rec = NPCS.getInstanceRecord(characterKey)
-    if type(rec) ~= "table" or type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
-        return false
-    end
-    if type(rec.seatedSeatKey) == "string" and rec.seatedSeatKey ~= "" then
-        return false
-    end
-
     if type(controlBoardSpotlightNpcName) == "string" and controlBoardSpotlightNpcName ~= "" then
         local prev = controlBoardSpotlightNpcName
         controlBoardSpotlightNpcName = nil
@@ -138,10 +135,8 @@ local function tickControlBoardSpotlightHoverPoll(playerColor)
         return
     end
     local gen = controlBoardSpotlightPollGen
-    local token = hoveredStageToken(playerColor)
-    if token ~= nil then
-        applyControlBoardSpotlightPreviewForToken(token)
-    else
+    local token = hoveredObjectForPlayer(playerColor)
+    if not applyControlBoardSpotlightPreviewForToken(token) then
         clearControlBoardSpotlightPreview()
     end
     if controlBoardSpotlightHeld and controlBoardSpotlightPollGen == gen then
@@ -175,11 +170,9 @@ function Spotlight.onControlBoardSpotlightHotkey(playerColor, hoveredObject, isK
 
     local token = hoveredObject
     if StageTokens.characterKeyForToken(token) == nil then
-        token = hoveredStageToken(playerColor)
+        token = hoveredObjectForPlayer(playerColor)
     end
-    if token ~= nil then
-        applyControlBoardSpotlightPreviewForToken(token)
-    else
+    if not applyControlBoardSpotlightPreviewForToken(token) then
         clearControlBoardSpotlightPreview()
     end
 
