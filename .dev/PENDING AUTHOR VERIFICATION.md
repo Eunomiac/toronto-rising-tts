@@ -41,6 +41,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 **How to verify:** Save & Play, start a scene, and place several NPCs on the stage. In the Dashboard, move one NPC to another stage location and click **Send**. Then change only that NPC's light mode and send again. Each change should begin promptly instead of waiting for every seat, every staged NPC, and the table layout to reconcile. Confirm that moving an NPC already on stage does not disturb any other staged NPC or occupied chair. Finally, add a new NPC and remove one; those membership changes should still seat, light, or clear the affected NPC correctly.
 
+#### 🔵 TOR-760 — Faster scene and Spotlight transitions with recoverable audio
+
+> **Agent-assessment note:** The agent checks cover schedules, bounded preload behavior, fallback, emitter health, Dashboard commands, and browser behavior. Your timed pass in the real save remains valuable because TTS asset-download speed and whether the music sounds continuous are environmental.
+
+**How to verify:** Save & Play, then run `lua log(DEBUG.verifyPav("TOR-760"))` in the TTS console. Its report should pass both short Spotlight schedules, the bounded preload grid, and all 12 configured soundscape emitters. Start on the Casa Loma Estate Grounds scene. In the Dashboard scene library, click **Preload** on Grand Audience and wait for the notice that its NPC packages are ready. Apply Grand Audience. The cover should still show its destination cards, but the transition should no longer spend several minutes creating NPCs; the music should return before the cover lifts. Next advance from Play into Spotlight: its cover should last roughly six seconds plus the table update, not tens of seconds. Advance from Spotlight into End: that cover should last roughly three seconds plus the table update, with Main music continuing. If a preload ever reports a failure, apply that scene anyway and confirm ordinary on-demand spawning still completes it.
+
 #### 🔵 TOR-756 — Page 3 Advantages with no portrait have no white image box
 
 **Context:** The first portrait fix exposed a template-engine limitation and could leave Page 3 XML unbalanced when an entry had no portrait. The follow-up uses separate portrait/no-portrait body branches and now checks the complete XML tag stack for Backgrounds, Merits, Flaws, and Lord Lucien's current Page 3 data.

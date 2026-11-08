@@ -397,6 +397,8 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `Soundscape.setIndoors(isIndoors)` | Apply indoor/outdoor weather ducking context | `Soundscape.setIndoors(true)` |
 | `Soundscape.stopAll()` | Stop all channels with the silent loop | Emergency silence |
 | `Soundscape.inspectEmitters()` | List hidden emitters, effects, and AudioSources | Debug verification |
+| `Soundscape.validateEmitterHealth()` | One-shot health report for all configured soundscape GUIDs, tags, AudioSources, effects, volume control, and bundle metadata | Cold onboarding; `DEBUG.inspectSoundscapeAudio()`; Storyteller debug action |
+| `Soundscape.recoverAfterTransition(opts?)` | Close a transition fade window; `{ reconcile = true }` also force-restores persisted soundscape intent after failure | `HUDBF.runStagedTransition` finalization |
 | `Soundscape.testLayeredPlayback()` | Start music, weather, and location together | Live soundscape smoke test |
 
 ### Session explode (`core/session_explode.ttslua`)

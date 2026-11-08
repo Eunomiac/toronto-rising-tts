@@ -100,6 +100,38 @@ local function runTor758Contract()
     }, nil)
 end
 
+local function runTor760Contract()
+    local HUDBF = require("core.hud_blindfold")
+    local Pool = require("core.npc_preload_pool")
+    local poolStatus = require("core.npcs").inspectPreloadPool()
+    local health = require("core.soundscape").validateEmitterHealth()
+    local spotlightEnterSec = HUDBF.estimateStagedTransitionSec({
+        leadInDelaySec = 2,
+        fadeOutSec = 1,
+        fadeInSec = 1.5,
+        workSettleSec = 0,
+        settleDelaySec = 2.5,
+        skipLocationCardGate = true,
+    })
+    local spotlightExitSec = HUDBF.estimateStagedTransitionSec({
+        leadInDelaySec = 2,
+        fadeOutSec = 0,
+        fadeInSec = 0,
+        workSettleSec = 0,
+        settleDelaySec = 1,
+        skipLocationCardGate = true,
+    })
+    return resultFor("TOR-760", {
+        assertion("Spotlight enter cover schedule is 5.5 seconds", spotlightEnterSec == 5.5, 5.5, spotlightEnterSec),
+        assertion("Spotlight exit cover schedule is 3 seconds", spotlightExitSec == 3, 3, spotlightExitSec),
+        assertion("NPC preload grid stays bounded at 1,024 pair slots", Pool.GRID_CAPACITY == 1024 and poolStatus.capacity == 1024, 1024, poolStatus.capacity),
+        assertion("Every configured soundscape emitter is usable", health.ok == true, true, health),
+    }, "Apply a preloaded large scene and listen through both Spotlight transitions to confirm real TTS asset speed and audible continuity.", {
+        preloadPool = poolStatus,
+        soundscape = health,
+    })
+end
+
 local checks = {
     ["TOR-755"] = {
         title = "Dashboard staged-NPC edit uses bounded reconciliation",
@@ -120,6 +152,11 @@ local checks = {
     ["TOR-758"] = {
         title = "Blood Surge Rouse remains independent",
         run = runTor758Contract,
+        capture = false,
+    },
+    ["TOR-760"] = {
+        title = "Game-night transitions stay bounded and audio-ready",
+        run = runTor760Contract,
         capture = false,
     },
 }

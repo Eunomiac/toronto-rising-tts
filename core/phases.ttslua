@@ -689,11 +689,19 @@ local function runSpotlightEnterFromPlayTransition(ctx)
         and S.getStateVal("soundscape", "siteSilent") ~= true
         and S.getStateVal("soundscape", "backgroundMusicEnabled") == true
         and S.getStateVal("soundscape", "backgroundMusicMode") ~= "locationMusic"
+    local transitionOpts = {
+        leadInDelaySec = 2,
+        fadeOutSec = 1,
+        fadeInSec = 1.5,
+        workSettleSec = 0,
+        settleDelaySec = 2.5,
+        skipLocationCardGate = true,
+    }
     HUDBF.runStagedTransition({
         fadeOut = function()
             if type(SS.fadeOutTransitionAmbient) == "function" then
                 SS.fadeOutTransitionAmbient({
-                    seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
+                    seconds = transitionOpts.fadeOutSec,
                     skipBackground = skipBackground,
                 })
             end
@@ -701,20 +709,17 @@ local function runSpotlightEnterFromPlayTransition(ctx)
         work = function()
             return Spotlight.applyEnterWorld()
         end,
-        fadeIn = function()
+        fadeIn = function(workSucceeded)
             if type(SS.beginTransitionFadeWindow) == "function" then
-                SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+                SS.beginTransitionFadeWindow(transitionOpts.fadeInSec)
             end
-            if type(Scenes.applyMainOnlySoundscape) == "function" then
+            if workSucceeded and type(Scenes.applyMainOnlySoundscape) == "function" then
                 Scenes.applyMainOnlySoundscape({ skipMoodIfAlreadyMain = true })
             end
-            if type(SS.endTransitionFadeWindow) == "function" then
-                SS.endTransitionFadeWindow()
-            end
         end,
-    })
+    }, transitionOpts)
     if type(HUDBF.estimateStagedTransitionSec) == "function" then
-        return HUDBF.estimateStagedTransitionSec()
+        return HUDBF.estimateStagedTransitionSec(transitionOpts)
     end
     return (HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC or 4)
         + (HUDBF.TRANSITION_FADE_OUT_SEC or 1)
@@ -727,6 +732,14 @@ end
 local function runSpotlightExitToEndTransition(ctx)
     local HUDBF = require("core.hud_blindfold")
     local Spotlight = require("core.spotlight")
+    local transitionOpts = {
+        leadInDelaySec = 2,
+        fadeOutSec = 0,
+        fadeInSec = 0,
+        workSettleSec = 0,
+        settleDelaySec = 1,
+        skipLocationCardGate = true,
+    }
     HUDBF.runStagedTransition({
         fadeOut = function()
             -- Keep Main playing; do not fade location/weather again (already main-only from Spotlight enter).
@@ -737,9 +750,9 @@ local function runSpotlightExitToEndTransition(ctx)
         fadeIn = function()
             -- Keep Main. Table B0 + Generic skybox already ran in applyExitWorld (skipSoundscape).
         end,
-    })
+    }, transitionOpts)
     if type(HUDBF.estimateStagedTransitionSec) == "function" then
-        return HUDBF.estimateStagedTransitionSec()
+        return HUDBF.estimateStagedTransitionSec(transitionOpts)
     end
     return (HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC or 4)
         + (HUDBF.TRANSITION_FADE_OUT_SEC or 1)

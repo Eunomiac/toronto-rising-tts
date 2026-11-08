@@ -95,7 +95,7 @@ function GenericNpcs.destroyLiveKey(characterKey, opts)
         return
     end
     local NPCS = npcsModule()
-    NPCS.despawnNpc(characterKey, { skipSeatSync = true })
+    NPCS.despawnNpc(characterKey, { skipSeatSync = true, retainPreloaded = true })
     NPCS.unregisterGenericCharacter(characterKey)
 
     if opts.keepMembership ~= true then

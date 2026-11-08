@@ -168,6 +168,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 ## NPC Spawning
 
 - [x] **Existing dashboard stage edits use a bounded reconcile:** Moving an NPC already on stage or changing their light mode runs Step Five for the changed character keys only. Stage membership changes retain the complete NPC reconcile. Pending Save & Play. _(TOR-755)_
+- [x] **Recover game-night scene, Spotlight, and audio transition performance:** Scene rows can opt into bounded NPC preloading with ordinary-spawn fallback; Spotlight uses short purpose-specific cover timing and one incremental reconciliation; failed covered work restores persisted soundscape intent; one-shot health tools inspect the pool and all 12 emitters without recurring game-night work. Pending Save & Play. _(TOR-760)_
 See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Object%20Overview.md).
 
 - [x] **NPC figurines spawn on demand; retire the preload pool:** Figurine front/back URLs live in generated `lib/npc_figurine_hosted_urls.ttslua` (extracted from the save). Scene transitions spawn needed figurines + lights behind the blindfold and destroy the rest; mid-scene stage adds spawn hidden, wait for the image, then move. Generic NPCs share the spawner. Pending Save & Play (run `DEBUG.retirePreloadPools()` once, then File → Save). Figurine URLs now come from `lib/npc_art_urls.ttslua` (TOR-709 below). _(TOR-707)_

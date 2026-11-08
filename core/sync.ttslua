@@ -335,7 +335,7 @@ function Sync.soundscape(opts)
 end
 
 --- Narrow NPC + spotlight-token pass (Dashboard stage edits, placement-only changes).
---- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, animateStageMoves?, onlyStageCharacterKeys? }`
+--- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, animateStageMoves?, onlyStageCharacterKeys?, skipConditionReconcile? }`
 function Sync.npcs(opts)
     opts = type(opts) == "table" and opts or {}
     local t0 = os.clock()
@@ -348,7 +348,9 @@ function Sync.npcs(opts)
         animateStageMoves = opts.animateStageMoves == true,
         onlyStageCharacterKeys = opts.onlyStageCharacterKeys,
     })
-    require("core.npc_conditions").reconcileForSession()
+    if opts.skipConditionReconcile ~= true then
+        require("core.npc_conditions").reconcileForSession()
+    end
     require("dashboard.push").markWorldDirty({ seats = true })
     finishSyncMetrics("npcs", t0, { reason = reason })
 end

@@ -84,6 +84,12 @@ export type ScenesCommand =
     readonly sessionScene: Readonly<Record<string, unknown>>;
     readonly status: SceneStatus;
   } & SceneClock)
+  | {
+    readonly op: "preloadScene";
+    readonly key: string;
+    readonly title: string;
+    readonly sessionScene: Readonly<Record<string, unknown>>;
+  }
   | { readonly op: "endScene" }
   | {
     readonly op: "upsertScene";

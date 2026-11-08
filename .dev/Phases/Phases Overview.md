@@ -80,7 +80,7 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `SPOTLIGHT`
 
-* Staged HUDBF cover (same lead-in as a scene Apply; destination cards stay Clear). Default cameras snap at work start (HUDBF).
+* Staged HUDBF cover with a purpose-specific short schedule: two-second lead, one-second fade-out, no irrelevant location-card gate, 1.5-second fade-in, and 2.5-second total settle budget (about 5.5 seconds plus synchronous world work). Destination cards stay Clear. Default cameras snap at work start (HUDBF).
 * Under the cover: **narrative clear** (`Scenes.clearLiveNarrativeForPhaseTransition`) — detach the live library, flush the library clock if a scene was live, empty NPC world/seats and Scatter orbit rows, **reactivate non-Absent PC seats** (`applyDefaultPcSeatPresence`), clear live location/weather extras, freeze the overlay ticker. Switching to Table A does **not** restore the pre-Scatter stage layout (`skipScatterRestore`). While the phase is Spotlight (or End), NPC reconcile despawns stage and Scatter NPCs even if a placement row is still present. Does **not** call `Scenes.applyDefaultNoSceneEnvironment` (that is Table B0 + random generic skybox).
 * TOR-101: Memoriam enter clears live narrative under cover (same helper). When a Memoriam LUT ships (**TOR-321**), reverse it here. Downtime clock/overlay (**TOR-527**) must reverse here as well once it ships.
 * Table A if not already A; skybox `Spotlight`; fade location/weather out on the way in; restore **Main** when BGM was suppressed or a site location bed was playing (e.g. Ravenwing); **do not** restart Main if it is already the audible mood playlist; **do not** silence all emitters.
@@ -90,7 +90,7 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Ending Events: `SPOTLIGHT`
 
-* Staged HUDBF cover. Park stand-ins/lights under the table. Seat figurines return to normal visibility. Dice bags, companions, and compulsion decks stay parked (not restored on End).
+* Staged HUDBF cover with a two-second lead, no audio fade or location-card gate, and one-second settle (about three seconds plus synchronous world work). Park stand-ins/lights under the table. Seat figurines return to normal visibility. Dice bags, companions, and compulsion decks stay parked (not restored on End).
 * Keep Main audio (do **not** fade Main or restart it). Apply no-scene table prep under the cover: Table B0 (dynamic Table B, zero NPC seats — NPCs are not restored after Spotlight), OutdoorDim, Generic skybox selected (`skyboxOverride` Generic; one random generic URL). `Scenes.applyDefaultNoSceneEnvironment({ skipSoundscape = true, skipTransitionBlindfold = true, activateGenericSkybox = true })`.
 
 ### Starting Events: `END`

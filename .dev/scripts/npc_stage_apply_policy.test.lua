@@ -34,4 +34,21 @@ assertNil(StageApply.narrowReconcileKeys(removed, before, { b = { remove = true 
 assertNil(StageApply.narrowReconcileKeys(moved, before, { a = { u = 3, v = 3 } }, { base = moved }),
     "a base replacement must use the complete reconcile")
 
+local prewarm = function(key) return key == "b" or key == "c" end
+local ordinaryKeys = StageApply.prewarmCharacterKeys(moved, before, { a = { u = 3, v = 3 } }, {}, prewarm)
+assertTrue(#ordinaryKeys == 0,
+    "an ordinary move must not wait on an unrelated parked placement")
+
+local replacedKeys = StageApply.prewarmCharacterKeys(moved, before, { b = { u = 2, v = 2 } }, {}, prewarm)
+assertTrue(#replacedKeys == 1 and replacedKeys[1] == "b",
+    "an edited parked placement should still prewarm")
+
+local addedKeys = StageApply.prewarmCharacterKeys(added, before, { c = { u = 3, v = 3 } }, {}, prewarm)
+assertTrue(#addedKeys == 1 and addedKeys[1] == "c",
+    "a newly added placement should prewarm")
+
+local baseKeys = StageApply.prewarmCharacterKeys(moved, before, {}, { base = moved }, prewarm)
+assertTrue(#baseKeys == 1 and baseKeys[1] == "b",
+    "a base replacement should prewarm every resulting parked placement")
+
 print("npc_stage_apply_policy.test.lua: OK")

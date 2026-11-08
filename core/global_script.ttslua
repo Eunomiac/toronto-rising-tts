@@ -4017,9 +4017,15 @@ end
 
 --- Debug column: inspect hidden soundscape emitters and print a JSON summary.
 function HUD_soundscapeInspect(player, button, id)
-    local rows = SS.inspectEmitters()
-    print(JSON.encode_pretty(rows))
-    U.AlertGM("Soundscape emitter inspection printed to console.")
+    local health = SS.validateEmitterHealth()
+    print(JSON.encode_pretty(health))
+    if health.ok == true then
+        U.AlertGM("Soundscape emitters healthy: " .. tostring(health.usable) .. "/" .. tostring(health.expected)
+            .. " channels across " .. tostring(health.bundleCount) .. " bundles.")
+    else
+        U.AlertGM("Soundscape emitter problems found (" .. tostring(health.usable) .. "/"
+            .. tostring(health.expected) .. " healthy). Details printed to console.")
+    end
 end
 
 --- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`).

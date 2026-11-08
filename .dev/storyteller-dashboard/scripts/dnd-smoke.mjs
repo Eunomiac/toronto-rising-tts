@@ -132,6 +132,21 @@ const world = {
     oblivionSeats: [],
   },
 };
+const preloadScene = {
+  key: "preload_verification",
+  title: "Preload verification",
+  placementMode: "standard",
+  linked: false,
+  status: "new",
+  sessionScene: {
+    clock: dt,
+    npcWorld: {
+      placements: {
+        [npc]: { u: 0.5, v: 0.65, npcLightMode: "STANDARD" },
+      },
+    },
+  },
+};
 const output = path.join(os.tmpdir(), "toronto-rising-dnd-smoke");
 fs.mkdirSync(output, { recursive: true });
 const executablePath =
@@ -163,7 +178,7 @@ try {
     route.fulfill({ json: { deck: [], previews: [], notes: {}, roster } }),
   );
   await page.route("**/api/scene-library", (route) =>
-    route.fulfill({ json: { scenes: [], seeded: true } }),
+    route.fulfill({ json: { scenes: [preloadScene], seeded: true } }),
   );
   await page.route("**/api/npc-stats", (route) =>
     route.fulfill({
@@ -213,6 +228,15 @@ try {
     "rolls",
     await page.locator("[data-tr-dnd-roll]").count(),
   );
+
+  await page.getByRole("button", { name: "Scene ▸", exact: true }).click();
+  const preloadRow = page.locator(".lab-advance-list li").filter({ hasText: preloadScene.title });
+  await page.screenshot({ path: path.join(output, "scene-preload-control.png") });
+  await preloadRow.getByRole("button", { name: "Preload", exact: true }).click();
+  await page.waitForTimeout(150);
+  assert(commands.some((script) => script.includes('"op":"preloadScene"') && script.includes(preloadScene.key)));
+  console.log("PASS scene library Preload sends the complete scene command");
+  await page.keyboard.press("Escape");
 
   await page.locator('.lab-conditions-head').first().click();
   const conditionModal = page.locator('.lab-conditions-modal');
