@@ -24,12 +24,13 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 
 | Rank | Topic | Status |
 | --- | --- | --- |
-| 0 | **Stage edits (Dashboard)** | **Retired surface (TOR-687)** - board Apply/Clear/token drop are gone; Dashboard stage edits run `StageApply.applyStageChanges` → one `Sync.npcs` (`force=false`); snap catalog cache keyed by `controlBoardSnapFingerprintFor`; `StageTokens.reconcileFromState` touches only changed placement rows |
+| 0 | **Stage edits (Dashboard)** | **Done (2026-11-08)** — ordinary moves prewarm only edited/new NPCs, reconcile Step Five for changed character keys, and skip unrelated NPC-condition work; clear/base membership changes retain the full pass. See [Game Night Performance Recovery](Game%20Night%20Performance%20Recovery.md). |
 | 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` (hunger pulse removed TOR-373) |
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
 | 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
-| 5 | NPC spawn / scene world | **Changed (TOR-707)** — no preload pool; the reconciler spawns only the NPCs a scene targets (`core/npc_spawn.ttslua`, image URLs in spawn data, no `reload()`), destroys untargeted ones |
+| 5 | NPC spawn / scene world | **Changed (2026-11-08)** — normal reconciliation still spawns only targeted NPCs. The Dashboard now offers an explicit, cold-until-clicked scene preload pool: two pairs per batch, fixed 32×32 hidden grid, canonical hide/restore, ordinary spawn fallback on failure. |
+| 5a | Spotlight transition | **Done (2026-11-08)** — no irrelevant location-card gate, short purpose-specific settle budgets, incremental full sync, and no duplicate carousel/toy/overlay pass. |
 | 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter; admin-light scene buttons coalesced when `adminLighting` and `scenesPanel` refresh together |
 | 7 | Map/HUD scoped refresh | **Deferred** — cross-seat HUD split (`reconcileSeatHud` / `reconcileCrossSeatRows`) not started |
 | — | Overlay desired-input fingerprint | **Done** — `HO.reconcileForSeat` per-seat `lastDesiredVisibilityFpBySeat`; `HO.invalidateOverlayInputCache()` on force |
