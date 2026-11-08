@@ -137,6 +137,45 @@ end
 --- Pure placement-policy helper exposed for contract tests.
 StageApply.narrowReconcileKeys = narrowReconcileKeys
 
+--- Return only the NPCs this edit can introduce or replace and therefore needs to prewarm.
+--- Ordinary position/light edits must not wait on unrelated parked placements already in the scene.
+--- Clear/base replacements deliberately consider the complete resulting stage.
+--- @param nextMap table|nil
+--- @param existing table|nil
+--- @param changes table|nil
+--- @param opts table|nil
+--- @param needsPrewarm function
+--- @return string[]
+local function prewarmCharacterKeys(nextMap, existing, changes, opts, needsPrewarm)
+    nextMap = type(nextMap) == "table" and nextMap or {}
+    existing = type(existing) == "table" and existing or {}
+    changes = type(changes) == "table" and changes or {}
+    opts = type(opts) == "table" and opts or {}
+    local candidates = {}
+    if opts.clear == true or type(opts.base) == "table" then
+        for characterKey in pairs(nextMap) do
+            candidates[characterKey] = true
+        end
+    else
+        for characterKey, change in pairs(changes) do
+            if type(change) == "table" and change.remove ~= true and nextMap[characterKey] ~= nil then
+                candidates[characterKey] = true
+            end
+        end
+    end
+    local keys = {}
+    for characterKey in pairs(candidates) do
+        if existing[characterKey] == nil or needsPrewarm(characterKey) == true then
+            keys[#keys + 1] = characterKey
+        end
+    end
+    table.sort(keys)
+    return keys
+end
+
+--- Pure selection helper exposed for contract tests.
+StageApply.prewarmCharacterKeys = prewarmCharacterKeys
+
 --- A seated NPC standing on the stage leaves their seat dark (TOR-250); one leaving the stage gets the seat
 --- lit again.
 --- @param staged table<string, table> placements after the change
@@ -255,6 +294,7 @@ local function commitStageChanges(changes, opts)
         animateStageMoves = true,
         onlySteps = onlyStageCharacterKeys ~= nil and { 5 } or nil,
         onlyStageCharacterKeys = onlyStageCharacterKeys,
+        skipConditionReconcile = onlyStageCharacterKeys ~= nil,
     })
     -- The overlay camera's right-click walk over stage NPCs restarts from the first (TOR-538 / TOR-562).
     require("core.hud_player").resetStageLookCycle()
@@ -319,17 +359,12 @@ function StageApply.applyStageChanges(changes, opts)
         changes = merged
         opts = pendingEdit.opts
     end
-    local nextMap, _, err = buildNextPlacements(changes, opts)
+    local nextMap, existing, err = buildNextPlacements(changes, opts)
     if err ~= nil then
         return err
     end
     local NPCS = require("core.npcs")
-    local newcomers = {}
-    for ck in pairs(nextMap) do
-        if NPCS.needsPrewarm(ck) then
-            table.insert(newcomers, ck)
-        end
-    end
+    local newcomers = prewarmCharacterKeys(nextMap, existing, changes, opts, NPCS.needsPrewarm)
     if #newcomers == 0 and pendingEdit == nil then
         return commitStageChanges(changes, opts)
     end
