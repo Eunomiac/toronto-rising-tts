@@ -59,6 +59,40 @@ describe("applyLocal", () => {
     expect(next.seats.find((seat) => seat.color === "Pink")?.badges.etiquette).toBe(5);
   });
 
+  it("grows a five-dot advantage to six and leaves a lower cap alone", () => {
+    const base = fixtureSnapshot();
+    const seeded = {
+      ...base,
+      seats: base.seats.map((seat) => seat.color === "Pink"
+        ? {
+          ...seat,
+          playerData: {
+            stats: {
+              backgrounds: [
+                { name: "Allies", base: 5, temp: 0, max: 5 },
+                { name: "Linguistics", base: 2, temp: 0, max: 2 }
+              ]
+            }
+          }
+        }
+        : seat)
+    };
+    const allies = applyLocal(seeded, {
+      op: "advantageDotDelta", color: "Pink", type: "backgrounds", index: 1, expectName: "Allies", field: "base", delta: 1
+    });
+    const rows = allies.seats.find((seat) => seat.color === "Pink")?.playerData.stats as {
+      backgrounds: { name: string; base: number; max: number }[];
+    };
+    expect(rows.backgrounds[0]).toMatchObject({ base: 6, max: 6 });
+    const capped = applyLocal(seeded, {
+      op: "advantageDotDelta", color: "Pink", type: "backgrounds", index: 2, expectName: "Linguistics", field: "base", delta: 1
+    });
+    const cappedRows = capped.seats.find((seat) => seat.color === "Pink")?.playerData.stats as {
+      backgrounds: { base: number; max: number }[];
+    };
+    expect(cappedRows.backgrounds[1]).toMatchObject({ base: 2, max: 2 });
+  });
+
   it("bumps an owned discipline inside playerData and ignores unowned ones", () => {
     const base = fixtureSnapshot();
     const seeded = {

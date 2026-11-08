@@ -1,7 +1,7 @@
 import { useState, type ReactElement } from "react";
 import { CheckInput, Field, linesFromText, LinesInput, NumberInput, SelectInput, textFromLines, TextInput } from "./fields.js";
 import { SheetModal } from "./SheetModal.js";
-import { ADVANTAGE_CATEGORIES, ADVANTAGE_LABELS, MAX_TITLE_DOTS, type AdvantageCategory, type AdvantageEntry } from "./sheetData.js";
+import { ADVANTAGE_CATEGORIES, ADVANTAGE_LABELS, MAX_TITLE_DOTS, setAdvantageDots, setAdvantageSlots, type AdvantageCategory, type AdvantageEntry } from "./sheetData.js";
 import type { AdvantageDraft, ApplyCommand, SeatColor } from "./types.js";
 import { sheetArtUrl } from "./layout.js";
 
@@ -100,11 +100,29 @@ export const AdvantageModal = ({ color, entry, defaultType, send, onClose, portr
         ]} />
         {portrait ? <img className="pc-adv-portrait-preview" src={sheetArtUrl(portrait)} alt="Selected portrait" /> : null}
       </Field>
-      <Field label="Dots">
-        <NumberInput value={Math.min(base, max)} onChange={setBase} min={0} max={max} />
+      <Field label="Dots" hint={`Filled circles, up to ${MAX_TITLE_DOTS}. Raising this adds circles when the row is shorter.`}>
+        <NumberInput
+          value={Math.min(base, max)}
+          onChange={(dots) => {
+            const next = setAdvantageDots(dots, max);
+            setBase(next.base);
+            setMax(next.max);
+          }}
+          min={0}
+          max={MAX_TITLE_DOTS}
+        />
       </Field>
       <Field label="Dot slots" hint={`Empty circles in the title bar (1–${MAX_TITLE_DOTS}).`}>
-        <NumberInput value={max} onChange={setMax} min={1} max={MAX_TITLE_DOTS} />
+        <NumberInput
+          value={max}
+          onChange={(slots) => {
+            const next = setAdvantageSlots(base, slots);
+            setBase(next.base);
+            setMax(next.max);
+          }}
+          min={1}
+          max={MAX_TITLE_DOTS}
+        />
       </Field>
       <Field label="Temporary dots" hint="White dots after the base dots.">
         <NumberInput value={temp} onChange={setTemp} min={0} max={MAX_TITLE_DOTS} />

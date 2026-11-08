@@ -527,6 +527,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Character Sheets
 
+- [x] **Advantages can go to six dots:** Backgrounds, Merits, and Flaws can be rated up to six. The add-advantage dialog's Dots control goes to six and grows the row of circles, and a quick dot click on a five-dot advantage can add the sixth. A maximum set below five stays a real cap. Pending Save & Play. _(TOR-764)_
 - [x] **No-portrait Page 3 traits omit the image element:** Backgrounds, Merits, and Flaws only render a portrait block when a nonempty portrait was selected, so **No portrait** no longer produces a white box. Pending Save & Play. _(TOR-756)_
 - [x] **NPC portraits in The Court.** The `coterie` portrait recipient uploads to Global UI assets. Court Advantages accept the same `portrait` reference field as player relationships and can show or clear the image through their normal refresh. XML/FULL rebuild the Court from its dedicated source template. Pending FULL and in-game confirmation. _(TOR-751)_
 

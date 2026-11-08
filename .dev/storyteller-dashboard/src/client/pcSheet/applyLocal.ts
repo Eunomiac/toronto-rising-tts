@@ -1,4 +1,5 @@
 import { humanityHasImpairedSlot } from "./paint.js";
+import { advantageDotCap, MAX_TITLE_DOTS } from "./sheetData.js";
 import type { ApplyCommand, DamageMode, Rating, SeatSnapshot, SheetSnapshot, Tracker } from "./types.js";
 
 const clamp = (value: number, min: number, max: number): number =>
@@ -96,7 +97,7 @@ const patchDiscipline = (seat: SeatSnapshot, key: string, field: "base" | "temp"
   };
 };
 
-/** Same clamps as the Lua `advantageDotDelta`: 0..max (max defaults to 6). */
+/** Same clamps as the Lua `advantageDotDelta`: a stored max of 5 may grow to six; a lower max stays. */
 const patchAdvantage = (seat: SeatSnapshot, command: Extract<ApplyCommand, { op: "advantageDotDelta" }>): SeatSnapshot => {
   const stats = isRecord(seat.playerData.stats) ? seat.playerData.stats : {};
   const list = stats[command.type];
@@ -106,9 +107,17 @@ const patchAdvantage = (seat: SeatSnapshot, command: Extract<ApplyCommand, { op:
   if (!isRecord(row) || row.name !== command.expectName) {
     return seat;
   }
-  const max = clamp(typeof row.max === "number" ? row.max : 6, 1, 6);
+  const storedMax = clamp(typeof row.max === "number" ? row.max : MAX_TITLE_DOTS, 1, MAX_TITLE_DOTS);
+  const cap = advantageDotCap(storedMax);
   const current = typeof row[command.field] === "number" ? row[command.field] as number : 0;
-  rows[offset] = { ...row, [command.field]: clamp(current + command.delta, 0, max) };
+  const next = clamp(current + command.delta, 0, cap);
+  const base = command.field === "base" ? next : (typeof row.base === "number" ? row.base : 0);
+  const temp = command.field === "temp" ? next : (typeof row.temp === "number" ? row.temp : 0);
+  const filled = Math.max(0, base) + Math.max(0, temp);
+  const max = command.field !== "disabled" && storedMax >= 5 && filled > storedMax
+    ? clamp(filled, 1, MAX_TITLE_DOTS)
+    : storedMax;
+  rows[offset] = { ...row, [command.field]: next, max };
   return { ...seat, playerData: { ...seat.playerData, stats: { ...stats, [command.type]: rows } } };
 };
 

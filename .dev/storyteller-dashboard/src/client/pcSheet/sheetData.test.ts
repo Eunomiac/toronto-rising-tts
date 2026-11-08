@@ -11,6 +11,9 @@ import {
   ritualLayout,
   ritualsOf,
   statusDotSlots,
+  advantageDotCap,
+  setAdvantageDots,
+  setAdvantageSlots,
   traitDotSlots,
   unownedDisciplines,
   type AdvantageEntry
@@ -48,6 +51,22 @@ describe("advantage dots", () => {
 
   it("uses red for flaws and base as the slot count when max is missing", () => {
     expect(images(traitDotSlots(advantage({ category: "flaws", base: 2 }), 0))).toEqual(["dot_red", "dot_red"]);
+  });
+
+  it("paints six filled circles when the rating is six", () => {
+    expect(images(traitDotSlots(advantage({ category: "backgrounds", base: 6, max: 6 }), 0))).toEqual([
+      "dot_yellow", "dot_yellow", "dot_yellow", "dot_yellow", "dot_yellow", "dot_yellow"
+    ]);
+  });
+
+  it("lets a five-dot advantage grow to six, and keeps a lower cap", () => {
+    expect(advantageDotCap(5)).toBe(6);
+    expect(advantageDotCap(undefined)).toBe(6);
+    expect(advantageDotCap(2)).toBe(2);
+    expect(setAdvantageDots(6, 5)).toEqual({ base: 6, max: 6 });
+    expect(setAdvantageDots(4, 6)).toEqual({ base: 4, max: 6 });
+    expect(setAdvantageSlots(6, 4)).toEqual({ base: 4, max: 4 });
+    expect(setAdvantageDots(9, 5)).toEqual({ base: 6, max: 6 });
   });
 
   it("paints the Status strip left to right with filled slots only", () => {

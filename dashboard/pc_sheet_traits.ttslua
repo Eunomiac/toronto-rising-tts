@@ -382,9 +382,21 @@ M.ops.advantageDotDelta = function(color, pid, cmd)
   if field ~= "base" and field ~= "temp" and field ~= "disabled" then
     return "Invalid advantage dot field"
   end
-  local maxDots = clampInt(existing.max or MAX_TITLE_DOTS, 1, MAX_TITLE_DOTS)
-  local nextVal = clampInt((tonumber(existing[field]) or 0) + (tonumber(cmd.delta) or 0), 0, maxDots)
-  S.setStateVal(nextVal, "playerData", pid, "stats", cmd.type, math.floor(tonumber(cmd.index)), field)
+  local storedMax = clampInt(existing.max or MAX_TITLE_DOTS, 1, MAX_TITLE_DOTS)
+  -- A stored max of 5 is the old ceiling. The sixth dot is allowed, and the row grows to fit it.
+  -- A lower max is a deliberate cap.
+  local cap = storedMax >= 5 and MAX_TITLE_DOTS or storedMax
+  local nextVal = clampInt((tonumber(existing[field]) or 0) + (tonumber(cmd.delta) or 0), 0, cap)
+  local index = math.floor(tonumber(cmd.index))
+  S.setStateVal(nextVal, "playerData", pid, "stats", cmd.type, index, field)
+  if field == "base" or field == "temp" then
+    local base = field == "base" and nextVal or math.floor(tonumber(existing.base) or 0)
+    local temp = field == "temp" and nextVal or math.floor(tonumber(existing.temp) or 0)
+    local filled = math.max(0, base) + math.max(0, temp)
+    if storedMax >= 5 and filled > storedMax then
+      S.setStateVal(math.min(MAX_TITLE_DOTS, filled), "playerData", pid, "stats", cmd.type, index, "max")
+    end
+  end
   return nil
 end
 

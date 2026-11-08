@@ -288,6 +288,31 @@ export const advantageStakeKey = (name: string, focus: string): string => `${nam
 
 export const MAX_TITLE_DOTS = 6;
 
+const clampDot = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, Math.floor(Number.isFinite(value) ? value : min)));
+
+/**
+ * How high a quick dot click may go. A stored maximum of 5 is the old ceiling and may grow to
+ * six. A lower maximum is a deliberate cap (a 2-dot merit stays at 2).
+ */
+export const advantageDotCap = (storedMax: number | undefined): number => {
+  const max = clampDot(storedMax ?? MAX_TITLE_DOTS, 1, MAX_TITLE_DOTS);
+  return max >= 5 ? MAX_TITLE_DOTS : max;
+};
+
+/** Filled dots may rise to six. The row of circles grows so the new dot has a place. */
+export const setAdvantageDots = (dots: number, slots: number): { base: number; max: number } => {
+  const base = clampDot(dots, 0, MAX_TITLE_DOTS);
+  const max = clampDot(Math.max(slots, base), 1, MAX_TITLE_DOTS);
+  return { base: Math.min(base, max), max };
+};
+
+/** Shrinking the row also drops filled dots that would no longer fit. */
+export const setAdvantageSlots = (dots: number, slots: number): { base: number; max: number } => {
+  const max = clampDot(slots, 1, MAX_TITLE_DOTS);
+  return { base: clampDot(Math.min(dots, max), 0, max), max };
+};
+
 /** Status entries hidden from the sheet render as the Camarilla / Clan dot strip. */
 export const isStatusEntry = (entry: AdvantageEntry): boolean => entry.name === "Status" && !entry.sheetDisplay;
 

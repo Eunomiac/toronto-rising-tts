@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-764 — Advantages can be rated up to six dots
+
+> **Agent-assessment note:** The add dialog and the dot-count rules are covered by tests. You still need to look at the character sheet, because only the table shows whether the sixth circle sits cleanly in the title bar.
+
+**How to verify:** Save & Play, then restart the Storyteller Dashboard if it was already open. On the PCs tab, open a character and go to the advantages page. Click **+ Background**, name it Allies, and click the **Dots** plus button until it reads 6. The circle count beside it should rise to 6 as well. Click **Add**. The new box on the dashboard and on that player's character sheet in the game should show six filled circles. Open an existing advantage that already has five dots and raise **Dots** to 6 the same way; after you save, that box should gain the sixth circle too. An advantage you have capped below five should still refuse to go higher when you click its dots.
+
 #### 🟡 TOR-763 — Disconnected player's hand stays on the table
 
 > **Agent-assessment note:** The code no longer aims a hand zone under the table when a seat is parked. You still need to watch the cards, because Tabletop Simulator dropping a hand is something only the live table shows.
