@@ -192,6 +192,10 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
 
   /** Template choice, the archive, and ending a deck scene that is not on the table. */
   const setStatus = (key: string, status: SceneStatus): void => {
+    if (status === "ended" && scene?.liveKey === key) {
+      setNotice("That scene is on the table; use End Scene.");
+      return;
+    }
     const draft = findDraft(key);
     if (draft) {
       setPreviews(sceneDeckSnapshot().previews.map((row) => (row.key === key ? { ...row, status } : row)));
@@ -200,11 +204,7 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     if (!row) {
       return;
     }
-    if (status === "ended" && scene?.liveKey === key) {
-      setNotice("That scene is on the table; use End Scene.");
-      return;
-    }
-    putLibraryScene({ ...row, status });
+    putLibraryScene({ ...row, status, ...(status === "ended" ? { linked: false } : {}) });
     if (status === "ended") {
       removeFromDeck(key);
     }
@@ -232,7 +232,8 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       op: "preloadScene",
       key: row.key,
       title: row.title,
-      sessionScene: row.sessionScene
+      sessionScene: row.sessionScene,
+      ...(row.preloadNpcKeys?.length ? { preloadNpcKeys: row.preloadNpcKeys } : {})
     }]);
     setNotice(`Preloading the NPC figurines and lights for “${row.title}” in the background…`);
   };

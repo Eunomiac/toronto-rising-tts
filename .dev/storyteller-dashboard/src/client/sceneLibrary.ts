@@ -18,6 +18,7 @@ let status: SceneLibraryStatus = { loaded: false, error: null };
 let requested = false;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let seeding: Promise<void> | null = null;
+let pendingWrite = Promise.resolve();
 const listeners = new Set<() => void>();
 
 const notify = (): void => listeners.forEach((listener) => listener());
@@ -45,6 +46,13 @@ const request = async (method: "GET" | "PUT", body?: SceneLibraryPatch): Promise
   return normalizeSceneLibrary(payload);
 };
 
+/** Write in order, including live write-back and debounced editor saves. */
+const persist = (snapshot: SceneLibrary): Promise<void> => {
+  const write = pendingWrite.then(async () => { await request("PUT", snapshot); });
+  pendingWrite = write.catch(() => undefined);
+  return write;
+};
+
 /** TTS's rows (all, or only `keys`) via `GlobalDashboardSceneLibrarySnapshot`. */
 const readTtsScenes = async (keys?: readonly string[]): Promise<readonly LibraryScene[]> => {
   const argument = keys ? luaJsonArg(keys) : "";
@@ -61,7 +69,7 @@ const readTtsScenes = async (keys?: readonly string[]): Promise<readonly Library
 const save = async (): Promise<void> => {
   saveTimer = null;
   try {
-    await request("PUT", { scenes: library.scenes, seeded: library.seeded });
+    await persist(library);
     if (status.error) {
       setStatus({ ...status, error: null });
     }
@@ -111,7 +119,7 @@ export const importLegacySceneLibrary = async (): Promise<void> => {
   const merged = mergeFromTts(kept, tts.filter((row) => hotKeys.has(row.key)), true);
   library = { scenes: merged, seeded: true };
   notify();
-  await request("PUT", { scenes: library.scenes, seeded: true });
+  await persist(library);
   if (snapshot.legacy) {
     await acknowledge([{ op: "ackSceneLibraryImport" }]);
   }
@@ -185,7 +193,7 @@ export const pullScenesFromTts = async (keys?: readonly string[], adopt = false)
   if (merged !== library.scenes) {
     library = { ...library, scenes: merged };
     notify();
-    await request("PUT", { scenes: library.scenes, seeded: library.seeded });
+    await persist(library);
   }
   const departed = keys?.filter((key) => tts.some((row) => row.key === key && !row.linked)) ?? [];
   if (departed.length > 0) {

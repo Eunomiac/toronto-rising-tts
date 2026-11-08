@@ -9,7 +9,7 @@ const [npcs, dashboard, commands, actions, glance] = await Promise.all([
   readFile(".dev/storyteller-dashboard/src/client/scenesPanel/glance.tsx", "utf8"),
 ]);
 
-assert.ok(npcs.includes("function NPCS.preloadSceneNpcs(sessionScene, sceneTitle)"), "NPC module must expose scene preload");
+assert.ok(npcs.includes("function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)"), "NPC module must expose scene preload");
 assert.ok(npcs.includes("function NPCS.inspectPreloadPool()"), "NPC module must expose an explicit pool diagnostic");
 assert.ok(npcs.includes("local batchSize = 2"), "preload spawning must stay bounded to two pairs per batch");
 assert.ok(npcs.includes("releaseOrDespawnNpcInstance(name)"), "untargeted reconciles must return reserved pairs to the pool");

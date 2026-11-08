@@ -27,6 +27,7 @@ import { useControlBoardSnaps } from "./roster";
 import { ADD_CORNER, freeSlotNear, stageSpots } from "./stage";
 import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
 import { useWorldState } from "../worldState";
+import { OffstagePreload } from "./offstagePreload";
 
 const NO_PENDING: Readonly<Record<string, string>> = {};
 
@@ -55,7 +56,7 @@ const withAddedGenerics = (scene: LibraryScene, command: Extract<ScenesCommand, 
  * laid out fresh when the draft's table goes to Scatter. The left column is the table's notes-and-roster dock: roster
  * NPCs drop onto the draft's stage, and generics join the draft (`genericMembership`, spawned by TTS when the scene plays).
  */
-export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }: {
+export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange, onPreload }: {
   draft: LibraryScene;
   /** The library copy, for the location's Release; absent for a new scene. */
   saved: LibraryScene | undefined;
@@ -65,6 +66,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
   h: number;
   /** Rewrites the stored draft (always the latest copy, not this render's). */
   onChange: (update: (scene: LibraryScene) => LibraryScene) => void;
+  onPreload: () => void;
 }): ReactElement => {
   const box = previewLayout(w, h);
   const tableSeats = useWorldState().seats?.seats ?? [];
@@ -132,6 +134,15 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
       </Box>
       <Box {...box.notes} className="lab-borderless lab-dock-box">
         <RosterDock scene={draft.title} />
+      </Box>
+      <Box {...box.preload}>
+        <OffstagePreload
+          named={catalogs?.namedNpcs ?? []}
+          selected={draft.preloadNpcKeys ?? []}
+          onAdd={(keys) => onChange((scene) => ({ ...scene, preloadNpcKeys: [...new Set([...(scene.preloadNpcKeys ?? []), ...keys])] }))}
+          onRemove={(key) => onChange((scene) => ({ ...scene, preloadNpcKeys: (scene.preloadNpcKeys ?? []).filter((id) => id !== key) }))}
+          onPreload={onPreload}
+        />
       </Box>
       <Box {...box.when} className="lab-backdrop-box">
         <WhenPanel

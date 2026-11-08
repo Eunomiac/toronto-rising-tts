@@ -147,6 +147,10 @@ const preloadScene = {
     },
   },
 };
+const greenScene = { ...preloadScene, key: "departing_verification", title: "Departing verification", status: "ongoing" };
+const offstageNpc = catalogs.namedNpcs.find((entry) => entry.characterKey !== npc && entry.filename);
+assert(offstageNpc, "The fixture needs a second NPC with figurine art");
+world.scene.departedKey = greenScene.key;
 const output = path.join(os.tmpdir(), "toronto-rising-dnd-smoke");
 fs.mkdirSync(output, { recursive: true });
 const executablePath =
@@ -174,12 +178,20 @@ try {
     fs.readFileSync(new URL("../data/npc-roster.json", import.meta.url)),
   ).layout;
   await page.route("**/api/roll-chronicle", (route) => route.fulfill({ json: { entries: [], permanent: {} } }));
-  await page.route("**/api/scene-deck", (route) =>
-    route.fulfill({ json: { deck: [], previews: [], notes: {}, roster } }),
-  );
-  await page.route("**/api/scene-library", (route) =>
-    route.fulfill({ json: { scenes: [preloadScene], seeded: true } }),
-  );
+  await page.route("**/api/tts/events", (route) => route.fulfill({ contentType: "text/event-stream", body: ": browser fixture\n\n" }));
+  let deckFile = { deck: [], previews: [], notes: {}, roster, seeded: true };
+  let libraryFile = { scenes: [preloadScene, greenScene], seeded: true };
+  await page.route("**/api/scene-deck", (route) => {
+    if (route.request().method() === "PUT") deckFile = { ...deckFile, ...route.request().postDataJSON() };
+    return route.fulfill({ json: deckFile });
+  });
+  await page.route("**/api/scene-library", (route) => {
+    if (route.request().method() === "PUT") libraryFile = { ...libraryFile, ...route.request().postDataJSON() };
+    return route.fulfill({ json: libraryFile });
+  });
+  let releaseWriteBack;
+  const waitForHold = new Promise((resolve) => { releaseWriteBack = resolve; });
+  let returnedStaleRow = false;
   await page.route("**/api/npc-stats", (route) =>
     route.fulfill({
       json: {
@@ -210,6 +222,11 @@ try {
       : script.includes("GlobalDashboardPcSheetSnapshot")
         ? { ok: true, seats: [] }
         : { ok: true };
+    if (!returnedStaleRow && script.includes("GlobalDashboardSceneLibrarySnapshot") && script.includes(greenScene.key)) {
+      await waitForHold;
+      returnedStaleRow = true;
+      value = { ok: true, order: [greenScene.key], scenes: { [greenScene.key]: greenScene } };
+    }
     await route.fulfill({
       json: { prints: [], returnValue: JSON.stringify(value) },
     });
@@ -229,6 +246,19 @@ try {
     await page.locator("[data-tr-dnd-roll]").count(),
   );
 
+  const greenChip = page.locator(`[data-tr-dnd-deck="${greenScene.key}"][data-tr-dnd-deck-status="ongoing"]`);
+  await greenChip.hover();
+  await page.mouse.down();
+  await greenChip.waitFor({ state: "hidden" });
+  await page.mouse.up();
+  const writeBackAck = page.waitForResponse((response) => response.url().endsWith("/api/tts/execute-lua")
+    && response.request().postDataJSON().script.includes('"op":"ackSceneWriteBack"')
+    && response.request().postDataJSON().script.includes(greenScene.key));
+  releaseWriteBack();
+  await writeBackAck;
+  assert.equal(await greenChip.count(), 0, "a delayed write-back reopened the ended scene");
+  console.log("PASS holding a green scene ends it even when an ongoing snapshot arrives afterwards");
+
   await page.getByRole("button", { name: "Scene ▸", exact: true }).click();
   const preloadRow = page.locator(".lab-advance-list li").filter({ hasText: preloadScene.title });
   await page.screenshot({ path: path.join(output, "scene-preload-control.png") });
@@ -236,6 +266,43 @@ try {
   await page.waitForTimeout(150);
   assert(commands.some((script) => script.includes('"op":"preloadScene"') && script.includes(preloadScene.key)));
   console.log("PASS scene library Preload sends the complete scene command");
+  await preloadRow.getByRole("button", { name: "Edit", exact: true }).click();
+  const offstage = page.getByRole("region", { name: "Offstage preload" });
+  await offstage.getByRole("textbox", { name: "Search offstage NPCs" }).fill(offstageNpc.characterKey);
+  await offstage.getByRole("button", { name: "Add", exact: true }).click();
+  const removeOffstage = offstage.getByRole("button", { name: `Remove ${offstageNpc.fullName} from offstage preload` });
+  await removeOffstage.click();
+  await removeOffstage.waitFor({ state: "hidden" });
+  const preview = page.locator(".lab-gpreview");
+  await preview.getByRole("button", { name: "NPC Roster" }).click();
+  await preview.locator('.lab-group[draggable="true"]').first().click();
+  const rosterToken = preview.locator(".lab-group.open [data-tr-dnd-roster]").first();
+  const rosterKey = await rosterToken.getAttribute("data-tr-dnd-roster");
+  const rosterNpc = catalogs.namedNpcs.find((entry) => entry.characterKey === rosterKey);
+  assert(rosterNpc?.filename);
+  await rosterToken.dragTo(offstage, { targetPosition: { x: 40, y: 120 } });
+  await offstage.getByRole("button", { name: `Remove ${rosterNpc.fullName} from offstage preload` }).click();
+  await preview.getByRole("button", { name: "NPC Roster" }).click();
+  await offstage.getByRole("button", { name: "Add", exact: true }).click();
+  await removeOffstage.waitFor();
+  const sentOffstage = page.waitForResponse((response) =>
+    response.url().endsWith("/api/tts/execute-lua")
+    && response.request().postDataJSON().script.includes(`"preloadNpcKeys":["${offstageNpc.characterKey}"]`));
+  await offstage.getByRole("button", { name: "Preload now" }).click();
+  const preloadRequest = await sentOffstage;
+  const preloadScript = preloadRequest.request().postDataJSON().script;
+  assert(preloadScript.includes('"op":"preloadScene"'));
+  assert(preloadScript.includes(`"placements":{"${npc}":`));
+  assert(!preloadScript.includes(`"${offstageNpc.characterKey}":`));
+  await page.screenshot({ path: path.join(output, "offstage-preload-editor.png") });
+  const savedDraft = page.waitForResponse((response) => response.url().endsWith("/api/scene-library")
+    && response.request().method() === "PUT"
+    && response.request().postDataJSON().scenes.some((row) => row.key === preloadScene.key && row.preloadNpcKeys?.includes(offstageNpc.characterKey)));
+  await page.locator(".lab-gpreview").getByRole("button", { name: "Save", exact: true }).click();
+  await savedDraft;
+  assert.deepEqual(libraryFile.scenes.find((row) => row.key === preloadScene.key).sessionScene, preloadScene.sessionScene);
+  assert.equal(libraryFile.scenes.find((row) => row.key === greenScene.key).status, "ended");
+  console.log("PASS scene editor saves and preloads offstage NPCs without changing placements");
   await page.keyboard.press("Escape");
 
   await page.locator('.lab-conditions-head').first().click();

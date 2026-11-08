@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
+import { parseLibraryScene } from "../../shared/sceneLibrary";
 import {
   applyToDraft,
   draftGenerics,
@@ -56,6 +57,19 @@ describe("TTS library snapshot", () => {
 });
 
 describe("mergeFromTts", () => {
+  it("does not reopen a deck scene ended while its final TTS write-back was in flight", () => {
+    const local = [scene("a", { status: "ended" })];
+    const departed = scene("a", { status: "ongoing", linked: true });
+    expect(mergeFromTts(local, [departed], true)).toBe(local);
+  });
+
+  it("retains dashboard-only preload selections when TTS writes back a scene", () => {
+    const local = parseLibraryScene({ ...scene("a"), preloadNpcKeys: ["newNpc", "newNpc", "invalid key"] })!;
+    const theirs = scene("a", { linked: true, sessionScene: { siteKey: "theNewSite" } });
+    expect(mergeFromTts([local], [theirs], true)).toEqual([{ ...theirs, preloadNpcKeys: ["newNpc"] }]);
+    expect(local.sessionScene).not.toHaveProperty("preloadNpcKeys");
+  });
+
   it("takes linked rows from TTS, keeps dashboard edits otherwise, and appends TTS-only rows", () => {
     const local = [scene("a", { title: "Edited" }), scene("b", { linked: true }), scene("dashOnly")];
     const tts = [scene("a", { title: "Old" }), scene("b", { title: "Live", linked: true }), scene("fork")];

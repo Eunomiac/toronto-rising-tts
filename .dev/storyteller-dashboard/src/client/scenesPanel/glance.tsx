@@ -3165,6 +3165,8 @@ const useHoldToConfirm = (onHold: () => void): {
   };
 } => {
   const [holding, setHolding] = useState(false);
+  const onHoldRef = useRef(onHold);
+  onHoldRef.current = onHold;
   const timers = useRef<number[]>([]);
   const held = useRef(false);
   useEffect(() => {
@@ -3197,7 +3199,7 @@ const useHoldToConfirm = (onHold: () => void): {
           }, HOLD_DELAY_MS),
           window.setTimeout(() => {
             cancel();
-            onHold();
+            onHoldRef.current();
           }, HOLD_DELAY_MS + HOLD_FILL_MS)
         ];
       },

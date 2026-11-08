@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-762 — Preload NPCs for a later entrance
+
+**How to verify:** Save & Play, then open a scene in the dashboard editor. Add an NPC who is neither on its stage nor in its seating plan. Click Preload now and wait for the preload notice. Play the scene and confirm that NPC is still offstage. Then place them from the roster and check that the figurine and light appear normally.
+
+The browser check covers saving the list, picking and dragging NPCs, and the command sent to TTS. The live check confirms the hidden figurine and light can be reused after a transition.
+
 #### 🟡 TOR-761 — Dice bags and signal candle accept clicks after seating
 
 **How to verify:** After Save & Play, have Rashid toggle the signal candle before the first scene change. During a Standard roll, have him click the Standard bag repeatedly in quick succession, past his Hunger rating, both before and after you Open the roll. Each click while building the pool should add one die, and the Standard bag should stay clear. Repeat after a scene change and with another player seat if available.

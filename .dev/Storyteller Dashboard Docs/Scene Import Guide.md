@@ -38,6 +38,8 @@ TTS keeps the scene on the table in `gameState.sessionScene`, plus a thin note i
 
 Play sends the scene body in `playScene`. TTS applies that body. It does not look up a stored row first.
 
+The editor's **Offstage preload** list belongs to the dashboard row as `preloadNpcKeys`. Use **Preload now** in the editor or **Preload** in the library to warm the extra figures along with the scene's starting cast. The list stays separate from `sessionScene`, so live write-back preserves it and Play does not turn it into placements.
+
 An old save may still contain `sceneLibrary.scenes`. The first time the dashboard connects, it copies any of those scenes the file does not already have, then tells TTS to drop the map (`ackSceneLibraryImport`). Until that happens, loading the save keeps the old map.
 
 The in-game Scene Library column is gone. Switching scenes is a dashboard action.
@@ -66,6 +68,7 @@ The in-game Scene Library column is gone. Switching scenes is a dashboard action
 | `upsertScene` | `key`, `title`, `placementMode`, `sessionScene`, `status?` | Writes the row (see [What TTS checks](#what-tts-checks-on-upsertscene)). `status` only applies to a row TTS does not have yet; an existing row keeps TTS's status. The row linked to the table only takes the new `title` (the table keeps writing its `sessionScene`), and skips the checks. New keys are appended to `order`. |
 | `playScene` | `key`, `from` (`scene` \| `present`), `plusMinutes` (whole minutes ≥ 0), `pace` (`x2` \| `x5`) | Selects the row and applies it to the table. Refuses unknown keys, `template` and `ended` rows. Needs the Storyteller in the game. See [Present day clock](#present-day-clock-clockispresentday). |
 | `endScene` | — | End Scene (needs the Storyteller in the game). |
+| `preloadScene` | `key`, `title`, `sessionScene`, optional `preloadNpcKeys` | Warm figurines and lights for the starting cast and offstage list in the hidden pool. |
 | `setSceneStatus` | `key`, `status` | `new` / `ongoing` / `ended` / `template`. Refuses `ended` for the scene on the table (use End Scene). |
 | `deleteScene` | `key` | Removes the row from `scenes` and `order` (clears `activeKey` if selected). Refuses the scene on the table. Unknown keys are a no-op. |
 | `unlinkScene` | — | Stops live writes into the table's row. |

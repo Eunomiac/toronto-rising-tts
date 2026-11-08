@@ -11,11 +11,12 @@ const ASPECT_H = 114;
 const WHEN_W = 470;
 const WEATHER_W = 380;
 const CONDITIONS_W = 265;
+const PRELOAD_H = 180;
 
 type Rect = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
 
 /** Where each panel sits inside a preview of size `w` × `h` (the table's layout, under the tab row). */
-export const previewLayout = (w: number, h: number): Readonly<Record<"location" | "notes" | "when" | "weather" | "sound" | "aspects" | "conditions" | "board", Rect>> => {
+export const previewLayout = (w: number, h: number): Readonly<Record<"location" | "notes" | "preload" | "when" | "weather" | "sound" | "aspects" | "conditions" | "board", Rect>> => {
   const top = HEAD_H + G;
   const rightX = G + LEFT_W + G;
   const rightW = w - rightX - G;
@@ -24,7 +25,8 @@ export const previewLayout = (w: number, h: number): Readonly<Record<"location" 
   const boardY = aspectY + ASPECT_H + G;
   return {
     location: { x: G, y: top, w: LEFT_W, h: STRIP_H },
-    notes: { x: G, y: aspectY, w: LEFT_W, h: h - aspectY - G },
+    notes: { x: G, y: aspectY, w: LEFT_W, h: h - aspectY - PRELOAD_H - 2 * G },
+    preload: { x: G, y: h - PRELOAD_H - G, w: LEFT_W, h: PRELOAD_H },
     when: { x: rightX, y: top, w: WHEN_W, h: STRIP_H },
     weather: { x: rightX + WHEN_W + G, y: top, w: WEATHER_W, h: STRIP_H },
     sound: { x: soundX, y: top, w: w - G - soundX, h: STRIP_H },

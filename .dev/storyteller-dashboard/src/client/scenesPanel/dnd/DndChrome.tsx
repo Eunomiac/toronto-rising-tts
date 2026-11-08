@@ -22,6 +22,12 @@ type Props = {
 };
 
 const EDGES: readonly PanelEdge[] = ["A", "B", "C"];
+const isPreviewPreloadDrop = (event: DragEvent): boolean => {
+  const kind = getDndSession().payload?.dragKind;
+  return (kind === "npcRoster" || kind === "npcRosterGroup")
+    && event.target instanceof Element
+    && event.target.closest("[data-tr-dnd-scene-preload]") !== null;
+};
 
 /**
  * Canvas overlay: veil + edge slide-outs + hover bins. Mount once on the Scenes canvas.
@@ -69,6 +75,10 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
         return;
       }
       const point = { x: event.clientX, y: event.clientY };
+      if (isPreviewPreloadDrop(event)) {
+        moveDrag(point, null);
+        return;
+      }
       const { highlight, hover, target } = sessionTargetsAt(point, payload.dragKind);
       const cell = matrixCell(payload.dragKind, target.dropKind);
       if (event.dataTransfer && (cell.kind === "noop" || cell.kind === "impossible" || (cell.kind === "panel" && !highlight))) {
@@ -78,7 +88,7 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
     };
     const onDrop = (event: DragEvent): void => {
       const payload = getDndSession().payload;
-      if (!payload) {
+      if (!payload || isPreviewPreloadDrop(event)) {
         return;
       }
       event.preventDefault();

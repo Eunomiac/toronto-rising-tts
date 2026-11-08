@@ -89,6 +89,7 @@ export type ScenesCommand =
     readonly key: string;
     readonly title: string;
     readonly sessionScene: Readonly<Record<string, unknown>>;
+    readonly preloadNpcKeys?: readonly string[];
   }
   | { readonly op: "endScene" }
   | {

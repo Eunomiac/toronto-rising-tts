@@ -3177,14 +3177,42 @@ end
 --- paths never scan the registry or schedule pool batches.
 --- @param sessionScene table
 --- @param sceneTitle string|nil
+--- @param preloadNpcKeys string[]|nil Extra cast members with no scene placement.
 --- @return string|nil error
-function NPCS.preloadSceneNpcs(sessionScene, sceneTitle)
+function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
     if U.Type(sessionScene) ~= "table" then
         return "Preload needs a scene body."
     end
     local Pool = require("core.npc_preload_pool")
     local DATA = require("lib.npcs_data")
     local wanted = {}
+    if preloadNpcKeys ~= nil then
+        if U.Type(preloadNpcKeys) ~= "table" or #preloadNpcKeys > Pool.GRID_CAPACITY then
+            return "Offstage preload needs a list of NPC keys within the pool capacity."
+        end
+        local art = require("lib.npc_art_urls")
+        local extraGenerics = {}
+        for index, key in pairs(preloadNpcKeys) do
+            if type(index) ~= "number" or index < 1 or index > #preloadNpcKeys
+                or index ~= math.floor(index) or not validateNpcNameKey(key) then
+                return "Offstage preload needs a list of NPC keys."
+            end
+            local generic = DATA.resolveGenericNpcEntry(key)
+            if NPCS.characters[key] == nil and generic == nil then
+                return "Unknown offstage NPC: " .. key
+            end
+            if art[key] == nil then
+                return "Offstage NPC has no figurine art: " .. key
+            end
+            if generic ~= nil and NPCS.characters[key] == nil then
+                extraGenerics[key] = generic
+            end
+            wanted[key] = true
+        end
+        for key, generic in pairs(extraGenerics) do
+            NPCS.registerGenericCharacter(key, generic.label)
+        end
+    end
     local genericMembership = U.Type(sessionScene.npcWorld) == "table"
         and sessionScene.npcWorld.genericMembership or nil
     if U.Type(genericMembership) == "table" then

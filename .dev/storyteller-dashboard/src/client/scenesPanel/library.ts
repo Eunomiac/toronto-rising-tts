@@ -82,8 +82,13 @@ export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly Libra
     if (!theirs) {
       return scene;
     }
+    // The dashboard can end a scene after it leaves the table. An in-flight
+    // snapshot from before that action must not put the scene back on the deck.
+    if (scene.status === "ended" && theirs.status !== "ended") {
+      return scene;
+    }
     const next = theirs.linked || adopt
-      ? theirs
+      ? { ...theirs, ...(scene.preloadNpcKeys ? { preloadNpcKeys: scene.preloadNpcKeys } : {}) }
       : scene.linked || scene.status !== theirs.status
         ? { ...scene, linked: false, status: theirs.status }
         : scene;

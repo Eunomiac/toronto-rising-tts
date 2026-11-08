@@ -1,0 +1,38 @@
+.lab-offstage-preload {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: 100%;
+  padding: 7px;
+}
+
+.lab-offstage-preload header,
+.lab-offstage-preload-picker,
+.lab-offstage-preload li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lab-offstage-preload header,
+.lab-offstage-preload li {
+  justify-content: space-between;
+}
+
+.lab-offstage-preload p,
+.lab-offstage-preload ul {
+  margin: 0;
+}
+
+.lab-offstage-preload-picker input,
+.lab-offstage-preload-picker select {
+  flex: 1;
+  min-width: 0;
+}
+
+.lab-offstage-preload ul {
+  min-height: 0;
+  overflow: auto;
+  padding: 0;
+  list-style: none;
+}

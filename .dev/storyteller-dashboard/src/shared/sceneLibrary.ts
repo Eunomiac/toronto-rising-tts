@@ -26,6 +26,8 @@ export type LibraryScene = {
   /** TTS's `receivesLiveWrites`: while this scene is on the table, TTS writes the live scene into the row. */
   readonly linked: boolean;
   readonly status: SceneStatus;
+  /** Extra figurines to warm explicitly, independent of stage and seat placement. */
+  readonly preloadNpcKeys?: readonly string[];
   /** TTS's `sessionScene`; the dashboard edits only the fields it knows and passes the rest through. */
   readonly sessionScene: Readonly<Record<string, unknown>>;
 };
@@ -45,17 +47,22 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 export const SCENE_KEY_PATTERN = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+const NPC_KEY_PATTERN = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 export const parseLibraryScene = (value: unknown): LibraryScene | null => {
   if (!isRecord(value) || typeof value.key !== "string" || !SCENE_KEY_PATTERN.test(value.key) || typeof value.title !== "string") {
     return null;
   }
+  const preloadNpcKeys = Array.isArray(value.preloadNpcKeys)
+    ? [...new Set(value.preloadNpcKeys.filter((key): key is string => typeof key === "string" && NPC_KEY_PATTERN.test(key)))]
+    : [];
   return {
     key: value.key,
     title: value.title,
     placementMode: value.placementMode === "scatter" ? "scatter" : "standard",
     linked: value.linked === true,
     status: parseSceneStatus(value.status),
+    ...(preloadNpcKeys.length > 0 ? { preloadNpcKeys } : {}),
     sessionScene: isRecord(value.sessionScene) ? value.sessionScene : {}
   };
 };

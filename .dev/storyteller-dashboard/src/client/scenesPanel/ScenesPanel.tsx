@@ -745,6 +745,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                       catalogs={catalogs}
                       w={w}
                       h={h}
+                      onPreload={() => library.actions.preload(draft.key)}
                       onChange={(update) => library.updateDraft(draft.key, update)}
                     />
                   ) : <Waiting text="This scene is no longer being prepared." />;

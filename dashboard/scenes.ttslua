@@ -68,7 +68,7 @@
                                           (`from` present, which moves present day on); real time runs at
                                           ×2, or (`pace` x5) at ×5 until it reaches present day; refuses
                                           template and ended scenes
-    preloadScene      key, title, sessionScene
+    preloadScene      key, title, sessionScene, preloadNpcKeys?
                                           warm that scene's NPC figurine/light packages in a bounded hidden pool;
                                           the ordinary on-demand spawn path remains the fallback
     endScene                              end the live scene
@@ -462,7 +462,7 @@ local function applyCommand(cmd)
     if type(cmd.sessionScene) ~= "table" then
       return "preloadScene needs the scene body from the dashboard."
     end
-    return require("core.npcs").preloadSceneNpcs(cmd.sessionScene, cmd.title)
+    return require("core.npcs").preloadSceneNpcs(cmd.sessionScene, cmd.title, cmd.preloadNpcKeys)
   end
   if op == "setSceneStatus" then
     return require("dashboard.scene_library").setStatus(cmd)
