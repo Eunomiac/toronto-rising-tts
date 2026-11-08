@@ -10,7 +10,7 @@
       [3]        backgrounds / merits / flaws + project stake quantity per entry
       [4]        relationship entries linked to the character
       [5]        Projects.fingerprintPage5 (already covers present-day dates)
-      [6]        live-session XP block, xpLogPage, sessionNum
+      [6]        full Experience Log, xpLogPage, sessionNum
     Pages 7-8 paint nothing and are never called from Global.
 ]]
 
@@ -123,10 +123,17 @@ function CSL.compute(color)
     end
 
     local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+    -- Whole log, not only the current session: a dashboard JSON edit of an older
+    -- session must still mark page 6 dirty. Normalize first so key shape and
+    -- recomputed totals match what paint writes.
+    local xpLog = pd.xp
+    if type(xpLog) == "table" then
+        XpLog.scrubLogTable(xpLog)
+    end
     local xp = table.concat({
         tostring(sessionNum),
         tostring(pd.xpLogPage),
-        fp(XpLog.getSessionBlock(pid, sessionNum), nil),
+        fp(xpLog, nil),
     }, "\1")
 
     return {

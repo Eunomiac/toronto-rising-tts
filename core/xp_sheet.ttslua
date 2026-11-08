@@ -1,6 +1,11 @@
 --[[
-  Page 6 Experience Log: live session paint, pagination, bake-mismatch warn.
+  Page 6 Experience Log: paint, pagination, bake-mismatch warn.
   Global VM — called via GlobalPaintXpLogPage6 / GlobalXpLogNavigate.
+
+  The mid-week bake lays out one row per gain and spend that existed then.
+  Paint copies the live log into those rows (current session and older ones).
+  A session or extra row the bake did not create stays stored and is warned once;
+  it cannot appear until the next bake and Save & Play.
 ]]
 
 local S = require("core.state")
@@ -15,6 +20,14 @@ local XpSheet = {}
 
 --- @type table<string, boolean>
 local warnedBakeMismatch = {}
+
+--- One warning per seat and gap (a session, or a row overflow, the bake cannot draw).
+--- @type table<string, boolean>
+local warnedStructureGap = {}
+
+--- Current-session overflow is warned once per seat (paint runs on any log edit).
+--- @type table<string, boolean>
+local warnedLiveCap = {}
 
 local function bakePack()
   return Bake.getPack and Bake.getPack() or Bake
@@ -64,11 +77,117 @@ local function setObjAttrs(obj, id, attrs)
   end
 end
 
---- Build ordered session list for pagination (newest first): live + finished from bake + state.
+--- @param pid string
+--- @return string|nil
+local function charKeyForPid(pid)
+  local staticRow = C.PlayerData[pid]
+  if U.Type(staticRow) == "table" and type(staticRow.charKey) == "string" and staticRow.charKey ~= "" then
+    return staticRow.charKey
+  end
+  return nil
+end
+
+--- Baked older-session slot counts, keyed by session number.
+--- The count is how many row elements the sheet XML actually has.
+--- @param pid string
+--- @return table<number, table>
+local function bakedSessionsByNum(pid)
+  local bake = bakePack()
+  local ck = charKeyForPid(pid)
+  local entry = ck and bake.byCharKey and bake.byCharKey[ck] or nil
+  local sessions = entry and entry.sessions or {}
+  local byNum = {}
+  for i = 1, #sessions do
+    local s = sessions[i]
+    if type(s) == "table" then
+      byNum[math.floor(tonumber(s.sessionNum) or 0)] = s
+    end
+  end
+  return byNum
+end
+
+--- Rows the sheet can show: log length, capped by elements the bake created.
+--- @param block table|nil
+--- @param binName string
+--- @param slotCap number
+--- @return number
+local function visibleBinCount(block, binName, slotCap)
+  if block == nil or slotCap <= 0 then
+    return 0
+  end
+  local rows = block[binName]
+  local n = U.Type(rows) == "table" and #rows or 0
+  if n > slotCap then
+    return slotCap
+  end
+  return n
+end
+
+--- @param obj Object
+--- @param token string
+--- @param block table
+--- @param sessionNum number
+local function paintSessionHeader(obj, token, block, sessionNum)
+  setObjAttrs(obj, "xp_sessionNum_" .. token, {
+    text = XD.sessionTitleUpper(block.sessionDisplay, sessionNum),
+  })
+  setObjAttrs(obj, "xp_sessionDate_" .. token, {
+    text = XD.formatShortDate(block.date),
+  })
+  setObjAttrs(obj, "xp_summation_" .. token, {
+    text = XD.formatSummation(block.prevTotal, block.gainTotal, block.spendTotal),
+  })
+  setObjAttrs(obj, "xp_total_" .. token, {
+    text = tostring(math.floor(tonumber(block.newTotal) or 0)) .. " XP",
+  })
+end
+
+--- Fill or hide one side's existing row slots. `side` is "gain" or "spend".
+--- @param obj Object
+--- @param token string
+--- @param side string
+--- @param rows table
+--- @param slotCap number
+local function paintBinRows(obj, token, side, rows, slotCap)
+  local itemPrefix = side == "spend" and "xp_item_right_" or "xp_item_left_"
+  local numPrefix = side == "spend" and "xp_spendNum_" or "xp_gainNum_"
+  local descPrefix = side == "spend" and "xp_spendDesc_" or "xp_gainDesc_"
+  local sign = side == "spend" and "−" or "+"
+  for i = 1, slotCap do
+    local row = rows[i]
+    local itemId = itemPrefix .. token .. "_" .. tostring(i)
+    if row ~= nil then
+      setObjAttrs(obj, itemId, { active = "true" })
+      setObjAttrs(obj, numPrefix .. token .. "_" .. tostring(i), {
+        text = sign .. tostring(row.amount) .. " XP",
+      })
+      setObjAttrs(obj, descPrefix .. token .. "_" .. tostring(i), {
+        text = tostring(row.description or ""),
+      })
+    else
+      setObjAttrs(obj, itemId, { active = "false" })
+    end
+  end
+end
+
+--- @param color string
+--- @param detailKey string
+--- @param message string
+local function warnStructureGap(color, detailKey, message)
+  local id = tostring(color) .. "\1" .. detailKey
+  if warnedStructureGap[id] then
+    return
+  end
+  warnedStructureGap[id] = true
+  XpLog.warnStoryteller(message)
+end
+
+--- Build ordered session list for pagination (newest first): live + older sessions.
+--- Older sessions use the live log, limited to the rows the bake created.
+--- With no log table at all, keep the baked line counts so the sheet is not blanked.
 --- @param pid string
 --- @return table array of { sessionNum, lineCount, isLive }
 local function buildSessionMeta(pid)
-  local bake = bakePack()
   local liveN = liveSessionId()
   local meta = {}
   local liveBlock = XpLog.getSessionBlock(pid, math.floor(tonumber(S.getStateVal("sessionNum")) or liveN))
@@ -87,33 +206,36 @@ local function buildSessionMeta(pid)
     }
   end
 
-  local ck = nil
-  local staticRow = C.PlayerData[pid]
-  if U.Type(staticRow) == "table" then
-    ck = staticRow.charKey
+  local hasLog = U.Type(S.getStateVal("playerData", pid, "xp")) == "table"
+  local baked = bakedSessionsByNum(pid)
+  local finishedNums = {}
+  for sn, _ in pairs(baked) do
+    finishedNums[#finishedNums + 1] = sn
   end
-  local entry = ck and bake.byCharKey and bake.byCharKey[ck] or nil
-  local sessions = entry and entry.sessions or {}
+  table.sort(finishedNums, function(a, b)
+    return a > b
+  end)
   local finished = {}
-  for i = 1, #sessions do
-    local s = sessions[i]
-    if type(s) == "table" then
-      local sn = math.floor(tonumber(s.sessionNum) or 0)
-      -- Finished = any key below the live session (includes negative pre-session keys).
-      if sn < liveN then
-        local g = math.floor(tonumber(s.gainCount) or 0)
-        local sp = math.floor(tonumber(s.spendCount) or 0)
-        local lines = math.floor(tonumber(s.lineCount) or 0)
-        if lines <= 0 then
-          lines = XD.sessionLineCount(g, sp)
-        end
-        if g > 0 or sp > 0 then
-          finished[#finished + 1] = {
-            sessionNum = sn,
-            lineCount = lines,
-            isLive = false,
-          }
-        end
+  for i = 1, #finishedNums do
+    local sn = finishedNums[i]
+    local s = baked[sn]
+    -- Finished = any key below the live session (includes negative pre-session keys).
+    if sn < liveN and type(s) == "table" then
+      local gainSlots = math.floor(tonumber(s.gainCount) or 0)
+      local spendSlots = math.floor(tonumber(s.spendCount) or 0)
+      local g = gainSlots
+      local sp = spendSlots
+      if hasLog then
+        local block = XpLog.getSessionBlock(pid, sn)
+        g = visibleBinCount(block, "gains", gainSlots)
+        sp = visibleBinCount(block, "spends", spendSlots)
+      end
+      if g > 0 or sp > 0 then
+        finished[#finished + 1] = {
+          sessionNum = sn,
+          lineCount = XD.sessionLineCount(g, sp),
+          isLive = false,
+        }
       end
     end
   end
@@ -207,47 +329,12 @@ local function paintLiveBlock(obj, pid)
   -- Activate live shell here; applyPagination may refine which page is visible.
   setObjAttrs(obj, "xp_title_line_" .. liveTok, { active = "true" })
   setObjAttrs(obj, "xp_listing_wrapper_" .. liveTok, { active = "true" })
-  setObjAttrs(obj, "xp_sessionNum_" .. liveTok, {
-    text = XD.sessionTitleUpper(block.sessionDisplay, stateSession),
-  })
-  setObjAttrs(obj, "xp_sessionDate_" .. liveTok, {
-    text = XD.formatShortDate(block.date),
-  })
-  setObjAttrs(obj, "xp_summation_" .. liveTok, {
-    text = XD.formatSummation(block.prevTotal, block.gainTotal, block.spendTotal),
-  })
-  setObjAttrs(obj, "xp_total_" .. liveTok, {
-    text = tostring(math.floor(tonumber(block.newTotal) or 0)) .. " XP",
-  })
+  paintSessionHeader(obj, liveTok, block, stateSession)
+  paintBinRows(obj, liveTok, "gain", gains, XD.LIVE_SLOT_CAP)
+  paintBinRows(obj, liveTok, "spend", spends, XD.LIVE_SLOT_CAP)
 
-  for i = 1, XD.LIVE_SLOT_CAP do
-    local g = gains[i]
-    if g ~= nil then
-      setObjAttrs(obj, "xp_item_left_" .. liveTok .. "_" .. i, { active = "true" })
-      setObjAttrs(obj, "xp_gainNum_" .. liveTok .. "_" .. i, {
-        text = "+" .. tostring(g.amount) .. " XP",
-      })
-      setObjAttrs(obj, "xp_gainDesc_" .. liveTok .. "_" .. i, {
-        text = tostring(g.description or ""),
-      })
-    else
-      setObjAttrs(obj, "xp_item_left_" .. liveTok .. "_" .. i, { active = "false" })
-    end
-    local s = spends[i]
-    if s ~= nil then
-      setObjAttrs(obj, "xp_item_right_" .. liveTok .. "_" .. i, { active = "true" })
-      setObjAttrs(obj, "xp_spendNum_" .. liveTok .. "_" .. i, {
-        text = "−" .. tostring(s.amount) .. " XP",
-      })
-      setObjAttrs(obj, "xp_spendDesc_" .. liveTok .. "_" .. i, {
-        text = tostring(s.description or ""),
-      })
-    else
-      setObjAttrs(obj, "xp_item_right_" .. liveTok .. "_" .. i, { active = "false" })
-    end
-  end
-
-  if #gains > XD.LIVE_SLOT_CAP or #spends > XD.LIVE_SLOT_CAP then
+  if (#gains > XD.LIVE_SLOT_CAP or #spends > XD.LIVE_SLOT_CAP) and warnedLiveCap[pid] ~= true then
+    warnedLiveCap[pid] = true
     XpLog.warnStoryteller(
       "More than " .. tostring(XD.LIVE_SLOT_CAP) .. " gain/spend lines this session — extras are hidden on page 6."
     )
@@ -292,6 +379,79 @@ local function applyPagination(obj, pid, pageIndex)
   setObjAttrs(obj, "xp_navigate_forward", { active = showNewer and "true" or "false" })
 end
 
+--- Copy older sessions from the live log into the row elements the bake created.
+--- Bounded by this seat's baked row counts. The page 6 fingerprint already skips
+--- the call when the log has not changed. A page turn and the on-table repaint
+--- still run, because an earlier paint can land before the sheet UI is ready.
+--- @param obj Object
+--- @param color string
+--- @param pid string
+local function paintFinishedFromState(obj, color, pid)
+  local log = S.getStateVal("playerData", pid, "xp")
+  if U.Type(log) ~= "table" then
+    return
+  end
+  local liveN = liveSessionId()
+  local stateSession = math.floor(tonumber(S.getStateVal("sessionNum")) or liveN)
+  local baked = bakedSessionsByNum(pid)
+  local bakedSeen = {}
+
+  for sn, meta in pairs(baked) do
+    if sn < liveN and type(meta) == "table" then
+      bakedSeen[sn] = true
+      local gainSlots = math.floor(tonumber(meta.gainCount) or 0)
+      local spendSlots = math.floor(tonumber(meta.spendCount) or 0)
+      local block = XpLog.getSessionBlock(pid, sn)
+      local gains = block and block.gains or {}
+      local spends = block and block.spends or {}
+      local token = XD.sessionIdToken(sn)
+      if block ~= nil and (#gains > 0 or #spends > 0) then
+        paintSessionHeader(obj, token, block, sn)
+      end
+      paintBinRows(obj, token, "gain", gains, gainSlots)
+      paintBinRows(obj, token, "spend", spends, spendSlots)
+      if #gains > gainSlots or #spends > spendSlots then
+        warnStructureGap(
+          color,
+          "rows-" .. tostring(sn),
+          string.format(
+            "Session %d has more Experience Log lines than this character sheet was built with. The extra lines are saved, but they stay hidden until you bake page 6 again (npm run csheet-xp-log:bake) and Save & Play.",
+            sn
+          )
+        )
+      end
+    end
+  end
+
+  -- A brand-new older session has no XML yet. Skip this when the chronicle session
+  -- has already moved past the bake — that case has its own warning.
+  if stateSession ~= liveN then
+    return
+  end
+  for key, block in pairs(log) do
+    local sn = tonumber(key)
+    if sn ~= nil and U.Type(block) == "table" then
+      sn = math.floor(sn)
+      local gains = block.gains or {}
+      local spends = block.spends or {}
+      if sn < liveN and not bakedSeen[sn] and (#gains > 0 or #spends > 0) then
+        local title = block.sessionDisplay
+        if type(title) ~= "string" or title == "" then
+          title = "Session " .. tostring(sn)
+        end
+        warnStructureGap(
+          color,
+          "session-" .. tostring(sn),
+          string.format(
+            "%s is in the Experience Log but was not on the character sheet when it was last baked. It is saved. Bake page 6 again (npm run csheet-xp-log:bake) and Save & Play to show it.",
+            title
+          )
+        )
+      end
+    end
+  end
+end
+
 --- @param color string
 --- @return boolean
 function XpSheet.paintForColor(color)
@@ -308,6 +468,7 @@ function XpSheet.paintForColor(color)
     return false
   end
   paintLiveBlock(obj, pid)
+  paintFinishedFromState(obj, color, pid)
   local pageIndex = math.floor(tonumber(S.getStateVal("playerData", pid, "xpLogPage")) or 1)
   if pageIndex < 1 then
     pageIndex = 1

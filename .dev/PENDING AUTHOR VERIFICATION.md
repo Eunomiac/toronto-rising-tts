@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-765 — Character sheet Experience Log follows a dashboard JSON edit
+
+> **Agent-assessment note:** The sheet still cannot invent rows the last bake did not create. You need to look at page 6, because only the table shows whether the rewritten lines land in the right session.
+
+**How to verify:** Save & Play. On the Storyteller Dashboard PCs tab, open a character whose sheet is on the table and click **JSON**. Change the description of an older session's Experience Log line (not the current session) and click **Apply**. That player's character sheet page 6 should show the new wording, and the totals for that session should match. Change a line in the current session the same way and confirm page 6 updates that one too. If you add a brand-new session, or more lines than that session already has on the sheet, those extras stay in the JSON but do not appear on the sheet, and you should see one warning. Baking the sheet again is still how those new lines get a place to sit.
+
 #### 🟡 TOR-764 — Advantages can be rated up to six dots
 
 > **Agent-assessment note:** The add dialog and the dot-count rules are covered by tests. You still need to look at the character sheet, because only the table shows whether the sixth circle sits cleanly in the title bar.

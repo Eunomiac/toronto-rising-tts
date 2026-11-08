@@ -554,6 +554,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **sheetDisplay:false Status:** Temp/disabled overlays on page 3; list in Stats + Project Editor Advantages. _(TOR-385)_
 - [x] **Domain ratings in Stats + Project Editor:** Top-level `chasse` / `lien` / `portillon` / `haven` stakeable + listed when Coterie selected. _(TOR-386)_
 - [ ] **Coterie sheet notes:** Player-initiated notes on final page right ? compact by title, date-sorted; detail on click/hover. _(TOR-382 ? Future)_
+- [x] **Page 6 follows a dashboard JSON edit of the Experience Log:** Older sessions are copied into the rows the last bake created, and a change to any session refreshes page 6. A session or extra line the bake does not have stays saved and hidden, with one warning. Pending Save & Play. _(TOR-765)_
 - [x] **Page 6:** Scrolling Experience Log (bake past sessions; live placeholders; ST XP modal). Character history is background art only. Author confirmed 2026-10-02. _(TOR-92)_
 - [x] **Experience log returns to the top when page 6 is turned away:** Hiding page 6 (forward from page 6 or back from page 5) sets the log back to the newest session and repaints it, so the next open starts at the top. relatedTo **TOR-92**. Author confirmed 2026-10-02. _(TOR-645)_
 - [ ] **Discipline card grimoire:** Drop zone + page navigation near sheet for stored power/ritual/ceremony cards. _(TOR-205)_
