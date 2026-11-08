@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ During Intermission, **Scene ▸** sits beside **Play ▸** and opens the scene library so scenes can be edited and prepared between sessions. Play, End Scene, and Memoriam stay disabled until Play, so nothing lands on the table early.
+
 - ✔️ Green scene cards stay ended when an earlier TTS write-back arrives after the hold. The editor saves an **Offstage preload** list separately from placements and sends it through Preload. Verified the hold, delayed reply, roster drag, search and save in the 1920×1080 browser smoke. The hidden figurine reuse needs Save & Play under TOR-762.
 
 - ✔️ SD-ScenesPins-1107. All seven pins from 2026-11-06/07 are implemented, tracked, and cleared. Expanded NPC groups use compact spacing, wrap additional tokens, and visibly foreground the open group; the 1920×1080 browser smoke forces nine tokens, proves wrapping and contrast, completes the drag-and-drop suite, and reports no browser exceptions. The TTS-side fixes are pending Save & Play under TOR-755 (faster existing-stage edits), TOR-756 (no white portrait boxes), TOR-757 (complete Refresh UI rewrite), and TOR-758 (Blood Surge Rouse independence). The pending-verification checklist now classifies all 92 existing checks as definite agent coverage, practical-confidence agent coverage, or partial human coverage, with exact human follow-ups on every partial item.

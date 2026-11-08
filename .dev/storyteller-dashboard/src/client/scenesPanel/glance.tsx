@@ -3264,9 +3264,10 @@ const DeckChip = ({ scene, onPlay, onEdit, onHold }: {
  * (in Spotlight the carousel takes over the stage). The row beneath holds the deck, centered: a `DeckChip` for each
  * other live scene. Clicking an ongoing scene switches to it at once, back at its own time; a new one first asks how
  * to set the clock (`useSceneEntry`). Chips shrink (ellipsized) when the deck is too wide and grow back while
- * hovered. In Play, Scene ▸ opens the scene library (which also holds End Scene and Memoriam); in a Memoriam
- * it becomes Return ▸ (back to the scene it interrupted) or Downtime ▸. The right-hand button always names the
- * next phase; leaving a Memoriam and advancing need a second click.
+ * hovered. Scene ▸ opens the scene library during Intermission (edit and prepare, with nothing on the table)
+ * and during Play (where it also holds End Scene and Memoriam). In a Memoriam it becomes Return ▸ (back to
+ * the scene it interrupted) or Downtime ▸. The right-hand button always names the next phase; leaving a
+ * Memoriam and advancing need a second click.
  */
 export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onEndDeckScene, onRemoveFromDeck, onPlay, onEdit, onPrepare, live }: {
   library: readonly LibraryEntry[];
@@ -3294,6 +3295,9 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   const subPhase = live.subPhase ?? "Main";
   const command = useScenesCommand();
   const next = NEXT_PHASE[phase];
+  const inMemoriam = phase === "Play" && subPhase === "Memoriam";
+  // Intermission has no scene on the table; the library is still editable there, between sessions.
+  const showSceneLibrary = phase === "Intermission" || (phase === "Play" && !inMemoriam);
   return (
     <div className="lab-phase">
       <div className="lab-phase-top">
@@ -3354,7 +3358,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
           )}
         </span>
         <span className="lab-phase-advance">
-          {phase === "Play" && (subPhase === "Memoriam" ? (
+          {inMemoriam ? (
             <ConfirmButton
               label={live.memoriamReturn ? "Return ▸" : "Downtime ▸"}
               className="lab-btn"
@@ -3363,11 +3367,18 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
                 : "Leave the Memoriam for Downtime, with no scene on the table"}
               onConfirm={() => command({ op: "leaveMemoriam" })}
             />
-          ) : (
-            <button type="button" className="lab-btn" title="Play a scene, end this one, or start a Memoriam" onClick={() => setModal("scene")}>
+          ) : showSceneLibrary ? (
+            <button
+              type="button"
+              className="lab-btn"
+              title={phase === "Play"
+                ? "Play a scene, end this one, or start a Memoriam"
+                : "Edit or prepare scenes. Nothing goes on the table until Play."}
+              onClick={() => setModal("scene")}
+            >
               Scene ▸
             </button>
-          ))}
+          ) : null}
           <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => command({ op: "phaseAdvance" })} />
         </span>
       </div>
@@ -3392,6 +3403,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
             setModal(null);
             onEndScene();
           }}
+          liveSession={phase === "Play"}
           {...(live.presentYear !== undefined ? { onMemoriam: () => setModal("memoriam") } : {})}
           onPlay={(key, at) => {
             setModal(null);
@@ -3451,10 +3463,11 @@ const DeckStar = ({ entry, onDeck, actions }: { entry: LibraryEntry; onDeck: boo
  * deck scenes sort to the top (ongoing first). Play (an ongoing scene switches at once; a new one asks how to set
  * the clock), Edit (opens a preview) and housekeeping (reorder, rename, delete with a second click). Templates
  * show in brackets and play as a dated copy. Ended scenes wait in the archive, where their status can be changed.
- * The header holds End Scene (the table's scene, then Downtime) and Memoriam; "Prepare a new scene" picks its
- * location first.
+ * The header holds End Scene (the table's scene, then Downtime) and Memoriam. During Intermission those
+ * stay disabled: Edit and Prepare change the library, and a scene goes on the table only after Play starts.
+ * "Prepare a new scene" picks its location first.
  */
-const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepare, onEndScene, onMemoriam }: {
+const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepare, onEndScene, onMemoriam, liveSession = true }: {
   library: readonly LibraryEntry[];
   actions?: LibraryActions;
   scenes: LiveScenes;
@@ -3465,6 +3478,8 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
   onEndScene: () => void;
   /** Absent while TTS has no present day. */
   onMemoriam?: () => void;
+  /** Play, End Scene, and Memoriam put something on the table. Off during Intermission. */
+  liveSession?: boolean;
 }): ReactElement => {
   const { data } = useChronicleLocations();
   const [search, setSearch] = useState("");
@@ -3499,21 +3514,21 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
     <Overlay onClose={onClose}>
       <div className="lab-modal lab-advance">
         <span className="lab-advance-head">
-          <span className="lab-modal-title">{archive ? "Ended scenes" : "Play a scene"}</span>
+          <span className="lab-modal-title">{archive ? "Ended scenes" : liveSession ? "Play a scene" : "Scene library"}</span>
           <span className="lab-row">
             <button
               type="button"
               className="lab-btn"
-              disabled={!onMemoriam}
-              title={onMemoriam ? "Set up a Memoriam" : "TTS has no present day yet"}
+              disabled={!liveSession || !onMemoriam}
+              title={!liveSession ? "A Memoriam starts during Play" : onMemoriam ? "Set up a Memoriam" : "TTS has no present day yet"}
               onClick={onMemoriam}
             >
               Memoriam…
             </button>
-            {scenes.current ? (
+            {liveSession && scenes.current ? (
               <ConfirmButton label="End Scene" className="lab-btn danger" title={`End ${scenes.current.title} and go to Downtime`} onConfirm={onEndScene} />
             ) : (
-              <button type="button" className="lab-btn danger" title="No scene on the table" disabled>End Scene</button>
+              <button type="button" className="lab-btn danger" title={liveSession ? "No scene on the table" : "No scene is on the table during Intermission"} disabled>End Scene</button>
             )}
           </span>
         </span>
@@ -3611,8 +3626,16 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
                     <button
                       type="button"
                       className="lab-btn live"
-                      disabled={onTable}
-                      title={entry.status === "ongoing" ? "Go back to this scene at its own time" : entry.status === "template" ? "Play a fresh copy of this template" : undefined}
+                      disabled={onTable || !liveSession}
+                      title={!liveSession
+                        ? "Advance to Play before putting a scene on the table. Edit changes the library copy."
+                        : onTable
+                          ? "This scene is already on the table"
+                          : entry.status === "ongoing"
+                            ? "Go back to this scene at its own time"
+                            : entry.status === "template"
+                              ? "Play a fresh copy of this template"
+                              : undefined}
                       onClick={(event) => onPlay(entry.key, canvasPoint(event))}
                     >
                       Play
