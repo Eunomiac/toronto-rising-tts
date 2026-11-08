@@ -1,0 +1,119 @@
+--[[
+    Opt-in, runtime NPC preload pool.
+
+    The pool is cold until the Storyteller explicitly preloads a scene. Pairs are parked with the
+    canonical hide protocol in a fixed 32 x 32 grid below the table. The grid is intentionally
+    bounded; a bad reservation disables pooling for the session and ordinary on-demand spawning
+    remains the fallback.
+]]
+
+local C = require("lib.constants")
+local G = require("lib.guids")
+local O = require("core.objects")
+local U = require("lib.util")
+
+local Pool = {}
+
+Pool.AREA_KEY = "__preload_pool__"
+Pool.GRID_SIDE = 32
+Pool.GRID_CAPACITY = Pool.GRID_SIDE * Pool.GRID_SIDE
+Pool.GRID_SPACING = 3
+
+local enabled = false
+local disabledReason = nil
+
+function Pool.enable()
+    enabled = true
+    disabledReason = nil
+end
+
+function Pool.disable(reason)
+    enabled = false
+    disabledReason = tostring(reason or "disabled")
+    print("[NPCPreloadPool] Disabled; ordinary on-demand spawning remains active. " .. disabledReason)
+end
+
+function Pool.isEnabled()
+    return enabled == true
+end
+
+function Pool.status()
+    return {
+        enabled = enabled == true,
+        disabledReason = disabledReason,
+        capacity = Pool.GRID_CAPACITY,
+    }
+end
+
+local function validSlot(value)
+    local slot = tonumber(value)
+    return slot ~= nil and slot == math.floor(slot) and slot >= 1 and slot <= Pool.GRID_CAPACITY
+end
+
+--- Reserve a stable pair slot. Explicit-preload only: the bounded O(n) scan never runs in hot reconcile paths.
+--- @param npcName string
+--- @param rec table
+--- @param instances table
+--- @return number|nil, string|nil
+function Pool.reserveSlot(npcName, rec, instances)
+    local used = {}
+    for name, other in pairs(instances or {}) do
+        if name ~= npcName and type(other) == "table" and validSlot(other.preloadSlot) then
+            used[math.floor(other.preloadSlot)] = true
+        end
+    end
+    if validSlot(rec.preloadSlot) and used[math.floor(rec.preloadSlot)] ~= true then
+        return math.floor(rec.preloadSlot), nil
+    end
+    for slot = 1, Pool.GRID_CAPACITY do
+        if used[slot] ~= true then
+            return slot, nil
+        end
+    end
+    return nil, "The 32 x 32 NPC preload grid is full."
+end
+
+--- @param slot number
+--- @param light boolean|nil
+--- @return table
+function Pool.parkPosition(slot, light)
+    local index = math.floor(tonumber(slot) or 1) - 1
+    local row = math.floor(index / Pool.GRID_SIDE)
+    local col = index % Pool.GRID_SIDE
+    local half = (Pool.GRID_SIDE - 1) * Pool.GRID_SPACING / 2
+    local x = col * Pool.GRID_SPACING - half
+    local z = row * Pool.GRID_SPACING - half
+    if light == true then
+        return { x = x + 1, y = C.HIDDEN_OBJECT_WORLD_Y + 4, z = z + 1 }
+    end
+    return { x = x, y = C.HIDDEN_OBJECT_WORLD_Y, z = z }
+end
+
+function Pool.shouldRetain(rec)
+    return enabled == true and type(rec) == "table" and validSlot(rec.preloadSlot)
+end
+
+--- Park an already-complete figurine/light pair and return the updated record.
+--- @param rec table
+--- @return table|nil, string|nil
+function Pool.parkRecord(rec)
+    if not Pool.shouldRetain(rec) then
+        return nil, "The preload pool is not enabled or this NPC has no reserved slot."
+    end
+    local fig = G.getObject(rec.figurineGuid or "")
+    local lit = G.getObject(rec.lightGuid or "")
+    if not U.isGameObject(fig) or not U.isGameObject(lit) then
+        return nil, "The pooled figurine/light pair is incomplete."
+    end
+    O.hideObject(fig, { parkPosition = Pool.parkPosition(rec.preloadSlot, false) })
+    O.hideObject(lit, { parkPosition = Pool.parkPosition(rec.preloadSlot, true) })
+    local out = U.clone(rec, true)
+    out.areaKey = Pool.AREA_KEY
+    out.slotIndex = 0
+    out.seatedSeatKey = nil
+    out.stagePlacement = nil
+    out.npcLightMode = "OFF"
+    return out, nil
+end
+
+return Pool

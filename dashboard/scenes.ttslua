@@ -68,6 +68,9 @@
                                           (`from` present, which moves present day on); real time runs at
                                           ×2, or (`pace` x5) at ×5 until it reaches present day; refuses
                                           template and ended scenes
+    preloadScene      key, title, sessionScene
+                                          warm that scene's NPC figurine/light packages in a bounded hidden pool;
+                                          the ordinary on-demand spawn path remains the fallback
     endScene                              end the live scene
     upsertScene       key, title, placementMode, sessionScene, status?
                                           check a row TTS could play; a linked live scene only takes a new title
@@ -450,6 +453,16 @@ local function applyCommand(cmd)
 
   if op == "upsertScene" then
     return require("dashboard.scene_library").upsert(cmd)
+  end
+
+  if op == "preloadScene" then
+    if type(cmd.key) ~= "string" or cmd.key == "" then
+      return "preloadScene needs a scene key."
+    end
+    if type(cmd.sessionScene) ~= "table" then
+      return "preloadScene needs the scene body from the dashboard."
+    end
+    return require("core.npcs").preloadSceneNpcs(cmd.sessionScene, cmd.title)
   end
   if op == "setSceneStatus" then
     return require("dashboard.scene_library").setStatus(cmd)

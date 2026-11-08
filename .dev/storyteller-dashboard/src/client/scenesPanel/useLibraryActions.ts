@@ -222,6 +222,21 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     setPreviewKey(key);
   };
 
+  const preload = (key: string): void => {
+    const row = findDraft(key) ?? findRow(key);
+    if (!row) {
+      setNotice(`“${key}” is not in the dashboard's scene library.`);
+      return;
+    }
+    sendBatch([{
+      op: "preloadScene",
+      key: row.key,
+      title: row.title,
+      sessionScene: row.sessionScene
+    }]);
+    setNotice(`Preloading the NPC figurines and lights for “${row.title}” in the background…`);
+  };
+
   const prepare = (location: LabLocation, districtName: string, siteName: string): void => {
     const rows = [...sceneLibrarySnapshot().scenes, ...sceneDeckSnapshot().previews];
     const title = newSceneTitle(districtName, siteName, rows.map((row) => row.title));
@@ -252,6 +267,7 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
 
   const actions: LibraryActions = {
     rename,
+    preload,
     setStatus,
     setOnDeck: (key, on) => {
       const row = findRow(key);

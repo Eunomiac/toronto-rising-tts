@@ -40,6 +40,7 @@ local SEAT_PLACEMENT_KEY = "seat"
 local resolveNpcPlacementIntent
 local occupiedNpcSeatsFingerprint
 local applyNpcFigureInteractable
+local syncStageNpcLightState
 
 --- Sentinel `areaKey` for a freshly spawned pair still hidden under the table, waiting for its
 --- stage / seat / Scatter move (same reconcile pass, or a Dashboard prewarm while its image loads).
@@ -960,6 +961,30 @@ local function despawnNpcInstance(npcName)
     setInstanceRecord(npcName, nil)
 end
 
+--- Return a reserved NPC pair to the opt-in preload pool. If the pair cannot be validated,
+--- disable pooling and destroy it through the ordinary fallback path; scene play must continue.
+--- @param npcName string
+local function releaseOrDespawnNpcInstance(npcName)
+    local Pool = require("core.npc_preload_pool")
+    local rec = getInstances()[npcName]
+    if not Pool.shouldRetain(rec) then
+        despawnNpcInstance(npcName)
+        return
+    end
+    ensureNpcLight(npcName)
+    rec = getInstances()[npcName]
+    local parked, err = Pool.parkRecord(rec)
+    if parked == nil then
+        Pool.disable(err)
+        despawnNpcInstance(npcName)
+        require("dashboard.push").notice("NPC preload pool fell back to ordinary spawning: " .. tostring(err))
+        return
+    end
+    setInstanceRecord(npcName, parked)
+    syncStageNpcLightState(npcName, "OFF")
+    NPCS.applyCurrentLightMode(npcName, 0)
+end
+
 --- Live instance for `npcName`: the existing pair, or a fresh hidden spawn (replacing a record whose
 --- figurine no longer exists in the world).
 --- @param npcName string
@@ -1168,7 +1193,7 @@ end
 --- Persist `gameState.lights` mode for a pooled NPC spotlight (no world apply).
 --- @param npcName string
 --- @param desiredMode string OFF|STANDARD|SPOTLIGHT
-local function syncStageNpcLightState(npcName, desiredMode)
+syncStageNpcLightState = function(npcName, desiredMode)
     local rec = getInstances()[npcName]
     if U.Type(rec) ~= "table" or U.Type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
         return
@@ -2510,7 +2535,7 @@ local function reconcileStepOneAreaRemovals(intent)
         if U.Type(rec) == "table" and npcInstanceOnStage(name) then
             local ci = intent.byCharacter[name]
             if U.Type(ci) ~= "table" or ci.target == "none" then
-                despawnNpcInstance(name)
+                releaseOrDespawnNpcInstance(name)
             end
         end
     end
@@ -2797,7 +2822,7 @@ local function reconcileStepFiveDespawnUntargeted(intent)
     for name, _ in pairs(U.clone(getInstances())) do
         local ci = intent.byCharacter[name]
         if (U.Type(ci) ~= "table" or ci.target == "none") and prewarmHoldCount[name] == nil then
-            despawnNpcInstance(name)
+            releaseOrDespawnNpcInstance(name)
         end
     end
 end
@@ -3064,12 +3089,16 @@ end
 
 --- Destroy one NPC's figurine + light and drop its instance record (scene removal, generic delete, reset).
 --- @param npcName string
---- @param opts table|nil `{ skipSeatSync? }`
+--- @param opts table|nil `{ skipSeatSync?, retainPreloaded? }`
 function NPCS.despawnNpc(npcName, opts)
     if getInstances()[npcName] == nil then
         return
     end
-    despawnNpcInstance(npcName)
+    if U.Type(opts) == "table" and opts.retainPreloaded == true then
+        releaseOrDespawnNpcInstance(npcName)
+    else
+        despawnNpcInstance(npcName)
+    end
     if not (U.Type(opts) == "table" and opts.skipSeatSync == true) then
         requestSeatLayoutSync()
     end
@@ -3143,7 +3172,135 @@ function NPCS.prewarmNpcs(keys, onReady, opts)
     }, { maxWait = NPC_PREWARM_MAX_WAIT_SEC + 5 })
 end
 
+--- Explicit Dashboard preload. Spawns at most two pairs per batch, reserves fixed hidden-grid slots,
+--- and waits for custom figurine images to finish loading. This is cold/debug work only; normal game
+--- paths never scan the registry or schedule pool batches.
+--- @param sessionScene table
+--- @param sceneTitle string|nil
+--- @return string|nil error
+function NPCS.preloadSceneNpcs(sessionScene, sceneTitle)
+    if U.Type(sessionScene) ~= "table" then
+        return "Preload needs a scene body."
+    end
+    local Pool = require("core.npc_preload_pool")
+    local DATA = require("lib.npcs_data")
+    local wanted = {}
+    local genericMembership = U.Type(sessionScene.npcWorld) == "table"
+        and sessionScene.npcWorld.genericMembership or nil
+    if U.Type(genericMembership) == "table" then
+        for key, row in pairs(genericMembership) do
+            local entry = DATA.resolveGenericNpcEntry(key)
+            if U.Type(entry) == "table" then
+                NPCS.registerGenericCharacter(key, U.Type(row) == "table" and row.displayName or entry.label or key)
+            end
+        end
+    end
+    local function add(key)
+        if U.Type(key) == "string" and key ~= "" and NPCS.characters[key] ~= nil then
+            wanted[key] = true
+        end
+    end
+    local npcWorld = sessionScene.npcWorld
+    if U.Type(npcWorld) == "table" and U.Type(npcWorld.placements) == "table" then
+        for key, _ in pairs(npcWorld.placements) do add(key) end
+    end
+    if U.Type(sessionScene.seatSlots) == "table" then
+        for _, row in pairs(sessionScene.seatSlots) do
+            if U.Type(row) == "table" then add(row.characterKey) end
+        end
+    end
+    if U.Type(sessionScene.scatterPlacements) == "table" then
+        for _, area in pairs(sessionScene.scatterPlacements) do
+            if U.Type(area) == "table" then
+                for key, _ in pairs(U.Type(area.orbitCharacters) == "table" and area.orbitCharacters or {}) do add(key) end
+                for _, row in pairs(U.Type(area.centerCharacters) == "table" and area.centerCharacters or {}) do
+                    if U.Type(row) == "table" and row.isPlayingNPC == true then add(row.characterKey) end
+                end
+            end
+        end
+    end
+    local keys = U.getKeys(wanted)
+    table.sort(keys)
+    if #keys == 0 then
+        return "This scene has no NPC figurines to preload."
+    end
+    Pool.enable()
+    local held = {}
+    local loadedGuids = {}
+    for _, key in ipairs(keys) do
+        prewarmHoldCount[key] = (prewarmHoldCount[key] or 0) + 1
+        held[#held + 1] = key
+    end
+    local released = false
+    local function releaseHolds()
+        if released then return end
+        released = true
+        for _, key in ipairs(held) do
+            local n = (prewarmHoldCount[key] or 1) - 1
+            prewarmHoldCount[key] = n > 0 and n or nil
+        end
+    end
+    local steps = {}
+    local batchSize = 2
+    for first = 1, #keys, batchSize do
+        local batchFirst = first
+        steps[#steps + 1] = function()
+            for index = batchFirst, math.min(#keys, batchFirst + batchSize - 1) do
+                local key = keys[index]
+                local rec = ensureLiveNpcInstance(key)
+                local slot, reserveErr = Pool.reserveSlot(key, rec, getInstances())
+                if slot == nil then
+                    error(reserveErr, 2)
+                end
+                rec = U.clone(rec, true)
+                rec.preloadSlot = slot
+                setInstanceRecord(key, rec)
+                local intent = resolveNpcPlacementIntent().byCharacter[key]
+                if U.Type(intent) ~= "table" or intent.target == "none" then
+                    releaseOrDespawnNpcInstance(key)
+                end
+                local live = getInstances()[key]
+                if U.Type(live) == "table" then
+                    loadedGuids[#loadedGuids + 1] = live.figurineGuid
+                end
+            end
+            return 0.15
+        end
+    end
+    local deadline = os.time() + NPC_PREWARM_MAX_WAIT_SEC
+    steps[#steps + 1] = function()
+        return function()
+            if os.time() >= deadline then return true end
+            for _, guid in ipairs(loadedGuids) do
+                local fig = G.getObject(guid or "")
+                if fig ~= nil and not NpcSpawn.figurineLoaded(fig) then return false end
+            end
+            return true
+        end
+    end
+    steps[#steps + 1] = function()
+        releaseHolds()
+        local label = U.Type(sceneTitle) == "string" and sceneTitle ~= "" and sceneTitle or "the scene"
+        require("dashboard.push").notice("Preloaded " .. tostring(#keys) .. " NPC package(s) for " .. label .. ".")
+    end
+    U.chain(steps, {
+        maxWait = NPC_PREWARM_MAX_WAIT_SEC + 5,
+        sequenceTimeoutSeconds = NPC_PREWARM_MAX_WAIT_SEC + 10,
+        onComplete = function(ok, detail)
+            releaseHolds()
+            if not ok then
+                Pool.disable("preload sequence " .. tostring(detail))
+                require("dashboard.push").notice(
+                    "NPC preload did not finish; ordinary on-demand spawning is still available."
+                )
+            end
+        end,
+    })
+    return nil
+end
+
 function NPCS.destroyAllWorldAndState()
+    require("core.npc_preload_pool").disable("NPC world reset")
     for _, name in ipairs(U.getKeys(getInstances())) do
         despawnNpcInstance(name)
     end

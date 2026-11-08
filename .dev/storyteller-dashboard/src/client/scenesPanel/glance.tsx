@@ -3098,6 +3098,8 @@ export type LibraryEntry = SceneRef & { readonly status: SceneStatus; readonly l
 /** Library housekeeping in the scene picker; `note` explains a library that could not load or copy from TTS. */
 export type LibraryActions = {
   readonly rename: (key: string, title: string) => void;
+  /** Warm this scene's named and generic NPC figurine/light packages without playing it. */
+  readonly preload: (key: string) => void;
   readonly setStatus: (key: string, status: SceneStatus) => void;
   /** Puts a new scene or template on the deck, or takes it off (ongoing scenes are always on it). */
   readonly setOnDeck: (key: string, on: boolean) => void;
@@ -3576,6 +3578,17 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
                         <ConfirmButton label="Delete" className="lab-btn danger" onConfirm={() => actions.remove(entry.key)} />
                       )}
                     </>
+                  )}
+                  {!archive && actions && (
+                    <button
+                      type="button"
+                      className="lab-btn"
+                      disabled={onTable}
+                      title={onTable ? "This scene is already on the table" : "Load this scene's NPC figurines and lights into the hidden pool"}
+                      onClick={() => actions.preload(entry.key)}
+                    >
+                      Preload
+                    </button>
                   )}
                   <button type="button" className="lab-btn" onClick={() => onEdit(entry.key)}>Edit</button>
                   {archive ? (
