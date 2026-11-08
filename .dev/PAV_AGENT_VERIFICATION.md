@@ -84,6 +84,7 @@ For capture windows, call `DEBUG.verifyPavStart("TOR-755")`, perform the action,
 | TOR-756 | Proves the no-portrait template selects a balanced full-width body with no image | — | Brief Page 3 layout check |
 | TOR-757 | — | Proves a full Global UI remount event and that loading settled | Connected-client panel/overlay appearance |
 | TOR-758 | Proves Hunger boundaries and Rouse-family independence/exclusivity | — | None for the policy itself |
+| TOR-760 | Proves the short Spotlight schedules and bounded preload grid; reports the live pool and checks all 12 configured emitters | — | Apply a preloaded large scene and listen through both Spotlight transitions |
 
 `DEBUG.verifyPavList()` is authoritative; keep this table aligned when adding a check.
 
