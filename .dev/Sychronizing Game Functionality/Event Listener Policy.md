@@ -137,7 +137,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | --- | --- | --- | --- |
 | `HUD_selectStorytellerPanel` | A | — | panel visibility; repaints the panel on open only (closing click skips refresh). Toolbar hotkey repaints the selected panel when it shows the toolbar body (TOR-678) |
 | `HUD_debugToggleSimulatedConnection` | B+C | Yes | Debug column, Assume Connected mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
-| `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`) |
+| `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`); marks the dashboard seats slice dirty so the scene board updates without a server restart |
 | `HUD_toggleSyncTrace` | A | Yes | Debug panel: persisted `debug.syncTraceEnabled`; grey off / yellow on; on installs timing wrappers on sync targets, off removes them and prints the summary; host `[SyncTrace]` prints only (TOR-634, TOR-657) |
 | `HUD_toggleStRollUi` | — | — | Removed. In-game Storyteller roll panels and the debug toggle are gone. Storyteller rolls come from the dashboard. |
 | `HUD_togglePanel` | A | — | XmlUI collapse |

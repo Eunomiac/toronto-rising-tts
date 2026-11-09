@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-768 — Assume Connected shows the players at the table on the dashboard
+
+> **Agent-assessment note:** The code now sends the seat list after a connection change. You still need to watch the dashboard, because only the live screen shows whether the players appear without a restart.
+
+**How to verify:** Save & Play, and leave the Storyteller Dashboard server running. On the debug panel, click **Assume Connected**. The players should show up at the table on the dashboard (the scene board, and their Scatter groups if Scatter is on) without you stopping and restarting the dashboard.
+
 #### 🟡 TOR-767 — Moving one player between Scatter groups leaves the NPCs where they are
 
 > **Agent-assessment note:** The code path for a player group change no longer poses NPC figurines. You still need to watch the table, because only the live move shows whether the player arrives promptly and the NPCs stay put.

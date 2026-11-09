@@ -221,6 +221,13 @@ local function relayoutAfterOccupancyChange()
   RSL.SyncTable(nil, { force = true })
 end
 
+--- The scene board reads the seats slice, not the per-seat sheet push. Occupancy changes
+--- (who holds a chair, Scatter groups) have to mark that slice or the board stays stale
+--- until the dashboard server is restarted.
+local function announceDashboardSeats()
+  require("dashboard.push").markWorldDirty({ seats = true })
+end
+
 --- Seat a PC who is (or simulates being) connected: unoccupied → occupied at once, no blindfold.
 --- Already-occupied seats only re-light.
 --- @param color string
@@ -246,6 +253,9 @@ function PC.handleSeatConnected(color, opts)
   end
   if opts.skipRelayout ~= true then
     PC.reconcileEffectivePresence(color)
+    if seated then
+      announceDashboardSeats()
+    end
   end
   return seated
 end
@@ -289,6 +299,7 @@ function PC.applyConnectionCheckpoint()
   for i = 1, #changed do
     require("core.sync").player(changed[i])
   end
+  announceDashboardSeats()
   return changed
 end
 
@@ -325,6 +336,7 @@ local function applyConnectionSourceChange(mutate)
     relayoutAfterOccupancyChange()
   end
   PC.reconcileEffectivePresence(nil)
+  announceDashboardSeats()
 end
 
 --- Debug panel: switch between "Assume Connected" and "By Connection Status".
