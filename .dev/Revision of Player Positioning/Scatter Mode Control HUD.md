@@ -39,7 +39,7 @@ In the same work, **gold is PC slot 1** (not slot 3). The four white holes aroun
 | --- | --- |
 | Portrait `pc#` | Same number as world/board slot. Gold / first join = **slot 1** = HUD `…_pc1_…` (already the visual middle of the row: `pc5, pc3, pc1, pc2, pc4`). |
 | Occupants stay put | When someone leaves, remaining PCs keep their slots. Do **not** compact portraits into `pc1..n`. Empty slots stay `active=true` with `color=rgba(1,1,1,0)` (alpha hide — do not deactivate or the row collapses). Each portrait Image authors `image=scatterModeControlPC_lordLucien` **inline** in XML (class Defaults do not give a readable `image` for layout); Lua only changes `image` when a slot is occupied. |
-| Selector click | Full move now: occupancy + that player's seat objects (figurine, bags, sheets, camera). NPC figurines are not posed. Closes **that player’s** strip. Same outcome as a Dashboard `scatterPlace` move. |
+| Selector click | Full move now: occupancy + that one player's seat objects (figurine, bags, sheets, camera). Other players and NPC figurines stay put. Closes **that player’s** strip. Same outcome as a Dashboard `scatterPlace` move. |
 | Who clicks | Clicker color must match the element’s `_Brown` / `_Orange` / … suffix. XmlUI visibility already prevents Option C (seeing another seat’s HUD). |
 | Hover | Swap `image` to the `_hover` asset; on exit restore **active** or **inactive**, whichever that selector actually is. |
 | After a successful move | Close only that player’s `pcRowContainer` and `db_scatterModeControl_container`; set their toggle image to `scatterGroupToggle_inactive`. Other players’ open/closed state is unchanged. |
@@ -48,7 +48,7 @@ In the same work, **gold is PC slot 1** (not slot 3). The four white holes aroun
 
 Keep **mutation** and **HUD apply** separate.
 
-1. **`ScatterMode.movePcToGroup(pcKey, groupIndex)`** writes `scatterPlacements`, then poses player seat objects only (`applyScatterPcPoses`). NPC figurines are not moved. No-op if they are already in that group. Reuse `nextFreePcWorldSlot` + `removeCharacterFromAllGroups`; do **not** call `applyFromControlBoard` (that rebuilds occupancy from every token).
+1. **`ScatterMode.movePcToGroup(pcKey, groupIndex)`** writes `scatterPlacements`, then moves that one player's seat objects (`applyScatterMovedPc`). Other players and NPC figurines are not moved. No-op if they are already in that group. Reuse `nextFreePcWorldSlot` + `removeCharacterFromAllGroups`; do **not** call `applyFromControlBoard` (that rebuilds occupancy from every token).
 2. **`ScatterMode.reconcileControlHudFromState()`** (new) reads placements and sets XmlUI attributes. Idempotent. Called after enter/leave Scatter, after this move, and after Dashboard `scatterPlace` moves so the portraits stay honest when the Storyteller moves people on the board.
 3. **`HUD_scatterModeControl_*`** in `core/hud_player.ttslua` parse the color suffix from the element id, refuse mismatches, then toggle chrome or call `movePcToGroup`.
 

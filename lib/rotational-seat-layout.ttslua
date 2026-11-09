@@ -961,7 +961,7 @@ end
 --- @param computed table
 --- @param sourceGroups table
 --- @param positionWorldOffset Vector|nil hand authoring delta (see `cameraPositionWorldOffsetForActiveTable`)
-local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOffset)
+local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOffset, opts)
   local bySeatModeKeys = collectCameraModeKeys(sourceGroups)
   local worldOff = Vector(0, 0, 0)
   if positionWorldOffset ~= nil then
@@ -1027,10 +1027,20 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
     return p, y, d
   end
 
+  opts = type(opts) == "table" and opts or {}
+  local keepOtherSeatCameras = opts.keepOtherSeatCameras == true
   local universalAngles = {}
   local playerAnglesById = {}
+  if keepOtherSeatCameras then
+    local existing = S.getStateVal("seatLayout", "universalCameraAngles")
+    if type(existing) == "table" then
+      for key, value in pairs(existing) do
+        universalAngles[key] = value
+      end
+    end
+  end
 
-  if U.Type(C.UniversalCameraAngles) == "table" then
+  if not keepOtherSeatCameras and U.Type(C.UniversalCameraAngles) == "table" then
     for modeKey, modeVal in pairs(C.UniversalCameraAngles) do
       if U.Type(modeKey) == "string" and U.Type(modeVal) == "table" and modeVal.isRelativeToReferenceHandPosition == true then
         ---@cast modeVal TtsCameraAnglePreset
@@ -3978,7 +3988,7 @@ function M.applyCameraModesFromComputed(computed, opts)
     tableCfg = C.Tables["Table A"]
   end
   local camWorldOffset = cameraPositionWorldOffsetForActiveTable(tableCfg)
-  applyCameraModesForSeats(computed, sourceGroups, camWorldOffset)
+  applyCameraModesForSeats(computed, sourceGroups, camWorldOffset, opts)
 end
 
 return M

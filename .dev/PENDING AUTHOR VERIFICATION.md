@@ -35,7 +35,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 > **Agent-assessment note:** The code path for a player group change no longer poses NPC figurines. You still need to watch the table, because only the live move shows whether the player arrives promptly and the NPCs stay put.
 
-**How to verify:** Save & Play. Enter Scatter mode with several NPCs and at least two groups. Note where the NPC figurines are standing. Move one player to another group, from that player's group strip or from the Storyteller Dashboard. That player's figurine, hand, bags, and sheet should move to the new group, and the table should not sit frozen for about a minute first. The NPC figurines should not move at all. Moving an NPC between groups should still shift the NPCs, because their spacing depends on how many are in the group.
+**How to verify:** Save & Play. Enter Scatter mode with several NPCs and at least two groups. Note where the NPC figurines and the other players are standing. Move one player to another group, from that player's group strip or from the Storyteller Dashboard. That player's figurine, hand, bags, and sheet should move to the new group. The timing lines should print, and the table should not freeze after them. The other players and the NPC figurines should stay where they were. One more line, `script resumed … ms after the scatter report`, should follow almost at once. Moving an NPC between groups should still shift the NPCs, because their spacing depends on how many are in the group.
 
 #### 🟡 TOR-766 — Preload, scene cover, and Scatter group moves print a timing report
 

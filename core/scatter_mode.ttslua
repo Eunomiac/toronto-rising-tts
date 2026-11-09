@@ -653,47 +653,61 @@ local function centerOccupant(occupants)
     return occupants[1]
 end
 
-local function applyPcRigs(framesBySlot, occupants)
-    local FSL = require("lib.figurine_seat_layout")
-    local RSL = require("lib.rotational-seat-layout")
+local function scatterTableARef()
     local tableA = C.Tables and C.Tables["Table A"] or nil
     local authoredY = ScatterLayout.pcSeatY()
     local refFig = tableA and tableA.referenceFigurine or {
         position = Vector({ 0, authoredY, 0 }),
         rotation = Vector({ 0, 180, 0 }),
     }
-    local center = ScatterLayout.centerPoint()
+    return tableA, refFig, ScatterLayout.centerPoint(), authoredY
+end
+
+--- Seat rigid for one scatter PC frame. Y stays at the authored seat height.
+--- @param frame table `{ position, rotation, groupIndex }`
+--- @param refFig table
+--- @param center Vector
+--- @param authoredY number
+--- @return table poseFrame
+--- @return table rigid
+local function scatterRigidForFrame(frame, refFig, center, authoredY)
+    local yaw = tonumber(frame.rotation.y) or 0
+    local refYaw = tonumber(refFig.rotation.y) or 180
+    local deltaDeg = shortestSignedDelta(refYaw, yaw)
+    local rigidCenter = center
+    local groupIndex = math.floor(tonumber(frame.groupIndex) or 0)
+    if groupIndex >= 1 then
+        local P = ScatterLayout.pcGroupOrigin(groupIndex)
+        if P ~= nil then
+            rigidCenter = P
+        end
+    end
+    local rotated = U.frameAfterRigidYawAboutCenter(rigidCenter, refFig, deltaDeg)
+    local src = frame.position
+    local posePos = Vector({
+        x = tonumber(src and (src.x or src[1])) or 0,
+        y = authoredY,
+        z = tonumber(src and (src.z or src[3])) or 0,
+    })
+    local shiftFull = posePos - Vector(rotated.position)
+    -- Seated piles and cameras only translate in XZ. FLOOR_Y is for stage NPC figurines.
+    local shift = Vector({ x = shiftFull.x, y = 0, z = shiftFull.z })
+    --- Cameras must yaw about the same center used for this rigid (PC group origin), not World Origin.
+    return {
+        position = posePos,
+        rotation = Vector(frame.rotation),
+    }, { deltaDeg = deltaDeg, shift = shift, centerPoint = rigidCenter }
+end
+
+local function applyPcRigs(framesBySlot, occupants)
+    local FSL = require("lib.figurine_seat_layout")
+    local RSL = require("lib.rotational-seat-layout")
+    local tableA, refFig, center = scatterTableARef()
     local seatRigidByKey = {}
     local slot1Rigid = nil
     local packedFrames = {}
     for slot, frame in pairs(framesBySlot) do
-        local yaw = tonumber(frame.rotation.y) or 0
-        local refYaw = tonumber(refFig.rotation.y) or 180
-        local deltaDeg = shortestSignedDelta(refYaw, yaw)
-        local rigidCenter = center
-        local groupIndex = math.floor(tonumber(frame.groupIndex) or 0)
-        if groupIndex >= 1 then
-            local P = ScatterLayout.pcGroupOrigin(groupIndex)
-            if P ~= nil then
-                rigidCenter = P
-            end
-        end
-        local rotated = U.frameAfterRigidYawAboutCenter(rigidCenter, refFig, deltaDeg)
-        local src = frame.position
-        local posePos = Vector({
-            x = tonumber(src and (src.x or src[1])) or 0,
-            y = authoredY,
-            z = tonumber(src and (src.z or src[3])) or 0,
-        })
-        local shiftFull = posePos - Vector(rotated.position)
-        -- Seated piles and cameras only translate in XZ. FLOOR_Y is for stage NPC figurines.
-        local shift = Vector({ x = shiftFull.x, y = 0, z = shiftFull.z })
-        --- Cameras must yaw about the same center used for this rigid (PC group origin), not World Origin.
-        local rigid = { deltaDeg = deltaDeg, shift = shift, centerPoint = rigidCenter }
-        local poseFrame = {
-            position = posePos,
-            rotation = Vector(frame.rotation),
-        }
+        local poseFrame, rigid = scatterRigidForFrame(frame, refFig, center, authoredY)
         packedFrames[slot] = { frame = poseFrame, rigid = rigid }
         if worldSlotFromPackedTableSlot(slot) == 1 then
             slot1Rigid = rigid
@@ -924,9 +938,145 @@ function ScatterMode.groupIndexForPcKey(pcKey)
 end
 
 
+--- Where this PC stands right now.
+--- @param pcKey string
+--- @return table|nil `{ color, groupIndex, slot, frame }`
+local function scatterFrameForPcKey(pcKey)
+    local color = colorForPcKey(pcKey)
+    local pack = livePlacements()
+    for i = 1, ScatterLayout.groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        local row = area and area.centerCharacters and area.centerCharacters[pcKey]
+        if type(row) == "table" then
+            local slot = math.floor(tonumber(row.slot) or 0)
+            local pcPoses = ScatterLayout.pcSlotPoses(i)
+            local pose = nil
+            if type(pcPoses) == "table" then
+                for p = 1, #pcPoses do
+                    if pcPoses[p].slot == slot then
+                        pose = pcPoses[p]
+                        break
+                    end
+                end
+            end
+            if color ~= nil and pose ~= nil then
+                return {
+                    color = color,
+                    groupIndex = i,
+                    slot = slot,
+                    frame = {
+                        position = pose.position,
+                        rotation = pose.rotation,
+                        groupIndex = i,
+                    },
+                }
+            end
+        end
+    end
+    return nil
+end
+
+--- Move one player's figurine, hand, sheets and camera. Other players and NPC figurines stay put.
+--- @param pcKey string
+local function applyScatterMovedPc(pcKey)
+    local found = scatterFrameForPcKey(pcKey)
+    if found == nil then
+        return
+    end
+    local tableA, refFig, center, authoredY = scatterTableARef()
+    local poseFrame, rigid = scatterRigidForFrame(found.frame, refFig, center, authoredY)
+    movePcFigurineToScatterPose(found.color, poseFrame)
+    local packedSlot = found.slot + (found.groupIndex - 1) * 10
+    local FSL = require("lib.figurine_seat_layout")
+    FSL.applyOccupantRigs({
+        framesBySlot = {
+            [packedSlot] = { frame = poseFrame, rigid = rigid },
+        },
+        occupants = {
+            { occupantKey = found.color, tableSlot = packedSlot },
+        },
+        seatRigidByKey = { [found.color] = rigid },
+        slot1Rigid = rigid,
+        centerPoint = center,
+    }, {
+        skipRoleKeys = { SEAT_CHAIR = true },
+        keepOtherOccupants = true,
+        skipOwnedReconcile = true,
+    })
+    hideChairForOccupant(found.color)
+    local skipColors = {}
+    for _, c in ipairs(C.PlayerColors or {}) do
+        if c ~= found.color then
+            skipColors[c] = true
+        end
+    end
+    require("lib.dice_drawer").reconcileAfterSeatLayout({ instant = true, skipColors = skipColors })
+    if found.color == "Pink" and G.GUIDS ~= nil then
+        require("lib.tarot_toggle").reconcileAfterSeatLayout(G.GUIDS.TAROT_BUTTON_PINK)
+    end
+    require("core.compulsions").reconcileSelectedCardsToAnchors({ onlyColor = found.color })
+    local RSL = require("lib.rotational-seat-layout")
+    if type(RSL.applyCameraModesFromComputed) == "function" then
+        RSL.applyCameraModesFromComputed({
+            referenceSeatKey = found.color,
+            referencePlayerColor = found.color,
+            seatRigidByKey = { [found.color] = rigid },
+            slot1Rigid = rigid,
+            centerPoint = center,
+            seatToPositionMap = { [found.color] = packedSlot },
+        }, {
+            tableCfg = tableA,
+            keepOtherSeatCameras = true,
+        })
+    end
+    local Main = require("core.main")
+    if type(Main.snapDefaultCamerasAfterLayout) == "function" then
+        Main.snapDefaultCamerasAfterLayout(found.color)
+    end
+end
+
+--- Portrait chips for the slot this player left and the slot they took. One viewer's strip per color.
+--- @param pcKey string
+--- @param color string
+--- @param fromGroup number|nil
+--- @param fromSlot number|nil
+--- @param toGroup number
+--- @param toSlot number
+local function refreshScatterHudForPcMove(pcKey, color, fromGroup, fromSlot, toGroup, toSlot)
+    local function portrait(viewColor, groupIndex, slot, imageKey)
+        local id = "scatterModeControlGroup" .. tostring(groupIndex) .. "_pc" .. tostring(slot) .. "_" .. viewColor
+        if type(imageKey) == "string" and imageKey ~= "" then
+            U.setAttributes(id, {
+                active = "true",
+                color = "rgba(1, 1, 1, 1)",
+                image = "scatterModeControlPC_" .. imageKey,
+            })
+        else
+            U.setAttributes(id, {
+                active = "true",
+                color = "rgba(1, 1, 1, 0)",
+            })
+        end
+    end
+    for _, viewColor in ipairs(C.PlayerColors or {}) do
+        if fromGroup ~= nil and fromSlot ~= nil and fromSlot >= 1 then
+            portrait(viewColor, fromGroup, fromSlot, nil)
+        end
+        if toSlot >= 1 then
+            portrait(viewColor, toGroup, toSlot, pcKey)
+        end
+    end
+    if fromGroup ~= nil and fromGroup ~= toGroup then
+        applySelectorResting(color, fromGroup, false)
+        applyNpcListClass(color, fromGroup, false)
+    end
+    applySelectorResting(color, toGroup, true)
+    applyNpcListClass(color, toGroup, true)
+    lastControlHudFingerprint = controlHudFingerprint()
+end
+
 --- Move a PC into a scatter group. No-op if they are already there.
---- Poses every player's figurine and seat objects from the live groups, and refreshes the HUD.
---- NPC figurines are not moved: their places depend on the NPC roster, not on which player changed groups.
+--- Moves that player's figurine and seat objects only. Other players and NPC figurines stay where they are.
 --- @param pcKey string
 --- @param groupIndex number
 --- @return boolean moved
@@ -948,12 +1098,16 @@ function ScatterMode.movePcToGroup(pcKey, groupIndex)
         return false
     end
     local prev = nil
+    local fromGroup = nil
+    local fromSlot = nil
     local pack = livePlacements()
     for i = 1, ScatterLayout.groupCount() do
         local area = pack[ScatterLayout.areaKeyForGroup(i)]
         local row = area and area.centerCharacters and area.centerCharacters[pcKey]
         if U.Type(row) == "table" then
             prev = row
+            fromGroup = i
+            fromSlot = math.floor(tonumber(row.slot) or 0)
             break
         end
     end
@@ -970,15 +1124,27 @@ function ScatterMode.movePcToGroup(pcKey, groupIndex)
     end
     LoadTrace.start("scatter-group", {
         label = tostring(pcKey) .. " → group " .. tostring(gi),
-        note = "Player group changes pose the player seat objects. NPC figurines are left where they are.",
+        note = "Only this player's seat objects move. Other players and NPC figurines stay where they are.",
     })
-    applyScatterPcPoses()
-    LoadTrace.mark("player seat objects")
+    applyScatterMovedPc(pcKey)
+    LoadTrace.mark("moved player")
+    local movedColor = colorForPcKey(pcKey)
+    if type(movedColor) == "string" then
+        refreshScatterHudForPcMove(pcKey, movedColor, fromGroup, fromSlot, gi, slot)
+    end
+    LoadTrace.mark("portraits")
     mirrorLiveScatterToLibrary()
     LoadTrace.mark("library mirror")
     markDashboardScatterDirty()
     LoadTrace.mark("dashboard")
     LoadTrace.finishAndPrint({ ok = true })
+    local resumedAt = os.clock()
+    U.await(function()
+        print(string.format(
+            "[SceneLoad] script resumed %d ms after the scatter report",
+            math.floor((os.clock() - resumedAt) * 1000 + 0.5)
+        ))
+    end, 0)
     return true
 end
 

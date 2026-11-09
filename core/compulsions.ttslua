@@ -708,16 +708,20 @@ function Compulsions.moveSelectedFromLiveRoll(color)
 end
 
 --- After seat layout moves compulsion anchors, snap active selected cards to SELECTED or LIVEROLL poses.
-function Compulsions.reconcileSelectedCardsToAnchors()
+--- @param opts table|nil `{ onlyColor?: string }` limits the snap to one seat
+function Compulsions.reconcileSelectedCardsToAnchors(opts)
+    local onlyColor = type(opts) == "table" and opts.onlyColor or nil
     local DiceDrawer = require("lib.dice_drawer")
     local PC = require("core.player_connection")
     for _, color in ipairs(C.PlayerColors) do
+        if onlyColor == nil or color == onlyColor then
         local card = not PC.isSeatUnoccupied(color) and findSelectedCompulsionForColor(color) or nil
         if card ~= nil then
             local kind = (DiceDrawer.isOpen ~= nil and DiceDrawer.isOpen(color) == true)
                 and "SELECTED_LIVEROLL"
                 or "SELECTED"
             snapPoseFromKey(card, positionKey(kind, color))
+        end
         end
     end
 end

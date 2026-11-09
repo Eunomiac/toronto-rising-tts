@@ -1223,6 +1223,7 @@ end
 --- @param helpers table|nil `{ skipRoleKeys?: table }`
 function FSL.applyOccupantRigs(bundle, helpers)
     helpers = helpers or {}
+    local keepOthers = helpers.keepOtherOccupants == true
     local anchors = {}
     local occupied = {}
 
@@ -1266,19 +1267,32 @@ function FSL.applyOccupantRigs(bundle, helpers)
         end
     end
 
-    for _, color in ipairs(C.PlayerColors or {}) do
-        if occupied[color] ~= true and not FSL.isUnoccupiedPcPileStashed(color) then
-            FSL.setOccupantPileVisible(color, false)
+    if not keepOthers then
+        for _, color in ipairs(C.PlayerColors or {}) do
+            if occupied[color] ~= true and not FSL.isUnoccupiedPcPileStashed(color) then
+                FSL.setOccupantPileVisible(color, false)
+            end
         end
-    end
-    for _, npc in ipairs(C.NPCSeats or {}) do
-        if occupied[npc] ~= true then
-            FSL.setOccupantPileVisible(npc, false)
+        for _, npc in ipairs(C.NPCSeats or {}) do
+            if occupied[npc] ~= true then
+                FSL.setOccupantPileVisible(npc, false)
+            end
+        end
+    else
+        local prev = S.getStateVal("seatLayout", "virtualFigurineAnchors")
+        if type(prev) == "table" then
+            for key, anchor in pairs(prev) do
+                if anchors[key] == nil then
+                    anchors[key] = anchor
+                end
+            end
         end
     end
 
     S.setStateVal(anchors, "seatLayout", "virtualFigurineAnchors")
-    reconcileObjectPositionsOwnedAfterLayout()
+    if helpers.skipOwnedReconcile ~= true then
+        reconcileObjectPositionsOwnedAfterLayout()
+    end
 end
 
 --- Lowest unused slot in 1..cap, or nil.
