@@ -1,3 +1,44 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "sketch": "scenes",
+      "x": 76,
+      "y": 385,
+      "text": "Need a way to delete/remove \"kept\" generic characters from the roster.",
+      "status": "open",
+      "createdAt": "2026-11-09T00:30:39.638Z",
+      "updatedAt": "2026-11-09T00:30:39.638Z"
+    },
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 263,
+      "y": 408,
+      "text": "Tokens of preloaded characters who are not yet present in the scene should appear in a box _above_ the \"Catalog/Generic/Memoriam\" buttons, so they are available regardless of the tab I'm on.",
+      "status": "open",
+      "createdAt": "2026-11-09T00:31:15.643Z",
+      "updatedAt": "2026-11-09T00:31:15.643Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 328,
+      "y": 798,
+      "text": "Need a way to add unsorted cataloged NPCs to groups via the Dashboard",
+      "status": "open",
+      "createdAt": "2026-11-09T00:43:29.371Z",
+      "updatedAt": "2026-11-09T00:43:29.371Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 476,
+      "y": 390,
+      "text": "There is often a moment of audio that plays at full volume at the beginning of a scene transition, before being set to zero. I know emitters are silenced as part of the build process, but I suspect we need to set the volumes to zero before we activate them to prevent this.",
+      "status": "open",
+      "createdAt": "2026-11-09T00:47:23.020Z",
+      "updatedAt": "2026-11-09T00:47:23.020Z"
+    }
+  ]
 }
