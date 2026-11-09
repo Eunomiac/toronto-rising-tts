@@ -2557,12 +2557,96 @@ local function collectHandCards(hz, seatColor)
 	return out
 end
 
+local teleportUnlockQueue = {}
+local teleportUnlockScheduled = false
+
+local function flushTeleportUnlocks()
+	teleportUnlockScheduled = false
+	local batch = teleportUnlockQueue
+	teleportUnlockQueue = {}
+	for i = 1, #batch do
+		local obj = batch[i]
+		if obj ~= nil and obj.setLock ~= nil then
+			obj.setLock(false)
+		end
+	end
+end
+
+local function queueTeleportUnlock(obj)
+	teleportUnlockQueue[#teleportUnlockQueue + 1] = obj
+	if teleportUnlockScheduled then
+		return
+	end
+	teleportUnlockScheduled = true
+	-- Wait.time(0) runs before the physics step, so an unlock there lands in the solver.
+	-- A short delay keeps the teleport locked until that step has passed.
+	U.await(flushTeleportUnlocks, 0.2)
+end
+
+local function zeroMotion(obj)
+	if obj.setVelocity ~= nil then
+		obj.setVelocity({ x = 0, y = 0, z = 0 })
+	end
+	if obj.setAngularVelocity ~= nil then
+		obj.setAngularVelocity({ x = 0, y = 0, z = 0 })
+	end
+end
+
+--- Put an object at a pose without handing the physics solver a loose teleport.
+--- Sheets, bags, and figurines are locked across the next physics step, then restored.
+--- Hand cards must stay unlocked (`keepUnlocked`): a locked card leaves the hand, so they
+--- snap with collision off instead.
+--- @param obj Object
+--- @param pos Vector|table
+--- @param rot Vector|table|nil
+--- @param opts table|nil `{ keepUnlocked = true }`
+function U.teleportSettled(obj, pos, rot, opts)
+	if obj == nil or obj.setPosition == nil or pos == nil then
+		return
+	end
+	opts = type(opts) == "table" and opts or {}
+	local position = { x = pos.x, y = pos.y, z = pos.z }
+	local rotation = rot ~= nil and { x = rot.x, y = rot.y, z = rot.z } or nil
+	if opts.keepUnlocked == true then
+		if obj.setPositionSmooth ~= nil then
+			obj.setPositionSmooth(position, false, true)
+		else
+			obj.setPosition(position)
+		end
+		if rotation ~= nil and obj.setRotation ~= nil then
+			if obj.setRotationSmooth ~= nil then
+				obj.setRotationSmooth(rotation, false, true)
+			else
+				obj.setRotation(rotation)
+			end
+		end
+		zeroMotion(obj)
+		return
+	end
+	local wasLocked = obj.getLock ~= nil and obj.getLock() == true
+	if obj.setLock ~= nil then
+		obj.setLock(true)
+	end
+	obj.setPosition(position)
+	if rotation ~= nil and obj.setRotation ~= nil then
+		obj.setRotation(rotation)
+	end
+	zeroMotion(obj)
+	if not wasLocked and obj.setLock ~= nil then
+		queueTeleportUnlock(obj)
+	end
+end
+
 --- @param obj Object
 --- @param pos Vector|table
 --- @param rot Vector|table
 local function poseObjectWithHand(obj, pos, rot)
-	obj.setPosition({ x = pos.x, y = pos.y, z = pos.z })
-	obj.setRotation({ x = rot.x, y = rot.y, z = rot.z })
+	local keepUnlocked = false
+	local typeVal = obj.type
+	if typeVal == "Card" or typeVal == "Deck" then
+		keepUnlocked = true
+	end
+	U.teleportSettled(obj, pos, rot, { keepUnlocked = keepUnlocked })
 end
 
 --- Tag on cards `U.movePlayerHand` stashed in a parked player's storage container. Only cards

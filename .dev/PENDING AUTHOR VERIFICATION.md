@@ -39,7 +39,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### 🟡 TOR-767 — Moving one player between Scatter groups leaves the NPCs where they are
 
-> **Agent-assessment note:** The code path for a player group change no longer poses NPC figurines. You still need to watch the table, because only the live move shows whether the player arrives promptly and the NPCs stay put.
+> **Agent-assessment note:** The move still touches only that player. The figurine and seat objects now stay locked through the physics step that was freezing the table after the timing lines. Hand cards stay unlocked so they remain in the hand. You still need to watch a live move.
 
 **How to verify:** Save & Play. Enter Scatter mode with several NPCs and at least two groups. Note where the NPC figurines and the other players are standing. Move one player to another group, from that player's group strip or from the Storyteller Dashboard. That player's figurine, hand, bags, and sheet should move to the new group. The timing lines should print, and the table should not freeze after them. The other players and the NPC figurines should stay where they were. One more line, `script resumed … ms after the scatter report`, should follow almost at once. Moving an NPC between groups should still shift the NPCs, because their spacing depends on how many are in the group.
 

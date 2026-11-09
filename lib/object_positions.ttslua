@@ -324,12 +324,15 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
   if desiredLock == nil and type(pose.setLock) == "boolean" then
     desiredLock = pose.setLock
   end
+  -- An instant teleport that unlocks on Wait.time(0) is unlocked again before the physics
+  -- step, and that step is what freezes the table. Hold the lock until the step has passed.
+  local holdPhysicsLock = duration == 0 and pose.isHidden == nil and initialLock == false and obj.setLock ~= nil
 
   local function run()
     if shouldAbort ~= nil and shouldAbort() then
       return
     end
-    if type(desiredLock) == "boolean" and desiredLock == true then
+    if (type(desiredLock) == "boolean" and desiredLock == true) or holdPhysicsLock then
       obj.setLock(true)
     end
     local targetPos = nil
@@ -371,7 +374,7 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       end
     end
 
-    local finalizeDelay = duration > 0 and duration or 0
+    local finalizeDelay = duration > 0 and duration or (holdPhysicsLock and 0.2 or 0)
     U.await(function()
       if shouldAbort ~= nil and shouldAbort() then
         return

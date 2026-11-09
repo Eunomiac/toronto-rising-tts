@@ -825,8 +825,7 @@ local function findFigurine(occupantKey)
 end
 
 local function placeObjectExact(obj, pos, rot)
-    obj.setPosition({ x = pos.x, y = pos.y, z = pos.z })
-    obj.setRotation({ x = rot.x, y = rot.y, z = rot.z })
+    U.teleportSettled(obj, pos, rot)
 end
 
 local function shouldSkipSatellite(obj, roleKey)
