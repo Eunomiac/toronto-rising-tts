@@ -1,7 +1,7 @@
 import type { ServerResponse } from "node:http";
 
 /**
- * One relayed TTS push event (Lua `dashboard/push.ttslua` → gateway `customMessage` → here → SSE).
+ * One relayed TTS push event (Lua tagged `print` → gateway route tag → here → SSE).
  * `reload` is synthesized by the server when TTS loads a game. `at` is the server receive time
  * (epoch ms), stamped on publish; the clock topic extrapolates from it.
  */
@@ -17,33 +17,30 @@ const HEARTBEAT_MS = 25_000;
 const cacheKey = (event: TtsPushEvent): string => `${event.topic}:${event.color ?? ""}`;
 
 /**
- * Pull a dashboard push out of a gateway `customMessage` payload
- * (`{ customMessage: { type: "dashboard", v: 1, topic, color?, json? } }`). `json` is the payload as a
- * JSON string: TTS drops `sendExternalMessage` tables that contain nested tables. Other custom
- * messages (debug file writes, editor requests) return undefined.
+ * Pull a dashboard push out of one TTS console line. Gateway mode strips `<@DASHBOARD@>` before
+ * delivery; direct mode does not have a router, so this parser accepts and strips the prefix itself.
+ * Ordinary console lines and malformed or unsupported envelopes return undefined.
  */
-export const parseDashboardPush = (payload: Record<string, unknown>): TtsPushEvent | undefined => {
-  const message = payload.customMessage;
-  if (typeof message !== "object" || message === null) {
+export const parseDashboardPrint = (message: string): TtsPushEvent | undefined => {
+  const routePrefix = "<@DASHBOARD@>";
+  const encoded = message.startsWith(routePrefix) ? message.slice(routePrefix.length) : message;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(encoded) as unknown;
+  } catch {
     return undefined;
   }
-  const row = message as Record<string, unknown>;
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    return undefined;
+  }
+  const row = parsed as Record<string, unknown>;
   if (row.type !== "dashboard" || row.v !== 1 || typeof row.topic !== "string" || row.topic === "") {
     return undefined;
-  }
-  let data: unknown;
-  if (typeof row.json === "string") {
-    try {
-      data = JSON.parse(row.json) as unknown;
-    } catch (error: unknown) {
-      console.error(`[tts-events] dropped ${row.topic} push: bad json field`, error);
-      return undefined;
-    }
   }
   return {
     topic: row.topic,
     ...(typeof row.color === "string" ? { color: row.color } : {}),
-    ...(data !== undefined ? { data } : {})
+    ...(row.data !== undefined ? { data: row.data } : {})
   };
 };
 

@@ -1,23 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { parseDashboardPush, TtsEventHub } from "./ttsEvents.js";
+import { parseDashboardPrint, TtsEventHub } from "./ttsEvents.js";
 
-describe("parseDashboardPush", () => {
-  it("accepts dashboard v1 pushes", () => {
-    expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 1, topic: "pcSeat", color: "Red", json: "{\"hunger\":2}" } }))
+describe("parseDashboardPrint", () => {
+  it("accepts gateway-stripped dashboard v1 prints", () => {
+    expect(parseDashboardPrint('{"type":"dashboard","v":1,"topic":"pcSeat","color":"Red","data":{"hunger":2}}'))
       .toEqual({ topic: "pcSeat", color: "Red", data: { hunger: 2 } });
-    expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 1, topic: "projects" } }))
+    expect(parseDashboardPrint('{"type":"dashboard","v":1,"topic":"projects"}'))
       .toEqual({ topic: "projects" });
   });
 
-  it("drops a push whose json field does not parse", () => {
-    expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 1, topic: "pcSeat", color: "Red", json: "{oops" } }))
-      .toBeUndefined();
+  it("accepts the tagged print used when the dashboard owns the editor port directly", () => {
+    expect(parseDashboardPrint('<@DASHBOARD@>{"type":"dashboard","v":1,"topic":"scene","data":{"title":"Elysium"}}'))
+      .toEqual({ topic: "scene", data: { title: "Elysium" } });
   });
 
-  it("ignores other custom messages", () => {
-    expect(parseDashboardPush({ customMessage: { type: "write", content: "x" } })).toBeUndefined();
-    expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 2, topic: "pcSeat" } })).toBeUndefined();
-    expect(parseDashboardPush({ customMessage: "<@DASHBOARD@>text" })).toBeUndefined();
+  it("ignores malformed, unsupported, and ordinary console lines", () => {
+    expect(parseDashboardPrint("<@DASHBOARD@>{oops")).toBeUndefined();
+    expect(parseDashboardPrint('{"type":"dashboard","v":2,"topic":"pcSeat"}')).toBeUndefined();
+    expect(parseDashboardPrint('{"type":"write","content":"x"}')).toBeUndefined();
+    expect(parseDashboardPrint("[SceneLoad] ordinary console output")).toBeUndefined();
   });
 });
 

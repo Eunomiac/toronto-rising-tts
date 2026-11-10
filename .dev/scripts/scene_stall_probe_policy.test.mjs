@@ -23,10 +23,10 @@ for (const action of [
   "scatter_hud",
   "dashboard_build_seats",
   "dashboard_encode_seats",
-  "dashboard_send_seats",
+  "dashboard_emit_seats",
   "dashboard_build_scene",
   "dashboard_encode_scene",
-  "dashboard_send_scene",
+  "dashboard_emit_scene",
   "dashboard",
   "table",
   "seats",
@@ -49,7 +49,7 @@ assert.match(layout, /helpers\.skipFigurine/, "seat layout should isolate satell
 assert.match(
   dashboardPush,
   /function DashPush\.debugMeasureWorldSlice\(/,
-  "dashboard probes should separate world-slice build, encode, and send",
+  "dashboard probes should separate world-slice build, encode, and tagged-console emit",
 );
 assert.match(dashboardPush, /\[DashPushSlow\]/, "slow production dashboard flushes should name their expensive stage");
 

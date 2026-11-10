@@ -4,7 +4,7 @@ import {
   type GatewayStatus
 } from "@tts-tools/gateway-client";
 import { reclaimEditorPort } from "./ttsEditorPort.js";
-import { parseDashboardPush, ttsEventHub } from "./ttsEvents.js";
+import { parseDashboardPrint, ttsEventHub } from "./ttsEvents.js";
 
 type ExecuteResult = {
   readonly prints: readonly string[];
@@ -66,8 +66,8 @@ export class DashboardTtsBridge {
         void session.close().catch(() => undefined);
       }
     });
-    session.on("customMessage", (payload) => {
-      const event = parseDashboardPush(payload);
+    session.on("print", (message) => {
+      const event = parseDashboardPrint(message);
       if (event) {
         ttsEventHub.publish(event);
       }

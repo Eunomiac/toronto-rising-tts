@@ -1,21 +1,21 @@
 --[[
   Storyteller Dashboard live push (Global VM only).
 
-  One-way messages to the dashboard server through the TTS Tools gateway (port 39998):
-    { type = "dashboard", v = 1, topic = "pcSeat", color, json }  — slim seat snapshot (JSON string)
-    { type = "dashboard", v = 1, topic = "projects" }             — project list changed; refetch
-    { type = "dashboard", v = 1, topic = <world slice>, json }    — phase / scene / clock / soundscape / seats
-    { type = "dashboard", v = 1, topic = "notice", json }         — `{ text }`: a refusal the Storyteller must see
+  Tagged console messages to the dashboard server through the TTS Tools gateway (port 39998):
+    { type = "dashboard", v = 1, topic = "pcSeat", color, data }  — slim seat snapshot
+    { type = "dashboard", v = 1, topic = "projects" }              — project list changed; refetch
+    { type = "dashboard", v = 1, topic = <world slice>, data }     — phase / scene / clock / soundscape / seats
+    { type = "dashboard", v = 1, topic = "notice", data }          — `{ text }`: a refusal the Storyteller must see
                                                                     (TTS broadcasts hide behind the blindfold)
-  Messages must stay flat: a nested table in sendExternalMessage never reaches the gateway, so
-  payloads travel as a JSON string field.
+  The `<@DASHBOARD@>` prefix makes the gateway route each print only to the dashboard. The gateway
+  strips the prefix before delivery; direct-mode dashboard listeners strip it themselves.
   No handshake, session id or sequence number: the dashboard refetches its full snapshot on
   game load, and each message carries its whole seat or slice.
 
   `DashPush.seat` is the last step of `Sync.player`, so every per-seat mutation reaches the
   dashboard through the seat announcer. World slices are marked dirty from `UpdateUIDisplays`
-  and a few bypass paths, then built and sent together after a short delay
-  (`DashPush.markWorldDirty`). Unchanged payloads are not resent.
+  and a few bypass paths, then built and emitted together after a short delay
+  (`DashPush.markWorldDirty`). Unchanged payloads are not emitted again.
   Design: .dev/Storyteller Dashboard Docs/Live Push Channel.md
 ]]
 
@@ -24,29 +24,39 @@ local DashPush = {}
 local C = require("lib.constants")
 local U = require("lib.util")
 
---- Last sent encoded seat payload per color.
+--- Last emitted encoded seat payload per color.
 --- @type table<string, string>
 local lastSeatPayload = {}
 
-local warnedSendMissing = false
+local DASHBOARD_ROUTE_PREFIX = "<@DASHBOARD@>"
 
 --- @param message table
---- @return boolean sent
-local function send(message)
-  ---@diagnostic disable-next-line: undefined-global
-  if sendExternalMessage == nil then
-    if not warnedSendMissing then
-      warnedSendMissing = true
-      print("[DashPush] sendExternalMessage is unavailable — Storyteller Dashboard live updates are off (TTS Tools extension not connected).")
-    end
-    return false
+--- @return string
+local function encodeEnvelope(message)
+  local fields = {
+    '{"type":"dashboard","v":1,"topic":',
+    JSON.encode(message.topic),
+  }
+  if type(message.color) == "string" then
+    fields[#fields + 1] = ',"color":'
+    fields[#fields + 1] = JSON.encode(message.color)
   end
-  ---@diagnostic disable-next-line: undefined-global
-  sendExternalMessage(message)
+  if type(message.json) == "string" then
+    fields[#fields + 1] = ',"data":'
+    fields[#fields + 1] = message.json
+  end
+  fields[#fields + 1] = "}"
+  return table.concat(fields)
+end
+
+--- @param message table
+--- @return boolean emitted
+local function emit(message)
+  print(DASHBOARD_ROUTE_PREFIX .. encodeEnvelope(message))
   return true
 end
 
---- Push one PC seat's slim snapshot when it differs from the last one sent.
+--- Push one PC seat's slim snapshot when it differs from the last one emitted.
 --- Storyteller and colors without a PC are ignored.
 --- @param color string
 function DashPush.seat(color)
@@ -63,19 +73,19 @@ function DashPush.seat(color)
     require("lib.sync_trace").report("DashPush.seat", { color = color, outcome = "skipped" })
     return
   end
-  if send({ type = "dashboard", v = 1, topic = "pcSeat", color = color, json = encoded }) then
+  if emit({ topic = "pcSeat", color = color, json = encoded }) then
     lastSeatPayload[color] = encoded
     require("lib.sync_trace").report("DashPush.seat", {
       color = color,
       bytes = tostring(#encoded),
-      outcome = "sent",
+      outcome = "emitted",
     })
   end
 end
 
 --- Tell the dashboard the project list changed (it refetches projects on demand).
 function DashPush.projects()
-  send({ type = "dashboard", v = 1, topic = "projects" })
+  emit({ topic = "projects" })
 end
 
 --- Show a refusal or failure on the dashboard (scene Play blocked by dice on the table, a transition that
@@ -85,13 +95,13 @@ function DashPush.notice(text)
   if type(text) ~= "string" or text == "" then
     error("DashPush.notice: text must be a non-empty string", 2)
   end
-  send({ type = "dashboard", v = 1, topic = "notice", json = JSON.encode({ text = text }) })
+  emit({ topic = "notice", json = JSON.encode({ text = text }) })
 end
 
---- Marks within this window share one flush, so a burst of syncs sends each slice at most once.
+--- Marks within this window share one flush, so a burst of syncs emits each slice at most once.
 local WORLD_FLUSH_DELAY_SEC = 0.25
 
---- Last sent encoded payload per world slice.
+--- Last emitted encoded payload per world slice.
 --- @type table<string, string>
 local lastWorldPayload = {}
 
@@ -127,27 +137,27 @@ local function flushWorld()
           outcome = "skipped",
         })
       else
-        local sendStarted = os.clock()
-        local sent = send({ type = "dashboard", v = 1, topic = slice, json = encoded })
-        local sendMs = elapsedMs(sendStarted)
-        if sent then
+        local emitStarted = os.clock()
+        local emitted = emit({ topic = slice, json = encoded })
+        local emitMs = elapsedMs(emitStarted)
+        if emitted then
           lastWorldPayload[slice] = encoded
         end
         Trace.report("DashPush.world", {
           slice = slice,
           buildMs = tostring(buildMs),
           encodeMs = tostring(encodeMs),
-          sendMs = tostring(sendMs),
+          emitMs = tostring(emitMs),
           bytes = tostring(#encoded),
-          outcome = sent and "sent" or "send_unavailable",
+          outcome = emitted and "emitted" or "emit_unavailable",
         })
-        if buildMs >= 250 or encodeMs >= 250 or sendMs >= 250 then
+        if buildMs >= 250 or encodeMs >= 250 or emitMs >= 250 then
           print(string.format(
-            "[DashPushSlow] %s build=%d ms encode=%d ms send=%d ms bytes=%d",
+            "[DashPushSlow] %s build=%d ms encode=%d ms emit=%d ms bytes=%d",
             slice,
             buildMs,
             encodeMs,
-            sendMs,
+            emitMs,
             #encoded
           ))
         end
@@ -156,10 +166,10 @@ local function flushWorld()
   end
 end
 
---- Explicit diagnostic: measure one world slice's build and encode costs, then optionally send it.
+--- Explicit diagnostic: measure one world slice's build and encode costs, then optionally emit it.
 --- Ordinary dashboard updates do not call this.
 --- @param slice string
---- @param mode string|nil `build`, `encode`, or `send`
+--- @param mode string|nil `build`, `encode`, or `emit`
 --- @return table
 function DashPush.debugMeasureWorldSlice(slice, mode)
   local W = require("dashboard.world_snapshot")
@@ -167,8 +177,8 @@ function DashPush.debugMeasureWorldSlice(slice, mode)
     error("DashPush.debugMeasureWorldSlice: unknown slice " .. tostring(slice), 2)
   end
   mode = tostring(mode or "encode")
-  if mode ~= "build" and mode ~= "encode" and mode ~= "send" then
-    error("DashPush.debugMeasureWorldSlice: mode must be build, encode, or send", 2)
+  if mode ~= "build" and mode ~= "encode" and mode ~= "emit" then
+    error("DashPush.debugMeasureWorldSlice: mode must be build, encode, or emit", 2)
   end
   local t0 = os.clock()
   local snapshot = W.build(slice)
@@ -192,21 +202,21 @@ function DashPush.debugMeasureWorldSlice(slice, mode)
     math.floor((t2 - t1) * 1000 + 0.5),
     #encoded
   ))
-  local sent = false
-  local sendMs = 0
-  if mode == "send" then
-    local sendStarted = os.clock()
-    sent = send({ type = "dashboard", v = 1, topic = slice, json = encoded })
-    sendMs = math.floor((os.clock() - sendStarted) * 1000 + 0.5)
-    print(string.format("[DashPushProbe] %s SEND %d ms, sent=%s", slice, sendMs, tostring(sent)))
+  local emitted = false
+  local emitMs = 0
+  if mode == "emit" then
+    local emitStarted = os.clock()
+    emitted = emit({ topic = slice, json = encoded })
+    emitMs = math.floor((os.clock() - emitStarted) * 1000 + 0.5)
+    print(string.format("[DashPushProbe] %s EMIT %d ms, emitted=%s", slice, emitMs, tostring(emitted)))
   end
   return {
     slice = slice,
     buildMs = math.floor((t1 - t0) * 1000 + 0.5),
     encodeMs = math.floor((t2 - t1) * 1000 + 0.5),
     bytes = #encoded,
-    sendMs = sendMs,
-    sent = sent,
+    emitMs = emitMs,
+    emitted = emitted,
   }
 end
 
