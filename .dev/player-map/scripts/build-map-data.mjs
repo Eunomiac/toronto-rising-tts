@@ -30,7 +30,11 @@ const parser = new XMLParser({
 const document = parser.parse(svgText);
 const groups = new Map(document.svg.g.map((group) => [group.id, group]));
 const transform = calibration.method.startsWith('rectangular')
-  ? fitRectangularCalibration(calibration.controlPoints, calibration.validationPoints ?? [])
+  ? fitRectangularCalibration(
+    calibration.controlPoints,
+    calibration.validationPoints ?? [],
+    calibration.adjustments ?? {},
+  )
   : calibration.method.startsWith('projective')
     ? fitProjectiveCalibration(calibration.controlPoints, calibration.validationPoints ?? [])
     : fitAffineCalibration(calibration.controlPoints);
@@ -93,6 +97,7 @@ const manifest = {
   },
   bounds,
   calibration: {
+    adjustments: calibration.adjustments ?? null,
     controlPointCount: calibration.controlPoints.length,
     rootMeanSquareErrorMetres: Number(transform.rootMeanSquareErrorMetres.toFixed(2)),
     residuals: transform.residuals.map((item) => ({ ...item, metres: Number(item.metres.toFixed(2)) })),

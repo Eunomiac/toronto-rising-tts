@@ -65,3 +65,17 @@ test('rectangular calibration preserves horizontal and vertical source edges', (
   assert.ok(result.rootMeanSquareErrorMetres < 0.001);
   assert.ok(result.validationRootMeanSquareErrorMetres < 4);
 });
+
+test('rectangular calibration can contract horizontally around a fixed source anchor', () => {
+  const controls = [
+    { name: 'northwest', source: [0, 0], lngLat: [-79.4, 43.6] },
+    { name: 'northeast', source: [100, 0], lngLat: [-79.3, 43.6] },
+    { name: 'southwest', source: [0, 100], lngLat: [-79.4, 43.5] },
+    { name: 'southeast', source: [100, 100], lngLat: [-79.3, 43.5] },
+  ];
+  const baseline = fitRectangularCalibration(controls);
+  const contracted = fitRectangularCalibration(controls, [], { horizontalScale: 0.998, anchorSourceX: 0 });
+  assert.ok(Math.abs(contracted.project([0, 50])[0] - baseline.project([0, 50])[0]) < 1e-12);
+  assert.ok(contracted.project([100, 50])[0] < baseline.project([100, 50])[0]);
+  assert.ok(Math.abs(contracted.project([0, 0])[1] - contracted.project([100, 0])[1]) < 1e-12);
+});

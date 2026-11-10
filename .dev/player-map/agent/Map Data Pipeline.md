@@ -167,7 +167,9 @@ source raster and OpenStreetMap road centrelines. The current fit reports about
 checkpoint. Centre Island, Billy Bishop Airport, the harbour shoreline, and the
 central street grid were also compared visually over the live basemap. Expand
 the control and validation set before geometry is called final, but do not
-return to an exact four-point projective fit.
+return to an exact four-point projective fit. A reviewed `0.998` horizontal
+scale adjustment is anchored at source x=0, preserving the aligned west edge
+while contracting the east side by 0.2 percent.
 
 ## Public Output
 

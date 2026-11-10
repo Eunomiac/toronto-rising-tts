@@ -323,7 +323,7 @@ export function fitAffineCalibration(controlPoints) {
   };
 }
 
-export function fitRectangularCalibration(controlPoints, validationPoints = []) {
+export function fitRectangularCalibration(controlPoints, validationPoints = [], adjustments = {}) {
   if (controlPoints.length < 2) throw new Error('At least two calibration control points are required');
   const targets = controlPoints.map(({ lngLat }) => lngLatToMercator(lngLat));
   const fitAxis = (sourceAxis, targetAxis) => {
@@ -339,8 +339,14 @@ export function fitRectangularCalibration(controlPoints, validationPoints = []) 
     ) / denominator;
     return { scale, offset: targetMean - scale * sourceMean };
   };
-  const x = fitAxis(0, 0);
+  const fittedX = fitAxis(0, 0);
   const y = fitAxis(1, 1);
+  const horizontalScale = adjustments.horizontalScale ?? 1;
+  const anchorSourceX = adjustments.anchorSourceX ?? 0;
+  const x = {
+    scale: fittedX.scale * horizontalScale,
+    offset: fittedX.offset + (fittedX.scale - fittedX.scale * horizontalScale) * anchorSourceX,
+  };
   const projectMercator = ([sourceX, sourceY]) => [
     x.scale * sourceX + x.offset,
     y.scale * sourceY + y.offset,
