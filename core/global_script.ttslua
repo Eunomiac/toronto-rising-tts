@@ -4571,7 +4571,7 @@ function HUD_printState(player, button, id)
         broadcastToColor("Print State: DEBUG.logStateToFile missing.", player.color, {1, 0.5, 0})
         return
     end
-    -- Delegates to core/debug.ttslua: JSON.encode_pretty + writeToFile (sendExternalMessage, format "auto")
+    -- Delegates to core/debug.ttslua: JSON.encode_pretty + the explicit solo-only file exporter.
     DEBUG.logStateToFile("game_state")
     broadcastToColor(
         "Game state written to .dev/.debug/debug_logs/game_state.txt (enable External Editor + bridge on 39998 if missing).",

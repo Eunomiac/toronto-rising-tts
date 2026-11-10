@@ -24,6 +24,7 @@ O = require("core.objects")
 local Sync = require("core.sync")
 local SRI = require("lib.seat-role-identity")
 local FigurineFrame = require("lib.figurine_frame")
+local DebugExternalWrite = require("lib.debug_external_write")
 LightTest = require("core.light_test")
 -- Bundler tracing: `lib.workspace_ndjson_log` is otherwise only required from inside DEBUG.* at runtime
 -- and can be omitted from Save & Play bundles → a late require there fails in-game. Keep one top-level require.
@@ -44,12 +45,7 @@ local function setHungerAndSync(color, value)
     Sync.player(color, { forceOverlays = true })
 end
 
---[[
-    File Logging Configuration
-    External Editor bridge (repo tts-bridge on port 39998): `sendExternalMessage` with type "write"
-    and `name` is written under **workspaceFolder/.dev/.debug/<name>** when MCP or `npm run tts-bridge:listen`
-    is active. Same for logToFile and writeWorkspaceFile. See .dev/DEBUG_FILE_LOGGING.md.
-]]
+-- File logging uses the explicit, solo-only `DebugExternalWrite` authority. See .dev/DEBUG_FILE_LOGGING.md.
 local LOG_DIR = "debug_logs"
 local LOG_EXTENSION = "txt"
 
@@ -60,8 +56,6 @@ local WORKSPACE_DEBUG_WRITE_ROOT = ".dev/.debug"
 -- Key: filename (without extension), Value: accumulated content string
 local logCache = {}
 
---- Printed at most once when `sendExternalMessage` is missing (NDJSON / workspace writes).
-local warnedNdjsonSendExternalMissing = false
 local lastCapturedCameraEntry = nil
 
 --[[
@@ -87,8 +81,6 @@ local function writeToFile(filename, content, format, append)
     format = format or "none"
     append = append ~= false  -- Default to true (append mode) unless explicitly set to false
 
-    -- Use sendExternalMessage to write to file.
-    -- Don't set `object`; with only `name`, the bridge writes to .dev/.debug/<name>.
     local fullName = LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION
 
     -- For append mode, maintain cache and accumulate content
@@ -103,19 +95,9 @@ local function writeToFile(filename, content, format, append)
         logCache[filename] = content
     end
 
-    -- Check if sendExternalMessage exists (TTS Tools extension)
-    ---@diagnostic disable-next-line: undefined-global
-    if sendExternalMessage then
-        ---@diagnostic disable-next-line: undefined-global
-        sendExternalMessage({
-            type = "write",
-            content = content,
-            name = fullName,
-            format = format
-        })
+    if DebugExternalWrite.write(fullName, content, format) then
         print("DEBUG: Log written to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. fullName)
     else
-        -- Fallback: just print if extension not available
         print("DEBUG (file logging not available): " .. filename)
         print(content)
     end
@@ -186,9 +168,8 @@ function DEBUG.syncTableSimplified(tableKey, opts)
   return R.resolveSeatObjectsFromTable(key, nil, resolveOpts)
 end
 
---- Writes content via sendExternalMessage type "write". File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
+--- Explicit solo-only file export. File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
 --- Does not use log append cache; each call overwrites that file path.
---- Falls back to `sendExternalCommand` (`type = "write"`) when messages are unavailable.
 --- @param relativePath string Path suffix under .dev/.debug, e.g. "debug_logs/npcs_panel.txt"
 --- @param content string
 --- @param format string|nil "none" or "auto" (default "none")
@@ -204,41 +185,17 @@ function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
         content = tostring(content)
     end
 
-    ---@diagnostic disable-next-line: undefined-global
-    if sendExternalMessage then
-        ---@diagnostic disable-next-line: undefined-global
-        sendExternalMessage({
-            type = "write",
-            content = content,
-            name = relativePath,
-            format = format,
-        })
+    if DebugExternalWrite.write(relativePath, content, format) then
         if not silent then
             print("DEBUG: Wrote " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
             print(
-                "DEBUG: tts-bridge stores custom writes under .dev/.debug/ (first workspace folder if multi-root). "
-                    .. "Enable custom messages (ttsEditor.enableMessages) if writes are ignored."
+                "DEBUG: tts-bridge stores explicit debug writes under .dev/.debug/ (first workspace folder if multi-root)."
             )
         end
         return true
     end
 
-    ---@diagnostic disable-next-line: undefined-global
-    if sendExternalCommand ~= nil then
-        ---@diagnostic disable-next-line: undefined-global
-        sendExternalCommand({
-            type = "write",
-            name = relativePath,
-            content = content,
-            format = format,
-        })
-        if not silent then
-            print("DEBUG: Wrote via sendExternalCommand " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
-        end
-        return true
-    end
-
-    print("DEBUG.writeWorkspaceFile: sendExternalMessage/Command not available (TTS Tools / tts-bridge on 39998?)")
+    print("DEBUG.writeWorkspaceFile: debug file export was refused or unavailable.")
     return false
 end
 
@@ -983,37 +940,23 @@ function DEBUG.beginWorkspaceDebugSession()
         return
     end
     W.beginSession("debug_workspace_ndjson.log")
-    W.append("debug_workspace_ndjson.log", {
+    local wrote = W.append("debug_workspace_ndjson.log", {
         hypothesisId = "bootstrap",
         location = "DEBUG.beginWorkspaceDebugSession",
         message = "NDJSON session opened",
         data = { relativePath = "debug_workspace_ndjson.log" },
     })
-    print("DEBUG: began workspace debug session -> " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/debug_workspace_ndjson.log")
+    if wrote then
+        print("DEBUG: began workspace debug session -> " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/debug_workspace_ndjson.log")
+    end
 end
 
 --- Truncate + clear in-memory buffer for a named NDJSON log under `.dev/.debug/<relativePath>`.
---- Same transport as `beginWorkspaceDebugSession` (`lib.workspace_ndjson_log` + `sendExternalMessage`).
+--- Same explicit solo-only transport as `beginWorkspaceDebugSession`.
 --- @param relativePath string e.g. `debug_session.log`
 function DEBUG.workspaceNdjsonBegin(relativePath)
     if U.Type(relativePath) ~= "string" or relativePath == "" then
         print("DEBUG.workspaceNdjsonBegin: invalid relativePath")
-        return
-    end
-    ---@diagnostic disable-next-line: undefined-global
-    if sendExternalMessage == nil then
-        if not warnedNdjsonSendExternalMissing then
-            warnedNdjsonSendExternalMissing = true
-            print(
-                "DEBUG.workspaceNdjsonBegin: sendExternalMessage is nil — workspace NDJSON will NOT be written."
-            )
-            print(
-                "  Fix: use TTS Editor / extension connected to this workspace, enable custom messages (ttsEditor.enableMessages), then Save & Play."
-            )
-            print(
-                "  Expected file when working: <workspaceFolder>/" .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath
-            )
-        end
         return
     end
     local W = require("lib.workspace_ndjson_log")
@@ -1023,18 +966,21 @@ function DEBUG.workspaceNdjsonBegin(relativePath)
     end
     W.beginSession(relativePath)
     -- First disk write is always a non-empty append (beginSession does not touch the file).
-    W.append(relativePath, {
+    local wrote = W.append(relativePath, {
         hypothesisId = "bootstrap",
         location = "DEBUG.workspaceNdjsonBegin",
         message = "NDJSON session opened",
         data = { relativePath = relativePath },
     })
-    print("DEBUG: NDJSON session + bootstrap line -> " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
+    if wrote then
+        print("DEBUG: NDJSON session + bootstrap line -> " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
+    end
 end
 
 --- Append one NDJSON record (human header + JSON line). File appears under `.dev/.debug/<relativePath>`.
 --- @param relativePath string
 --- @param payload table fields e.g. sessionId, hypothesisId, location, message, data
+--- @return boolean|nil
 function DEBUG.workspaceNdjsonAppend(relativePath, payload)
     if U.Type(relativePath) ~= "string" or relativePath == "" then
         return
@@ -1042,22 +988,12 @@ function DEBUG.workspaceNdjsonAppend(relativePath, payload)
     if U.Type(payload) ~= "table" then
         payload = { message = tostring(payload) }
     end
-    ---@diagnostic disable-next-line: undefined-global
-    if sendExternalMessage == nil then
-        if not warnedNdjsonSendExternalMissing then
-            warnedNdjsonSendExternalMissing = true
-            print(
-                "DEBUG.workspaceNdjsonAppend: sendExternalMessage is nil — NDJSON append skipped. See DEBUG.workspaceNdjsonBegin message for fixes."
-            )
-        end
-        return
-    end
     local W = require("lib.workspace_ndjson_log")
     if W == nil or U.Type(W.append) ~= "function" then
         print("DEBUG.workspaceNdjsonAppend: lib.workspace_ndjson_log invalid")
         return
     end
-    W.append(relativePath, payload)
+    return W.append(relativePath, payload)
 end
 
 --- Prints a formatted test header
@@ -4776,8 +4712,7 @@ end
 
 --[[
     File Logging Functions
-    These functions write debug information to files in the workspace using
-    the TTS Tools extension's sendExternalMessage API.
+    These functions write debug information through the explicit solo-only file-export authority.
 ]]
 
 --- Logs a message to a file with timestamp
@@ -5124,7 +5059,7 @@ end
 --- Requires TTS Tools bridge on port 39998 for file write (`.dev/.debug/debug_logs/...`).
 --- @param relativePath string|nil default `debug_logs/npc_seat_figurines.lua`
 --- @return table rows `{ tag, name, guid }[]`
---- @return boolean wrote true when sendExternalMessage write succeeded
+--- @return boolean wrote true when the explicit debug file export succeeded
 function DEBUG.exportNpcSeatFigurinesToFile(relativePath)
     relativePath = relativePath or "debug_logs/npc_seat_figurines.lua"
     local NPCS = require("core.npcs")

@@ -1,5 +1,5 @@
 --[[
-    Append NDJSON lines via sendExternalMessage type "write" (same as DEBUG.writeWorkspaceFile).
+    Append NDJSON lines through the explicit solo-only debug file writer.
     When the repo tts-bridge listens on 39998, files land under workspaceFolder/.dev/.debug/<relativePath>.
     In-memory buffer per path; each send rewrites the file.
 
@@ -7,6 +7,7 @@
 ]]
 
 local U = require("lib.util")
+local DebugExternalWrite = require("lib.debug_external_write")
 
 local M = {}
 
@@ -31,9 +32,10 @@ end
 --- Append one NDJSON object (rewrites file with full buffer).
 --- @param relativePath string
 --- @param payload table
+--- @return boolean
 function M.append(relativePath, payload)
     if U.Type(relativePath) ~= "string" or relativePath == "" then
-        return
+        return false
     end
     if U.Type(payload) ~= "table" then
         payload = { message = tostring(payload) }
@@ -61,16 +63,7 @@ function M.append(relativePath, payload)
     if M.mirrorAppendToPrint == true then
         print("[workspace_ndjson] " .. jsonPart)
     end
-    ---@diagnostic disable-next-line: undefined-global
-    if sendExternalMessage then
-        ---@diagnostic disable-next-line: undefined-global
-        sendExternalMessage({
-            type = "write",
-            content = table.concat(buffers[relativePath], "\n"),
-            name = relativePath,
-            format = "none",
-        })
-    end
+    return DebugExternalWrite.write(relativePath, table.concat(buffers[relativePath], "\n"), "none")
 end
 
 return M

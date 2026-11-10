@@ -12,7 +12,8 @@
       `resolveSeatObjectsFromTable` → `FSL.applyOccupantRigs` (figurine-relative `C.SeatRoleOffsets`).
       Layout role identity lives in GM Notes (Name is free for player-facing tooltips).
 
-    Requires sendExternalMessage and a listener on 39998 (repo tts-bridge) for file export on generate + spawn; paths are under .dev/.debug/ (see core.debug).
+    Optional generated file exports use the explicit solo-only debug writer; paths are under
+    .dev/.debug/ (see core.debug).
 
     Usage:
         local R = require("lib.rotational-seat-layout")
@@ -53,12 +54,6 @@ local DEFAULT_GUID_TRANSFORMS_VAR = "SEAT_LAYOUT_OBJECT_TRANSFORMS"
 local DEFAULT_GUID_FOLLOWER_TRANSFORMS_VAR = "SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS"
 
 local WRITE_RESULTS_TO_FILE = false
-
-local function assertSendExternalMessage()
-  if sendExternalMessage == nil then
-    error("rotational-seat-layout: sendExternalMessage is nil; TTS Tools extension is required to write workspace files")
-  end
-end
 
 --- Shortest signed delta from fromDeg to toDeg in (-180, 180].
 --- @param fromDeg number
@@ -1475,7 +1470,6 @@ function M.generateRotationalCoordinates(
     end
   end
   if WRITE_RESULTS_TO_FILE then
-    assertSendExternalMessage()
     local frameLua = serializeFrameRefsLua(frameVar, nestedFrameExport)
     local okWrite = getDebugModule().writeWorkspaceFile(framePath, frameLua, "none", false)
     if not okWrite then
@@ -1615,7 +1609,6 @@ function M.generateFacingCoordinates(sourceObjects, tableCfg, filteredMap, optio
     end
   end
   if WRITE_RESULTS_TO_FILE then
-    assertSendExternalMessage()
     local frameLua = serializeFrameRefsLua(frameVar, nestedFrameExport)
     local okWrite = getDebugModule().writeWorkspaceFile(framePath, frameLua, "none", false)
     if not okWrite then
@@ -2787,7 +2780,7 @@ end
 --- `seatKeys` may be an array of strings or a map whose keys are seat ids (e.g. `computed.playerToPositionMap`).
 --- `blacklist` may be a set (`{ NPC_SEAT = true, Brown = true }`) and/or an array (`{ "NPC_SEAT", "Brown" }`).
 ---
---- Does not write workspace files and does not require `sendExternalMessage`.
+--- Does not write workspace files.
 ---
 --- @param sourceObjects table same nested template table as generate/spawn; template object GUIDs are never destroyed
 --- @param seatKeys table array of seat id strings, or map (keys = seat ids)

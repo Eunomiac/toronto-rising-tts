@@ -1,0 +1,64 @@
+--[[
+  Sole permitted sendExternalMessage authority.
+
+  This module is for explicit debug file exports only. Automatic gameplay, synchronization,
+  transition, and dashboard paths must use ordinary TTS APIs or tagged console output instead.
+  File writes are refused whenever more than one player is connected because this TTS API can
+  freeze the host long enough to disconnect joined clients.
+]]
+
+local DebugExternalWrite = {}
+
+local warnedUnavailable = false
+local warnedMultiplayer = false
+
+--- @return number
+local function connectedPlayerCount()
+  if Player == nil or type(Player.getPlayers) ~= "function" then
+    return 0
+  end
+  local players = Player.getPlayers()
+  return type(players) == "table" and #players or 0
+end
+
+--- @param relativePath string
+--- @param content string
+--- @param format string|nil
+--- @return boolean
+function DebugExternalWrite.write(relativePath, content, format)
+  if type(relativePath) ~= "string" or relativePath == "" then
+    error("DebugExternalWrite.write: relativePath must be a non-empty string", 2)
+  end
+  if type(content) ~= "string" then
+    content = tostring(content)
+  end
+  local connected = connectedPlayerCount()
+  if connected > 1 then
+    if not warnedMultiplayer then
+      warnedMultiplayer = true
+      print(string.format(
+        "[DebugExternalWrite] BLOCKED with %d connected players. sendExternalMessage can freeze TTS long enough to disconnect joined clients; run file exports only in a solo debugging session.",
+        connected
+      ))
+    end
+    return false
+  end
+  ---@diagnostic disable-next-line: undefined-global
+  if type(sendExternalMessage) ~= "function" then
+    if not warnedUnavailable then
+      warnedUnavailable = true
+      print("[DebugExternalWrite] File export unavailable: TTS External Editor is not connected.")
+    end
+    return false
+  end
+  ---@diagnostic disable-next-line: undefined-global
+  sendExternalMessage({
+    type = "write",
+    content = content,
+    name = relativePath,
+    format = format or "none",
+  })
+  return true
+end
+
+return DebugExternalWrite

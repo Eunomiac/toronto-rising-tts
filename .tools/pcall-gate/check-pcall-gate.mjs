@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
  * Lua API gate: counts pcall(), raw Wait.*, and full-UI XML refresh APIs in game-facing Lua;
+ * also hard-fails any sendExternalMessage reference outside the one strict debug writer.
  * fails the build when any metric increases since the last logged baseline (unless you edit
  * the log / bump baselines).
  *
- * Scanned roots: core/, global/, lib/, objects/, ui/ — recursive *.ttslua only.
+ * Scanned roots: core/, dashboard/, global/, lib/, objects/, ui/ — recursive *.ttslua only.
  *
  * Metrics:
  *   pcall           — /\bpcall\s*\(/g in all scanned files
@@ -26,8 +27,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..", "..");
 const LOG_DIR = join(REPO_ROOT, ".dev", "build-logs");
 const LOG_FILE = join(LOG_DIR, "pcall-gate.txt");
-const SCAN_ROOTS = ["core", "global", "lib", "objects", "ui"];
+const SCAN_ROOTS = ["core", "dashboard", "global", "lib", "objects", "ui"];
 const UTIL_ALLOWLIST = join(REPO_ROOT, "lib", "util.ttslua");
+const SEND_EXTERNAL_MESSAGE_ALLOWLIST = join(REPO_ROOT, "lib", "debug_external_write.ttslua");
 
 const PCALL_CALL_RE = /\bpcall\s*\(/g;
 const WAIT_TIME_RE = /\bWait\.time\s*\(/g;
@@ -35,6 +37,7 @@ const W_TIME_RE = /\bW\.time\s*\(/g;
 const WAIT_CONDITION_RE = /\bWait\.condition\s*\(/g;
 const SET_XML_RE = /\bsetXml\s*\(/g;
 const SET_XML_TABLE_RE = /\bsetXmlTable\s*\(/g;
+const SEND_EXTERNAL_MESSAGE_RE = /\bsendExternalMessage\b/;
 
 /**
  * @param {string} dir
@@ -86,16 +89,26 @@ function countInFile(filePath, isUtilAllowlist) {
 }
 
 /**
- * @returns {{ pcall: number, waitTime: number, waitCondition: number, setXml: number, setXmlTable: number }}
+ * @returns {{
+ *   totals: { pcall: number, waitTime: number, waitCondition: number, setXml: number, setXmlTable: number },
+ *   sendExternalMessageViolations: string[]
+ * }}
  */
 function collectTotals() {
   const totals = { pcall: 0, waitTime: 0, waitCondition: 0, setXml: 0, setXmlTable: 0 };
+  const sendExternalMessageViolations = [];
   for (const root of SCAN_ROOTS) {
     const abs = join(REPO_ROOT, root);
     if (!existsSync(abs) || !statSync(abs).isDirectory()) {
       continue;
     }
     walkTtslua(abs, (fp) => {
+      if (
+        fp !== SEND_EXTERNAL_MESSAGE_ALLOWLIST &&
+        SEND_EXTERNAL_MESSAGE_RE.test(readFileSync(fp, "utf8"))
+      ) {
+        sendExternalMessageViolations.push(relative(REPO_ROOT, fp));
+      }
       const isUtil = fp === UTIL_ALLOWLIST;
       const c = countInFile(fp, isUtil);
       totals.pcall += c.pcall;
@@ -105,7 +118,7 @@ function collectTotals() {
       totals.setXmlTable += c.setXmlTable;
     });
   }
-  return totals;
+  return { totals, sendExternalMessageViolations };
 }
 
 /**
@@ -232,10 +245,24 @@ function formatLogLine(iso, totals) {
 }
 
 function main() {
-  const current = collectTotals();
+  const { totals: current, sendExternalMessageViolations } = collectTotals();
   const iso = new Date().toISOString();
 
   mkdirSync(LOG_DIR, { recursive: true });
+
+  if (sendExternalMessageViolations.length > 0) {
+    process.stderr.write(
+      [
+        "[pcall-gate] FAILED: sendExternalMessage is forbidden outside the strict solo-only debug writer:",
+        ...sendExternalMessageViolations.map((file) => `  - ${file}`),
+        `Allowed file: ${relative(REPO_ROOT, SEND_EXTERNAL_MESSAGE_ALLOWLIST)}`,
+        "Automatic gameplay, synchronization, transition, and dashboard paths must use ordinary APIs or tagged console routing.",
+        "",
+      ].join("\n")
+    );
+    process.exitCode = 1;
+    return;
+  }
 
   const previous = readLastBaseline();
 
