@@ -1,6 +1,7 @@
 import { executeLua, luaJsonArg } from "../ttsBridge.js";
+import { asList } from "./sheetData.js";
 import { parseRelationshipRows } from "./relationships.js";
-import type { ApplyCommand, SeatColor, SeatSnapshot, SheetSnapshot, XpEntryRef } from "./types.js";
+import type { ApplyCommand, ManualCondition, PersonalCard, PersonalResonance, SeatColor, SeatSnapshot, SheetSnapshot, XpEntryRef } from "./types.js";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -29,6 +30,43 @@ const asTracker = (value: unknown) => ({
   superficial: isRecord(value) ? asNumber(value.superficial) : 0,
   aggravated: isRecord(value) ? asNumber(value.aggravated) : 0,
   stains: isRecord(value) ? asNumber(value.stains) : 0
+});
+
+export const parsePersonalResonance = (value: unknown): PersonalResonance | undefined => {
+  if (!isRecord(value) || typeof value.temperament !== "string" || typeof value.resonanceType !== "string") {
+    return undefined;
+  }
+  return {
+    temperament: value.temperament,
+    resonanceType: value.resonanceType,
+    ...(typeof value.dyscrasiaTitle === "string" ? { dyscrasiaTitle: value.dyscrasiaTitle } : {}),
+    ...(typeof value.dyscrasiaDescription === "string" ? { dyscrasiaDescription: value.dyscrasiaDescription } : {})
+  };
+};
+
+export const parsePersonalCards = (value: unknown): PersonalCard[] => asList(value).flatMap((row) => {
+  if (!isRecord(row) || typeof row.id !== "string") {
+    return [];
+  }
+  return [{
+    id: row.id,
+    title: asString(row.title),
+    ...(asString(row.subtitle) !== "" ? { subtitle: asString(row.subtitle) } : {}),
+    displayType: asString(row.displayType),
+    ...(asString(row.textColor) !== "" ? { textColor: asString(row.textColor) } : {}),
+    displayOnSheet: row.displayOnSheet !== false,
+    removalTrigger: asString(row.removalTrigger),
+    triggerLabel: asString(row.triggerLabel),
+    ...(asString(row.duration) !== "" ? { duration: asString(row.duration) } : {}),
+    ...(asString(row.condition) !== "" ? { condition: asString(row.condition) } : {})
+  }];
+});
+
+const parseManualConditions = (value: unknown): ManualCondition[] => asList(value).flatMap((row) => {
+  if (!isRecord(row) || typeof row.id !== "string") {
+    return [];
+  }
+  return [{ id: row.id, displayName: asString(row.displayName, row.id) }];
 });
 
 const parseSeat = (value: unknown): SeatSnapshot | null => {
@@ -104,6 +142,7 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
       ...(hunt.at !== undefined ? { at: hunt.at } : {})
     }
     : undefined;
+  const personalResonance = parsePersonalResonance(value.personalResonance);
   return {
     color,
     playerId: asString(value.playerId) || undefined,
@@ -131,6 +170,8 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     deferConnect: asBool(value.deferConnect),
     ...(huntResonance ? { huntResonance } : {}),
     ...(compulsion ? { compulsion } : {}),
+    ...(personalResonance ? { personalResonance } : {}),
+    personalCards: parsePersonalCards(value.personalCards),
     attributes,
     skills,
     specialties,
@@ -173,6 +214,7 @@ const parseSnapshotJson = (raw: string): SheetSnapshot => {
     ? parsed.seats.map(parseSeat).filter((seat): seat is SeatSnapshot => seat !== null)
     : [];
   return { ok: true, seats, sessionNum: Math.floor(asNumber(parsed.sessionNum, 1)),
+    manualConditions: parseManualConditions(parsed.manualConditions),
     ...(isRecord(parsed.coterieData) ? { coterieData: parsed.coterieData } : {}),
     courtPortraits: portraitOptions(parsed.courtPortraits) };
 };

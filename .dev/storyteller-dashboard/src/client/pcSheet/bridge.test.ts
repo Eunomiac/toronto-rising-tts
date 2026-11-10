@@ -36,6 +36,27 @@ describe("fetchSheetSnapshot", () => {
       huntResonance: { flavor: "sanguine", intensity: "intense", margin: 2 }
     });
   });
+
+  it("reads conditions when Lua sends the list as a numbered object", async () => {
+    executeLua.mockResolvedValueOnce({
+      prints: [],
+      returnValue: JSON.stringify({
+        ok: true,
+        manualConditions: { "1": { id: "stronger", displayName: "Stronger" } },
+        seats: [{
+          color: "Pink",
+          personalResonance: { temperament: "acutely", resonanceType: "Sanguine", dyscrasiaTitle: "Thin blood" },
+          personalCards: { "1": { id: "pc-1", title: "Late", displayType: "general", displayOnSheet: true, removalTrigger: "EndOfScene", triggerLabel: "End of the scene" } }
+        }]
+      })
+    });
+    const snapshot = await fetchSheetSnapshot();
+    expect(snapshot.manualConditions).toEqual([{ id: "stronger", displayName: "Stronger" }]);
+    expect(snapshot.seats[0]?.personalResonance).toMatchObject({ temperament: "acutely", resonanceType: "Sanguine", dyscrasiaTitle: "Thin blood" });
+    expect(snapshot.seats[0]?.personalCards).toEqual([
+      expect.objectContaining({ id: "pc-1", title: "Late", triggerLabel: "End of the scene" })
+    ]);
+  });
 });
 
 describe("extractSnapshotJson", () => {

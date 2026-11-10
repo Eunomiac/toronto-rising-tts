@@ -14,7 +14,7 @@ const asNumber = (value: unknown, fallback = 0): number =>
 const asString = (value: unknown): string => (typeof value === "string" ? value : "");
 
 /** Lua JSON may encode a 1-based array as an object with "1","2" keys. */
-const asList = (value: unknown): readonly unknown[] => {
+export const asList = (value: unknown): readonly unknown[] => {
   if (Array.isArray(value)) {
     return value;
   }

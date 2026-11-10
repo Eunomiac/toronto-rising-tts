@@ -34,4 +34,27 @@ describe("mergeSeatPush", () => {
     expect(next.seats.map((row) => row.color)).toEqual(["Red", "Pink", "Brown"]);
     expect(next.seats[2]?.playerData).toEqual({});
   });
+
+  it("reads a condition list that arrived as a numbered object", () => {
+    const next = mergeSeatPush(live(), "Pink", {
+      ...emptySeat("Pink"),
+      personalCards: { "1": { id: "pc-1", title: "Late", displayType: "general", displayOnSheet: true, removalTrigger: "Manual", triggerLabel: "Manual" } }
+    });
+    expect(next.seats[1]?.personalCards).toEqual([
+      expect.objectContaining({ id: "pc-1", title: "Late" })
+    ]);
+  });
+
+  it("keeps conditions already on the seat when a push leaves them out", () => {
+    const current = live();
+    current.seats[1] = {
+      ...current.seats[1]!,
+      personalCards: [{ id: "pc-1", title: "Late", displayType: "general", displayOnSheet: true, removalTrigger: "Manual", triggerLabel: "Manual" }]
+    };
+    const { personalCards: _omit, ...slim } = { ...emptySeat("Pink"), hunger: 4, personalCards: undefined };
+    void _omit;
+    const next = mergeSeatPush(current, "Pink", slim);
+    expect(next.seats[1]?.hunger).toBe(4);
+    expect(next.seats[1]?.personalCards?.[0]?.title).toBe("Late");
+  });
 });

@@ -284,6 +284,16 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
               event.preventDefault();
               if (!sheetFull && !bloodBlocked) addCard();
             }}>
+              {cards.length > 0 && (
+                <ul className="pc-cond-list">
+                  {cards.map((card) => (
+                    <li key={card.id}>
+                      <span>{card.title || "Untitled"} — {card.triggerLabel}</span>
+                      <button type="button" className="lab-btn" onClick={() => apply({ op: "personalCardRemove", color: seat.color, id: card.id })}>Remove</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <label className="pc-cond-field">
                 Mechanic
                 <select value={condition} onChange={(event) => setCondition(event.target.value)}>
@@ -328,14 +338,6 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
               />
               {sheetFull && <p className="pc-cond-note">The sheet already has eight conditions. Remove one, or leave this one off the sheet.</p>}
               <button type="submit" className="lab-btn" disabled={sheetFull || bloodBlocked}>Add condition</button>
-              <ul className="pc-cond-list">
-                {cards.map((card) => (
-                  <li key={card.id}>
-                    <span>{card.title || "Untitled"} — {card.triggerLabel}</span>
-                    <button type="button" className="lab-btn" onClick={() => apply({ op: "personalCardRemove", color: seat.color, id: card.id })}>Remove</button>
-                  </li>
-                ))}
-              </ul>
             </form>
           )}
         </div>

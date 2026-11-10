@@ -1,4 +1,5 @@
 import { isSeatColor } from "../catalogVocab.js";
+import { parsePersonalCards, parsePersonalResonance } from "./bridge.js";
 import type { SeatSnapshot, SheetSnapshot } from "./types.js";
 
 /**
@@ -12,10 +13,19 @@ export const mergeSeatPush = (snapshot: SheetSnapshot, color: unknown, data: unk
   }
   const index = snapshot.seats.findIndex((row) => row.color === color);
   const previous = index >= 0 ? snapshot.seats[index] : undefined;
+  const incoming = data as Record<string, unknown>;
+  const { personalCards: rawCards, personalResonance: rawResonance, ...rest } = incoming;
+  const personalResonance = rawResonance !== undefined
+    ? parsePersonalResonance(rawResonance)
+    : previous?.personalResonance;
   const next: SeatSnapshot = {
-    ...(data as SeatSnapshot),
+    ...(rest as SeatSnapshot),
     color,
-    playerData: previous?.playerData ?? {}
+    playerData: previous?.playerData ?? {},
+    personalCards: rawCards !== undefined
+      ? parsePersonalCards(rawCards)
+      : previous?.personalCards ?? [],
+    ...(personalResonance ? { personalResonance } : {})
   };
   const seats = index >= 0
     ? snapshot.seats.map((row, i) => (i === index ? next : row))
