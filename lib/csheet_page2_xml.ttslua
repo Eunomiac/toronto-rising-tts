@@ -89,6 +89,44 @@ local function localRcEntry(entry)
   }
 end
 
+--- Copy one condition into this script. The list on player data is owned by Global.
+--- @param card any
+--- @return table|nil
+local function localConditionCard(card)
+  if type(card) ~= "table" then
+    return nil
+  end
+  return {
+    id = card.id,
+    seq = card.seq,
+    appliedOn = card.appliedOn,
+    displayOnSheet = card.displayOnSheet,
+    displayType = card.displayType,
+    textColor = card.textColor,
+    title = card.title,
+    subtitle = card.subtitle,
+    description = card.description,
+    duration = card.duration,
+  }
+end
+
+--- @param pd table|nil
+--- @return table
+local function localPersonalConditions(pd)
+  local out = {}
+  local list = type(pd) == "table" and pd.personalConditions or nil
+  if type(list) ~= "table" then
+    return out
+  end
+  for i = 1, #list do
+    local copy = localConditionCard(list[i])
+    if copy ~= nil then
+      out[#out + 1] = copy
+    end
+  end
+  return out
+end
+
 --- @param discs table|nil
 --- @return table[] rituals
 --- @return table[] ceremonies
@@ -274,7 +312,7 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
   end
 
   -- paper_root must not also use padded_border — that class's padding would override page_root padding.
-  local sheetCards = PC.sheetCards(type(_pd) == "table" and _pd.personalConditions or nil)
+  local sheetCards = PC.sheetCards(localPersonalConditions(_pd))
   local conditionCards = {}
   for slot = 1, #sheetCards do
     local shown = PC.slotPresentation(sheetCards[slot])
@@ -365,7 +403,7 @@ function M.fingerprintPage2Stats(stats, _seatColorRaw, pd)
   end
   fpList("R", rituals)
   fpList("C", ceremonies)
-  local cards = PC.sheetCards(type(pd) == "table" and pd.personalConditions or nil)
+  local cards = PC.sheetCards(localPersonalConditions(pd))
   for i = 1, #cards do
     local card = cards[i]
     parts[#parts + 1] = table.concat({
