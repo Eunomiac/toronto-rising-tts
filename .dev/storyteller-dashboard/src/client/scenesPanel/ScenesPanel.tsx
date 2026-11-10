@@ -18,6 +18,7 @@ import {
   type StageQueueView
 } from "./glance";
 import { ScenePreview } from "./preview";
+import { PersonalDueList } from "./personalConditions";
 import { requestRollControl } from "./dnd/rollControls";
 import { DndUiContext } from "./dnd/uiContext";
 import type { DndUiHooks } from "./dnd/apply";
@@ -375,6 +376,11 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const { send, view: queueView, queued } = useStageQueue(commands, world, catalogs, packs);
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats, rolls } = world;
+  useEffect(() => {
+    if ((seats?.personalDue?.length ?? 0) > 0) {
+      liveSheet.load();
+    }
+  }, [seats?.personalDue, liveSheet]);
 
   // With no live scene (Intermission, Downtime, nothing on the table) the clock panel works on present day. A
   // Memoriam has no library scene but runs on the scene clock (set to its own date).
@@ -693,6 +699,11 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 <button type="button" className="lab-btn" onClick={ttsNotice.dismiss}>OK</button>
               </div>
             )}
+            <PersonalDueList
+              rows={seats?.personalDue ?? []}
+              sessionNum={phase?.sessionNum ?? liveSheet.sheet?.sessionNum ?? 1}
+              apply={liveSheet.apply}
+            />
           </div>
           <Box x={RIGHT_X} y={ROLLS_Y} w={RIGHT_W} h={ROLLS_H} className="roll-box">
             <div className="scenes-live-statuses">

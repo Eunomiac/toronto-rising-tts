@@ -1201,6 +1201,12 @@ function Phases.advanceTo(newPhase, opts)
             require("lib.figurine_seat_layout").drawSessionChairs()
         end
         S.setCurrentPhase(newPhase)
+        if oldPhase == C.Phases.PLAY and newPhase == C.Phases.SPOTLIGHT then
+            require("core.personal_conditions").onPlayToSpotlight()
+        end
+        if newPhase == C.Phases.END then
+            require("core.personal_conditions").onSessionEnd()
+        end
         if newPhase == C.Phases.PLAY then
             local sub = Phases.playSubPhaseForLiveScene()
             S.setPlaySubPhase(sub)

@@ -48,6 +48,10 @@ export type SeatSnapshot = {
   readonly deferConnect: boolean;
   /** Last hunt result the Storyteller confirmed on the Scenes tab (`flavor` absent for no resonance). */
   readonly huntResonance?: { readonly flavor?: string; readonly intensity: string; readonly margin: number; readonly at?: unknown };
+  /** The resonance on page 1, if this player has one. */
+  readonly personalResonance?: PersonalResonance;
+  /** Sheet conditions other than resonance, oldest first as stored. */
+  readonly personalCards?: readonly PersonalCard[];
   /** The selected Compulsion card in front of the seat (absent when none); `Clan` names the clan's Compulsion. */
   readonly compulsion?: ActiveCompulsion;
   readonly attributes: Record<string, Rating>;
@@ -98,6 +102,27 @@ export type RelationshipRow = { readonly key: string; readonly entry: Relationsh
 
 export type XpEntryRef = { readonly kind: "gain" | "spend"; readonly amount: number; readonly description: string };
 
+export type PersonalResonance = {
+  readonly temperament: string;
+  readonly resonanceType: string;
+  readonly dyscrasiaTitle?: string;
+  readonly dyscrasiaDescription?: string;
+};
+
+export type PersonalCard = {
+  readonly id: string;
+  readonly title: string;
+  readonly subtitle?: string;
+  readonly displayType: string;
+  readonly displayOnSheet: boolean;
+  readonly removalTrigger: string;
+  readonly triggerLabel: string;
+  readonly duration?: string;
+  readonly condition?: string;
+};
+
+export type ManualCondition = { readonly id: string; readonly displayName: string };
+
 export type SheetSnapshot = {
   readonly coterieData?: Record<string, unknown>;
   readonly courtPortraits?: readonly { value: string; label: string }[];
@@ -108,6 +133,8 @@ export type SheetSnapshot = {
   readonly seats: readonly SeatSnapshot[];
   /** `gameState.sessionNum`: new XP entries land in this session's block. */
   readonly sessionNum?: number;
+  /** Mechanics the other-condition form is allowed to turn on. */
+  readonly manualConditions?: readonly ManualCondition[];
 };
 
 export type DamageMode =
@@ -161,6 +188,13 @@ export type ApplyCommand =
   | { op: "relationshipUpsert"; color: SeatColor; key?: string; expectHeader?: string; entry: RelationshipDraft }
   | { op: "relationshipDelete"; color: SeatColor; key: string; expectHeader: string }
   | { op: "hunger"; color: SeatColor; delta: number }
+  | { op: "personalResonance"; color: SeatColor; temperament: string; resonanceType: string }
+  | { op: "personalDyscrasia"; color: SeatColor; title: string; description: string }
+  | { op: "personalCardAdd"; color: SeatColor; condition?: string; displayOnSheet: boolean; displayType: string; kind: string; session?: number; year?: number; month?: number; day?: number; title: string; subtitle: string; description: string; duration: string }
+  | { op: "personalCardRemove"; color: SeatColor; id: string }
+  | { op: "personalDueConfirm"; color: SeatColor; id: string }
+  | { op: "personalDueSkip"; color: SeatColor; id: string }
+  | { op: "personalDueEdit"; color: SeatColor; id: string; kind: string; session?: number; year?: number; month?: number; day?: number; duration: string }
   | { op: "desire"; color: SeatColor; text: string }
   | { op: "torporClear"; color: SeatColor }
   | { op: "toggleFrenzy"; color: SeatColor }

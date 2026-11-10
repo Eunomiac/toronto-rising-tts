@@ -565,6 +565,9 @@ local function snapshotSeat(color, includePlayerData)
     compulsion = require("core.compulsions").activeForColor(color),
   }
   if type(pid) == "string" and pid ~= C.StorytellerID then
+    local personalResonance, personalCards = require("core.personal_conditions").seatView(pid)
+    seat.personalResonance = personalResonance
+    seat.personalCards = personalCards
     for i = 1, #EXTENSIONS do
       local fields = type(EXTENSIONS[i].snapshotFields) == "function"
         and EXTENSIONS[i].snapshotFields(color, pid, stats) or nil
@@ -586,6 +589,7 @@ local function snapshotPayload()
   return {
     ok = true, seats = seats,
     sessionNum = math.floor(num(S.getStateVal("sessionNum"), 1)),
+    manualConditions = require("core.personal_conditions").manualOptions(),
     coterieData = S.getStateVal("coterieData"),
     courtPortraits = SheetTraits.portraitOptions("coterie"),
   }
@@ -654,11 +658,33 @@ local function applyCommand(cmd)
   if op == "humanity" then
     return applyHumanityOp(color, cmd.kind, cmd.delta, cmd.remorse)
   end
+  if op == "personalResonance" then
+    return require("core.personal_conditions").setResonance(color, cmd.temperament, cmd.resonanceType)
+  end
+  if op == "personalDyscrasia" then
+    return require("core.personal_conditions").setDyscrasia(color, cmd.title, cmd.description)
+  end
+  if op == "personalCardAdd" then
+    return require("core.personal_conditions").addCard(color, cmd)
+  end
+  if op == "personalCardRemove" then
+    return require("core.personal_conditions").removeCard(color, cmd.id)
+  end
+  if op == "personalDueConfirm" then
+    return require("core.personal_conditions").confirmDue(color, cmd.id)
+  end
+  if op == "personalDueSkip" then
+    return require("core.personal_conditions").skipDue(color, cmd.id)
+  end
+  if op == "personalDueEdit" then
+    return require("core.personal_conditions").editDue(color, cmd.id, cmd)
+  end
   if op == "hunger" then
     local cur = num(S.getPlayerVal(color, "hunger"))
     local maxDots = tonumber(C.MAX_HUNGER) or 5
     local nx = math.max(0, math.min(maxDots, math.floor(cur + num(cmd.delta))))
     S.setPlayerVal(color, "hunger", nx)
+    require("core.personal_conditions").onHunger(color, cur, nx)
     markTouched(color, true)
     return nil
   end

@@ -7,7 +7,20 @@
 -->
 <Include src="csheet_defaults.xml" />
 
+
 <Panel id="paper_root" class="page_root">
+
+  <Panel id="pageRaised" class="page_raised page_top">
+    <Panel id="dyscrasia_container" class="dyscrasia_container" active="false">
+      <Image id="db_dyscrasia_container_background" class="dyscrasia_background" image="bg_condition_dyscrasia" />
+      <Text id="dyscrasia_title" class="dyscrasia_title" text="Dyscrasia Title" />
+      <Text id="dyscrasia_description" class="dyscrasia_description" text="Dyscrasia Description" />
+    </Panel>
+
+    <Panel id="resonance_container" class="resonance_container" active="false">
+      <Image id="resonance_tag" class="resonance_tag" image="resonance_acutelyCholeric" />
+    </Panel>
+  </Panel>
 
   <Button id="pageInner" class="page_navigation page_inner_right" />
 

@@ -82,6 +82,7 @@ function PresentDayClock.tryInitFromScene(clock)
         return false
     end
     S.setStateVal(dt, "presentDayClock")
+    require("core.personal_conditions").onClock()
     return true
 end
 
@@ -101,6 +102,7 @@ function PresentDayClock.tryAdvance(newClock)
     end
     if U.compareNarrativeClock(incoming, pd) > 0 then
         S.setStateVal(incoming, "presentDayClock")
+        require("core.personal_conditions").onClock()
         local PJP = require("core.storyteller_projects_panel")
         if PJP.onPresentDayChanged then
             PJP.onPresentDayChanged()
@@ -146,6 +148,7 @@ function PresentDayClock.setPresentDay(clock)
         return false, "Present day clock requires hour, minute, day, month, and year."
     end
     S.setStateVal(dt, "presentDayClock")
+    require("core.personal_conditions").onClock()
     local PJP = require("core.storyteller_projects_panel")
     if PJP.onPresentDayChanged then
         PJP.onPresentDayChanged()

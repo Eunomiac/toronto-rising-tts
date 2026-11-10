@@ -18,11 +18,13 @@ local TEMPLATE_DISC_CELL = "csheet/partials/page2_disc_cell"
 local TEMPLATE_DISC_CELL_EMPTY = "csheet/partials/page2_disc_cell_empty"
 local TEMPLATE_RC_ROW = "csheet/partials/page2_rc_row"
 local TEMPLATE_RC_SECTION = "csheet/partials/page2_rc_section"
+local TEMPLATE_CONDITION_CARD = "csheet/partials/page2_condition_card"
 
 local PAGE_RAW_KEYS = {
   DISC_ROW_1 = true,
   DISC_ROW_2 = true,
   RC_SECTION = true,
+  CONDITION_CARDS = true,
 }
 
 local RC_SECTION_RAW_KEYS = {
@@ -271,9 +273,14 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
   end
 
   -- paper_root must not also use padded_border — that class's padding would override page_root padding.
+  local conditionCards = {}
+  for slot = 1, 6 do
+    conditionCards[slot] = TPL.apply(TEMPLATE_CONDITION_CARD, { SLOT = tostring(slot) })
+  end
   local pageParams = {
     DISC_ROW_1 = table.concat({ cells[1], cells[2], cells[3] }, "\n"),
     DISC_ROW_2 = table.concat({ cells[4], cells[5], cells[6] }, "\n"),
+    CONDITION_CARDS = table.concat(conditionCards, "\n"),
   }
 
   if #rituals > 0 or #ceremonies > 0 then

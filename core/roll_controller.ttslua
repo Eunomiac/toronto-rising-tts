@@ -3484,6 +3484,7 @@ function RC._applyRouseOutcomeStrips(color, active)
     if hungerDelta > 0 then
         local hunger = S.getPlayerVal(color, "hunger") or 0
         S.setPlayerVal(color, "hunger", math.min(hunger + hungerDelta, C.MAX_HUNGER))
+        require("core.personal_conditions").onHunger(color, hungerBefore, S.getPlayerVal(color, "hunger"))
         maybeQueueFrenzyOnHungerCap(color, hungerBefore)
     end
     if stainDelta > 0 then
@@ -3535,6 +3536,7 @@ function RC.confirmOblivionChoice(color, choice)
     if choice == "hunger" then
         local hungerBefore = S.getPlayerVal(color, "hunger") or 0
         S.setPlayerVal(color, "hunger", math.min(hungerBefore + 1, C.MAX_HUNGER))
+        require("core.personal_conditions").onHunger(color, hungerBefore, S.getPlayerVal(color, "hunger"))
         maybeQueueFrenzyOnHungerCap(color, hungerBefore)
     elseif choice == "stain" then
         P.applyHumanityStainDelta(color, 1)

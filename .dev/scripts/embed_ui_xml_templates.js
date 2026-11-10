@@ -51,6 +51,7 @@ const PACKS = [
       "csheet/partials/page2_disc_cell_empty",
       "csheet/partials/page2_rc_row",
       "csheet/partials/page2_rc_section",
+      "csheet/partials/page2_condition_card",
     ],
   },
   {

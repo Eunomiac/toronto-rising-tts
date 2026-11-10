@@ -34,6 +34,10 @@ M._byKey["csheet/page2"] = [=[
   <Button id="pageForward" class="page_navigation page_forward" />
   <Button id="pageInner" class="page_navigation page_inner_left" />
 
+  <Panel id="pageRaised" class="page_raised page_top">
+@@CONDITION_CARDS@@
+  </Panel>
+
   <VerticalLayout id="page2_dynamic" class="page2_dynamic">
     <HorizontalLayout id="db_disc_row_1" class="page2_disc_row">
 @@DISC_ROW_1@@
@@ -45,6 +49,16 @@ M._byKey["csheet/page2"] = [=[
 @@RC_SECTION@@
 ##ENDIF##
   </VerticalLayout>
+</Panel>
+]=]
+
+M._byKey["csheet/partials/page2_condition_card"] = [=[
+<Panel id="condition_container_@@SLOT@@" class="condition_container" active="false">
+  <Image id="condition_container_@@SLOT@@_background" class="condition_container_background" image="bg_condition_general" />
+  <Text id="condition_container_@@SLOT@@_title" class="condition_container_title" text="" />
+  <Text id="condition_container_@@SLOT@@_sub_title" class="condition_container_sub_title" text="" />
+  <Text id="condition_container_@@SLOT@@_description" class="condition_container_description" text="" />
+  <Text id="condition_container_@@SLOT@@_duration" class="condition_container_duration" text="" />
 </Panel>
 ]=]
 

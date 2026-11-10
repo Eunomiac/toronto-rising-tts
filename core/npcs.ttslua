@@ -3592,6 +3592,9 @@ local function writeSeatNarrativePresence(seatKey, present)
     S.setStateVal(sp, "sessionScene", "seatPresent")
     if U.isIn(seatKey, C.PlayerColors or {}) then
         MapPins.onSeatPresenceChanged(seatKey, wasPresent, present == true)
+        if wasPresent == true and present ~= true then
+            require("core.personal_conditions").onLeftScene(seatKey)
+        end
     end
     local SceneLibrary = require("core.scene_library")
     if type(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked) == "function" then

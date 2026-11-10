@@ -321,6 +321,7 @@ local function buildSeats()
     npcConditions = npcConditions,
     spotlightOrder = spotlight.order or {},
     spotlightFrontIndex = tonumber(spotlight.frontIndex),
+    personalDue = require("core.personal_conditions").dueRows(),
   }
 end
 

@@ -2,6 +2,7 @@
 @@DISC_ROW_1@@ - raw XML for discipline cells 1–3
 @@DISC_ROW_2@@ - raw XML for discipline cells 4–6
 @@RC_SECTION@@ - raw rituals/ceremonies band; omit the key when the character has neither
+@@CONDITION_CARDS@@ - raw XML for the six condition cards (always present, inactive until painted)
 -->
 
 <Defaults>
@@ -28,6 +29,10 @@
 <Panel id="paper_root" class="page_root">
   <Button id="pageForward" class="page_navigation page_forward" />
   <Button id="pageInner" class="page_navigation page_inner_left" />
+
+  <Panel id="pageRaised" class="page_raised page_top">
+@@CONDITION_CARDS@@
+  </Panel>
 
   <VerticalLayout id="page2_dynamic" class="page2_dynamic">
     <HorizontalLayout id="db_disc_row_1" class="page2_disc_row">

@@ -1,0 +1,486 @@
+--[[
+  Sheet condition cards (`playerData.personalConditions`). Pure list rules.
+  The mechanic map `playerData.conditions` is a different list.
+
+  Agent guidance: .dev/Conditions Display & Management/Conditions Display & Management Overview.md
+]]
+
+local PC = {}
+
+PC.TEMPERAMENTS = { "fleetingly", "intensely", "acutely" }
+PC.RESONANCE_TYPES = {
+  "Choleric", "Melancholic", "Phlegmatic", "Sanguine", "Primal", "Ischemic", "Mercurial",
+}
+PC.SHEET_TYPES = { "theBeast", "debilitation", "general" }
+PC.SHEET_SLOT_COUNT = 6
+
+local MONTHS = {
+  "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec",
+}
+
+local function isList(value)
+  return type(value) == "table"
+end
+
+local function copyCard(card)
+  local out = {}
+  for key, value in pairs(card) do
+    out[key] = value
+  end
+  return out
+end
+
+--- @param list table|nil
+--- @return table
+function PC.copyList(list)
+  local out = {}
+  if type(list) ~= "table" then
+    return out
+  end
+  for i = 1, #list do
+    if type(list[i]) == "table" then
+      out[#out + 1] = copyCard(list[i])
+    end
+  end
+  return out
+end
+
+--- @param name string
+--- @param allowed string[]
+--- @return boolean
+local function oneOf(name, allowed)
+  for i = 1, #allowed do
+    if allowed[i] == name then
+      return true
+    end
+  end
+  return false
+end
+
+function PC.isTemperament(value)
+  return oneOf(value, PC.TEMPERAMENTS)
+end
+
+function PC.isResonanceType(value)
+  return oneOf(value, PC.RESONANCE_TYPES)
+end
+
+function PC.isSheetType(value)
+  return oneOf(value, PC.SHEET_TYPES)
+end
+
+--- @param clock table|nil
+--- @return number
+function PC.clockStamp(clock)
+  if type(clock) ~= "table" then
+    return 0
+  end
+  local y = math.floor(tonumber(clock.year) or 0)
+  local m = math.floor(tonumber(clock.month) or 0)
+  local d = math.floor(tonumber(clock.day) or 0)
+  local h = math.floor(tonumber(clock.hour) or 0)
+  local min = math.floor(tonumber(clock.minute) or 0)
+  return (((y * 12 + m) * 31 + d) * 24 + h) * 60 + min
+end
+
+--- @param a table
+--- @param b table
+--- @return boolean
+local function earlier(a, b)
+  local as = tonumber(a.appliedOn) or 0
+  local bs = tonumber(b.appliedOn) or 0
+  if as ~= bs then
+    return as < bs
+  end
+  return (tonumber(a.seq) or 0) < (tonumber(b.seq) or 0)
+end
+
+--- @param list table|nil
+--- @return table|nil
+function PC.resonanceCard(list)
+  if not isList(list) then
+    return nil
+  end
+  for i = 1, #list do
+    local card = list[i]
+    if type(card) == "table" and card.displayType == "resonance" then
+      return card
+    end
+  end
+  return nil
+end
+
+--- Page 2 slots: shown cards that are not the page 1 resonance.
+--- @param list table|nil
+--- @return table
+function PC.sheetCards(list)
+  local out = {}
+  if not isList(list) then
+    return out
+  end
+  for i = 1, #list do
+    local card = list[i]
+    if type(card) == "table" and card.displayType ~= "resonance" and card.displayOnSheet ~= false then
+      out[#out + 1] = card
+    end
+  end
+  table.sort(out, earlier)
+  return out
+end
+
+--- @param list table|nil
+--- @return number
+function PC.sheetSlotCount(list)
+  return #PC.sheetCards(list)
+end
+
+--- @param temperament string
+--- @param resonanceType string
+--- @return string
+function PC.resonanceImage(temperament, resonanceType)
+  return "resonance_" .. tostring(temperament) .. tostring(resonanceType)
+end
+
+--- @param displayType string|nil
+--- @return string
+function PC.backgroundImage(displayType)
+  if displayType == "theBeast" then
+    return "bg_condition_theBeast"
+  end
+  if displayType == "debilitation" then
+    return "bg_condition_debilitation"
+  end
+  return "bg_condition_general"
+end
+
+local function ordinal(day)
+  local n = math.floor(tonumber(day) or 0)
+  local teen = n % 100
+  if teen >= 11 and teen <= 13 then
+    return tostring(n) .. "th"
+  end
+  local last = n % 10
+  if last == 1 then
+    return tostring(n) .. "st"
+  end
+  if last == 2 then
+    return tostring(n) .. "nd"
+  end
+  if last == 3 then
+    return tostring(n) .. "rd"
+  end
+  return tostring(n) .. "th"
+end
+
+--- @param year number
+--- @param month number
+--- @param day number
+--- @return string
+function PC.shortDate(year, month, day)
+  local name = MONTHS[math.floor(tonumber(month) or 0)] or "?"
+  return name .. " " .. ordinal(day) .. ", " .. tostring(math.floor(tonumber(year) or 0))
+end
+
+--- @param trigger string
+--- @return string
+function PC.durationForTrigger(trigger)
+  if trigger == "EndOfScene" then
+    return "This Condition persists until the end of the current scene."
+  end
+  if trigger == "ChangeOfBlood" then
+    return "This Condition persists until you feed on another mortal's blood or your Hunger reaches 5."
+  end
+  if trigger == "Manual" then
+    return ""
+  end
+  local session = string.match(tostring(trigger), "^EndOfSession(%d+)$")
+  if session ~= nil then
+    return "This Condition persists until the end of Session " .. session .. "."
+  end
+  local y, m, d = string.match(tostring(trigger), "^Clock:(%d+)%-(%d+)%-(%d+)$")
+  if y ~= nil then
+    return "This Condition persists until nightfall on " .. PC.shortDate(y, m, d) .. "."
+  end
+  return ""
+end
+
+--- @param trigger string
+--- @return string
+function PC.triggerLabel(trigger)
+  if trigger == "EndOfScene" then
+    return "End of the scene"
+  end
+  if trigger == "ChangeOfBlood" then
+    return "Hunger drops, or Hunger reaches 5"
+  end
+  if trigger == "Manual" then
+    return "Manual"
+  end
+  local session = string.match(tostring(trigger), "^EndOfSession(%d+)$")
+  if session ~= nil then
+    return "End of session " .. session
+  end
+  local y, m, d = string.match(tostring(trigger), "^Clock:(%d+)%-(%d+)%-(%d+)$")
+  if y ~= nil then
+    return "Nightfall on " .. PC.shortDate(y, m, d)
+  end
+  return tostring(trigger)
+end
+
+--- @param year number
+--- @param month number
+--- @param day number
+--- @return string
+function PC.clockTrigger(year, month, day)
+  return string.format(
+    "Clock:%04d-%02d-%02d",
+    math.floor(year),
+    math.floor(month),
+    math.floor(day)
+  )
+end
+
+--- @param sessionNum number
+--- @return string
+function PC.sessionTrigger(sessionNum)
+  return "EndOfSession" .. tostring(math.floor(sessionNum))
+end
+
+--- True when the clock is at or after dusk on the stored calendar day.
+--- @param clock table|nil
+--- @param trigger string
+--- @param duskHour number
+--- @param duskMinute number
+--- @return boolean
+function PC.clockTriggerDue(clock, trigger, duskHour, duskMinute)
+  local y, m, d = string.match(tostring(trigger), "^Clock:(%d+)%-(%d+)%-(%d+)$")
+  if y == nil or type(clock) ~= "table" then
+    return false
+  end
+  local due = PC.clockStamp({
+    year = tonumber(y),
+    month = tonumber(m),
+    day = tonumber(d),
+    hour = duskHour,
+    minute = duskMinute,
+  })
+  return PC.clockStamp(clock) >= due
+end
+
+--- @param oldHunger number
+--- @param newHunger number
+--- @return boolean
+function PC.hungerChangeQualifies(oldHunger, newHunger)
+  local old = math.floor(tonumber(oldHunger) or 0)
+  local new = math.floor(tonumber(newHunger) or 0)
+  if new == old then
+    return false
+  end
+  if new < old then
+    return true
+  end
+  return new >= 5 and old < 5
+end
+
+--- @param oldHunger number
+--- @param newHunger number
+--- @return string
+function PC.hungerLatchKey(oldHunger, newHunger)
+  return tostring(math.floor(tonumber(oldHunger) or 0)) .. "->" .. tostring(math.floor(tonumber(newHunger) or 0))
+end
+
+local function mark(card, pending, latchField, latchValue)
+  if card[latchField] == latchValue and card.pending == pending then
+    return false
+  end
+  if card[latchField] == latchValue then
+    return false
+  end
+  card.pending = pending
+  card[latchField] = latchValue
+  return true
+end
+
+--- @param list table
+--- @param epoch number
+--- @return boolean
+function PC.markSceneLeave(list, epoch)
+  local changed = false
+  for i = 1, #list do
+    local card = list[i]
+    if type(card) == "table" and card.removalTrigger == "EndOfScene" then
+      if mark(card, "EndOfScene", "sceneLatch", epoch) then
+        changed = true
+      end
+    end
+  end
+  return changed
+end
+
+--- @param list table
+--- @param oldHunger number
+--- @param newHunger number
+--- @return boolean
+function PC.markHunger(list, oldHunger, newHunger)
+  if not PC.hungerChangeQualifies(oldHunger, newHunger) then
+    return false
+  end
+  local key = PC.hungerLatchKey(oldHunger, newHunger)
+  local changed = false
+  for i = 1, #list do
+    local card = list[i]
+    if type(card) == "table" and card.removalTrigger == "ChangeOfBlood" then
+      if mark(card, "ChangeOfBlood", "hungerLatch", key) then
+        changed = true
+      end
+    end
+  end
+  return changed
+end
+
+--- @param list table
+--- @param sessionNum number
+--- @return boolean
+function PC.markSessionEnd(list, sessionNum)
+  local session = math.floor(tonumber(sessionNum) or 0)
+  local changed = false
+  for i = 1, #list do
+    local card = list[i]
+    if type(card) == "table" then
+      local wanted = string.match(tostring(card.removalTrigger), "^EndOfSession(%d+)$")
+      if wanted ~= nil and session >= tonumber(wanted) then
+        if mark(card, "EndOfSession", "sessionLatch", session) then
+          changed = true
+        end
+      end
+    end
+  end
+  return changed
+end
+
+--- @param list table
+--- @param clock table|nil
+--- @param duskFor fun(trigger: string): number, number hour, minute on that card's calendar day
+--- @return boolean
+function PC.markClock(list, clock, duskFor)
+  local changed = false
+  for i = 1, #list do
+    local card = list[i]
+    if type(card) == "table" and type(card.removalTrigger) == "string" then
+      local hour, minute = 19, 0
+      if type(duskFor) == "function" then
+        hour, minute = duskFor(card.removalTrigger)
+        hour = tonumber(hour) or 19
+        minute = tonumber(minute) or 0
+      end
+      if PC.clockTriggerDue(clock, card.removalTrigger, hour, minute) then
+        if mark(card, "Clock", "dateLatch", card.removalTrigger) then
+          changed = true
+        end
+      end
+    end
+  end
+  return changed
+end
+
+--- Skip: scene and Hunger wait for the next event. Session and date become Manual.
+--- @param card table
+function PC.skipCard(card)
+  local pending = card.pending
+  card.pending = nil
+  if pending == "EndOfSession" or pending == "Clock" then
+    card.removalTrigger = "Manual"
+    card.duration = ""
+  end
+end
+
+--- @param list table|nil
+--- @return table
+function PC.dueCards(list)
+  local out = {}
+  if not isList(list) then
+    return out
+  end
+  for i = 1, #list do
+    local card = list[i]
+    if type(card) == "table" and type(card.pending) == "string" and card.pending ~= "" then
+      out[#out + 1] = card
+    end
+  end
+  return out
+end
+
+--- @param pageNum number
+--- @param list table|nil
+--- @return table[] { id, attributes }
+function PC.sheetUpdates(pageNum, list)
+  local updates = {}
+  if pageNum == 1 then
+    local resonance = PC.resonanceCard(list)
+    local showResonance = resonance ~= nil
+    local title = resonance and tostring(resonance.dyscrasiaTitle or "") or ""
+    local description = resonance and tostring(resonance.dyscrasiaDescription or "") or ""
+    local showDyscrasia = showResonance and title ~= ""
+    updates[#updates + 1] = {
+      id = "resonance_container",
+      attributes = { active = showResonance and "true" or "false" },
+    }
+    if showResonance then
+      updates[#updates + 1] = {
+        id = "resonance_tag",
+        attributes = {
+          image = PC.resonanceImage(resonance.temperament, resonance.resonanceType),
+        },
+      }
+    end
+    updates[#updates + 1] = {
+      id = "dyscrasia_container",
+      attributes = { active = showDyscrasia and "true" or "false" },
+    }
+    updates[#updates + 1] = {
+      id = "dyscrasia_title",
+      attributes = { text = showDyscrasia and title or "" },
+    }
+    updates[#updates + 1] = {
+      id = "dyscrasia_description",
+      attributes = { text = showDyscrasia and description or "" },
+    }
+    return updates
+  end
+  if pageNum ~= 2 then
+    return updates
+  end
+  local cards = PC.sheetCards(list)
+  for slot = 1, PC.SHEET_SLOT_COUNT do
+    local card = cards[slot]
+    local prefix = "condition_container_" .. tostring(slot)
+    local shown = type(card) == "table"
+    updates[#updates + 1] = {
+      id = prefix,
+      attributes = { active = shown and "true" or "false" },
+    }
+    updates[#updates + 1] = {
+      id = prefix .. "_background",
+      attributes = { image = shown and PC.backgroundImage(card.displayType) or "bg_condition_general" },
+    }
+    updates[#updates + 1] = {
+      id = prefix .. "_title",
+      attributes = { text = shown and tostring(card.title or "") or "" },
+    }
+    updates[#updates + 1] = {
+      id = prefix .. "_sub_title",
+      attributes = { text = shown and tostring(card.subtitle or "") or "" },
+    }
+    updates[#updates + 1] = {
+      id = prefix .. "_description",
+      attributes = { text = shown and tostring(card.description or "") or "" },
+    }
+    updates[#updates + 1] = {
+      id = prefix .. "_duration",
+      attributes = { text = shown and tostring(card.duration or "") or "" },
+    }
+  end
+  return updates
+end
+
+return PC

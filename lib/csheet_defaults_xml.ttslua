@@ -12,6 +12,9 @@ D.XML = [=[
 
   <InputField class="player_desire_unset" color="#440000" fontStyle = "Italic" textColor = "#555555" />
 
+
+
+
   <Image preserveAspect="true" />
   <Image class="dot" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
   <Image class="dot_standard" height="63" width="63"  />
@@ -19,6 +22,34 @@ D.XML = [=[
   <Image class="dot_large" height="113" width="113" />
   <Image class="box" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
   <Image class="box_standard" height="80" width="80" />
+
+  <Panel class="page_raised page_top"
+
+  />
+
+  <Panel class="dyscrasia_container"
+
+  />
+
+  <Image class="dyscrasia_background"
+
+  />
+
+  <Text class="dyscrasia_title"
+
+  />
+
+  <Text class="dyscrasia_description"
+
+  />
+
+  <Panel class="resonance_container"
+
+  />
+
+  <Image class="resonance_tag"
+
+  />
 
   <Text class="xp_text" fontSize="82" fontStyle="Bold" color="#c5c799" rectAlignment="LowerCenter" alignment="LowerCenter" offsetXY="-67 125" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
 

@@ -440,6 +440,83 @@ $signal-fire: #ff9a1f;
 
 // A PC's tracker controls, open under the seat until the next click elsewhere. Above the seat's Desire (even
 // hovered), which it covers when the seats sit along the bottom and it opens upward.
+.pc-cond-hunger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pc-cond-panel,
+.pc-cond-due {
+  white-space: normal;
+}
+
+.pc-cond-panel {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 8px);
+  z-index: 23;
+  width: 460px;
+  max-height: 70vh;
+  overflow: auto;
+  padding: 8px;
+  border: 2px solid var(--seat-color, #6a6a74);
+  background: rgb(16 16 20 / 96%);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 70%);
+}
+
+.pc-cond-grid-row,
+.pc-cond-choices,
+.pc-cond-date,
+.pc-cond-due-row,
+.pc-cond-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.pc-cond-field,
+.pc-cond-check {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.pc-cond-field input,
+.pc-cond-field select,
+.pc-cond-field textarea,
+.pc-cond-date input {
+  font: inherit;
+  color: inherit;
+  background: #111;
+}
+
+.pc-cond-note {
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.pc-cond-list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-cond-due {
+  width: min(560px, 70vw);
+  margin-top: 8px;
+  padding: 8px;
+  background: rgb(16 16 20 / 94%);
+  border: 1px solid #6a6a74;
+}
+
+.lab-btn.on {
+  outline: 1px solid #fff;
+}
+
 .lab-seat-pop {
   position: absolute;
   top: calc(100% + 6px);

@@ -170,6 +170,18 @@ export type SeatsSlice = {
   readonly scatter: readonly ScatterGroup[];
   readonly spotlightOrder: readonly string[];
   readonly spotlightFrontIndex?: number;
+  /** Sheet conditions, every seat, that are waiting for the Storyteller to remove them. */
+  readonly personalDue?: readonly PersonalDue[];
+};
+
+export type PersonalDue = {
+  readonly color: string;
+  readonly name: string;
+  readonly id: string;
+  readonly title: string;
+  readonly trigger: string;
+  readonly pending: string;
+  readonly hunger?: number;
 };
 
 export const POOL_KINDS = ["normal", "hunger", "rouse", "oblivRouse", "bloodSurgeRouse", "werewolf", "rage"] as const;
@@ -384,8 +396,9 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
       return { ...(data as Omit<SoundscapeSlice, "lanes">), lanes: asList<SoundLane>(data.lanes) };
     case "seats":
       return {
-        ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "trackers" | "scatter" | "spotlightOrder">),
+        ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "trackers" | "scatter" | "spotlightOrder" | "personalDue">),
         seats: asList<SeatRow>(data.seats),
+        personalDue: asList<PersonalDue>(data.personalDue),
         stage: asList<StageNpc>(data.stage),
         generics: asList<GenericNpc>(data.generics),
         trackers:

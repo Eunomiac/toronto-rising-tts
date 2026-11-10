@@ -95,4 +95,10 @@ end)
 assert(ok == false, "seven disciplines should be refused")
 assert(tostring(err):find("at most 6", 1, true) ~= nil, "seven-discipline error should name the limit")
 
+for slot = 1, 6 do
+  assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '"', "conditions")
+  assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '_duration"', "conditions")
+  assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '" class="condition_container" active="false"', "conditions")
+end
+
 print("page 2 template XML ok")

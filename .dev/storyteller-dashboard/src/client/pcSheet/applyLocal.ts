@@ -169,6 +169,32 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
     }
     case "hunger":
       return { ...seat, hunger: clamp(seat.hunger + command.delta, 0, seat.hungerMax) };
+    case "personalResonance": {
+      const same = seat.personalResonance?.temperament === command.temperament
+        && seat.personalResonance.resonanceType === command.resonanceType;
+      if (same) {
+        return { ...seat, personalResonance: undefined };
+      }
+      return {
+        ...seat,
+        personalResonance: {
+          temperament: command.temperament,
+          resonanceType: command.resonanceType,
+          dyscrasiaTitle: "",
+          dyscrasiaDescription: ""
+        }
+      };
+    }
+    case "personalDyscrasia":
+      return seat.personalResonance
+        ? { ...seat, personalResonance: { ...seat.personalResonance, dyscrasiaTitle: command.title, dyscrasiaDescription: command.description } }
+        : seat;
+    case "personalCardRemove":
+    case "personalDueConfirm":
+      return {
+        ...seat,
+        personalCards: (Array.isArray(seat.personalCards) ? seat.personalCards : []).filter((card) => card.id !== command.id)
+      };
     case "desire":
       return { ...seat, desire: command.text };
     case "deferAutoSeat":

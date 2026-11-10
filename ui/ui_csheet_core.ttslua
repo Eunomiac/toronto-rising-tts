@@ -800,6 +800,17 @@ function refreshCharacterSheetUi()
     resolvedStatChanges = {}
   end
   updates = cloneUiUpdatesLocal(updates)
+  if (pageNum == 1 or pageNum == 2) and Global ~= nil and type(Global.call) == "function" then
+    local personal = Global.call("GlobalCollectPersonalConditionSheetUpdates", {
+      playerID = playerID,
+      pageNum = pageNum,
+    })
+    if type(personal) == "table" then
+      for i = 1, #personal do
+        updates[#updates + 1] = personal[i]
+      end
+    end
+  end
 
   -- Dynamic pages must remount XmlUI before setAttribute (fill Image ids are in the new tree).
   local remounted = false

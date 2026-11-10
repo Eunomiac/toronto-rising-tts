@@ -3049,6 +3049,24 @@ function GlobalCollectSheetImageUpdates(params)
     return PSC.collectSheetImageUpdates(ctx.stats, ctx.statChanges, params.pageNum)
 end
 
+--- Page 1 resonance / dyscrasia and page 2 condition cards. Object scripts only apply the list.
+--- @param params table { playerID: string, pageNum: number }
+--- @return table[]
+function GlobalCollectPersonalConditionSheetUpdates(params)
+    if type(params) ~= "table" then
+        error("GlobalCollectPersonalConditionSheetUpdates: params must be a table")
+    end
+    if type(params.playerID) ~= "string" or params.playerID == "" then
+        error("GlobalCollectPersonalConditionSheetUpdates: params.playerID must be a non-empty string")
+    end
+    local pageNum = tonumber(params.pageNum)
+    if pageNum ~= 1 and pageNum ~= 2 then
+        return {}
+    end
+    local list = S.getStateVal("playerData", params.playerID, "personalConditions")
+    return require("lib.personal_conditions").sheetUpdates(pageNum, list)
+end
+
 --- Switch clicking player to a seat's sheet, roll, or diceTray camera (sheetRed / rollBrown, …).
 --- TOR-483: right-click must use the *clicked* sheet seat, not the clicker's own tray.
 --- @param params table { clickerColor: string, sheetSeatColor: string, modeStem?: "sheet"|"diceTray"|"roll" }
@@ -3200,6 +3218,7 @@ function onLoad(saved_data)
     setStartupAction("conditions-validate-and-reconcile")
     local Conditions = require("core.conditions")
     Conditions.validateAllPersisted()
+    require("core.personal_conditions").onLoad()
     Conditions.reconcileDerivedAllPlayers()
     Conditions.reconcileHostedForSession({ skipPresentation = true })
 

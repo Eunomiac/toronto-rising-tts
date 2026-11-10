@@ -6,7 +6,7 @@ import { useOpenPcSheet } from "../pcSheet/openPcSheet";
 import { paintDamageTrack, paintHumanityTrack } from "../pcSheet/paint";
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
-import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
+import type { ApplyCommand, ManualCondition, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
 import { LIGHTING_PRESETS, lightingLabel, type LightingPreset } from "../catalogVocab";
 import type { NpcTier } from "../../shared/npcStats";
@@ -14,6 +14,7 @@ import { GenericTiersContext, useScenesCommand, type StageChanges } from "./comm
 import { CompulsionBadge } from "./compulsionBadge";
 import { TokenBadges } from "./tierBadge";
 import { BoxRow, HUNGER_DOT, NpcLevelBadge, NpcLiveContext, NpcTrackerPopup } from "./npcTrackers";
+import { ConditionPanel } from "./personalConditions";
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
@@ -143,15 +144,23 @@ const swallowClicks = {
  * A PC's trackers as controls, as on the PCs tab: click Health, Willpower, or Humanity for that tracker's ring
  * (left-click a button to add, right-click to remove); left-click Hunger to raise it, right-click to lower it.
  */
-const TrackerPopup = ({ seat, onRing, onHunger, onOpenSheet }: {
+const TrackerPopup = ({ seat, sessionNum, manualConditions, onRing, onHunger, onOpenSheet, onApply }: {
   seat: SeatSnapshot;
+  sessionNum: number;
+  manualConditions: readonly ManualCondition[];
   onRing: (event: MouseEvent<HTMLElement>, target: RingTarget) => void;
   onHunger: (delta: number) => void;
   onOpenSheet?: () => void;
-}): ReactElement => (
+  onApply: (command: ApplyCommand) => void;
+}): ReactElement => {
+  const [conditionPane, setConditionPane] = useState<"resonance" | "other" | null>(null);
+  return (
   <div className="lab-seat-pop" role="dialog" aria-label={`${seat.charName} trackers`} {...swallowClicks}>
     <span className="lab-seat-pop-head">
       <span className="lab-seat-pop-name">{seat.charName}</span>
+      <button type="button" className="lab-btn lab-seat-pop-sheet" onClick={() => setConditionPane(conditionPane === "other" ? null : "other")}>
+        Condition
+      </button>
       {onOpenSheet && (
         <button type="button" className="lab-btn lab-seat-pop-sheet" title="Show this character's sheet on the PCs tab" onClick={onOpenSheet}>
           Open sheet
@@ -170,23 +179,38 @@ const TrackerPopup = ({ seat, onRing, onHunger, onOpenSheet }: {
       <Icon name="humanity" className="lab-track-icon humanity" title="Humanity" />
       <BoxRow boxes={paintHumanityTrack(seat.humanity, seat.humanityMax)} showEmpty />
     </button>
-    <button
-      type="button"
-      className="lab-track"
-      title="Left-click to raise Hunger, right-click to lower it"
-      onClick={() => onHunger(1)}
-      onContextMenu={(event) => {
-        event.preventDefault();
-        onHunger(-1);
-      }}
-    >
-      <Icon name="hunger" className="lab-track-icon hunger" title="Hunger" />
-      {Array.from({ length: seat.hungerMax }, (_, index) => (
-        <span key={index} className={`lab-hunger-dot${index < seat.hunger ? " on" : ""}`} style={HUNGER_DOT} />
-      ))}
-    </button>
+    <div className="pc-cond-hunger">
+      <button
+        type="button"
+        className="lab-track"
+        title="Left-click to raise Hunger, right-click to lower it"
+        onClick={() => onHunger(1)}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          onHunger(-1);
+        }}
+      >
+        <Icon name="hunger" className="lab-track-icon hunger" title="Hunger" />
+        {Array.from({ length: seat.hungerMax }, (_, index) => (
+          <span key={index} className={`lab-hunger-dot${index < seat.hunger ? " on" : ""}`} style={HUNGER_DOT} />
+        ))}
+      </button>
+      <button type="button" className="lab-btn" onClick={() => setConditionPane(conditionPane === "resonance" ? null : "resonance")}>
+        Resonance
+      </button>
+    </div>
+    {conditionPane && (
+      <ConditionPanel
+        seat={seat}
+        sessionNum={sessionNum}
+        manualConditions={manualConditions}
+        pane={conditionPane}
+        apply={onApply}
+      />
+    )}
   </div>
-);
+  );
+};
 
 const SeatContent = ({ seat, tier }: { seat: SeatSketch; tier: NpcTier | undefined }): ReactElement => (
   <>
@@ -421,8 +445,11 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
             {open && openSeat && (
               <TrackerPopup
                 seat={openSeat}
+                sessionNum={sheet.sessionNum ?? 1}
+                manualConditions={sheet.manualConditions ?? []}
                 onRing={(event, target) => setRing({ ...canvasPoint(event), target })}
                 onHunger={(delta) => apply({ op: "hunger", color: openSeat.color, delta })}
+                onApply={apply}
                 onOpenSheet={openPcSheet ? () => {
                   setOpenColor(null);
                   openPcSheet(openSeat.color);

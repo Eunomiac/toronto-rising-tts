@@ -1719,7 +1719,12 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             S.getStateVal("sessionScene", "seatSlots")
         )
         S.setStateVal(nil, "locationConditionState")
+        local wasInScene = {}
+        for _, color in ipairs(C.PlayerColors or {}) do
+            wasInScene[color] = NPCS.resolvePlayerSeatPresence(color) == true
+        end
         S.setStateVal(bundle, "sessionScene")
+        require("core.personal_conditions").onSceneReplaced(wasInScene)
         SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(bundle)
         SceneLibrary.setExclusiveLiveMirror(K, ent.title)
         S.setStateVal(K, "sceneLibrary", "activeKey")
