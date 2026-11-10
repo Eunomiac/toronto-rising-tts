@@ -15,7 +15,7 @@ Verification:
 - keep architectural claims consistent with the actual package, build, deployment workflow, and browser behavior
 
 Status:
-- current; Phase 1 application and Cloudflare Worker package implemented, with first live publication waiting for the author's Cloudflare sign-in
+- current; Phase 1 application published and verified on Cloudflare Workers Free
 
 ## Product Boundary
 
@@ -102,6 +102,8 @@ The Workers Free plan is sufficient for the expected player count. Static asset 
 
 Cloudflare supplies a free `workers.dev` address. A custom domain is optional and is the only expected hosting-related purchase for this scale of application; its annual registration fee depends on the chosen name and top-level domain.
 
+**Current public address:** <https://toronto-rising-player-map.toronto-rising-player-map.workers.dev>. Keep this free address unless a custom domain becomes worth its registration cost.
+
 This is not a lock-in at the application level. Keep the React/Vite client host-neutral:
 
 - no provider-specific code in React components
@@ -179,10 +181,10 @@ Map-data changes additionally follow the validation and visual diagnostic checks
 
 ## Decisions Still Needed
 
-Before the first public deployment, determine:
+Before adding features that require private or durable server data, determine:
 
 1. Whether any first-release feature needs persistent player identity, cross-device state, shared state, or Storyteller-controlled reveals.
-2. Whether to keep the free `workers.dev` address or purchase a custom domain later.
+2. Whether a custom domain is worth purchasing later. The free `workers.dev` address is the accepted current address.
 
 Confirmed product decisions:
 

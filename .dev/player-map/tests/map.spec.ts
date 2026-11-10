@@ -1,19 +1,31 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Route } from '@playwright/test';
+
+async function relayThroughTestRunner(route: Route) {
+  const response = await fetch(route.request().url());
+  const body = Buffer.from(await response.arrayBuffer());
+  await route.fulfill({
+    status: response.status,
+    contentType: response.headers.get('content-type') ?? 'application/octet-stream',
+    body,
+  });
+}
 
 test('loads the real map and supports pointer and keyboard-friendly selection', async ({ page }, testInfo) => {
   const consoleErrors: string[] = [];
   const failedRequests: string[] = [];
+  const baseURL = testInfo.project.use.baseURL;
+  if (typeof baseURL === 'string' && baseURL.startsWith('https://')) {
+    const origin = new URL(baseURL).origin;
+    // Codex Chromium cannot reach the public internet directly. Relaying the
+    // deployed origin preserves the public URL while Node fetches live assets.
+    await page.route(`${origin}/**`, relayThroughTestRunner);
+    const health = await page.request.get(`${origin}/api/health`);
+    expect(health.status()).toBe(200);
+    await expect(health.json()).resolves.toMatchObject({ ok: true, service: 'toronto-rising-player-map' });
+  }
   // The Codex browser is denied direct internet access. Relay OpenFreeMap through
   // the test runner so this still exercises the real style, tiles, and glyphs.
-  await page.route('https://tiles.openfreemap.org/**', async (route) => {
-    const response = await fetch(route.request().url());
-    const body = Buffer.from(await response.arrayBuffer());
-    await route.fulfill({
-      status: response.status,
-      contentType: response.headers.get('content-type') ?? 'application/octet-stream',
-      body,
-    });
-  });
+  await page.route('https://tiles.openfreemap.org/**', relayThroughTestRunner);
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   page.on('requestfailed', (request) => {
     const errorText = request.failure()?.errorText;

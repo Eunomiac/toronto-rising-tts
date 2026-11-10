@@ -4,11 +4,13 @@ This is the working plan for the public Player Map. It is not the Storyteller Da
 
 ## Current Status
 
-The Phase 1 application is implemented locally. It renders the live OpenFreeMap
+The Phase 1 application is implemented and publicly deployed. It renders the live OpenFreeMap
 basemap, all 32 district vectors, district hover/click/keyboard selection, a
 mobile-first details panel, shareable district URLs, and a reserved Worker API
-health route. The Cloudflare package passes a dry run, but no public deployment
-exists yet because Wrangler requires the author's one-time Cloudflare sign-in.
+health route. The public address is
+<https://toronto-rising-player-map.toronto-rising-player-map.workers.dev>.
+The deployed homepage, health route, desktop interaction path, and Pixel 7-sized
+interaction path were verified after publication.
 
 ## Decisions Recorded
 
@@ -27,7 +29,7 @@ exists yet because Wrangler requires the author's one-time Cloudflare sign-in.
 - [x] Use OpenFreeMap as the initial basemap/tile provider and verify Toronto coverage, attribution, reliability, and style customization during the first spike.
 - [x] Treat phone-sized screens as a primary supported surface alongside desktop and tablets.
 - [ ] Decide whether the first release needs cross-device/shared state or Storyteller-controlled reveals. Same-browser persistence can use local storage without a server.
-- [ ] Choose the public address and whether to use a custom domain.
+- [x] Use Cloudflare's generated `workers.dev` address initially; a paid custom domain remains an optional later upgrade.
 - [x] Do not ship the original illustrated map as a raster overlay unless a later need emerges.
 - [x] Publish updated player-safe data through the existing TTS FULL build pipeline using its single validated Sheet snapshot.
 
@@ -51,7 +53,7 @@ exists yet because Wrangler requires the author's one-time Cloudflare sign-in.
 - [x] Parse all district and region SVG features while preserving holes and fill rules.
 - [x] Prototype narrow-gap and overlap normalization with diagnostic output. This is deliberately not the runtime geometry until Phase 2 adds a reviewed winner manifest.
 - [x] Load generated district GeoJSON and prove hover, keyboard selection, click selection, shareable URL state, and a details panel.
-- [ ] Deploy the spike to Cloudflare Workers Free and confirm the public address. Static assets, the placeholder `/api/health` route, mobile loading, local Worker runtime, and Wrangler dry run are confirmed; live publication waits for `npx wrangler login`.
+- [x] Deploy the spike to Cloudflare Workers Free and confirm its public address, homepage, `/api/health` route, and desktop/mobile browser behavior.
 
 ## Phase 2 — Data Pipeline
 

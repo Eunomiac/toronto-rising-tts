@@ -2,6 +2,8 @@
 
 Public, player-facing interactive map for the Toronto Rising chronicle.
 
+Public address: <https://toronto-rising-player-map.toronto-rising-player-map.workers.dev>
+
 ## Local development
 
 ```powershell
@@ -27,17 +29,22 @@ See `agent/Architecture.md`, `agent/Map Data Pipeline.md`, and
 
 ## Cloudflare deployment
 
-The Worker package is ready and its static assets plus `/api/health` route pass
-locally and in Wrangler's dry run. The first real publication needs a one-time
-Cloudflare sign-in:
+The application is deployed to Cloudflare Workers Free. Future releases use:
 
 ```powershell
 cd .dev/player-map
-npx wrangler login
 npm run deploy
 ```
 
-`wrangler login` opens Cloudflare's authorization page in your browser. A free
-Cloudflare account is sufficient. `npm run deploy` reruns data validation,
-type checking, unit tests, the production build, and the desktop/mobile browser
-test before publishing. Wrangler prints the resulting `workers.dev` address.
+`npm run deploy` reruns data validation, type checking, unit tests, the
+production build, and the desktop/mobile browser test before publishing.
+
+To exercise the already-deployed application rather than a local preview:
+
+```powershell
+$env:PLAYER_MAP_BASE_URL='https://toronto-rising-player-map.toronto-rising-player-map.workers.dev'
+npm run test:browser
+```
+
+The Worker reserves `/api/health` as the first server boundary. No persistent
+storage is configured yet.
