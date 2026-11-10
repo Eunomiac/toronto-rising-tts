@@ -134,6 +134,42 @@ Do not interpret "single source of truth" as "put everything in one global store
 
 Selected district/site and visible overlay choices should be representable in the URL, so a player can share a useful view. Prefer query parameters for the initial single-page map; this also avoids deep-link routing problems on static hosting.
 
+## Author Debug Notes
+
+Duplicate the Storyteller Dashboard's note-pin workflow for Player Map design
+and debugging. This is an author-and-agent development tool, not a player
+feature.
+
+The local development server provides a **Debug notes** toggle with **Add note**
+and **Show notes** controls. While adding, clicking the map, a control, a panel,
+or a popup places a numbered pin and opens its comment editor without allowing
+that click to trigger the underlying application action. Escape or toggling the
+control exits placement mode.
+
+Use two anchor types:
+
+- Map pins store longitude/latitude and remain attached to the same geographic
+  location while the map pans and zooms.
+- Interface pins store a stable surface identifier and normalized coordinates
+  relative to the relevant panel, popup, or control surface.
+
+Each note also records enough context to reproduce what the author saw: current
+URL state, selected district/site, visible layers, map centre and zoom, viewport
+size, comment, optional agent reply, and creation/update timestamps. Store notes
+in a tracked file under `agent/` through a development-only API, following the
+Dashboard's `agent/lab-notes.json` and `/api/lab-notes` model. Stable numbered
+IDs allow the author and agents to discuss individual pins unambiguously.
+
+Agents process the note file in one pass: inspect each pin in context, implement
+clear requests, write a concise `reply` where clarification or explanation is
+needed, and remove resolved pins. Preserve unresolved pins. The UI must support
+showing/hiding all pins without deleting them.
+
+The notes, controls, API, and stored comments must be absent from production
+builds and Cloudflare deployments. Comments may contain spoilers, private design
+discussion, or Storyteller-only information and therefore must never enter the
+public browser bundle.
+
 ### What persistence and shared state mean
 
 GitHub Pages does not prevent the application from using browser storage:

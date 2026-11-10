@@ -81,6 +81,11 @@ interaction path were verified after publication.
 - [ ] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
 - [ ] Add shareable URL state for selection and visible overlays.
 - [ ] Add loading, empty, error, keyboard, touch, and reduced-motion behavior.
+- [ ] Add the development-only Debug notes toggle with Add note and Show notes controls, matching the Storyteller Dashboard workflow.
+- [ ] Anchor map pins by longitude/latitude and interface pins by stable surface plus normalized coordinates.
+- [ ] Persist numbered notes, reproduction context, comments, and agent replies through a tracked `agent/` file and development-only API.
+- [ ] Exclude debug-note controls, API routes, data, and comments from every production build and Cloudflare deployment.
+- [ ] Document the one-pass agent workflow for replying to, preserving unresolved, and clearing resolved pins.
 - [ ] Add unit, component, and Playwright coverage for the release path.
 - [ ] Deploy to the selected host and verify the public address on desktop and the supported smaller viewport.
 
