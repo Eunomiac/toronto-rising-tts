@@ -516,7 +516,7 @@ function HUDBF.runStagedTransition(phases, opts)
       fadeInSec,
       math.max(0, settleDelaySec - workSettleSec - fadeInSec)
     ),
-    note = "NPC lines below are figurines touched while this cover was up. Reused means the figurine already existed. Image reload means the mesh was sent to load again.",
+    note = "NPC lines below are figurines touched while this cover was up. Created means first created during this action; already live means present before at least one application. Image reload means the mesh was sent to load again.",
   })
   HUDBF.beginTransition(opts)
   LoadTrace.mark("cover shown")

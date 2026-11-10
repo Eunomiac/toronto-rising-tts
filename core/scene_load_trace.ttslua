@@ -17,6 +17,12 @@ local SLOW_NPC_MS = 50
 local DETAIL_LIMIT = 30
 
 local clockFn = os.clock
+local gameClockFn = function()
+    if type(Time) == "table" and type(Time.time) == "number" then
+        return Time.time
+    end
+    return nil
+end
 local history = {}
 local open = nil
 local nextId = 0
@@ -24,6 +30,17 @@ local nextId = 0
 --- @param fn function|nil
 function Trace._setClock(fn)
     clockFn = fn or os.clock
+end
+
+--- Test hook for TTS game time (`Time.time` in production).
+--- @param fn function|nil
+function Trace._setGameClock(fn)
+    gameClockFn = fn or function()
+        if type(Time) == "table" and type(Time.time) == "number" then
+            return Time.time
+        end
+        return nil
+    end
 end
 
 function Trace._reset()
@@ -51,6 +68,10 @@ end
 
 local function now()
     return clockFn()
+end
+
+local function gameNow()
+    return gameClockFn()
 end
 
 local function roundMs(ms)
@@ -127,6 +148,20 @@ function Trace.finish(fields)
     local extra = copyFields(fields)
     local report = open
     report.totalMs = (ended - report.t0) * 1000
+    local gameEnded = gameNow()
+    if gameEnded ~= nil and report.gameT0 ~= nil then
+        report.gameTotalMs = (gameEnded - report.gameT0) * 1000
+        report.schedulerDriftMs = report.totalMs - report.gameTotalMs
+    end
+    if type(getObjectFromGUID) == "function" then
+        for _, row in pairs(report.npcs or {}) do
+            if type(row) == "table" and type(row.figurineGuid) == "string" and row.figurineGuid ~= "" then
+                local fig = getObjectFromGUID(row.figurineGuid)
+                row.loading = fig ~= nil and fig.loading_custom == true
+                row.spawning = fig ~= nil and fig.spawning == true
+            end
+        end
+    end
     report.ok = extra.ok ~= false
     report.interrupted = extra.interrupted == true
     report.detail = extra.detail
@@ -162,12 +197,15 @@ function Trace.start(kind, fields)
     end
     nextId = nextId + 1
     local t = now()
+    local gameT = gameNow()
     open = {
         id = nextId,
         kind = tostring(kind or "timing"),
         fields = copyFields(fields),
         t0 = t,
         last = t,
+        gameT0 = gameT,
+        gameLast = gameT,
         marks = {},
         npcs = {},
         npcOrder = {},
@@ -183,12 +221,21 @@ function Trace.mark(name, fields)
         return
     end
     local t = now()
+    local gameT = gameNow()
+    local hostMs = (t - open.last) * 1000
+    local gameMs = nil
+    if gameT ~= nil and open.gameLast ~= nil then
+        gameMs = (gameT - open.gameLast) * 1000
+    end
     open.marks[#open.marks + 1] = {
         name = tostring(name or "mark"),
-        ms = (t - open.last) * 1000,
+        ms = hostMs,
+        gameMs = gameMs,
+        schedulerDriftMs = gameMs ~= nil and (hostMs - gameMs) or nil,
         fields = copyFields(fields),
     }
     open.last = t
+    open.gameLast = gameT
 end
 
 --- Merge one NPC observation into the open report.
@@ -206,8 +253,8 @@ function Trace.noteNpc(key, fields)
             key = key,
             calls = 0,
             ms = 0,
-            reused = false,
-            spawned = false,
+            liveBefore = false,
+            created = false,
             reloaded = false,
             parked = false,
             loading = false,
@@ -220,8 +267,8 @@ function Trace.noteNpc(key, fields)
         row.calls = row.calls + 1
         row.ms = row.ms + (tonumber(fields.ms) or 0)
     end
-    if fields.reused == true then row.reused = true end
-    if fields.spawned == true then row.spawned = true end
+    if fields.liveBefore == true or fields.reused == true then row.liveBefore = true end
+    if fields.created == true or fields.spawned == true then row.created = true end
     if fields.reloaded == true then row.reloaded = true end
     if fields.parked == true then row.parked = true end
     if fields.loading ~= nil then row.loading = fields.loading == true end
@@ -231,6 +278,7 @@ function Trace.noteNpc(key, fields)
     if fields.slot ~= nil then row.slot = fields.slot end
     if fields.imageScalar ~= nil then row.imageScalar = fields.imageScalar end
     if fields.targetScalar ~= nil then row.targetScalar = fields.targetScalar end
+    if type(fields.figurineGuid) == "string" then row.figurineGuid = fields.figurineGuid end
 end
 
 local function scalarMismatch(row)
@@ -241,7 +289,7 @@ local function scalarMismatch(row)
 end
 
 local function npcInteresting(row)
-    return row.spawned == true
+    return row.created == true
         or row.reloaded == true
         or row.loading == true
         or row.spawning == true
@@ -254,8 +302,8 @@ local function npcDetail(row)
     if type(row.action) == "string" and row.action ~= "" then
         flags[#flags + 1] = row.action
     end
-    if row.spawned == true then flags[#flags + 1] = "spawned" end
-    if row.reused == true then flags[#flags + 1] = "reused" end
+    if row.created == true then flags[#flags + 1] = "created this action" end
+    if row.liveBefore == true then flags[#flags + 1] = "already live before a call" end
     if row.parked == true then flags[#flags + 1] = "parked" end
     if row.reloaded == true then flags[#flags + 1] = "image reload" end
     if row.loading == true then flags[#flags + 1] = "still loading" end
@@ -264,7 +312,7 @@ local function npcDetail(row)
         flags[#flags + 1] = string.format("scalar %.3g→%.3g", row.imageScalar, row.targetScalar)
     end
     if row.calls > 1 then
-        flags[#flags + 1] = tostring(row.calls) .. " calls"
+        flags[#flags + 1] = tostring(row.calls) .. " applications"
     end
     return string.format("  NPC %-24s %6d ms  %s", row.key, roundMs(row.ms), table.concat(flags, ", "))
 end
@@ -295,28 +343,45 @@ function Trace.format(report)
     if type(report.detail) == "string" and report.detail ~= "" then
         lines[#lines + 1] = "  " .. report.detail
     end
+    if report.schedulerDriftMs ~= nil and math.abs(report.schedulerDriftMs) >= 50 then
+        lines[#lines + 1] = string.format(
+            "  Scheduler drift: host elapsed %d ms, TTS game time %d ms, difference %d ms.",
+            roundMs(report.totalMs),
+            roundMs(report.gameTotalMs),
+            roundMs(report.schedulerDriftMs)
+        )
+    end
     local marks = type(report.marks) == "table" and report.marks or {}
     for i = 1, #marks do
         local mark = marks[i]
         lines[#lines + 1] = string.format(
-            "  %6d ms  %s%s",
+            "  %6d ms  %s%s%s",
             roundMs(mark.ms),
             tostring(mark.name or "mark"),
-            fieldSuffix(mark.fields)
+            fieldSuffix(mark.fields),
+            mark.schedulerDriftMs ~= nil and math.abs(mark.schedulerDriftMs) >= 50
+                and string.format(
+                    "  (TTS game time %d ms; scheduler drift %d ms)",
+                    roundMs(mark.gameMs),
+                    roundMs(mark.schedulerDriftMs)
+                )
+                or ""
         )
     end
     local npcs = type(report.npcs) == "table" and report.npcs or {}
     local order = type(report.npcOrder) == "table" and report.npcOrder or {}
     if #order > 0 then
-        local calls, reused, spawned, parked, reloaded, loading, spawning, mismatch, npcMs = 0, 0, 0, 0, 0, 0, 0, 0, 0
+        local calls, liveBefore, created, repeated, parked, reloaded, loading, spawning, mismatch, npcMs =
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         local interesting = {}
         for i = 1, #order do
             local row = npcs[order[i]]
             if type(row) == "table" then
                 calls = calls + (row.calls or 0)
                 npcMs = npcMs + (row.ms or 0)
-                if row.reused then reused = reused + 1 end
-                if row.spawned then spawned = spawned + 1 end
+                if row.liveBefore then liveBefore = liveBefore + 1 end
+                if row.created then created = created + 1 end
+                if (row.calls or 0) > 1 then repeated = repeated + ((row.calls or 0) - 1) end
                 if row.parked then parked = parked + 1 end
                 if row.reloaded then reloaded = reloaded + 1 end
                 if row.loading then loading = loading + 1 end
@@ -328,8 +393,8 @@ function Trace.format(report)
             end
         end
         lines[#lines + 1] = string.format(
-            "  NPCs: %d calls, reused %d, spawned %d, parked %d, image reload %d, still loading %d, still spawning %d, scalar mismatch %d, NPC Lua time %d ms",
-            calls, reused, spawned, parked, reloaded, loading, spawning, mismatch, roundMs(npcMs)
+            "  NPCs: %d applications, created this action %d, already live before a call %d, repeated applications %d, parked %d, image reload %d, still loading %d, still spawning %d, scalar mismatch %d, NPC Lua time %d ms",
+            calls, created, liveBefore, repeated, parked, reloaded, loading, spawning, mismatch, roundMs(npcMs)
         )
         table.sort(interesting, function(a, b)
             return (tonumber(a.ms) or 0) > (tonumber(b.ms) or 0)

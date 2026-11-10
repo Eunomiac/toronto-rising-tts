@@ -1,0 +1,234 @@
+--[[
+    Explicit, cold-path probes for scene-transition and Scatter stalls.
+
+    Each action re-applies one slice of the current authoritative gameState. The probe reports
+    synchronous Lua time, then schedules zero-delay and 0.25-second heartbeats. A long heartbeat
+    delay means Tabletop Simulator was busy after the Lua call returned.
+]]
+
+local U = require("lib.util")
+local S = require("core.state")
+
+local Probe = {}
+local nextRunId = 0
+
+local function gameNow()
+    if type(Time) == "table" and type(Time.time) == "number" then
+        return Time.time
+    end
+    return nil
+end
+
+local function msSince(started)
+    return math.floor((os.clock() - started) * 1000 + 0.5)
+end
+
+local function gameMsSince(started)
+    local current = gameNow()
+    if current == nil or started == nil then
+        return nil
+    end
+    return math.floor((current - started) * 1000 + 0.5)
+end
+
+local function objectName(obj)
+    if obj == nil then
+        return "(missing)"
+    end
+    local name = ""
+    if obj.getName ~= nil then
+        name = tostring(obj.getName() or "")
+    end
+    if name == "" and obj.getGUID ~= nil then
+        name = tostring(obj.getGUID() or "")
+    end
+    return name ~= "" and name or tostring(obj.type or obj.tag or "object")
+end
+
+local function hasTag(obj, wanted)
+    if obj == nil or obj.getTags == nil then
+        return false
+    end
+    for _, tag in ipairs(obj.getTags() or {}) do
+        if tag == wanted then
+            return true
+        end
+    end
+    return false
+end
+
+local function census()
+    local objects = getAllObjects() or {}
+    local loading = {}
+    local counts = {
+        total = #objects,
+        loadingCustom = 0,
+        spawning = 0,
+        hidden = 0,
+        npcFigurines = 0,
+        spotlights = 0,
+    }
+    for i = 1, #objects do
+        local obj = objects[i]
+        local isLoading = obj.loading_custom == true
+        local isSpawning = obj.spawning == true
+        if isLoading then counts.loadingCustom = counts.loadingCustom + 1 end
+        if isSpawning then counts.spawning = counts.spawning + 1 end
+        if hasTag(obj, "HiddenObject") then counts.hidden = counts.hidden + 1 end
+        if hasTag(obj, "npc_figurine") then counts.npcFigurines = counts.npcFigurines + 1 end
+        if hasTag(obj, "Spotlight") then counts.spotlights = counts.spotlights + 1 end
+        if (isLoading or isSpawning) and #loading < 30 then
+            loading[#loading + 1] = string.format(
+                "%s [%s] loading_custom=%s spawning=%s",
+                objectName(obj),
+                obj.getGUID ~= nil and tostring(obj.getGUID()) or "?",
+                tostring(isLoading),
+                tostring(isSpawning)
+            )
+        end
+    end
+    local pool = require("core.npcs").inspectPreloadPool()
+    print(string.format(
+        "[SceneStallProbe] census total=%d hidden=%d npcFigurines=%d spotlights=%d loading_custom=%d spawning=%d",
+        counts.total,
+        counts.hidden,
+        counts.npcFigurines,
+        counts.spotlights,
+        counts.loadingCustom,
+        counts.spawning
+    ))
+    print(string.format(
+        "[SceneStallProbe] preload enabled=%s reserved=%s parked=%s ready=%s",
+        tostring(pool.enabled),
+        tostring(pool.reserved or 0),
+        tostring(pool.parked or 0),
+        tostring(pool.ready or 0)
+    ))
+    for i = 1, #loading do
+        print("[SceneStallProbe] unfinished " .. loading[i])
+    end
+    return counts
+end
+
+local function runAction(action, spec)
+    if action == "baseline" then
+        return true
+    elseif action == "census" then
+        return census()
+    elseif action == "scatter_figurine"
+        or action == "scatter_hand"
+        or action == "scatter_seat"
+        or action == "scatter_camera"
+        or action == "scatter_all"
+    then
+        local pcKey = type(spec.pcKey) == "string" and spec.pcKey or ""
+        local slice = string.gsub(action, "^scatter_", "")
+        local ok, err = require("core.scatter_mode").debugReapplyPcSlice(pcKey, slice)
+        if not ok then error(err) end
+        return true
+    elseif action == "scatter_hud" then
+        require("core.scatter_mode").reconcileControlHudFromState()
+        return true
+    elseif action == "dashboard" then
+        require("dashboard.push").markWorldDirty({ seats = true, scene = true })
+        return true
+    elseif action == "table" then
+        local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+        return require("lib.rotational-seat-layout").SyncTable(tableKey, { force = true })
+    elseif action == "seats" then
+        require("core.lighting").reconcileAllPlayers({ force = true })
+        require("core.hud_overlays").syncAll({ force = true, skipTopFog = true })
+        return true
+    elseif action == "npcs" then
+        require("core.npcs").reconcileAllFromState({ force = true })
+        return true
+    elseif action == "scene" then
+        local Scenes = require("core.scenes")
+        Scenes.reconcileFromState({ force = true })
+        Scenes.reconcileTopFogFromState({ force = true })
+        Scenes.reconcileSkyboxFromState({ force = true })
+        return true
+    elseif action == "ui" then
+        require("core.sync").ui()
+        return true
+    elseif action == "soundscape" then
+        require("core.sync").soundscape({ force = true })
+        return true
+    elseif action == "full" then
+        require("core.sync").full({ force = true, reason = "scene_stall_probe" })
+        return true
+    end
+    error("Unknown SceneStallProbe action: " .. tostring(action))
+end
+
+--- Re-apply one current-state slice and measure when TTS gives Lua control back.
+--- @param action string
+--- @param spec table|nil `{ pcKey?: string }`
+--- @return table
+function Probe.run(action, spec)
+    action = tostring(action or "baseline")
+    spec = type(spec) == "table" and spec or {}
+    nextRunId = nextRunId + 1
+    local runId = nextRunId
+    local started = os.clock()
+    local gameStarted = gameNow()
+    print(string.format("[SceneStallProbe] #%d START %s", runId, action))
+    local result = runAction(action, spec)
+    local returnedAt = os.clock()
+    local gameReturnedAt = gameNow()
+    print(string.format(
+        "[SceneStallProbe] #%d RETURN %s lua=%d ms game=%s ms",
+        runId,
+        action,
+        msSince(started),
+        tostring(gameMsSince(gameStarted) or "n/a")
+    ))
+    U.await(function()
+        print(string.format(
+            "[SceneStallProbe] #%d HEARTBEAT 0 %s hostDelay=%d ms gameDelay=%s ms",
+            runId,
+            action,
+            msSince(returnedAt),
+            tostring(gameMsSince(gameReturnedAt) or "n/a")
+        ))
+    end, 0)
+    U.await(function()
+        print(string.format(
+            "[SceneStallProbe] #%d HEARTBEAT 250 %s hostDelay=%d ms gameDelay=%s ms",
+            runId,
+            action,
+            msSince(returnedAt),
+            tostring(gameMsSince(gameReturnedAt) or "n/a")
+        ))
+    end, 0.25)
+    return {
+        id = runId,
+        action = action,
+        luaMs = msSince(started),
+        gameMs = gameMsSince(gameStarted),
+        result = result,
+    }
+end
+
+function Probe.actions()
+    return {
+        "baseline",
+        "census",
+        "scatter_figurine",
+        "scatter_hand",
+        "scatter_seat",
+        "scatter_camera",
+        "scatter_all",
+        "scatter_hud",
+        "dashboard",
+        "table",
+        "seats",
+        "npcs",
+        "scene",
+        "ui",
+        "soundscape",
+        "full",
+    }
+end
+
+return Probe

@@ -993,7 +993,7 @@ end
 --- @param occupantKey string
 --- @param figFrame table
 --- @param figObj Object|nil
---- @param helpers table|nil `{ skipRoleKeys?: table }`
+--- @param helpers table|nil `{ skipRoleKeys?: table, onlyRoleKeys?: table }`
 local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
     helpers = helpers or {}
     local tag = occupantKey .. "Object"
@@ -1014,6 +1014,9 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             return
         end
         if helpers.skipRoleKeys ~= nil and helpers.skipRoleKeys[roleKey] == true then
+            return
+        end
+        if helpers.onlyRoleKeys ~= nil and helpers.onlyRoleKeys[roleKey] ~= true then
             return
         end
         -- ObjectPositions owns feature object poses — layout only moves anchors.
@@ -1219,7 +1222,7 @@ local function reconcileObjectPositionsOwnedAfterLayout()
 end
 
 --- @param bundle table from computeSlotFrames
---- @param helpers table|nil `{ skipRoleKeys?: table }`
+--- @param helpers table|nil `{ skipRoleKeys?: table, onlyRoleKeys?: table, skipFigurine?: boolean }`
 function FSL.applyOccupantRigs(bundle, helpers)
     helpers = helpers or {}
     local keepOthers = helpers.keepOtherOccupants == true
@@ -1235,7 +1238,7 @@ function FSL.applyOccupantRigs(bundle, helpers)
             occupied[occ.occupantKey] = true
             local figFrame = packed.frame
             local figObj = findFigurine(occ.occupantKey)
-            if figObj ~= nil then
+            if figObj ~= nil and helpers.skipFigurine ~= true then
                 placeObjectExact(figObj, figFrame.position, figFrame.rotation)
                 if O.isHiddenObject(figObj) then
                     O.restoreObject(figObj, {
@@ -1252,7 +1255,7 @@ function FSL.applyOccupantRigs(bundle, helpers)
                         },
                     })
                 end
-            else
+            elseif figObj == nil then
                 anchors[occ.occupantKey] = {
                     position = { x = figFrame.position.x, y = figFrame.position.y, z = figFrame.position.z },
                     rotation = { x = figFrame.rotation.x, y = figFrame.rotation.y, z = figFrame.rotation.z },

@@ -976,33 +976,53 @@ local function scatterFrameForPcKey(pcKey)
     return nil
 end
 
---- Move one player's figurine, hand, sheets and camera. Other players and NPC figurines stay put.
---- @param pcKey string
-local function applyScatterMovedPc(pcKey)
+local function scatterMovedPcContext(pcKey)
     local found = scatterFrameForPcKey(pcKey)
     if found == nil then
-        return
+        return nil
     end
     local tableA, refFig, center, authoredY = scatterTableARef()
     local poseFrame, rigid = scatterRigidForFrame(found.frame, refFig, center, authoredY)
-    movePcFigurineToScatterPose(found.color, poseFrame)
     local packedSlot = found.slot + (found.groupIndex - 1) * 10
+    return {
+        found = found,
+        tableA = tableA,
+        center = center,
+        poseFrame = poseFrame,
+        rigid = rigid,
+        packedSlot = packedSlot,
+    }
+end
+
+local function applyScatterMovedPcSeat(context, slice)
+    local found = context.found
     local FSL = require("lib.figurine_seat_layout")
-    FSL.applyOccupantRigs({
-        framesBySlot = {
-            [packedSlot] = { frame = poseFrame, rigid = rigid },
-        },
-        occupants = {
-            { occupantKey = found.color, tableSlot = packedSlot },
-        },
-        seatRigidByKey = { [found.color] = rigid },
-        slot1Rigid = rigid,
-        centerPoint = center,
-    }, {
+    local helpers = {
         skipRoleKeys = { SEAT_CHAIR = true },
         keepOtherOccupants = true,
         skipOwnedReconcile = true,
-    })
+    }
+    if slice == "hand" then
+        helpers.onlyRoleKeys = { HAND_ZONE = true }
+        helpers.skipFigurine = true
+    elseif slice == "seat" then
+        helpers.skipRoleKeys.HAND_ZONE = true
+        helpers.skipFigurine = true
+    end
+    FSL.applyOccupantRigs({
+        framesBySlot = {
+            [context.packedSlot] = { frame = context.poseFrame, rigid = context.rigid },
+        },
+        occupants = {
+            { occupantKey = found.color, tableSlot = context.packedSlot },
+        },
+        seatRigidByKey = { [found.color] = context.rigid },
+        slot1Rigid = context.rigid,
+        centerPoint = context.center,
+    }, helpers)
+    if slice == "hand" then
+        return
+    end
     hideChairForOccupant(found.color)
     local skipColors = {}
     for _, c in ipairs(C.PlayerColors or {}) do
@@ -1015,17 +1035,21 @@ local function applyScatterMovedPc(pcKey)
         require("lib.tarot_toggle").reconcileAfterSeatLayout(G.GUIDS.TAROT_BUTTON_PINK)
     end
     require("core.compulsions").reconcileSelectedCardsToAnchors({ onlyColor = found.color })
+end
+
+local function applyScatterMovedPcCamera(context)
+    local found = context.found
     local RSL = require("lib.rotational-seat-layout")
     if type(RSL.applyCameraModesFromComputed) == "function" then
         RSL.applyCameraModesFromComputed({
             referenceSeatKey = found.color,
             referencePlayerColor = found.color,
-            seatRigidByKey = { [found.color] = rigid },
-            slot1Rigid = rigid,
-            centerPoint = center,
-            seatToPositionMap = { [found.color] = packedSlot },
+            seatRigidByKey = { [found.color] = context.rigid },
+            slot1Rigid = context.rigid,
+            centerPoint = context.center,
+            seatToPositionMap = { [found.color] = context.packedSlot },
         }, {
-            tableCfg = tableA,
+            tableCfg = context.tableA,
             keepOtherSeatCameras = true,
         })
     end
@@ -1033,6 +1057,43 @@ local function applyScatterMovedPc(pcKey)
     if type(Main.snapDefaultCamerasAfterLayout) == "function" then
         Main.snapDefaultCamerasAfterLayout(found.color)
     end
+end
+
+--- Move one player's figurine, hand, sheets and camera. Other players and NPC figurines stay put.
+--- @param pcKey string
+local function applyScatterMovedPc(pcKey)
+    local context = scatterMovedPcContext(pcKey)
+    if context == nil then
+        return
+    end
+    movePcFigurineToScatterPose(context.found.color, context.poseFrame)
+    applyScatterMovedPcSeat(context, "all")
+    applyScatterMovedPcCamera(context)
+end
+
+--- Re-apply one current player-pose slice without changing Scatter state.
+--- Explicit debug-only entry used by the scene-stall probe.
+--- @param pcKey string
+--- @param slice string `figurine`, `hand`, `seat`, `camera`, or `all`
+--- @return boolean, string|nil
+function ScatterMode.debugReapplyPcSlice(pcKey, slice)
+    local context = scatterMovedPcContext(pcKey)
+    if context == nil then
+        return false, "No live Scatter placement was found for " .. tostring(pcKey) .. "."
+    end
+    slice = tostring(slice or "all")
+    if slice == "figurine" then
+        movePcFigurineToScatterPose(context.found.color, context.poseFrame)
+    elseif slice == "hand" or slice == "seat" then
+        applyScatterMovedPcSeat(context, slice)
+    elseif slice == "camera" then
+        applyScatterMovedPcCamera(context)
+    elseif slice == "all" then
+        applyScatterMovedPc(pcKey)
+    else
+        return false, "Unknown Scatter player slice: " .. slice
+    end
+    return true, nil
 end
 
 --- Portrait chips for the slot this player left and the slot they took. One viewer's strip per color.

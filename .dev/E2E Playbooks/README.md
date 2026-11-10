@@ -84,6 +84,7 @@ Full rules, layout (100-char banner with spaces around text), **console `print` 
 | [Dice-E2E-Guide.md](Dice-E2E-Guide.md) | Dice E2E reference: helpers, conventions, prerequisites, sign-off |
 | [Multiplayer-Session.md](Multiplayer-Session.md) | **Author** Host + join-client session script (TOR-249 / TOR-144) |
 | [Multiplayer-E2E.md](Multiplayer-E2E.md) | Agent coverage checklist + console probes for multiclient |
+| [Scene-Stall-Isolation.md](Scene-Stall-Isolation.md) | One-at-a-time production-path probes for TOR-769 scene and Scatter hangs |
 
 ## Related docs
 

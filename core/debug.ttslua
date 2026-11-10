@@ -1924,6 +1924,23 @@ function DEBUG.sceneLoadReport()
     return text
 end
 
+--- Re-apply one scene/Scatter slice and report both Lua time and post-return scheduler delay.
+--- This is an explicit diagnostic only; ordinary play never calls it.
+--- @param action string
+--- @param spec table|nil `{ pcKey?: string }`
+--- @return table
+function DEBUG.sceneStallProbe(action, spec)
+    return require("core.scene_stall_probe").run(action, spec)
+end
+
+--- List the accepted `DEBUG.sceneStallProbe` action names.
+--- @return table
+function DEBUG.sceneStallProbeActions()
+    local actions = require("core.scene_stall_probe").actions()
+    print(table.concat(actions, ", "))
+    return actions
+end
+
 --- Print the opt-in NPC preload pool without scheduling or spawning any work.
 --- @return table
 function DEBUG.inspectNpcPreloadPool()
@@ -5996,6 +6013,7 @@ function DEBUG.help()
     print("  DEBUG.pavProbe(kind, spec)     - Bounded UI/state/object/soundscape snapshot")
     print("\nNPC OBJECTS:")
     print("  DEBUG.sceneLoadReport()    - Reprint recent Preload, scene transition, and Scatter group timing")
+    print("  DEBUG.sceneStallProbe(action, spec) - Time one current-state scene/Scatter slice plus post-return heartbeats")
     print("  DEBUG.retirePreloadPools() - One-shot: destroy preload NPCs/lights, d10Preload dice, CB_ board; then File > Save")
     print("  DEBUG.exportObjectsBelowY(yMax?, path?) - Write every object below y (default -75) to .dev/.debug")
     print("\nSPOTLIGHT WORKSHOP:")

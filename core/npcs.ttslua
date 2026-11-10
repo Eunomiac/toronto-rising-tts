@@ -1702,7 +1702,7 @@ end
 --- `started` is `os.clock()` at the beginning of the call. Nil refreshes image state without adding a call.
 --- @param npcName string
 --- @param started number|nil
---- @param fields table|nil `{ action?, reused?, spawned?, reloaded?, parked? }`
+--- @param fields table|nil `{ action?, liveBefore?, created?, reloaded?, parked? }`
 local function noteLoadTraceNpc(npcName, started, fields)
     if not LoadTrace.isRecording() or type(npcName) ~= "string" or npcName == "" then
         return
@@ -1715,12 +1715,13 @@ local function noteLoadTraceNpc(npcName, started, fields)
     end
     local payload = {
         action = fields.action,
-        reused = fields.reused == true,
-        spawned = fields.spawned == true,
+        liveBefore = fields.liveBefore == true or fields.reused == true,
+        created = fields.created == true or fields.spawned == true,
         reloaded = fields.reloaded == true,
         parked = fields.parked == true,
         loading = U.isGameObject(fig) and fig.loading_custom == true,
         spawning = U.isGameObject(fig) and fig.spawning == true,
+        figurineGuid = U.isGameObject(fig) and fig.getGUID() or nil,
         areaKey = U.Type(rec) == "table" and rec.areaKey or "",
         slot = U.Type(rec) == "table" and rec.preloadSlot or nil,
         imageScalar = U.isGameObject(fig) and readFigurineImageScalar(fig) or nil,
