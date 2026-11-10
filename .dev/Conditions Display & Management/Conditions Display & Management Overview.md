@@ -48,7 +48,7 @@ A separate control on the PC tracker popup (near the top right corner; visibly d
   4. `ChangeOfBlood` - `"Until you Feed or Starve."`
   5. `Manual` - No placeholder. If the Storyteller leaves this blank, no duration should be displayed on the player's sheet.
 
-**Displaying General Condition Types:** Six placeholder elements for displaying up to six concurrent Conditions have been added to page 2 of each player's sheet. Conditions should always be displayed in the order they were applied to the player (sorted via `appliedOn`). The XML should be modified as follows:
+**Displaying General Condition Types:** Eight placeholder elements for displaying up to eight concurrent Conditions are on page 2 of each player's sheet. Conditions are displayed in the order they were applied (sorted via `appliedOn`). Title and subtitle use a text color of `white`, `gold`, or `red`. The card is filled as follows:
   - The `id="condition_container_<index>"` element should be activated
   - The `image` attribute of the `id="condition_container_<index>_background"` element should be set according to `displayType`:
     - `theBeast` = `bg_condition_theBeast`
@@ -70,7 +70,7 @@ Read this when:
 Source of truth:
 - `playerData[playerId].personalConditions` (`lib/personal_conditions.ttslua`, `core/personal_conditions.ttslua`)
 - `playerData[playerId].conditions` stays the mechanic map. A card's optional `condition` turns that mechanic on, and removing the card turns it off only when that card turned it on.
-- Resonance and an optional dyscrasia share one card (`displayType = "resonance"`). Page 2 uses the other cards, six on the sheet at a time.
+- Resonance and an optional dyscrasia share one card (`displayType = "resonance"`). Page 2 uses the other cards, eight on the sheet at a time. Title and subtitle take `textColor` `white`, `gold`, or `red`.
 - A calendar removal is stored as `Clock:YYYY-MM-DD`. Dusk is Toronto sunset on that date.
 
 Verification:

@@ -12,7 +12,19 @@ PC.RESONANCE_TYPES = {
   "Choleric", "Melancholic", "Phlegmatic", "Sanguine", "Primal", "Ischemic", "Mercurial",
 }
 PC.SHEET_TYPES = { "theBeast", "debilitation", "general" }
-PC.SHEET_SLOT_COUNT = 6
+PC.TEXT_COLORS = { "white", "gold", "red" }
+PC.SHEET_SLOT_COUNT = 8
+
+local SAMPLE_IMAGES = {
+  "bg_condition_general",
+  "bg_condition_debilitation",
+  "bg_condition_theBeast",
+  "bg_condition_general",
+  "bg_condition_debilitation",
+  "bg_condition_theBeast",
+  "bg_condition_general",
+  "bg_condition_debilitation",
+}
 
 local MONTHS = {
   "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec",
@@ -67,6 +79,42 @@ end
 
 function PC.isSheetType(value)
   return oneOf(value, PC.SHEET_TYPES)
+end
+
+--- Title and subtitle color class (`text_white`, `text_gold`, `text_red`). Unknown values read as white.
+--- @param value string|nil
+--- @return string
+function PC.normalizeTextColor(value)
+  if oneOf(value, PC.TEXT_COLORS) then
+    return value
+  end
+  return "white"
+end
+
+--- What one page 2 slot shows. An empty slot keeps a sample so the placed card stays visible.
+--- @param slot number
+--- @param card table|nil
+--- @return table
+function PC.slotPresentation(slot, card)
+  local n = tostring(slot)
+  if type(card) == "table" then
+    return {
+      image = PC.backgroundImage(card.displayType),
+      textColor = PC.normalizeTextColor(card.textColor),
+      title = tostring(card.title or ""),
+      subtitle = tostring(card.subtitle or ""),
+      description = tostring(card.description or ""),
+      duration = tostring(card.duration or ""),
+    }
+  end
+  return {
+    image = SAMPLE_IMAGES[slot] or "bg_condition_general",
+    textColor = "white",
+    title = "Condition " .. n .. " Title",
+    subtitle = "Condition " .. n .. " Sub Title",
+    description = "Condition " .. n .. " Description",
+    duration = "Condition " .. n .. " Duration",
+  }
 end
 
 --- @param clock table|nil
@@ -442,38 +490,28 @@ function PC.sheetUpdates(pageNum, list)
     return updates
   end
   local cards = PC.sheetCards(list)
-  local sampleImages = {
-    "bg_condition_general",
-    "bg_condition_debilitation",
-    "bg_condition_theBeast",
-    "bg_condition_general",
-    "bg_condition_debilitation",
-    "bg_condition_theBeast",
-  }
   for slot = 1, PC.SHEET_SLOT_COUNT do
-    local card = cards[slot]
+    local shown = PC.slotPresentation(slot, cards[slot])
     local prefix = "condition_container_" .. tostring(slot)
-    local shown = type(card) == "table"
-    local n = tostring(slot)
     updates[#updates + 1] = {
       id = prefix .. "_background",
-      attributes = { image = shown and PC.backgroundImage(card.displayType) or sampleImages[slot] },
+      attributes = { image = shown.image },
     }
     updates[#updates + 1] = {
       id = prefix .. "_title",
-      attributes = { text = shown and tostring(card.title or "") or ("Condition " .. n .. " Title") },
+      attributes = { text = shown.title },
     }
     updates[#updates + 1] = {
       id = prefix .. "_sub_title",
-      attributes = { text = shown and tostring(card.subtitle or "") or ("Condition " .. n .. " Sub Title") },
+      attributes = { text = shown.subtitle },
     }
     updates[#updates + 1] = {
       id = prefix .. "_description",
-      attributes = { text = shown and tostring(card.description or "") or ("Condition " .. n .. " Description") },
+      attributes = { text = shown.description },
     }
     updates[#updates + 1] = {
       id = prefix .. "_duration",
-      attributes = { text = shown and tostring(card.duration or "") or ("Condition " .. n .. " Duration") },
+      attributes = { text = shown.duration },
     }
   end
   return updates

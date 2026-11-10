@@ -197,6 +197,7 @@ function P.seatView(pid)
         title = card.title or "",
         subtitle = card.subtitle or "",
         displayType = card.displayType,
+        textColor = PC.normalizeTextColor(card.textColor),
         displayOnSheet = card.displayOnSheet ~= false,
         removalTrigger = card.removalTrigger,
         triggerLabel = PC.triggerLabel(card.removalTrigger),
@@ -347,7 +348,7 @@ function P.addCard(color, fields)
   local onSheet = fields.displayOnSheet ~= false
   local list = readList(pid)
   if onSheet and PC.sheetSlotCount(list) >= PC.SHEET_SLOT_COUNT then
-    return "The sheet already has six conditions. Remove one before adding another."
+      return "The sheet already has eight conditions. Remove one before adding another."
   end
   local conditionId = fields.condition
   local owns = false
@@ -376,6 +377,7 @@ function P.addCard(color, fields)
     appliedOn = PC.clockStamp(S.getStateVal("presentDayClock")),
     displayOnSheet = onSheet,
     displayType = displayType,
+    textColor = PC.normalizeTextColor(fields.textColor),
     removalTrigger = trigger,
     title = text(fields.title, 80),
     subtitle = text(fields.subtitle, 80),

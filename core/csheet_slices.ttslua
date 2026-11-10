@@ -6,7 +6,8 @@
 
     Each slice covers everything that page (and its decals) reads:
       [1] / [2]  stats (minus hunger, badges and the page-3 trait lists), conditions, resolved
-                 statChanges (includes scene-hosted conditions), seat color, desire, current XP
+                 statChanges (includes scene-hosted conditions), seat color, desire, current XP,
+                 personalConditions (page 1 resonance and dyscrasia, page 2 cards)
       [3]        backgrounds / merits / flaws + project stake quantity per entry
       [4]        relationship entries linked to the character
       [5]        Projects.fingerprintPage5 (already covers present-day dates)
@@ -113,6 +114,7 @@ function CSL.compute(color)
         fp(require("lib.effective_stats").forPlayer(pid).statChanges, nil),
         tostring(pd.desire),
         tostring(XpLog.getCurrentXp(pid)),
+        fp(pd.personalConditions, nil),
     }, "\1")
 
     local charKey = require("core.projects").charKeyForColor(color)

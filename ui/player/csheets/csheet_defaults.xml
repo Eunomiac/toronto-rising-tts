@@ -15,9 +15,7 @@
   <Image class="box" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
   <Image class="box_standard" height="80" width="80" />
 
-  <Panel class="page_raised page_top"
-    active = "false"
-  />
+  <Panel class="page_raised page_top" />
 
   <Panel class="dyscrasia_container"
     ignoreLayout="true" position="-1250 -550 0" pivot="0.5 0.5" width="900" height="608" offsetXY="80 -400"

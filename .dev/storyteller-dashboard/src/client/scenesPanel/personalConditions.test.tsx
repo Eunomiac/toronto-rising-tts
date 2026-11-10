@@ -106,9 +106,9 @@ describe("seat condition controls", () => {
     }));
   });
 
-  it("will not add a seventh condition onto the sheet", async () => {
+  it("will not add a ninth condition onto the sheet", async () => {
     const user = userEvent.setup();
-    const cards = Array.from({ length: 6 }, (_, index) => ({
+    const cards = Array.from({ length: 8 }, (_, index) => ({
       id: `pc-${index}`,
       title: `Card ${index}`,
       displayType: "general",
@@ -120,7 +120,7 @@ describe("seat condition controls", () => {
     await user.click(screen.getByText("Aishe"));
     await user.click(screen.getByRole("button", { name: "Condition" }));
     expect(screen.getByRole("button", { name: "Add condition" })).toBeDisabled();
-    expect(screen.getByText(/already has six conditions/)).toBeTruthy();
+    expect(screen.getByText(/already has eight conditions/)).toBeTruthy();
   });
 });
 

@@ -39,7 +39,7 @@ local list = {
     dyscrasiaDescription = "It clots.",
   }),
 }
-assert(#PC.sheetCards(list) == 2, "hidden and resonance stay off the six slots")
+assert(#PC.sheetCards(list) == 2, "hidden and resonance stay off the eight slots")
 assert(PC.sheetCards(list)[1].id == "early", "older card fills the first slot")
 assert(PC.sheetSlotCount(list) == 2, "slot count")
 
@@ -64,6 +64,7 @@ assert(attr(page2, "condition_container_1_title", "text") == "Early", "first tit
 assert(attr(page2, "condition_container_2_background", "image") == "bg_condition_general", "second background")
 assert(attr(page2, "condition_container_3_background", "image") == "bg_condition_theBeast", "empty slot keeps a sample image")
 assert(attr(page2, "condition_container_6_duration", "text") == "Condition 6 Duration", "empty slot keeps sample text")
+assert(attr(page2, "condition_container_8_title", "text") == "Condition 8 Title", "eighth slot keeps sample text")
 
 local scene = { card({ removalTrigger = "EndOfScene" }) }
 assert(PC.markSceneLeave(scene, 1) == true, "scene leave marks the card")

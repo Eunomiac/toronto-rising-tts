@@ -10,6 +10,7 @@ local M = {}
 
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
 local PSC = require("lib.pc_sheet_collect")
+local PC = require("lib.personal_conditions")
 local TPL = require("lib.ui_xml_template")
 TPL.registerPack(require("lib.ui_xml_templates_csheet_page2"))
 
@@ -273,21 +274,18 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
   end
 
   -- paper_root must not also use padded_border — that class's padding would override page_root padding.
+  local sheetCards = PC.sheetCards(type(_pd) == "table" and _pd.personalConditions or nil)
   local conditionCards = {}
-  local conditionOffsets = { "40 -30", "790 -30", "40 -400", "790 -400", "40 -770", "790 -770" }
-  local conditionImages = {
-    "bg_condition_general",
-    "bg_condition_debilitation",
-    "bg_condition_theBeast",
-    "bg_condition_general",
-    "bg_condition_debilitation",
-    "bg_condition_theBeast",
-  }
-  for slot = 1, 6 do
+  for slot = 1, PC.SHEET_SLOT_COUNT do
+    local shown = PC.slotPresentation(slot, sheetCards[slot])
     conditionCards[slot] = TPL.apply(TEMPLATE_CONDITION_CARD, {
       SLOT = tostring(slot),
-      OFFSET = conditionOffsets[slot],
-      IMAGE = conditionImages[slot],
+      IMAGE = shown.image,
+      TEXTCOLOR = shown.textColor,
+      TITLE = shown.title,
+      SUBTITLE = shown.subtitle,
+      DESCRIPTION = shown.description,
+      DURATION = shown.duration,
     })
   end
   local pageParams = {
@@ -334,8 +332,10 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
 end
 
 --- @param stats table|nil
+--- @param _seatColorRaw string|nil
+--- @param pd table|nil
 --- @return string
-function M.fingerprintPage2Stats(stats)
+function M.fingerprintPage2Stats(stats, _seatColorRaw, pd)
   if type(stats) ~= "table" then
     return ""
   end
@@ -365,6 +365,19 @@ function M.fingerprintPage2Stats(stats)
   end
   fpList("R", rituals)
   fpList("C", ceremonies)
+  local cards = PC.sheetCards(type(pd) == "table" and pd.personalConditions or nil)
+  for i = 1, #cards do
+    local card = cards[i]
+    parts[#parts + 1] = table.concat({
+      tostring(card.id or ""),
+      tostring(card.displayType or ""),
+      PC.normalizeTextColor(card.textColor),
+      tostring(card.title or ""),
+      tostring(card.subtitle or ""),
+      tostring(card.description or ""),
+      tostring(card.duration or ""),
+    }, "|")
+  end
   return table.concat(parts, "\3")
 end
 

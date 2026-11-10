@@ -41,6 +41,9 @@
   <Text class="condition_container_sub_title" width = "700" fontSize="24" fontStyle="Bold" color="#F0E2C4" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -60" />
   <Text class="condition_container_description" width = "600" fontStyle="Bold" fontSize="24" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperLeft" offsetXY="0 -85" />
   <Text class="condition_container_duration" width="600" fontSize="24" fontStyle="BoldAndItalic" color="#F0E2C4" outline="#000000" outlineSize="1 1" alignment="LowerLeft" offsetXY="80 16" />
+  <Text class="text_white" color="#FFFFFF" />
+  <Text class="text_gold" color="#F0E2C4" />
+  <Text class="text_red" color="#CC3333" />
 </Defaults>
 
 <Panel id="paper_root" class="page_root">

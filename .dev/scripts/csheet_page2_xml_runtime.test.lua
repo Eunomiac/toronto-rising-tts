@@ -95,14 +95,53 @@ end)
 assert(ok == false, "seven disciplines should be refused")
 assert(tostring(err):find("at most 6", 1, true) ~= nil, "seven-discipline error should name the limit")
 
-for slot = 1, 6 do
+for slot = 1, 8 do
   assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '"', "conditions")
   assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '_duration"', "conditions")
+  assertHas(disciplinesOnly, 'class="condition_container condition_slot_' .. slot .. '"', "conditions")
   assertHas(disciplinesOnly, 'Condition ' .. slot .. ' Title', "conditions")
+  assertHas(disciplinesOnly, 'class="condition_container_title text_white"', "conditions")
 end
+assertLacks(disciplinesOnly, "@@TITLE@@", "conditions")
 assertHas(disciplinesOnly, 'image="bg_condition_general"', "conditions")
 assertHas(disciplinesOnly, 'image="bg_condition_debilitation"', "conditions")
 assertHas(disciplinesOnly, 'image="bg_condition_theBeast"', "conditions")
 assertHas(disciplinesOnly, 'width="700"', "conditions")
+
+local withCard = Page2.buildPage2DocumentXml({
+  disciplines = {
+    animalism = { base = 1, temp = 0, powers = {} },
+  },
+}, nil, {
+  personalConditions = {
+    {
+      id = "pc-1",
+      seq = 1,
+      appliedOn = "2026-09-04T20:00",
+      displayOnSheet = true,
+      displayType = "theBeast",
+      textColor = "gold",
+      title = "Beast & Bone",
+      subtitle = "The hunt",
+      description = "It watches.",
+      duration = "Until dawn",
+    },
+  },
+})
+assertHas(withCard, 'class="condition_container_title text_gold"', "filled card")
+assertHas(withCard, 'text="Beast &amp; Bone"', "filled card")
+assertHas(withCard, 'image="bg_condition_theBeast"', "filled card")
+assertHas(withCard, "Condition 2 Title", "filled card")
+local whitePrint = Page2.fingerprintPage2Stats({ disciplines = {} }, nil, {
+  personalConditions = {
+    { id = "pc-1", seq = 1, appliedOn = "1", displayOnSheet = true, displayType = "general", textColor = "white", title = "A" },
+  },
+})
+local redPrint = Page2.fingerprintPage2Stats({ disciplines = {} }, nil, {
+  personalConditions = {
+    { id = "pc-1", seq = 1, appliedOn = "1", displayOnSheet = true, displayType = "general", textColor = "red", title = "A" },
+  },
+})
+assert(whitePrint ~= redPrint, "a text color change should rebuild page 2")
 
 print("page 2 template XML ok")

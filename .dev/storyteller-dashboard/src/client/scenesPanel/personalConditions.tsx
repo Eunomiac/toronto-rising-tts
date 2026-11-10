@@ -10,6 +10,11 @@ const SHEET_TYPES = [
   { id: "debilitation", label: "Debilitation" },
   { id: "general", label: "General" }
 ] as const;
+const TEXT_COLORS = [
+  { id: "white", label: "White" },
+  { id: "gold", label: "Gold" },
+  { id: "red", label: "Red" }
+] as const;
 
 type Kind = "EndOfScene" | "EndOfSession" | "Clock" | "ChangeOfBlood" | "Manual";
 
@@ -165,13 +170,14 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
   const [subtitle, setSubtitle] = useState("");
   const [description, setDescription] = useState("");
   const [displayType, setDisplayType] = useState<(typeof SHEET_TYPES)[number]["id"]>("general");
+  const [textColor, setTextColor] = useState<(typeof TEXT_COLORS)[number]["id"]>("white");
   const [onSheet, setOnSheet] = useState(true);
   const [condition, setCondition] = useState("");
   const trigger = useTrigger(sessionNum);
   const resonance = seat.personalResonance;
   const cards = Array.isArray(seat.personalCards) ? seat.personalCards : [];
   const shown = cards.filter((card) => card.displayOnSheet).length;
-  const sheetFull = onSheet && shown >= 6;
+  const sheetFull = onSheet && shown >= 8;
   const bloodBlocked = trigger.kind === "ChangeOfBlood" && seat.hunger >= 5;
 
   const pickResonance = (temperament: string, resonanceType: string): void => {
@@ -193,6 +199,7 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
       condition: condition === "" ? undefined : condition,
       displayOnSheet: onSheet,
       displayType,
+      textColor,
       kind: trigger.kind,
       session: trigger.session,
       year: trigger.year,
@@ -267,6 +274,12 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
                   {SHEET_TYPES.map((row) => <option key={row.id} value={row.id}>{row.label}</option>)}
                 </select>
               </label>
+              <label className="pc-cond-field">
+                Text color
+                <select value={textColor} onChange={(event) => setTextColor(event.target.value as typeof textColor)}>
+                  {TEXT_COLORS.map((row) => <option key={row.id} value={row.id}>{row.label}</option>)}
+                </select>
+              </label>
               <label className="pc-cond-check">
                 <input type="checkbox" checked={onSheet} onChange={(event) => setOnSheet(event.target.checked)} />
                 Show on the sheet
@@ -287,7 +300,7 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
                 onDay={trigger.setDay}
                 onDuration={trigger.setDuration}
               />
-              {sheetFull && <p className="pc-cond-note">The sheet already has six conditions. Remove one, or leave this one off the sheet.</p>}
+              {sheetFull && <p className="pc-cond-note">The sheet already has eight conditions. Remove one, or leave this one off the sheet.</p>}
               <button type="submit" className="lab-btn" disabled={sheetFull || bloodBlocked}>Add condition</button>
               <ul className="pc-cond-list">
                 {cards.map((card) => (
