@@ -38,13 +38,13 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-10-08: inbox capture was empty. Author-confirmed and cleared: TOR-666 (Trace Sync nested costs), TOR-638 (Willpower reroll restores bumped dice), TOR-639 (Normal bag hidden during Rouse), TOR-664 (hunger smoke crash), TOR-665 (Willpower reroll highlights), TOR-673 (blue glow brightens under the cursor), TOR-526 (quick Rouse result readable for a second), TOR-640 (seat-role offset dump). Immediate follow-ups shipped in this pass: TOR-674 (left-click Rouse results use the short broadcast) and TOR-663 (Refresh XML keeps The Court on the right audience). No session-blocking unstarted bugs, so the stack stays empty until you pick the next items; proposals below the table). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-11-09: TOR-769 is the urgent game-night incident after a heavy Elysium transition stalled for about 100 seconds and disconnected all five joined clients. TOR-770 shipped the isolation harness and removed the confirmed triple Scatter-entry layout, but TOR-769 stays open until the root operation is identified and a repeated heavy transition keeps clients connected). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
 
 _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred from the top** because it depends on your ability to get other people to test; the Focus stack should stay to items you can do solo.
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| — | _(empty — waiting on your pick)_ | |
+| 1 | **TOR-769 — Heavy scene transition hangs and disconnects every joined client** | Run the TOR-770 probes, identify the first delayed heartbeat, then fix and repeat the Elysium multiclient transition. |
 
 **Proposed next (not promoted):** **TOR-81** (centralize light modes — also unblocks **TOR-320** / **TOR-321**), **TOR-301** (prune legacy seat layout generator, already In Progress), **TOR-466** (remove production onSave dumps).
 
