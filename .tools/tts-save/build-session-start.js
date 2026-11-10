@@ -10,8 +10,12 @@ const { loadCloudConfig, assertTtsClosed } = require("../tts-cloud/lib/cloud_con
 const { backupSaveBeforeWrite, findExistingConfig, writeAtomic } = require("../custom-ui-assets/lib/custom-ui-assets-save.js");
 const { expandXmlFile } = require("../../.dev/scripts/embed_ui_global_xml_docs.js");
 const { escapeLuaString } = require("../../.dev/scripts/lib/skyboxes_sheet_csv.js");
-const { planSessionStart, assertReviewResolved } = require("./session-start-assets.js");
+const { planSessionStart, assertReviewResolved, scanAssetUrls } = require("./session-start-assets.js");
 const { loadReview } = require("./session-start-review.js");
+const { inventory } = require("./export-join-assets.js");
+const { selectPendingReviewRows, buildReviewRow } = require("./review-sheet-rows.js");
+const { appendReviewRows } = require("./review-sheet-write.js");
+const { ugcMatchKey } = require("../tts-cloud/lib/cloud_index.js");
 const { readManifest } = require("../cloud-asset-sync.js");
 const { assertStageBlock } = require("./stage-geometry.js");
 
@@ -124,6 +128,40 @@ function bundleGlobal(objects) {
   return bundleString(entry, { rootModuleName: "__root", resolveModule });
 }
 
+const urlKey = (url) => ugcMatchKey(url) ?? url;
+
+async function publishPendingReview(plan, review, dryRun) {
+  const { assetsDir } = loadCloudConfig();
+  const ledgerPath = path.join(assetsDir, ".cloud-ledger.json");
+  const ledger = fs.existsSync(ledgerPath) ? JSON.parse(fs.readFileSync(ledgerPath, "utf8")) : { files: {} };
+  const rows = inventory(plan.source, readManifest(), ledger, (file) => fs.existsSync(path.join(assetsDir, file)));
+  const skyKey = plan.report.retainedSkybox ? urlKey(plan.report.retainedSkybox) : null;
+  const skyRefs = skyKey ? (scanAssetUrls(plan.source).get(skyKey) ?? []) : [];
+  const skip = plan.report.inheritedDecisions.map((item) => urlKey(item.url));
+  if (skyKey && skyRefs.every((ref) => ref.path.length === 1 && ref.path[0] === "SkyURL")) skip.push(skyKey);
+  const pending = selectPendingReviewRows(rows, review.csv, skip);
+  if (pending.length !== plan.report.unreviewedUrls) {
+    throw new Error(`Review sheet selection found ${pending.length} assets but the session-start report has ${plan.report.unreviewedUrls} without a decision.`);
+  }
+  if (!pending.length) {
+    console.log("Every current asset URL already has a review row.");
+    return;
+  }
+  const names = pending.map((row) => row[12] || row[0]);
+  if (dryRun) {
+    console.log(`Would add ${pending.length} assets that need a decision to Integrated assets.`);
+    return;
+  }
+  const result = await appendReviewRows(pending.map(buildReviewRow));
+  if (!result.configured) {
+    console.warn(`[session-start] ${pending.length} assets need a decision and were not added to Integrated assets. Deploy .tools/tts-save/asset-review-apps-script/Code.gs and set ASSET_REVIEW_WRITE_URL and ASSET_REVIEW_WRITE_SECRET in .dev/storyteller-dashboard/.env.`);
+    for (const name of names.slice(0, 8)) console.warn(`  ${name}`);
+    if (names.length > 8) console.warn(`  … and ${names.length - 8} more`);
+    return;
+  }
+  console.log(`Added ${result.appended} assets that need a decision to Integrated assets, starting at row ${result.startRow}.`);
+}
+
 function fullOptions() {
   const { saveFile: source, savesDir } = loadCloudConfig();
   const output = path.join(savesDir, "TS_Save_9001.json");
@@ -196,6 +234,7 @@ async function main() {
   console.log(`${values["dry-run"] ? "Would remove" : "Removed"} ${report.pruned.length} reviewed bundle URLs from the session-start save (${plan.objects.length} objects); these will load during staged onboarding.`);
   console.log(`Known download size of those bundles: ${report.deferredKnownBytes.toLocaleString("en-CA")} bytes; ${report.deferredUnknownSizes} URLs have an unknown size.`);
   if (!replace && report.forcePurgedReferences) console.log(`ForcePurge ${values["dry-run"] ? "would remove" : "removed"} ${report.forcePurgedReferences} URL references and ${report.forcePurgedRegistrations} registrations${values["dry-run"] ? "" : " from the output copy"}.`);
+  if (!preflight && !values.decisions && review.fetchedAt) await publishPendingReview(plan, review, values["dry-run"] === true);
   if (report.retainedSkybox) console.log("Kept the active skybox automatically (SkyURL).");
   if (report.inheritedDecisions.length) console.log(`Reused existing decisions for ${report.inheritedDecisions.length} replaced Cloud asset(s) at the same job paths.`);
   console.log(`Left ${report.purge.length} Purge and ${report.investigate.length} Investigate decisions for dependency review, plus ${report.unreviewedUrls} current URLs without a decision.`);

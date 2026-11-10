@@ -49,7 +49,8 @@ async function fetchReview(fetchImpl = fetch) {
 
 async function loadReview({ decisionsFile, snapshotFile, preflight = false }, fetchImpl = fetch) {
   if (decisionsFile) {
-    return { decisions: readDecisions(fs.readFileSync(decisionsFile, "utf8")), source: decisionsFile, fetchedAt: null };
+    const csv = fs.readFileSync(decisionsFile, "utf8");
+    return { decisions: readDecisions(csv), source: decisionsFile, fetchedAt: null, csv };
   }
   let review;
   if (snapshotFile && !preflight) {
@@ -59,7 +60,7 @@ async function loadReview({ decisionsFile, snapshotFile, preflight = false }, fe
     review = await fetchReview(fetchImpl);
     if (snapshotFile) fs.writeFileSync(snapshotFile, JSON.stringify(review.snapshot), { flag: "wx" });
   }
-  return { decisions: review.decisions, source: review.snapshot.source, fetchedAt: review.snapshot.fetchedAt };
+  return { decisions: review.decisions, source: review.snapshot.source, fetchedAt: review.snapshot.fetchedAt, csv: review.snapshot.csv };
 }
 
 module.exports = { REVIEW_URL, fetchReview, loadReview };
