@@ -15,17 +15,6 @@ PC.SHEET_TYPES = { "theBeast", "debilitation", "general" }
 PC.TEXT_COLORS = { "white", "gold", "red" }
 PC.SHEET_SLOT_COUNT = 8
 
-local SAMPLE_IMAGES = {
-  "bg_condition_general",
-  "bg_condition_debilitation",
-  "bg_condition_theBeast",
-  "bg_condition_general",
-  "bg_condition_debilitation",
-  "bg_condition_theBeast",
-  "bg_condition_general",
-  "bg_condition_debilitation",
-}
-
 local MONTHS = {
   "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec",
 }
@@ -91,29 +80,17 @@ function PC.normalizeTextColor(value)
   return "white"
 end
 
---- What one page 2 slot shows. An empty slot keeps a sample so the placed card stays visible.
---- @param slot number
---- @param card table|nil
+--- What one filled page 2 slot shows. Empty slots are not built.
+--- @param card table
 --- @return table
-function PC.slotPresentation(slot, card)
-  local n = tostring(slot)
-  if type(card) == "table" then
-    return {
-      image = PC.backgroundImage(card.displayType),
-      textColor = PC.normalizeTextColor(card.textColor),
-      title = tostring(card.title or ""),
-      subtitle = tostring(card.subtitle or ""),
-      description = tostring(card.description or ""),
-      duration = tostring(card.duration or ""),
-    }
-  end
+function PC.slotPresentation(card)
   return {
-    image = SAMPLE_IMAGES[slot] or "bg_condition_general",
-    textColor = "white",
-    title = "Condition " .. n .. " Title",
-    subtitle = "Condition " .. n .. " Sub Title",
-    description = "Condition " .. n .. " Description",
-    duration = "Condition " .. n .. " Duration",
+    image = PC.backgroundImage(card.displayType),
+    textColor = PC.normalizeTextColor(card.textColor),
+    title = tostring(card.title or ""),
+    subtitle = tostring(card.subtitle or ""),
+    description = tostring(card.description or ""),
+    duration = tostring(card.duration or ""),
   }
 end
 
@@ -490,8 +467,8 @@ function PC.sheetUpdates(pageNum, list)
     return updates
   end
   local cards = PC.sheetCards(list)
-  for slot = 1, PC.SHEET_SLOT_COUNT do
-    local shown = PC.slotPresentation(slot, cards[slot])
+  for slot = 1, #cards do
+    local shown = PC.slotPresentation(cards[slot])
     local prefix = "condition_container_" .. tostring(slot)
     updates[#updates + 1] = {
       id = prefix .. "_background",

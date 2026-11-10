@@ -62,9 +62,7 @@ assert(attr(PC.sheetUpdates(1, list), "resonance_tag", "image") == "resonance_ac
 local page2 = PC.sheetUpdates(2, list)
 assert(attr(page2, "condition_container_1_title", "text") == "Early", "first title")
 assert(attr(page2, "condition_container_2_background", "image") == "bg_condition_general", "second background")
-assert(attr(page2, "condition_container_3_background", "image") == "bg_condition_theBeast", "empty slot keeps a sample image")
-assert(attr(page2, "condition_container_6_duration", "text") == "Condition 6 Duration", "empty slot keeps sample text")
-assert(attr(page2, "condition_container_8_title", "text") == "Condition 8 Title", "eighth slot keeps sample text")
+assert(attr(page2, "condition_container_3_background", "image") == nil, "an empty slot is not drawn")
 
 local scene = { card({ removalTrigger = "EndOfScene" }) }
 assert(PC.markSceneLeave(scene, 1) == true, "scene leave marks the card")

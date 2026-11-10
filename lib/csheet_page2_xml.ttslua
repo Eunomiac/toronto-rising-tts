@@ -276,8 +276,8 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
   -- paper_root must not also use padded_border — that class's padding would override page_root padding.
   local sheetCards = PC.sheetCards(type(_pd) == "table" and _pd.personalConditions or nil)
   local conditionCards = {}
-  for slot = 1, PC.SHEET_SLOT_COUNT do
-    local shown = PC.slotPresentation(slot, sheetCards[slot])
+  for slot = 1, #sheetCards do
+    local shown = PC.slotPresentation(sheetCards[slot])
     conditionCards[slot] = TPL.apply(TEMPLATE_CONDITION_CARD, {
       SLOT = tostring(slot),
       IMAGE = shown.image,

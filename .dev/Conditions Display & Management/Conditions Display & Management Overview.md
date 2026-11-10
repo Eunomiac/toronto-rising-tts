@@ -48,7 +48,7 @@ A separate control on the PC tracker popup (near the top right corner; visibly d
   4. `ChangeOfBlood` - `"Until you Feed or Starve."`
   5. `Manual` - No placeholder. If the Storyteller leaves this blank, no duration should be displayed on the player's sheet.
 
-**Displaying General Condition Types:** Eight placeholder elements for displaying up to eight concurrent Conditions are on page 2 of each player's sheet. Conditions are displayed in the order they were applied (sorted via `appliedOn`). Title and subtitle use a text color of `white`, `gold`, or `red`. The card is filled as follows:
+**Displaying General Condition Types:** Page 2 can show up to eight conditions, in the order they were applied (sorted via `appliedOn`). A slot with no condition is not on the sheet. Title and subtitle use a text color of `white`, `gold`, or `red`. The card is filled as follows:
   - The `id="condition_container_<index>"` element should be activated
   - The `image` attribute of the `id="condition_container_<index>_background"` element should be set according to `displayType`:
     - `theBeast` = `bg_condition_theBeast`

@@ -95,17 +95,10 @@ end)
 assert(ok == false, "seven disciplines should be refused")
 assert(tostring(err):find("at most 6", 1, true) ~= nil, "seven-discipline error should name the limit")
 
-for slot = 1, 8 do
-  assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '"', "conditions")
-  assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '_duration"', "conditions")
-  assertHas(disciplinesOnly, 'class="condition_container condition_slot_' .. slot .. '"', "conditions")
-  assertHas(disciplinesOnly, 'Condition ' .. slot .. ' Title', "conditions")
-  assertHas(disciplinesOnly, 'class="condition_container_title text_white"', "conditions")
-end
+assertLacks(disciplinesOnly, 'id="condition_container_1"', "conditions")
+assertLacks(disciplinesOnly, "Condition 1 Title", "conditions")
 assertLacks(disciplinesOnly, "@@TITLE@@", "conditions")
-assertHas(disciplinesOnly, 'image="bg_condition_general"', "conditions")
-assertHas(disciplinesOnly, 'image="bg_condition_debilitation"', "conditions")
-assertHas(disciplinesOnly, 'image="bg_condition_theBeast"', "conditions")
+assertHas(disciplinesOnly, 'class="condition_container condition_slot_8"', "conditions")
 assertHas(disciplinesOnly, 'width="700"', "conditions")
 
 local withCard = Page2.buildPage2DocumentXml({
@@ -128,10 +121,12 @@ local withCard = Page2.buildPage2DocumentXml({
     },
   },
 })
+assertHas(withCard, 'id="condition_container_1"', "filled card")
+assertHas(withCard, 'class="condition_container condition_slot_1"', "filled card")
 assertHas(withCard, 'class="condition_container_title text_gold"', "filled card")
 assertHas(withCard, 'text="Beast &amp; Bone"', "filled card")
 assertHas(withCard, 'image="bg_condition_theBeast"', "filled card")
-assertHas(withCard, "Condition 2 Title", "filled card")
+assertLacks(withCard, 'id="condition_container_2"', "filled card")
 local whitePrint = Page2.fingerprintPage2Stats({ disciplines = {} }, nil, {
   personalConditions = {
     { id = "pc-1", seq = 1, appliedOn = "1", displayOnSheet = true, displayType = "general", textColor = "white", title = "A" },
