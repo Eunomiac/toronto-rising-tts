@@ -72,6 +72,14 @@ return line followed by zero-delay and 0.25-second heartbeats. The TEST BED disp
 plain-English order are in [Scene-Stall-Isolation.md](../E2E%20Playbooks/Scene-Stall-Isolation.md).
 The probes are explicit diagnostics and do no recurring work.
 
+The first live isolation pass found the common boundary: the `dashboard` action returned in 1 ms,
+then its 0.25-second heartbeat resumed 37.3 seconds later. The Scatter figurine, hand, remaining
+seat objects, camera, combined player move, and HUD actions did not reproduce that freeze. Follow-up
+actions split the dashboard path into `seats` and `scene`, then into snapshot build, JSON encode, and
+`sendExternalMessage`. Production pushes also print one `[DashPushSlow]` line when any of those
+stages takes at least 250 ms. This narrows the next change without assuming that the bridge send,
+payload encoding, or a particular snapshot builder is responsible.
+
 Scatter entry now has one physical layout owner. `ScatterMode.enter` prepares Scatter state and
 chrome, then `Sync.npcs` reaches reconciler Step Five once. Step Three defers its Scatter table
 layout when Step Five is enabled, so the old enter + seat commit + Step Five triple application is

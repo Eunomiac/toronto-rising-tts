@@ -10,6 +10,7 @@ const probe = read("core/scene_stall_probe.ttslua");
 const debug = read("core/debug.ttslua");
 const scatter = read("core/scatter_mode.ttslua");
 const layout = read("lib/figurine_seat_layout.ttslua");
+const dashboardPush = read("dashboard/push.ttslua");
 
 for (const action of [
   "baseline",
@@ -20,6 +21,12 @@ for (const action of [
   "scatter_camera",
   "scatter_all",
   "scatter_hud",
+  "dashboard_build_seats",
+  "dashboard_encode_seats",
+  "dashboard_send_seats",
+  "dashboard_build_scene",
+  "dashboard_encode_scene",
+  "dashboard_send_scene",
   "dashboard",
   "table",
   "seats",
@@ -39,5 +46,11 @@ assert.match(debug, /function DEBUG\.sceneStallProbe\(/, "DEBUG should expose th
 assert.match(scatter, /function ScatterMode\.debugReapplyPcSlice\(/, "Scatter should expose current-state slices");
 assert.match(layout, /helpers\.onlyRoleKeys/, "seat layout should support a role-only diagnostic slice");
 assert.match(layout, /helpers\.skipFigurine/, "seat layout should isolate satellites from the figurine");
+assert.match(
+  dashboardPush,
+  /function DashPush\.debugMeasureWorldSlice\(/,
+  "dashboard probes should separate world-slice build, encode, and send",
+);
+assert.match(dashboardPush, /\[DashPushSlow\]/, "slow production dashboard flushes should name their expensive stage");
 
 console.log("scene_stall_probe_policy.test.mjs: OK");

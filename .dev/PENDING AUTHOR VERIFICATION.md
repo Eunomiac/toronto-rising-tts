@@ -45,7 +45,7 @@ Nothing comes off the sheet until you confirm it. When a scene ends for that pla
 
 > **Agent-assessment note:** Automated checks cover probe routing, scheduler-drift bookkeeping, and single-owner Scatter entry. Only the live TTS engine can show which heartbeat is delayed by the familiar hang.
 
-**How to verify:** Save & Play. Open `.dev/testbed/TEST BED.ttslua`, select the complete `SceneStallProbe` function, and run **Execute Code** once. Follow [Scene and Scatter Stall Isolation](E2E%20Playbooks/Scene-Stall-Isolation.md), running one commented example at a time. Start with `baseline` and `census`, then run the Scatter or scene slices in order. Each action should print `START`, `RETURN`, `HEARTBEAT 0`, and `HEARTBEAT 250`. Stop after the first heartbeat delayed by the familiar freeze and keep that block plus the one before it. This identifies the next fix; it does not by itself prove TOR-769 (the joined-client disconnect incident) is fixed.
+**How to verify:** Save & Play. Open `.dev/testbed/TEST BED.ttslua`, select the complete `SceneStallProbe` function, and run **Execute Code** once. Follow [Scene and Scatter Stall Isolation](E2E%20Playbooks/Scene-Stall-Isolation.md), running one commented example at a time. The first pass identified `dashboard`; now run the six `dashboard_build_*`, `dashboard_encode_*`, and `dashboard_send_*` actions in the guide. Each action should print `START`, `RETURN`, `HEARTBEAT 0`, and `HEARTBEAT 250`. Stop after the first heartbeat delayed by the familiar freeze and keep that block plus the one before it. This identifies the next fix; it does not by itself prove TOR-769 (the joined-client disconnect incident) is fixed.
 
 #### 🟡 TOR-768 — Assume Connected shows the players at the table on the dashboard
 

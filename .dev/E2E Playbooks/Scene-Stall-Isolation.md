@@ -41,6 +41,20 @@ These actions re-apply that player's current pose. They do not move the player t
 rewrite Scatter membership. Stop after the first action whose heartbeat is delayed by the familiar
 freeze and keep the complete console block.
 
+### If `dashboard` is the first delayed heartbeat
+
+After Save & Play with the follow-up probe actions, run these one at a time:
+
+1. `SceneStallProbe("dashboard_build_seats")`
+2. `SceneStallProbe("dashboard_encode_seats")`
+3. `SceneStallProbe("dashboard_send_seats")`
+4. `SceneStallProbe("dashboard_build_scene")`
+5. `SceneStallProbe("dashboard_encode_scene")`
+6. `SceneStallProbe("dashboard_send_scene")`
+
+The build probe stops before JSON encoding. The encode probe stops before the TTS Tools message.
+The send probe exercises the complete single-slice path. Stop after the first delayed heartbeat.
+
 ## Scene slices
 
 With the heavy Elysium scene already live, run, in order:

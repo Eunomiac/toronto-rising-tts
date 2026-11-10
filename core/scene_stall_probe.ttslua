@@ -111,6 +111,7 @@ local function census()
 end
 
 local function runAction(action, spec)
+    local dashboardMode, dashboardSlice = string.match(action, "^dashboard_([a-z]+)_([a-z]+)$")
     if action == "baseline" then
         return true
     elseif action == "census" then
@@ -129,6 +130,8 @@ local function runAction(action, spec)
     elseif action == "scatter_hud" then
         require("core.scatter_mode").reconcileControlHudFromState()
         return true
+    elseif dashboardMode ~= nil and dashboardSlice ~= nil then
+        return require("dashboard.push").debugMeasureWorldSlice(dashboardSlice, dashboardMode)
     elseif action == "dashboard" then
         require("dashboard.push").markWorldDirty({ seats = true, scene = true })
         return true
@@ -220,6 +223,12 @@ function Probe.actions()
         "scatter_camera",
         "scatter_all",
         "scatter_hud",
+        "dashboard_build_seats",
+        "dashboard_encode_seats",
+        "dashboard_send_seats",
+        "dashboard_build_scene",
+        "dashboard_encode_scene",
+        "dashboard_send_scene",
         "dashboard",
         "table",
         "seats",
