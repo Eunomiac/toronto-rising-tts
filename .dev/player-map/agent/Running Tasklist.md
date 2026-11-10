@@ -89,6 +89,19 @@ interaction path were verified after publication.
 - [ ] Add unit, component, and Playwright coverage for the release path.
 - [ ] Deploy to the selected host and verify the public address on desktop and the supported smaller viewport.
 
+## Map Presentation Backlog — Captured, Not Scheduled
+
+These are promising presentation ideas, not settled implementation requirements.
+Review the visual behavior, performance, accessibility, and data ownership of
+each before moving it into a release phase.
+
+- [ ] Explore blurring or otherwise visually de-emphasizing the basemap outside the established square chronicle setting boundary.
+- [ ] Explore a very distant provincial-scale zoom level where story-relevant cities such as Montreal and Kingston appear as simple point markers rather than detailed playable map areas.
+- [ ] Replace or supplement the selected-district opacity treatment with a less obscuring edge treatment, such as an outline glow that leaves streets and labels readable.
+- [ ] Add a deliberate orientation-street layer with bold white labels for the major east/west streets used to help players locate themselves; review the exact street list before implementation.
+- [ ] Investigate how far the basemap can be fictionally altered, including suppressing building and house outlines inside changed areas such as the comparatively barren Giovanni Estate in Wychwood. Determine whether this belongs in a custom style, a masking layer, or custom replacement geometry.
+- [ ] Guarantee exactly one visible label per District at every zoom level, using dedicated label-point geometry rather than automatic placement from multipart district polygons.
+
 ## Later Features — Not Yet Designed
 
 - [ ] Hunting difficulty and resonance visualization.
