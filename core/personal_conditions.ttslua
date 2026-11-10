@@ -223,16 +223,22 @@ function P.dueRows()
         local card = due[i]
         local title = card.title
         if card.displayType == "resonance" then
-          title = tostring(card.temperament) .. " " .. tostring(card.resonanceType)
+          local temperament = tostring(card.temperament or "")
+          temperament = temperament:gsub("^%l", string.upper)
+          title = temperament .. " " .. tostring(card.resonanceType or "")
+          if type(card.dyscrasiaTitle) == "string" and card.dyscrasiaTitle ~= "" then
+            title = title .. ", " .. card.dyscrasiaTitle
+          end
         end
         rows[#rows + 1] = {
           color = color,
           name = name,
           id = card.id,
           title = title or "Condition",
-          trigger = PC.triggerLabel(card.removalTrigger),
+          trigger = PC.triggerLabel(card.displayType == "resonance" and "ChangeOfBlood" or card.removalTrigger),
           pending = card.pending,
           hunger = tonumber(S.getPlayerVal(color, "hunger")) or 0,
+          fixedEnding = card.displayType == "resonance" or nil,
         }
       end
     end
@@ -279,7 +285,7 @@ function P.setResonance(color, temperament, resonanceType)
     displayOnSheet = false,
     temperament = temperament,
     resonanceType = resonanceType,
-    removalTrigger = "Manual",
+    removalTrigger = "ChangeOfBlood",
     title = "",
     subtitle = "",
     description = "",
@@ -477,6 +483,9 @@ function P.editDue(color, id, fields)
   local card = findCard(list, id)
   if card == nil or type(card.pending) ~= "string" then
     return "That condition is not waiting to be removed."
+  end
+  if card.displayType == "resonance" then
+    return "A resonance ends when Hunger drops or reaches 5. That ending cannot be changed."
   end
   card.removalTrigger = trigger
   local duration = type(fields) == "table" and fields.duration or nil

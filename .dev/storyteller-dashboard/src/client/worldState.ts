@@ -182,6 +182,8 @@ export type PersonalDue = {
   readonly trigger: string;
   readonly pending: string;
   readonly hunger?: number;
+  /** Resonance and its dyscrasia always end on a change of blood, so the ending cannot be edited. */
+  readonly fixedEnding?: boolean;
 };
 
 export const POOL_KINDS = ["normal", "hunger", "rouse", "oblivRouse", "bloodSurgeRouse", "werewolf", "rage"] as const;

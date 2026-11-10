@@ -91,6 +91,21 @@ PC.skipCard(blood[1])
 assert(PC.markHunger(blood, 4, 5) == false, "the same climb does not ask again")
 assert(PC.markHunger(blood, 5, 3) == true, "a later drop asks")
 
+local resonance = {
+  card({
+    displayType = "resonance",
+    temperament = "acutely",
+    resonanceType = "Sanguine",
+    removalTrigger = "Manual",
+    dyscrasiaTitle = "Thin blood",
+  }),
+}
+assert(PC.markSceneLeave(resonance, 1) == false, "a resonance does not end with the scene")
+assert(PC.markHunger(resonance, 3, 2) == true, "a resonance ends when hunger drops")
+assert(resonance[1].pending == "ChangeOfBlood", "resonance pending is a change of blood")
+assert(resonance[1].removalTrigger == "ChangeOfBlood", "resonance stores the change of blood ending")
+assert(PC.markHunger(resonance, 3, 2) == false, "the same hunger change does not ask again")
+
 local session = { card({ removalTrigger = "EndOfSession3" }) }
 assert(PC.markSessionEnd(session, 2) == false, "an earlier session does not ask")
 assert(PC.markSessionEnd(session, 3) == true, "the stored session asks")

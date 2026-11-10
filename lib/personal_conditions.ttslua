@@ -354,7 +354,10 @@ function PC.markHunger(list, oldHunger, newHunger)
   local changed = false
   for i = 1, #list do
     local card = list[i]
-    if type(card) == "table" and card.removalTrigger == "ChangeOfBlood" then
+    if type(card) == "table" and (card.removalTrigger == "ChangeOfBlood" or card.displayType == "resonance") then
+      if card.displayType == "resonance" then
+        card.removalTrigger = "ChangeOfBlood"
+      end
       if mark(card, "ChangeOfBlood", "hungerLatch", key) then
         changed = true
       end

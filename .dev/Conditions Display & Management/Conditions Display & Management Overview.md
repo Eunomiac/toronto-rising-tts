@@ -12,7 +12,7 @@ It should be possible to add Conditions to state `playerData`. Data for Conditio
     2. `EndOfSession<#>` - The ST should be prompted at the beginning of the End phase if the session number matches the `<#>` in the removal trigger. E.g. `EndOfSession4` would prompt the ST to remove the condition at the end of `sessionNum = 4`.
     3. `<timestamp>` - The ST should be prompted at the first opportunity after nightfall on the in-game date given by `<timestamp>`. E.g. `<timestamp gives any time on Sept 4th, 2026>` = Disregard the hour/minute/second on the timestamp, and prompt the ST the first time the present day clock is at or after dusk on Sept 4th 2026
     4. `Manual` - There is no triggered removal prompt. The Storyteller will manage this condition manually, via controls in the Storyteller Dashboard (see below).
-    5. `ChangeOfBlood` - This is really two triggers in one: The ST should be prompted to remove the condition when the player's Hunger either _decreases_ (indicating they have fed), or _reaches Hunger 5_.
+    5. `ChangeOfBlood` - This is really two triggers in one: The ST should be prompted to remove the condition when the player's Hunger either _decreases_ (indicating they have fed), or _reaches Hunger 5_. A resonance and its dyscrasia always use this trigger. They are one card, so the prompt names both and removing it takes both off. That ending cannot be changed.
 - **`title`/`subtitle`/`description`/`duration`**: Strings to populate the Condition display XML when such condition is displayed on the sheet.
 
 ### Displaying Conditions on the Character Sheet
@@ -70,7 +70,7 @@ Read this when:
 Source of truth:
 - `playerData[playerId].personalConditions` (`lib/personal_conditions.ttslua`, `core/personal_conditions.ttslua`)
 - `playerData[playerId].conditions` stays the mechanic map. A card's optional `condition` turns that mechanic on, and removing the card turns it off only when that card turned it on.
-- Resonance and an optional dyscrasia share one card (`displayType = "resonance"`). Page 2 uses the other cards, eight on the sheet at a time. Title and subtitle take `textColor` `white`, `gold`, or `red`.
+- Resonance and an optional dyscrasia share one card (`displayType = "resonance"`). That card's ending is always `ChangeOfBlood`: Hunger dropping, or Hunger reaching 5, asks before both come off together. The ending cannot be changed. Page 2 uses the other cards, eight on the sheet at a time. Title and subtitle take `textColor` `white`, `gold`, or `red`.
 - A calendar removal is stored as `Clock:YYYY-MM-DD`. Dusk is Toronto sunset on that date.
 
 Verification:

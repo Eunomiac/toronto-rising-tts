@@ -378,7 +378,9 @@ export const PersonalDueList = ({ rows, sessionNum, apply }: {
             <p>{row.name}: {row.title} can come off. {row.trigger}.</p>
             <div className="pc-cond-choices">
               <button type="button" className="lab-btn" disabled={color === null} onClick={() => color && apply({ op: "personalDueConfirm", color, id: row.id })}>Remove it</button>
-              <button type="button" className="lab-btn" onClick={() => setEditing(editing === key ? null : key)}>Change the ending</button>
+              {row.fixedEnding !== true && (
+                <button type="button" className="lab-btn" onClick={() => setEditing(editing === key ? null : key)}>Change the ending</button>
+              )}
               <button type="button" className="lab-btn" disabled={color === null} onClick={() => color && apply({ op: "personalDueSkip", color, id: row.id })}>Not yet</button>
             </div>
             {editing === key && <DueEdit row={row} sessionNum={sessionNum} apply={apply} />}

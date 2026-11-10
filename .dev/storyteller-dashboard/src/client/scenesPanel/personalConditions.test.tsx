@@ -140,4 +140,26 @@ describe("conditions ready to remove", () => {
     await user.click(screen.getByRole("button", { name: "Remove it" }));
     expect(apply).toHaveBeenCalledWith({ op: "personalDueConfirm", color: "Pink", id: "pc-1" });
   });
+
+  it("does not offer a new ending for a resonance", () => {
+    render(
+      <PersonalDueList
+        sessionNum={4}
+        apply={vi.fn()}
+        rows={[{
+          color: "Pink",
+          name: "Aishe",
+          id: "pc-2",
+          title: "Acutely Sanguine, Thin blood",
+          trigger: "Hunger drops, or Hunger reaches 5",
+          pending: "ChangeOfBlood",
+          hunger: 2,
+          fixedEnding: true
+        }]}
+      />
+    );
+    expect(screen.queryByRole("button", { name: "Change the ending" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Remove it" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Not yet" })).toBeTruthy();
+  });
 });
