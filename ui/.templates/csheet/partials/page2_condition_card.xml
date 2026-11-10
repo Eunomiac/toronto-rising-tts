@@ -1,7 +1,7 @@
-<Panel id="condition_container_@@SLOT@@" class="condition_container" active="false">
-  <Image id="condition_container_@@SLOT@@_background" class="condition_container_background" image="bg_condition_general" />
-  <Text id="condition_container_@@SLOT@@_title" class="condition_container_title" text="" />
-  <Text id="condition_container_@@SLOT@@_sub_title" class="condition_container_sub_title" text="" />
-  <Text id="condition_container_@@SLOT@@_description" class="condition_container_description" text="" />
-  <Text id="condition_container_@@SLOT@@_duration" class="condition_container_duration" text="" />
+<Panel id="condition_container_@@SLOT@@" class="condition_container" offsetXY="@@OFFSET@@">
+  <Image id="condition_container_@@SLOT@@_background" class="condition_container_background" image="@@IMAGE@@" />
+  <Text id="condition_container_@@SLOT@@_title" class="condition_container_title" text="Condition @@SLOT@@ Title" />
+  <Text id="condition_container_@@SLOT@@_sub_title" class="condition_container_sub_title" text="Condition @@SLOT@@ Sub Title" />
+  <Text id="condition_container_@@SLOT@@_description" class="condition_container_description" text="Condition @@SLOT@@ Description" />
+  <Text id="condition_container_@@SLOT@@_duration" class="condition_container_duration" text="Condition @@SLOT@@ Duration" />
 </Panel>

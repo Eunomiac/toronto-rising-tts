@@ -28,15 +28,19 @@ M._byKey["csheet/page2"] = [=[
   <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="0" />
   <HorizontalLayout class="page2_rc_row" preferredHeight="60" flexibleHeight="0" childForceExpandWidth="false" />
   <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />
+  <Panel class="condition_container" ignoreLayout="true" rectAlignment="UpperLeft" width="700" height="345" />
+  <Image class="condition_container_background" width="700" height="345" preserveAspect="true" raycastTarget="false" />
+  <Text class="condition_container_title" fontSize="32" fontStyle="Bold" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -12" />
+  <Text class="condition_container_sub_title" fontSize="24" color="#F0E2C4" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -52" />
+  <Text class="condition_container_description" fontSize="22" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperLeft" offsetXY="28 -96" />
+  <Text class="condition_container_duration" fontSize="20" fontStyle="Italic" color="#E8E8E8" outline="#000000" outlineSize="1 1" alignment="LowerCenter" offsetXY="0 16" />
 </Defaults>
 
 <Panel id="paper_root" class="page_root">
   <Button id="pageForward" class="page_navigation page_forward" />
   <Button id="pageInner" class="page_navigation page_inner_left" />
 
-  <Panel id="pageRaised" class="page_raised page_top">
 @@CONDITION_CARDS@@
-  </Panel>
 
   <VerticalLayout id="page2_dynamic" class="page2_dynamic">
     <HorizontalLayout id="db_disc_row_1" class="page2_disc_row">
@@ -53,12 +57,12 @@ M._byKey["csheet/page2"] = [=[
 ]=]
 
 M._byKey["csheet/partials/page2_condition_card"] = [=[
-<Panel id="condition_container_@@SLOT@@" class="condition_container" active="false">
-  <Image id="condition_container_@@SLOT@@_background" class="condition_container_background" image="bg_condition_general" />
-  <Text id="condition_container_@@SLOT@@_title" class="condition_container_title" text="" />
-  <Text id="condition_container_@@SLOT@@_sub_title" class="condition_container_sub_title" text="" />
-  <Text id="condition_container_@@SLOT@@_description" class="condition_container_description" text="" />
-  <Text id="condition_container_@@SLOT@@_duration" class="condition_container_duration" text="" />
+<Panel id="condition_container_@@SLOT@@" class="condition_container" offsetXY="@@OFFSET@@">
+  <Image id="condition_container_@@SLOT@@_background" class="condition_container_background" image="@@IMAGE@@" />
+  <Text id="condition_container_@@SLOT@@_title" class="condition_container_title" text="Condition @@SLOT@@ Title" />
+  <Text id="condition_container_@@SLOT@@_sub_title" class="condition_container_sub_title" text="Condition @@SLOT@@ Sub Title" />
+  <Text id="condition_container_@@SLOT@@_description" class="condition_container_description" text="Condition @@SLOT@@ Description" />
+  <Text id="condition_container_@@SLOT@@_duration" class="condition_container_duration" text="Condition @@SLOT@@ Duration" />
 </Panel>
 ]=]
 

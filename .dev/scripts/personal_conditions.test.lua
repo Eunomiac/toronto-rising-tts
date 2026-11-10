@@ -52,20 +52,18 @@ local function attr(updates, id, key)
   end
   return nil
 end
-assert(attr(page1, "resonance_container", "active") == "true", "resonance on")
 assert(attr(page1, "resonance_tag", "image") == "resonance_acutelySanguine", "resonance art")
-assert(attr(page1, "dyscrasia_container", "active") == "true", "dyscrasia on")
 assert(attr(page1, "dyscrasia_title", "text") == "Thin blood", "dyscrasia title")
 
 list[4].dyscrasiaTitle = ""
-assert(attr(PC.sheetUpdates(1, list), "dyscrasia_container", "active") == "false", "blank dyscrasia stays off")
+assert(attr(PC.sheetUpdates(1, list), "dyscrasia_title", "text") == "Dyscrasia Title", "blank dyscrasia keeps the sample title")
+assert(attr(PC.sheetUpdates(1, list), "resonance_tag", "image") == "resonance_acutelySanguine", "resonance art stays")
 
 local page2 = PC.sheetUpdates(2, list)
-assert(attr(page2, "condition_container_1", "active") == "true", "first slot on")
 assert(attr(page2, "condition_container_1_title", "text") == "Early", "first title")
 assert(attr(page2, "condition_container_2_background", "image") == "bg_condition_general", "second background")
-assert(attr(page2, "condition_container_3", "active") == "false", "empty slot off")
-assert(attr(page2, "condition_container_6_duration", "text") == "", "empty duration")
+assert(attr(page2, "condition_container_3_background", "image") == "bg_condition_theBeast", "empty slot keeps a sample image")
+assert(attr(page2, "condition_container_6_duration", "text") == "Condition 6 Duration", "empty slot keeps sample text")
 
 local scene = { card({ removalTrigger = "EndOfScene" }) }
 assert(PC.markSceneLeave(scene, 1) == true, "scene leave marks the card")

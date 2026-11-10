@@ -274,8 +274,21 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
 
   -- paper_root must not also use padded_border — that class's padding would override page_root padding.
   local conditionCards = {}
+  local conditionOffsets = { "40 -30", "790 -30", "40 -400", "790 -400", "40 -770", "790 -770" }
+  local conditionImages = {
+    "bg_condition_general",
+    "bg_condition_debilitation",
+    "bg_condition_theBeast",
+    "bg_condition_general",
+    "bg_condition_debilitation",
+    "bg_condition_theBeast",
+  }
   for slot = 1, 6 do
-    conditionCards[slot] = TPL.apply(TEMPLATE_CONDITION_CARD, { SLOT = tostring(slot) })
+    conditionCards[slot] = TPL.apply(TEMPLATE_CONDITION_CARD, {
+      SLOT = tostring(slot),
+      OFFSET = conditionOffsets[slot],
+      IMAGE = conditionImages[slot],
+    })
   end
   local pageParams = {
     DISC_ROW_1 = table.concat({ cells[1], cells[2], cells[3] }, "\n"),

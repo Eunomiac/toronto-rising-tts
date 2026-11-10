@@ -98,7 +98,11 @@ assert(tostring(err):find("at most 6", 1, true) ~= nil, "seven-discipline error 
 for slot = 1, 6 do
   assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '"', "conditions")
   assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '_duration"', "conditions")
-  assertHas(disciplinesOnly, 'id="condition_container_' .. slot .. '" class="condition_container" active="false"', "conditions")
+  assertHas(disciplinesOnly, 'Condition ' .. slot .. ' Title', "conditions")
 end
+assertHas(disciplinesOnly, 'image="bg_condition_general"', "conditions")
+assertHas(disciplinesOnly, 'image="bg_condition_debilitation"', "conditions")
+assertHas(disciplinesOnly, 'image="bg_condition_theBeast"', "conditions")
+assertHas(disciplinesOnly, 'width="700"', "conditions")
 
 print("page 2 template XML ok")

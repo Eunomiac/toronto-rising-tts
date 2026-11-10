@@ -417,33 +417,24 @@ function PC.sheetUpdates(pageNum, list)
   local updates = {}
   if pageNum == 1 then
     local resonance = PC.resonanceCard(list)
-    local showResonance = resonance ~= nil
     local title = resonance and tostring(resonance.dyscrasiaTitle or "") or ""
     local description = resonance and tostring(resonance.dyscrasiaDescription or "") or ""
-    local showDyscrasia = showResonance and title ~= ""
+    local showDyscrasia = resonance ~= nil and title ~= ""
     updates[#updates + 1] = {
-      id = "resonance_container",
-      attributes = { active = showResonance and "true" or "false" },
-    }
-    if showResonance then
-      updates[#updates + 1] = {
-        id = "resonance_tag",
-        attributes = {
-          image = PC.resonanceImage(resonance.temperament, resonance.resonanceType),
-        },
-      }
-    end
-    updates[#updates + 1] = {
-      id = "dyscrasia_container",
-      attributes = { active = showDyscrasia and "true" or "false" },
+      id = "resonance_tag",
+      attributes = {
+        image = resonance ~= nil
+          and PC.resonanceImage(resonance.temperament, resonance.resonanceType)
+          or "resonance_acutelyCholeric",
+      },
     }
     updates[#updates + 1] = {
       id = "dyscrasia_title",
-      attributes = { text = showDyscrasia and title or "" },
+      attributes = { text = showDyscrasia and title or "Dyscrasia Title" },
     }
     updates[#updates + 1] = {
       id = "dyscrasia_description",
-      attributes = { text = showDyscrasia and description or "" },
+      attributes = { text = showDyscrasia and description or "Dyscrasia Description" },
     }
     return updates
   end
@@ -451,33 +442,38 @@ function PC.sheetUpdates(pageNum, list)
     return updates
   end
   local cards = PC.sheetCards(list)
+  local sampleImages = {
+    "bg_condition_general",
+    "bg_condition_debilitation",
+    "bg_condition_theBeast",
+    "bg_condition_general",
+    "bg_condition_debilitation",
+    "bg_condition_theBeast",
+  }
   for slot = 1, PC.SHEET_SLOT_COUNT do
     local card = cards[slot]
     local prefix = "condition_container_" .. tostring(slot)
     local shown = type(card) == "table"
-    updates[#updates + 1] = {
-      id = prefix,
-      attributes = { active = shown and "true" or "false" },
-    }
+    local n = tostring(slot)
     updates[#updates + 1] = {
       id = prefix .. "_background",
-      attributes = { image = shown and PC.backgroundImage(card.displayType) or "bg_condition_general" },
+      attributes = { image = shown and PC.backgroundImage(card.displayType) or sampleImages[slot] },
     }
     updates[#updates + 1] = {
       id = prefix .. "_title",
-      attributes = { text = shown and tostring(card.title or "") or "" },
+      attributes = { text = shown and tostring(card.title or "") or ("Condition " .. n .. " Title") },
     }
     updates[#updates + 1] = {
       id = prefix .. "_sub_title",
-      attributes = { text = shown and tostring(card.subtitle or "") or "" },
+      attributes = { text = shown and tostring(card.subtitle or "") or ("Condition " .. n .. " Sub Title") },
     }
     updates[#updates + 1] = {
       id = prefix .. "_description",
-      attributes = { text = shown and tostring(card.description or "") or "" },
+      attributes = { text = shown and tostring(card.description or "") or ("Condition " .. n .. " Description") },
     }
     updates[#updates + 1] = {
       id = prefix .. "_duration",
-      attributes = { text = shown and tostring(card.duration or "") or "" },
+      attributes = { text = shown and tostring(card.duration or "") or ("Condition " .. n .. " Duration") },
     }
   end
   return updates

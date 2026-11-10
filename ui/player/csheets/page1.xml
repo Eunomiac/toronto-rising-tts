@@ -11,14 +11,14 @@
 <Panel id="paper_root" class="page_root">
 
   <Panel id="pageRaised" class="page_raised page_top">
-    <Panel id="dyscrasia_container" class="dyscrasia_container" active="false">
-      <Image id="db_dyscrasia_container_background" class="dyscrasia_background" image="bg_condition_dyscrasia" />
-      <Text id="dyscrasia_title" class="dyscrasia_title" text="Dyscrasia Title" />
-      <Text id="dyscrasia_description" class="dyscrasia_description" text="Dyscrasia Description" />
+    <Panel id="dyscrasia_container" class="dyscrasia_container" ignoreLayout="true" rectAlignment="UpperLeft" width="900" height="608" offsetXY="80 -40">
+      <Image id="db_dyscrasia_container_background" class="dyscrasia_background" image="bg_condition_dyscrasia" width="900" height="608" preserveAspect="true" />
+      <Text id="dyscrasia_title" class="dyscrasia_title" text="Dyscrasia Title" fontSize="36" fontStyle="Bold" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -24" />
+      <Text id="dyscrasia_description" class="dyscrasia_description" text="Dyscrasia Description" fontSize="26" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperLeft" offsetXY="36 -90" />
     </Panel>
 
-    <Panel id="resonance_container" class="resonance_container" active="false">
-      <Image id="resonance_tag" class="resonance_tag" image="resonance_acutelyCholeric" />
+    <Panel id="resonance_container" class="resonance_container" ignoreLayout="true" rectAlignment="UpperLeft" width="444" height="138" offsetXY="80 -680">
+      <Image id="resonance_tag" class="resonance_tag" image="resonance_acutelyCholeric" width="444" height="138" preserveAspect="true" />
     </Panel>
   </Panel>
 
