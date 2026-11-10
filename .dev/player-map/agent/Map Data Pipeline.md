@@ -158,13 +158,16 @@ The first geometry spike should:
 
 The calibration file, not generated coordinates, is the editable source for georeferencing.
 
-Phase 1 uses four street-intersection controls in `data/calibration.json` and a
-projective Web Mercator transform. A plain affine fit showed visible west-side
-drift, so it was rejected. The independent University/Queen checkpoint is
-currently about 55 metres from the geocoded reference; this includes the
-uncertainty of locating the original road centre and station coordinate. The
-live-basemap comparison is acceptable for the technical spike, but the control
-and validation set should be expanded before geometry is called final.
+Phase 1 now uses a rectangle-preserving Web Mercator least-squares transform.
+Source x maps only to Web Mercator x and source y maps only to Web Mercator y,
+which matches the north-up rectangular raster and prevents perspective or
+keystone distortion. The four fitting intersections were rechecked against the
+source raster and OpenStreetMap road centrelines. The current fit reports about
+14 metres control RMS and 27 metres at the independent University/Queen
+checkpoint. Centre Island, Billy Bishop Airport, the harbour shoreline, and the
+central street grid were also compared visually over the live basemap. Expand
+the control and validation set before geometry is called final, but do not
+return to an exact four-point projective fit.
 
 ## Public Output
 
