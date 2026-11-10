@@ -7737,6 +7737,172 @@
         }
       ]
     },
+    "csheetPage1ConditionBackgrounds": {
+      "output": "ObjectCustomUIAssets",
+      "folder": "CSheets/Page1/Resonance",
+      "rows": [
+        {
+          "path": "CSheets/Page1/Resonance/bg_condition_dyscrasia.webp",
+          "name": "bg_condition_dyscrasia",
+          "sha1": "EED5C34693BE75348E957E872687ABD4EB2394CF",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15947207609708588067/EED5C34693BE75348E957E872687ABD4EB2394CF/",
+          "size": 127058
+        }
+      ]
+    },
+    "csheetPage1Resonance": {
+      "output": "ObjectCustomUIAssets",
+      "folder": "CSheets/Page1/Resonance",
+      "rows": [
+        {
+          "path": "CSheets/Page1/Resonance/resonance_acutelyCholeric.webp",
+          "name": "resonance_acutelyCholeric",
+          "sha1": "CE3F607D0898BF753D80633C91F890428231A07B",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11803114474327575429/CE3F607D0898BF753D80633C91F890428231A07B/",
+          "size": 22892
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_acutelyIschemic.webp",
+          "name": "resonance_acutelyIschemic",
+          "sha1": "3C80B2324661BF7A8433AE121DBD2585FB8AE92F",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16758541421247062177/3C80B2324661BF7A8433AE121DBD2585FB8AE92F/",
+          "size": 22346
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_acutelyMelancholic.webp",
+          "name": "resonance_acutelyMelancholic",
+          "sha1": "072B591F6A1B1FEB011DCD3EC5CDB0D88F5F13C8",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16307069450423054848/072B591F6A1B1FEB011DCD3EC5CDB0D88F5F13C8/",
+          "size": 23568
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_acutelyMercurial.webp",
+          "name": "resonance_acutelyMercurial",
+          "sha1": "66B9302CE3F3635A55F396BC11720EAE13CD1C46",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14322486649945893544/66B9302CE3F3635A55F396BC11720EAE13CD1C46/",
+          "size": 22164
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_acutelyPhlegmatic.webp",
+          "name": "resonance_acutelyPhlegmatic",
+          "sha1": "69458BF40F56EC41E873636E66AC1A7C79FE7B2E",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13520703696897435424/69458BF40F56EC41E873636E66AC1A7C79FE7B2E/",
+          "size": 22856
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_acutelyPrimal.webp",
+          "name": "resonance_acutelyPrimal",
+          "sha1": "B9EFD99D90D2E14497E3F2D8B5F7A4147D7751A6",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15758691121939544154/B9EFD99D90D2E14497E3F2D8B5F7A4147D7751A6/",
+          "size": 22680
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_acutelySanguine.webp",
+          "name": "resonance_acutelySanguine",
+          "sha1": "97BF584E15866834E0916B283F124E0B85D772F4",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13616605262214535585/97BF584E15866834E0916B283F124E0B85D772F4/",
+          "size": 23700
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_fleetinglyCholeric.webp",
+          "name": "resonance_fleetinglyCholeric",
+          "sha1": "94FC2F249B3BA8506610C865E13239AACDC73279",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15479485054498155303/94FC2F249B3BA8506610C865E13239AACDC73279/",
+          "size": 22840
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_fleetinglyIschemic.webp",
+          "name": "resonance_fleetinglyIschemic",
+          "sha1": "8EB2E91AD453A645F0D5C1CB1CD8D7BA3AF79561",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11868938345603357528/8EB2E91AD453A645F0D5C1CB1CD8D7BA3AF79561/",
+          "size": 22266
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_fleetinglyMelancholic.webp",
+          "name": "resonance_fleetinglyMelancholic",
+          "sha1": "B59F0AFD63BF9460D93B62E4F4F19B89F23A3368",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13367180215093094463/B59F0AFD63BF9460D93B62E4F4F19B89F23A3368/",
+          "size": 23650
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_fleetinglyMercurial.webp",
+          "name": "resonance_fleetinglyMercurial",
+          "sha1": "76D7C32BB263F56BD8CBE49855016483E61B1E68",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15584537462771505521/76D7C32BB263F56BD8CBE49855016483E61B1E68/",
+          "size": 22202
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_fleetinglyPhlegmatic.webp",
+          "name": "resonance_fleetinglyPhlegmatic",
+          "sha1": "F7CD96464301FDC9730F4FCEC59164A30F0B5460",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11289863340583586109/F7CD96464301FDC9730F4FCEC59164A30F0B5460/",
+          "size": 22810
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_fleetinglyPrimal.webp",
+          "name": "resonance_fleetinglyPrimal",
+          "sha1": "DB2CCC6BCEDB6C3762D53BAAE311119F77F31076",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11753301621778990482/DB2CCC6BCEDB6C3762D53BAAE311119F77F31076/",
+          "size": 22740
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_fleetinglySanguine.webp",
+          "name": "resonance_fleetinglySanguine",
+          "sha1": "7D890083A0673884E5C545692A9BD17C1C5163AE",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13865090804722933803/7D890083A0673884E5C545692A9BD17C1C5163AE/",
+          "size": 23740
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_intenselyCholeric.webp",
+          "name": "resonance_intenselyCholeric",
+          "sha1": "F56A3F20C7E8327D967DA75C00083E3F10232794",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12376534484011378808/F56A3F20C7E8327D967DA75C00083E3F10232794/",
+          "size": 22922
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_intenselyIschemic.webp",
+          "name": "resonance_intenselyIschemic",
+          "sha1": "6B1F64627A5760765D9B3D9DCE7058BDC7067627",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14505970757148540715/6B1F64627A5760765D9B3D9DCE7058BDC7067627/",
+          "size": 22340
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_intenselyMelancholic.webp",
+          "name": "resonance_intenselyMelancholic",
+          "sha1": "3D24CED1F75028BF1046939A4E3E316866F71006",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16555609109745281107/3D24CED1F75028BF1046939A4E3E316866F71006/",
+          "size": 23714
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_intenselyMercurial.webp",
+          "name": "resonance_intenselyMercurial",
+          "sha1": "EFBA91E1509EBF8A2C36E685EF64E7C14691554F",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10284515918528265667/EFBA91E1509EBF8A2C36E685EF64E7C14691554F/",
+          "size": 22294
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_intenselyPhlegmatic.webp",
+          "name": "resonance_intenselyPhlegmatic",
+          "sha1": "DB9DBB9ED08C5DBC31DC6FE6754D3C6342247C99",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14610685565773785903/DB9DBB9ED08C5DBC31DC6FE6754D3C6342247C99/",
+          "size": 22866
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_intenselyPrimal.webp",
+          "name": "resonance_intenselyPrimal",
+          "sha1": "E5CAD03D05B49860FB6C137A181D4DF23795F65D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14484136011225376946/E5CAD03D05B49860FB6C137A181D4DF23795F65D/",
+          "size": 22810
+        },
+        {
+          "path": "CSheets/Page1/Resonance/resonance_intenselySanguine.webp",
+          "name": "resonance_intenselySanguine",
+          "sha1": "554A9D2D35E4B7F2A226424178C063CF3CC7E4D0",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15495216776655899315/554A9D2D35E4B7F2A226424178C063CF3CC7E4D0/",
+          "size": 23808
+        }
+      ]
+    },
     "csheetPage2DisciplineNames": {
       "output": "ObjectCustomUIAssets",
       "folder": "CSheets/Page2",
@@ -7891,6 +8057,33 @@
           "sha1": "77B05D19DAE1D18A66D6B30296F034AFB752F805",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/13497379433140113278/77B05D19DAE1D18A66D6B30296F034AFB752F805/",
           "size": 3634
+        }
+      ]
+    },
+    "csheetPage2Conditions": {
+      "output": "ObjectCustomUIAssets",
+      "folder": "CSheets/Page2/Conditions",
+      "rows": [
+        {
+          "path": "CSheets/Page2/Conditions/bg_condition_debilitation.webp",
+          "name": "bg_condition_debilitation",
+          "sha1": "DA6A4698806DE3C1B09E641A7C95822A279B4678",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13774247741480841924/DA6A4698806DE3C1B09E641A7C95822A279B4678/",
+          "size": 41698
+        },
+        {
+          "path": "CSheets/Page2/Conditions/bg_condition_general.webp",
+          "name": "bg_condition_general",
+          "sha1": "DC89787E83AF5E2A75F2361E1921C92DE777D2EC",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13475381283090556237/DC89787E83AF5E2A75F2361E1921C92DE777D2EC/",
+          "size": 40204
+        },
+        {
+          "path": "CSheets/Page2/Conditions/bg_condition_theBeast.webp",
+          "name": "bg_condition_theBeast",
+          "sha1": "B513193BDCE13F2151B2EF56EC3897688DA0C4E3",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11799630354025075346/B513193BDCE13F2151B2EF56EC3897688DA0C4E3/",
+          "size": 41514
         }
       ]
     },

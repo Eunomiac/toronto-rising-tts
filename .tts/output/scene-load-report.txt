@@ -1,138 +1,54 @@
-[SceneLoad] scene-transition BayStFinancial / StRegisCouncilChamber — 25194 ms
+[SceneLoad] scene-transition DupontByTheCastle / CLGreatHall — 66066 ms
   Scheduled holds: lead-in 4.00s, fade-out 1.00s, card gate 0.75s, fade-in 2.00s, settle after fade-in 7.25s. Time beyond those holds is world work.
-  NPC lines below are figurines touched while this cover was up. Reused means the figurine already existed. Image reload means the mesh was sent to load again.
-       8 ms  cover shown
-    4018 ms  lead-in
-       7 ms  fade-out work
-     995 ms  fade-out hold
-     749 ms  site-card gate
-       1 ms  connection checkpoint
-       0 ms  apply work
-       1 ms  generic npcs
-     591 ms  table
-      14 ms  before sync
-      35 ms  sync scenes, fog, sky
-       0 ms  sync soundscape skipped
-      44 ms  sync seat presentation
-       6 ms  npc removals
-       5 ms  npc seat removals
-     687 ms  npc seat placements
-      23 ms  npc seat presence
-      16 ms  npc stage or scatter poses
-       0 ms  npc untargeted release
-      26 ms  sync npc reconcile
-      20 ms  sync spotlight
-       0 ms  sync library mirror
-     387 ms  sync ui
-       0 ms  after sync
-       2 ms  scene work tail
-      11 ms  cameras
-      93 ms  fade-in work
-    9463 ms  fade-in hold
-    7993 ms  settle
-  NPCs: 1 calls, reused 0, spawned 1, parked 0, image reload 0, still loading 1, still spawning 1, scalar mismatch 0, NPC Lua time 15 ms
-  NPC myleneHamelin                15 ms  stage, spawned, still loading, still spawning
-
-[SceneLoad] scene-transition DupontByTheCastle / CLGreatHall — 130503 ms
-  Scheduled holds: lead-in 4.00s, fade-out 1.00s, card gate 0.75s, fade-in 2.00s, settle after fade-in 7.25s. Time beyond those holds is world work.
-  NPC lines below are figurines touched while this cover was up. Reused means the figurine already existed. Image reload means the mesh was sent to load again.
-       9 ms  cover shown
-    4850 ms  lead-in
-      18 ms  fade-out work
-     985 ms  fade-out hold
-     758 ms  site-card gate
+  NPC lines below are figurines touched while this cover was up. Created means first created during this action; already live means present before at least one application. Image reload means the mesh was sent to load again.
+       1 ms  cover shown
+    3872 ms  lead-in
+       3 ms  fade-out work
+     990 ms  fade-out hold
+     750 ms  site-card gate
        2 ms  connection checkpoint
        0 ms  apply work
-       0 ms  generic npcs
-    1793 ms  npc removals
-      18 ms  npc seat removals
-     652 ms  npc seat placements
-     117 ms  npc seat presence
-     492 ms  npc stage or scatter poses
+       1 ms  generic npcs
+    1508 ms  npc removals
+       6 ms  npc seat removals
+       1 ms  npc seat placements
+      35 ms  npc seat presence
+     419 ms  npc stage or scatter poses
        0 ms  npc untargeted release
-    5298 ms  table
-    4643 ms  before sync
-      66 ms  sync scenes, fog, sky
+    4268 ms  table
+    3998 ms  before sync
+      31 ms  sync scenes, fog, sky
        0 ms  sync soundscape skipped
-     130 ms  sync seat presentation
+      84 ms  sync seat presentation
        3 ms  sync npc reconcile
-       1 ms  sync spotlight
+      34 ms  sync spotlight
        0 ms  sync library mirror
-     736 ms  sync ui
-    1632 ms  after sync
-       2 ms  scene work tail
-      20 ms  cameras
-     148 ms  fade-in work
-  100873 ms  fade-in hold
-    7258 ms  settle
-  NPCs: 42 calls, reused 14, spawned 13, parked 0, image reload 0, still loading 13, still spawning 13, scalar mismatch 0, NPC Lua time 187 ms
-  NPC ghoulGuard_08                17 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC zuriOluwusi                  16 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC evangelineDupont             15 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC oliverGagnon                 15 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC merrickSingh                 15 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC christianne                  14 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC theAristocrat                14 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC xavierWhitchurch             14 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC ghoulGuard_03                13 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC ghoulGuard_06                13 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC scottTempo                   13 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC gabrielCollard               13 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
-  NPC georgieStJames               11 ms  scatter, spawned, reused, still loading, still spawning, 3 calls
+     134 ms  sync ui
+     818 ms  after sync
+       0 ms  scene work tail
+       4 ms  cameras
+      73 ms  fade-in work
+   41775 ms  fade-in hold
+    7257 ms  settle
+  NPCs: 14 applications, created this action 14, already live before a call 0, repeated applications 0, parked 0, image reload 0, still loading 0, still spawning 0, scalar mismatch 0, NPC Lua time 84 ms
+  NPC myleneHamelin                13 ms  scatter, created this action
+  NPC ghoulGuard_03                 7 ms  scatter, created this action
+  NPC ghoulGuard_08                 6 ms  scatter, created this action
+  NPC christianne                   6 ms  scatter, created this action
+  NPC georgieStJames                6 ms  scatter, created this action
+  NPC theAristocrat                 6 ms  scatter, created this action
+  NPC xavierWhitchurch              6 ms  scatter, created this action
+  NPC ghoulGuard_06                 6 ms  scatter, created this action
+  NPC evangelineDupont              6 ms  scatter, created this action
+  NPC zuriOluwusi                   5 ms  scatter, created this action
+  NPC oliverGagnon                  5 ms  scatter, created this action
+  NPC gabrielCollard                5 ms  scatter, created this action
+  NPC merrickSingh                  5 ms  scatter, created this action
+  NPC scottTempo                    5 ms  scatter, created this action
 
-[SceneLoad] scene-transition no district / no site — 12669 ms
-  Scheduled holds: lead-in 2.00s, fade-out 1.00s, card gate 0.00s, fade-in 1.50s, settle after fade-in 1.00s. Time beyond those holds is world work.
-  NPC lines below are figurines touched while this cover was up. Reused means the figurine already existed. Image reload means the mesh was sent to load again.
-      14 ms  cover shown
-    1898 ms  lead-in
-      15 ms  fade-out work
-     990 ms  fade-out hold
-       0 ms  site-card gate
-    1016 ms  connection checkpoint
-     787 ms  sync scenes, fog, sky
-       3 ms  sync soundscape skipped
-      46 ms  sync seat presentation
-      42 ms  npc removals
-       7 ms  npc seat removals
-     746 ms  npc seat placements
-      21 ms  npc seat presence
-       0 ms  npc stage or scatter poses
-       0 ms  npc untargeted release
-       1 ms  sync npc reconcile
-      82 ms  sync spotlight
-       0 ms  sync library mirror
-     410 ms  sync ui
-       2 ms  scene work tail
-      15 ms  cameras
-     107 ms  fade-in work
-    5438 ms  fade-in hold
-    1031 ms  settle
-  NPCs: 14 calls, reused 14, spawned 0, parked 0, image reload 0, still loading 0, still spawning 0, scalar mismatch 0, NPC Lua time 20 ms
-
-[SceneLoad] scene-transition no district / no site — 10912 ms
-  Scheduled holds: lead-in 2.00s, fade-out 0.00s, card gate 0.00s, fade-in 0.00s, settle after fade-in 1.00s. Time beyond those holds is world work.
-  NPC lines below are figurines touched while this cover was up. Reused means the figurine already existed. Image reload means the mesh was sent to load again.
-       7 ms  cover shown
-    1948 ms  lead-in
-       0 ms  fade-out work
-       0 ms  fade-out hold
-       1 ms  site-card gate
-     664 ms  connection checkpoint
-     731 ms  sync scenes, fog, sky
-       0 ms  sync soundscape skipped
-      89 ms  sync seat presentation
-       5 ms  npc removals
-      11 ms  npc seat removals
-     815 ms  npc seat placements
-      31 ms  npc seat presence
-       0 ms  npc stage or scatter poses
-       0 ms  npc untargeted release
-       0 ms  sync npc reconcile
-     149 ms  sync spotlight
-       0 ms  sync library mirror
-     661 ms  sync ui
-    2549 ms  scene work tail
-      11 ms  cameras
-       0 ms  fade-in work
-       0 ms  fade-in hold
-    3239 ms  settle
+[SceneLoad] scatter-group lordLucien → group 5 — 61 ms
+  Only this player's seat objects move. Other players and NPC figurines stay where they are.
+      56 ms  moved player
+       4 ms  portraits
+       0 ms  library mirror
+       0 ms  dashboard
