@@ -42,10 +42,10 @@ A separate control on the PC tracker popup (near the top right corner; visibly d
   - If `ByGameClock` is selected, a button should appear to the right that will bring up a calendar for selection of the date; from this, the `<timestamp>` removal trigger can be derived.
 - **`title`/`subtitle`/`description`**: Input text fields should be available for the ST to enter in values for these three text elements
 - **`duration`**: An editable text field should be provided as above, but it should be populated with a default value once the ST has established the `removalTrigger`:
-  1. `EndOfScene` - `"This Condition persists until the end of the current scene."`
-  2. `EndOfSession<#>` - `"This Condition persists until the end of Session <#>."`
-  3. `<timestamp>` - `"This Condition persists until nightfall on <shortDate, e.g. 'Sept 4th, 2026'>."`
-  4. `ChangeOfBlood` - `"This Condition persists until you feed on another mortal's blood or your Hunger reaches 5."`
+  1. `EndOfScene` - `"The end of the current scene."`
+  2. `EndOfSession<#>` - `"The end of Session <#>."`
+  3. `<timestamp>` - `"Nightfall on <shortDate, e.g. 'Sept 4th, 2026'>."`
+  4. `ChangeOfBlood` - `"Until you Feed or Starve."`
   5. `Manual` - No placeholder. If the Storyteller leaves this blank, no duration should be displayed on the player's sheet.
 
 **Displaying General Condition Types:** Six placeholder elements for displaying up to six concurrent Conditions have been added to page 2 of each player's sheet. Conditions should always be displayed in the order they were applied to the player (sorted via `appliedOn`). The XML should be modified as follows:

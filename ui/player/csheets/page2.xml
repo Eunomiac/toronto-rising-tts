@@ -4,5 +4,163 @@
 
 <Panel id="paper_root" class="page_root padded_border">
   <Button id="pageForward" class="page_navigation page_forward" />
+<!--
+UISet("8a59a9", "condition_container_1", {
+    width = "700",
+    height = "300",
+    position="1100 900 0",
+    rotation="0 0 0",
+    pivot="0.5 0.5",
+    color="rgba(0, 0, 1, 0.15)",
+    scale = "1 1 1"
+})
+UISet("8a59a9", "condition_container_2", {
+    width = "500",
+    height = "300",
+    position="1100 540 0",
+    rotation="0 0 0",
+    pivot="0.5 0.5",
+    color="rgba(0, 0, 1, 0.15)",
+    scale = "1 1 1"
+})
+UISet("8a59a9", "condition_container_3", {
+    width = "500",
+    height = "300",
+    position="1100 180 0",
+    rotation="0 0 0",
+    pivot="0.5 0.5",
+    color="rgba(0, 0, 1, 0.15)",
+    scale = "1 1 1"
+})
+UISet("8a59a9", "condition_container_4", {
+    width = "500",
+    height = "300",
+    position="1100 -180 0",
+    rotation="0 0 0",
+    pivot="0.5 0.5",
+    color="rgba(0, 0, 1, 0.15)",
+    scale = "1 1 1"
+})
+UISet("8a59a9", "condition_container_5", {
+    width = "500",
+    height = "300",
+    position="1825 900 0",
+    rotation="0 0 0",
+    pivot="0.5 0.5",
+    color="rgba(0, 0, 1, 0.15)",
+    scale = "1 1 1"
+})
+UISet("8a59a9", "condition_container_6", {
+    width = "500",
+    height = "300",
+    position="1825 540 0",
+    rotation="0 0 0",
+    pivot="0.5 0.5",
+    color="rgba(0, 0, 1, 0.15)",
+    scale = "1 1 1"
+})
+
+UISet("8a59a9", "condition_container_1_background", {
+  image = "bg_condition_general"
+})
+UISet("8a59a9", "condition_container_1_sub_title", {
+  offsetXY = "0 -60",
+  width = "700",
+  fontStyle = "Bold",
+  text = "DEBILITATION"})
+
+
+
+UISet("8a59a9", "condition_container_1_description", {
+  offsetXY = "0 -85",
+  width = "600",
+  fontStyle = "Bold",
+  text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."})
+
+  UISet("8a59a9", "condition_container_1_duration", {
+  width = "600",
+  fontStyle = "BoldAndItalic",
+  fontSize="24",
+  offsetXY = "80 16",
+  alignment="LowerLeft",
+  color="#F0E2C4",
+  text = "The end of the current scene."})
+UISet("8a59a9", "condition_container_2_duration", {
+  width = "600",
+  fontStyle = "BoldAndItalic",
+  fontSize="24",
+  offsetXY = "80 16",
+  alignment="LowerLeft",
+  color="#F0E2C4",
+  text = "The end of Session 6."})
+UISet("8a59a9", "condition_container_3_duration", {
+  width = "600",
+  fontStyle = "BoldAndItalic",
+  fontSize="24",
+  offsetXY = "80 16",
+  alignment="LowerLeft",
+  color="#F0E2C4",
+  text = "Nightfall on Sept 4th, 2026."})
+UISet("8a59a9", "condition_container_4_duration", {
+  width = "600",
+  fontStyle = "BoldAndItalic",
+  fontSize="24",
+  offsetXY = "80 16",
+  alignment="LowerLeft",
+  color="#F0E2C4",
+  text = "Until you Feed or Starve."})
+
+
+    1. `EndOfScene` - `"The end of the current scene."`
+  2. `EndOfSession<#>` - `"The end of Session <#>."`
+  3. `<timestamp>` - `"Nightfall on <shortDate, e.g. 'Sept 4th, 2026'>."`
+  4. `ChangeOfBlood` - `"Until you Feed or Starve."`
+-->
+  <Panel id="pageRaised" class="page_raised page_top">
+    <Panel id="condition_container_1" class="condition_container">
+      <Image id="condition_container_1_background" class="condition_container_background" image="bg_condition_debilitation" />
+      <Text id="condition_container_1_title" class="condition_container_title" text="Condition One" />
+      <Text id="condition_container_1_sub_title" class="condition_container_sub_title" text="Condition 1 Sub Title" />
+      <Text id="condition_container_1_description" class="condition_container_description" text="Condition 1 Description" />
+      <Text id="condition_container_1_duration" class="condition_container_duration" text="Condition 1 Duration" />
+    </Panel>
+    <Panel id="condition_container_2" class="condition_container">
+      <Image id="condition_container_2_background" class="condition_container_background" image="bg_condition_general" />
+      <Text id="condition_container_2_title" class="condition_container_title" text="Condition 2 Title" />
+      <Text id="condition_container_2_sub_title" class="condition_container_sub_title" text="Condition 2 Sub Title" />
+      <Text id="condition_container_2_description" class="condition_container_description" text="Condition 2 Description" />
+      <Text id="condition_container_2_duration" class="condition_container_duration" text="Condition 2 Duration" />
+    </Panel>
+    <Panel id="condition_container_3" class="condition_container">
+      <Image id="condition_container_3_background" class="condition_container_background" image="bg_condition_general" />
+      <Text id="condition_container_3_title" class="condition_container_title" text="Condition 3 Title" />
+      <Text id="condition_container_3_sub_title" class="condition_container_sub_title" text="Condition 3 Sub Title" />
+      <Text id="condition_container_3_description" class="condition_container_description" text="Condition 3 Description" />
+      <Text id="condition_container_3_duration" class="condition_container_duration" text="Condition 3 Duration" />
+    </Panel>
+    <Panel id="condition_container_4" class="condition_container">
+      <Image id="condition_container_4_background" class="condition_container_background" image="bg_condition_general" />
+      <Text id="condition_container_4_title" class="condition_container_title" text="Condition 4 Title" />
+      <Text id="condition_container_4_sub_title" class="condition_container_sub_title" text="Condition 4 Sub Title" />
+      <Text id="condition_container_4_description" class="condition_container_description" text="Condition 4 Description" />
+      <Text id="condition_container_4_duration" class="condition_container_duration" text="Condition 4 Duration" />
+    </Panel>
+    <Panel id="condition_container_5" class="condition_container">
+      <Image id="condition_container_5_background" class="condition_container_background" image="bg_condition_general" />
+      <Text id="condition_container_5_title" class="condition_container_title" text="Condition 5 Title" />
+      <Text id="condition_container_5_sub_title" class="condition_container_sub_title" text="Condition 5 Sub Title" />
+      <Text id="condition_container_5_description" class="condition_container_description" text="Condition 5 Description" />
+      <Text id="condition_container_5_duration" class="condition_container_duration" text="Condition 5 Duration" />
+    </Panel>
+    <Panel id="condition_container_6" class="condition_container">
+      <Image id="condition_container_6_background" class="condition_container_background" image="bg_condition_general" />
+      <Text id="condition_container_6_title" class="condition_container_title" text="Condition 6 Title" />
+      <Text id="condition_container_6_sub_title" class="condition_container_sub_title" text="Condition 6 Sub Title" />
+      <Text id="condition_container_6_description" class="condition_container_description" text="Condition 6 Description" />
+      <Text id="condition_container_6_duration" class="condition_container_duration" text="Condition 6 Duration" />
+    </Panel>
+  </Panel>
+
+
   <Button id="pageInner" class="page_navigation page_inner_left" />
 </Panel>

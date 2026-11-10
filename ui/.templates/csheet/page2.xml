@@ -2,7 +2,7 @@
 @@DISC_ROW_1@@ - raw XML for discipline cells 1–3
 @@DISC_ROW_2@@ - raw XML for discipline cells 4–6
 @@RC_SECTION@@ - raw rituals/ceremonies band; omit the key when the character has neither
-@@CONDITION_CARDS@@ - raw XML for the six condition cards (visible sample images until a condition fills the slot)
+@@CONDITION_CARDS@@ - raw XML up to EIGHT condition cards (visible sample images until a condition fills the slot)
 -->
 
 <Defaults>
@@ -24,12 +24,23 @@
   <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="0" />
   <HorizontalLayout class="page2_rc_row" preferredHeight="60" flexibleHeight="0" childForceExpandWidth="false" />
   <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />
-  <Panel class="condition_container" ignoreLayout="true" rectAlignment="UpperLeft" width="700" height="345" />
+
+
+  <Panel class="condition_container" ignoreLayout="true" rectAlignment="UpperLeft" width="700" height="300" pivot = "0.5 0.5" />
+  <Panel class="condition_container condition_slot_1" position = "1100 900 0" />
+  <Panel class="condition_container condition_slot_2" position = "1100 540 0" />
+  <Panel class="condition_container condition_slot_3" position = "1100 180 0" />
+  <Panel class="condition_container condition_slot_4" position = "1100 -180 0" />
+  <Panel class="condition_container condition_slot_5" position = "1825 900 0" />
+  <Panel class="condition_container condition_slot_6" position = "1825 540 0" />
+  <Panel class="condition_container condition_slot_7" position = "1825 180 0" />
+  <Panel class="condition_container condition_slot_8" position = "1825 -180 0" />
+
   <Image class="condition_container_background" width="700" height="345" preserveAspect="true" raycastTarget="false" />
   <Text class="condition_container_title" fontSize="32" fontStyle="Bold" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -12" />
-  <Text class="condition_container_sub_title" fontSize="24" color="#F0E2C4" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -52" />
-  <Text class="condition_container_description" fontSize="22" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperLeft" offsetXY="28 -96" />
-  <Text class="condition_container_duration" fontSize="20" fontStyle="Italic" color="#E8E8E8" outline="#000000" outlineSize="1 1" alignment="LowerCenter" offsetXY="0 16" />
+  <Text class="condition_container_sub_title" width = "700" fontSize="24" fontStyle="Bold" color="#F0E2C4" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -60" />
+  <Text class="condition_container_description" width = "600" fontStyle="Bold" fontSize="24" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperLeft" offsetXY="0 -85" />
+  <Text class="condition_container_duration" width="600" fontSize="24" fontStyle="BoldAndItalic" color="#F0E2C4" outline="#000000" outlineSize="1 1" alignment="LowerLeft" offsetXY="80 16" />
 </Defaults>
 
 <Panel id="paper_root" class="page_root">

@@ -1,7 +1,17 @@
-<Panel id="condition_container_@@SLOT@@" class="condition_container" offsetXY="@@OFFSET@@">
+<!-- Parameters:
+@@SLOT@@ - "1" .. "8"
+@@IMAGE@@ - One of `bg_condition_debilitation`, `bg_condition_theBeast` or `bg_condition_general`
+@@TEXTCOLOR@@ - One of `red`, `white` or `gold`
+@@TITLE@@ - title text
+@@SUBTITLE@@ - subtitle text
+@@DESCRIPTION@@ - description text
+@@DURATION@@ - duration text
+-->
+
+<Panel id="condition_container_@@SLOT@@" class="condition_container condition_slot_@@SLOT@@">
   <Image id="condition_container_@@SLOT@@_background" class="condition_container_background" image="@@IMAGE@@" />
-  <Text id="condition_container_@@SLOT@@_title" class="condition_container_title" text="Condition @@SLOT@@ Title" />
-  <Text id="condition_container_@@SLOT@@_sub_title" class="condition_container_sub_title" text="Condition @@SLOT@@ Sub Title" />
-  <Text id="condition_container_@@SLOT@@_description" class="condition_container_description" text="Condition @@SLOT@@ Description" />
-  <Text id="condition_container_@@SLOT@@_duration" class="condition_container_duration" text="Condition @@SLOT@@ Duration" />
+  <Text id="condition_container_@@SLOT@@_title" class="condition_container_title text_@@TEXTCOLOR@@" text="@@TITLE@@" />
+  <Text id="condition_container_@@SLOT@@_sub_title" class="condition_container_sub_title text_@@TEXTCOLOR@@" text="@@SUBTITLE@@" />
+  <Text id="condition_container_@@SLOT@@_description" class="condition_container_description" text="@@DESCRIPTION@@" />
+  <Text id="condition_container_@@SLOT@@_duration" class="condition_container_duration" text="@@DURATION@@" />
 </Panel>
