@@ -323,6 +323,48 @@ export function fitAffineCalibration(controlPoints) {
   };
 }
 
+export function fitRectangularCalibration(controlPoints, validationPoints = []) {
+  if (controlPoints.length < 2) throw new Error('At least two calibration control points are required');
+  const targets = controlPoints.map(({ lngLat }) => lngLatToMercator(lngLat));
+  const fitAxis = (sourceAxis, targetAxis) => {
+    const sourceValues = controlPoints.map(({ source }) => source[sourceAxis]);
+    const targetValues = targets.map((target) => target[targetAxis]);
+    const sourceMean = sourceValues.reduce((sum, value) => sum + value, 0) / sourceValues.length;
+    const targetMean = targetValues.reduce((sum, value) => sum + value, 0) / targetValues.length;
+    const denominator = sourceValues.reduce((sum, value) => sum + (value - sourceMean) ** 2, 0);
+    if (denominator < 1e-12) throw new Error('Calibration control points do not span both source axes');
+    const scale = sourceValues.reduce(
+      (sum, value, index) => sum + (value - sourceMean) * (targetValues[index] - targetMean),
+      0,
+    ) / denominator;
+    return { scale, offset: targetMean - scale * sourceMean };
+  };
+  const x = fitAxis(0, 0);
+  const y = fitAxis(1, 1);
+  const projectMercator = ([sourceX, sourceY]) => [
+    x.scale * sourceX + x.offset,
+    y.scale * sourceY + y.offset,
+  ];
+  const project = (source) => mercatorToLngLat(projectMercator(source));
+  const residualsFor = (points) => points.map((control) => ({
+    name: control.name,
+    metres: distance(projectMercator(control.source), lngLatToMercator(control.lngLat)),
+  }));
+  const residuals = residualsFor(controlPoints);
+  const validationResiduals = residualsFor(validationPoints);
+  const rms = (items) => items.length === 0
+    ? null
+    : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
+  return {
+    coefficients: { x, y },
+    project,
+    residuals,
+    validationResiduals,
+    rootMeanSquareErrorMetres: rms(residuals),
+    validationRootMeanSquareErrorMetres: rms(validationResiduals),
+  };
+}
+
 export function fitProjectiveCalibration(controlPoints, validationPoints = []) {
   if (controlPoints.length !== 4) throw new Error('Projective calibration requires exactly four control points');
   const matrix = [];

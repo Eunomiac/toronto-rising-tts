@@ -50,7 +50,7 @@ interaction path were verified after publication.
 - [x] Create the isolated Player Map package and lockfile.
 - [x] Add React, TypeScript, Vite, Sass, GSAP, MapLibre, Vitest, Testing Library, and Playwright.
 - [x] Render a bounded Toronto basemap with the intended visual style.
-- [x] Establish SVG-to-map ground-control points and measure georeferencing error. The current projective fit has a roughly 55-metre independent checkpoint; expand the control set before final geometry approval.
+- [x] Establish SVG-to-map ground-control points and measure georeferencing error. The rectangle-preserving fit has roughly 14-metre control RMS and a 27-metre independent checkpoint; expand the control set before final geometry approval.
 - [x] Parse all district and region SVG features while preserving holes and fill rules.
 - [x] Prototype narrow-gap and overlap normalization with diagnostic output. This is deliberately not the runtime geometry until Phase 2 adds a reviewed winner manifest.
 - [x] Load generated district GeoJSON and prove hover, keyboard selection, click selection, shareable URL state, and a details panel.

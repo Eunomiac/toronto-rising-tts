@@ -6,6 +6,7 @@ import { XMLParser } from 'fast-xml-parser';
 import {
   fitAffineCalibration,
   fitProjectiveCalibration,
+  fitRectangularCalibration,
   pathToRings,
   polygonPointsToRings,
   ringsToMultiPolygon,
@@ -28,9 +29,11 @@ const parser = new XMLParser({
 });
 const document = parser.parse(svgText);
 const groups = new Map(document.svg.g.map((group) => [group.id, group]));
-const transform = calibration.method.startsWith('projective')
-  ? fitProjectiveCalibration(calibration.controlPoints, calibration.validationPoints ?? [])
-  : fitAffineCalibration(calibration.controlPoints);
+const transform = calibration.method.startsWith('rectangular')
+  ? fitRectangularCalibration(calibration.controlPoints, calibration.validationPoints ?? [])
+  : calibration.method.startsWith('projective')
+    ? fitProjectiveCalibration(calibration.controlPoints, calibration.validationPoints ?? [])
+    : fitAffineCalibration(calibration.controlPoints);
 const roundCoordinate = (value) => Number(value.toFixed(7));
 const project = (point) => transform.project(point).map(roundCoordinate);
 
