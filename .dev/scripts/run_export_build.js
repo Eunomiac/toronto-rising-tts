@@ -41,6 +41,8 @@ async function main() {
       if (child.error) throw child.error;
       if (child.status !== 0) throw new Error(`Remaining FULL tooling failed (${child.status})`);
       run(".tools/tts-save/build-session-start.js", env, ["--full"]);
+      // After assetbundle pruning: install bundled scripts into main + session-start saves (no TTS).
+      run(".tools/tts-save/bundle-into-save.js", env);
     }
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }

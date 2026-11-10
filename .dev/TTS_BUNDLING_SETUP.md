@@ -33,7 +33,7 @@ Three npm scripts / VS Code tasks (`.vscode/tasks.json`):
 | **XML** | `npm run build:xml` | **BUILD PIPELINE (XML)** | After UI XML / template / Global HUD edits (includes Main) |
 | **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, Cloud asset sync, NPC art (`npc-art:draw` before the sync, `npc-art:urls` after — [NPC Art Pipeline](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)), E2E playbook markdown — same coverage as the former single `npm run build` |
 
-Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup). `build:full` runs the daily backup, silence-emitters, then `build:all-tooling`, and writes a review log.
+Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup). `build:full` runs the daily backup, silence-emitters, then `build:all-tooling`, and writes a review log. At the end of Full tooling, after session-start assetbundle pruning writes `TS_Save_9001.json`, Full runs **Bundle Into Save** (`npm run tts-save:bundle-into-save`) so the main save and the session-start copy both get current scripts from `.tts/objects` without needing TTS or Save & Play. The session-start Global (restore block) is left alone.
 
 Full also runs `complications:decks` after cloud asset sync and consolidation. It assembles the two source decks from the eight private deck sheet PNGs and checked-in sidecars, and skips unchanged inputs. Install filenames and load/verification instructions: [Complications deck assembly](../.tools/complications/decks/README.md). Main/XML builds do not regenerate these decks.
 
@@ -109,9 +109,24 @@ Official reference: [Module resolution](https://github.com/rolandostar/tabletops
 1. Edit `.tts/bundled/Global.lua` directly
 2. Use "Save and Play (Bundled)" to send as-is (no bundling)
 
+### Bundle Into Save (all matching objects, no TTS)
+
+Preferred offline install: bundle every stub under `.tts/objects` and write `LuaScript` / `XmlUI` into save JSON by GUID (including objects nested in containers). Does not need TTS running.
+
+**FULL:** runs automatically after session-start pruning (`TS_Save_230` + `TS_Save_9001`, with Global preserved on 9001).
+
+**Manual:**
+
+```text
+npm run tts-save:bundle-into-save
+npm run tts-save:bundle-into-save -- --saveName 230 --sessionSaveName 9001 --no-backup
+```
+
+Requires a sibling build of [tts-tools](../../tts-tools) `packages/savefile` (`npm run build --prefix packages/savefile`). Object stubs must already exist under `.tts/objects` (Get Objects / prior sync). Extension command: **TTS Editor: Bundle Into Save**.
+
 ### Inject bundled Global into save JSON (no External Editor send)
 
-When extension **Save & Play** hangs on “Sending Scripts” (often due to ~150 MB of duplicated object bundles), you can patch **Global only** directly into the on-disk save file — same parse → mutate → backup → write pattern as [`cloud-asset-sync.js`](../.tools/cloud-asset-sync.js).
+When you only need **Global** (or extension **Save & Play** hangs on “Sending Scripts” from huge object bundles), you can patch Global only into the on-disk save file — same parse → mutate → backup → write pattern as [`cloud-asset-sync.js`](../.tools/cloud-asset-sync.js). Prefer **Bundle Into Save** when object scripts should update too.
 
 **Prerequisites**
 

@@ -69,6 +69,7 @@
     "tts-save:prune-component-tags:apply": "node .tools/tts-save/prune-save-component-tags.js --save .dev/TS_Save_230.json",
     "tts-save:extract-save-inventory": "npm run tts-save:extract-assets -- --outBasename save-assets-latest && npm run tts-save:extract-entities",
     "tts-save:inject-global": "node .tools/tts-save/inject-bundled-global-from-save-name.js",
+    "tts-save:bundle-into-save": "node .tools/tts-save/bundle-into-save.js",
     "tts-save:inject-join-minimal": "node .tools/tts-save/inject-join-minimal-xml.js",
     "tts-save:session-start": "node .tools/tts-save/build-session-start.js",
     "tts-save:session-start:test": "node --test .tools/tts-save/session-start-assets.test.js .tools/tts-save/session-start-review.test.js .tools/tts-save/stage-geometry.test.js .tools/tts-save/full-onboarding.test.js && fengari .tools/complications/run.lua .tools/tts-save/session-start-runtime.test.lua && fengari .tools/complications/run.lua .tools/tts-save/stage-geometry-runtime.test.lua",
