@@ -21,7 +21,7 @@ Status: current
 
 1. **`assets/` is the only source.** A file exists for TTS when it is in `assets/` and `npm run cloud-asset-sync` (or `build:full`) has pushed it. Removing it locally removes it from Cloud after its references are purged.
 2. **Every link comes from a job.** Save rows, object images, Lua URL tables, and dashboard catalogs are written by a job from the Cloud link of a local file. Never paste a `steamusercontent` or GitHub raw link into code, XML, or data.
-3. **One name, one owner.** A row name is produced by exactly one job. No repo copy, GitHub fallback, or second folder may shadow a job-owned name.
+3. **One name, one owner.** A row name is produced by exactly one job. A copy of that file outside `assets/` can shadow the Cloud file, so the ownership check fails on those copies. Copies under `.dev/` are for other apps and are left alone.
 4. **File names carry their row name.** Job patterns need a literal prefix or suffix (`^toggle_(.*)\.webp$`), so stray files are never adopted. Jobs without one are skipped with a warning.
 5. **Purging is automatic.** A job removes rows in its name family that no job owns any more. A row a job should keep must have its file in that job's folder.
 6. **TTS closed for Cloud writes.** The push and consolidate steps are skipped (with a warning) while TTS is open; never edit the Cloud index or save by hand while a sync runs.

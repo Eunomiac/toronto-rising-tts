@@ -6,7 +6,8 @@
  *
  * Fails on:
  *   - hand-typed Steam Cloud / GitHub raw art links outside generated files (EXTERNAL lists the allowed exceptions)
- *   - tracked repo images named like a job-owned row (a fallback copy that could shadow the Cloud file)
+ *   - tracked images outside assets/ and .dev/ named like a job-owned row (a fallback copy that could shadow the Cloud file).
+ *     Copies under .dev/ belong to other apps and are ignored.
  *   - save-writing jobs without a purge family (validateConfig)
  * Warns on:
  *   - jobs skipped for a pattern with no distinguishing literal
@@ -63,9 +64,10 @@ function handTypedLinks() {
 
 function shadowingRepoImages(ownedNames) {
   return gitFiles(["ls-files", "--cached", "--others", "--exclude-standard"])
+    .map((rel) => rel.replace(/\\/g, "/"))
     .filter((rel) => /\.(webp|png|jpe?g)$/i.test(rel))
+    .filter((rel) => !rel.startsWith("assets/") && !rel.startsWith(".dev/"))
     .filter((rel) => fs.existsSync(path.join(REPO_ROOT, rel)))
-    .filter((rel) => !rel.replace(/\\/g, "/").startsWith("assets/"))
     .filter((rel) => ownedNames.has(path.posix.basename(rel).replace(/\.[^.]+$/, "")));
 }
 
