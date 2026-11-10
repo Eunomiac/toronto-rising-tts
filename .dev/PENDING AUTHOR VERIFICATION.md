@@ -31,17 +31,23 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-770 — Scene and Scatter stall probes identify the operation before the freeze
+
+> **Agent-assessment note:** Automated checks cover probe routing, scheduler-drift bookkeeping, and single-owner Scatter entry. Only the live TTS engine can show which heartbeat is delayed by the familiar hang.
+
+**How to verify:** Save & Play. Open `.dev/testbed/TEST BED.ttslua`, select the complete `SceneStallProbe` function, and run **Execute Code** once. Follow [Scene and Scatter Stall Isolation](E2E%20Playbooks/Scene-Stall-Isolation.md), running one commented example at a time. Start with `baseline` and `census`, then run the Scatter or scene slices in order. Each action should print `START`, `RETURN`, `HEARTBEAT 0`, and `HEARTBEAT 250`. Stop after the first heartbeat delayed by the familiar freeze and keep that block plus the one before it. This identifies the next fix; it does not by itself prove TOR-769 (the joined-client disconnect incident) is fixed.
+
 #### 🟡 TOR-768 — Assume Connected shows the players at the table on the dashboard
 
 > **Agent-assessment note:** The code now sends the seat list after a connection change. You still need to watch the dashboard, because only the live screen shows whether the players appear without a restart.
 
 **How to verify:** Save & Play, and leave the Storyteller Dashboard server running. On the debug panel, click **Assume Connected**. The players should show up at the table on the dashboard (the scene board, and their Scatter groups if Scatter is on) without you stopping and restarting the dashboard.
 
-#### 🟡 TOR-767 — Moving one player between Scatter groups leaves the NPCs where they are
+#### ⏰ 🟡 TOR-767 — Moving one player between Scatter groups leaves the NPCs where they are
 
-> **Agent-assessment note:** The move still touches only that player. The figurine and seat objects now stay locked through the physics step that was freezing the table after the timing lines. Hand cards stay unlocked so they remain in the hand. You still need to watch a live move.
+> **Agent-assessment note:** The move now touches only that player, but the locking follow-up did not stop the freeze. This check is paused while TOR-769 isolates the engine work that happens after the Lua timing lines.
 
-**How to verify:** Save & Play. Enter Scatter mode with several NPCs and at least two groups. Note where the NPC figurines and the other players are standing. Move one player to another group, from that player's group strip or from the Storyteller Dashboard. That player's figurine, hand, bags, and sheet should move to the new group. The timing lines should print, and the table should not freeze after them. The other players and the NPC figurines should stay where they were. One more line, `script resumed … ms after the scatter report`, should follow almost at once. Moving an NPC between groups should still shift the NPCs, because their spacing depends on how many are in the group.
+**How to verify after the watch is cleared:** Save & Play. Enter Scatter mode with several NPCs and at least two groups. Note where the NPC figurines and the other players are standing. Move one player to another group, from that player's group strip or from the Storyteller Dashboard. That player's figurine, hand, bags, and sheet should move to the new group. The other players and the NPC figurines should stay where they were. Moving an NPC between groups should still shift the NPCs, because their spacing depends on how many are in the group.
 
 #### 🟡 TOR-766 — Preload, scene cover, and Scatter group moves print a timing report
 

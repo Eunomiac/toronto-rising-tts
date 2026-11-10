@@ -859,5 +859,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-11-08 | SHIP | TOR-767 | Follow-up: the freeze continued after the timing lines because every player's objects and every Scatter portrait were still updated. A player move now touches that player only. Stays Awaiting Author Review. |
 | 2026-11-08 | SHIP | TOR-768 | Assume Connected (and any connection change that seats or unseats a PC) marks the dashboard seats slice dirty. relatedTo TOR-631. Awaiting Author Review; one PAV row. |
 | 2026-11-08 | SHIP | TOR-767 | Follow-up: the freeze is after the script returns. The pile stays locked through the physics step; hand cards stay unlocked and move with collision off. Stays Awaiting Author Review. |
+| 2026-11-09 | CORRECT | TOR-767 | Live testing disproved the physics-lock diagnosis; the player-only move remains shipped, but its PAV row is paused while TOR-769 isolates the post-script stall. |
+| 2026-11-09 | START | TOR-769 | Urgent bug: Council Chamber → Elysium stalled during a nominal two-second hold and disconnected all five joined clients. In Progress; relatedTo TOR-760, TOR-766, TOR-767. |
+| 2026-11-09 | SHIP | TOR-770 | Production-path scene/Scatter probes, scheduler-drift reporting, clearer NPC creation/loading semantics, and one-owner Scatter entry. Awaiting Author Review; one PAV row. TOR-769 remains open until a heavy multiclient transition succeeds. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -53,7 +53,29 @@ Each library scene now has a **Preload** button. It reserves and creates only th
 
 The pool is deliberately cold until the button is clicked. A bad reservation or failed preload sequence disables pool reuse for the session, tells the Storyteller that ordinary spawning remains available, and leaves the normal on-demand path intact. Full NPC-world reset also disables it. `DEBUG.inspectNpcPreloadPool()` prints a one-shot record of reserved, parked, complete, and image-ready pairs.
 
-Preload, a covered scene transition, and a Scatter player group change each print one `[SceneLoad]` timing block when they finish. `DEBUG.sceneLoadReport()` reprints the recent blocks and writes `.dev/.debug/scene-load-report.txt`. The block separates the cover's scheduled holds from world work, and it lists NPC figurines that were spawned, reused, still loading, or sent through an image reload. A player group change does not pose NPC figurines; its block should show player seat objects only.
+Preload, a covered scene transition, and a Scatter player group change each print one `[SceneLoad]` timing block when they finish. `DEBUG.sceneLoadReport()` reprints the recent blocks and writes `.dev/.debug/scene-load-report.txt`. The block separates the cover's scheduled holds from world work, and it lists NPC figurines that were created during the action, already live before an application, still loading, or sent through an image reload. A player group change does not pose NPC figurines; its block should show player seat objects only.
+
+### TOR-769 stall isolation
+
+A five-client Council Chamber → Elysium transition exposed a more severe failure: the nominal
+two-second fade-in hold resumed about 100 seconds later and all five joined clients disconnected.
+The earlier theory that unlocked Scatter teleports caused the related player-group freeze was tested
+and failed.
+
+The timing report now compares host elapsed time with `Time.time`. A large difference is scheduler
+drift: Lua returned, but TTS did not advance the game-time wait or run the next callback. NPC rows
+say **created this action** and **already live before a call** instead of merging those observations
+under the ambiguous spawned/reused labels. Loading flags are refreshed when the report closes.
+
+`DEBUG.sceneStallProbe(action, spec)` re-applies one current-state production slice and prints a
+return line followed by zero-delay and 0.25-second heartbeats. The TEST BED dispatcher and
+plain-English order are in [Scene-Stall-Isolation.md](../E2E%20Playbooks/Scene-Stall-Isolation.md).
+The probes are explicit diagnostics and do no recurring work.
+
+Scatter entry now has one physical layout owner. `ScatterMode.enter` prepares Scatter state and
+chrome, then `Sync.npcs` reaches reconciler Step Five once. Step Three defers its Scatter table
+layout when Step Five is enabled, so the old enter + seat commit + Step Five triple application is
+gone. This is confirmed waste removal, not yet proof that the client-disconnect incident is fixed.
 
 ## 3. Spotlight transitions
 

@@ -2678,7 +2678,9 @@ end
 --- When skipped, the layout's light/overlay tail still runs so PC presence lights stay state-derived.
 --- @param intent table
 --- @param force boolean orchestrator `force`
-local function commitNpcSeatLayout(intent, force)
+--- @param opts table|nil `{ deferScatterWorldLayout?: boolean }`
+local function commitNpcSeatLayout(intent, force, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     local physicalSeatAllowedBySeat = {}
     local psaLines = {}
     for _, seatKey in ipairs(C.NPCSeats or {}) do
@@ -2703,18 +2705,24 @@ local function commitNpcSeatLayout(intent, force)
         or npcSeatWorkThisPass
         or commitKey ~= lastNpcLayoutCommit.commitKey
         or not rsl.isLayoutSyncCurrent(tableKey)
+    local scatterLayoutDeferred = mustLayout
+        and opts.deferScatterWorldLayout == true
+        and require("core.scatter_mode").isActive()
     if mustLayout then
-        npcReconcileLayoutContext = {
-            physicalSeatAllowedBySeat = physicalSeatAllowedBySeat,
-        }
-        rsl.SyncTable(tableKey, { force = true })
-        npcReconcileLayoutContext = nil
+        if not scatterLayoutDeferred then
+            npcReconcileLayoutContext = {
+                physicalSeatAllowedBySeat = physicalSeatAllowedBySeat,
+            }
+            rsl.SyncTable(tableKey, { force = true })
+            npcReconcileLayoutContext = nil
+        end
     else
         L.reconcileAllPlayers({ skipNpcSeats = true, skipStageBoundNpcSeats = true })
         require("core.hud_overlays").syncAll()
     end
     require("lib.sync_trace").report("NPCS.commitNpcSeatLayout", {
-        outcome = mustLayout and "layout" or "skipped",
+        outcome = scatterLayoutDeferred and "deferred_to_scatter_step_five"
+            or (mustLayout and "layout" or "skipped"),
         seatWork = tostring(npcSeatWorkThisPass),
     })
     lastNpcLayoutCommit = {
@@ -2728,7 +2736,7 @@ end
 --- @param intent table
 --- @param force boolean orchestrator `force`
 --- @return boolean allOk
-local function reconcileStepThreeSeatPlacements(intent, force)
+local function reconcileStepThreeSeatPlacements(intent, force, opts)
     local allOk = true
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         if seatNeedsPlacement(seatKey, intent) then
@@ -2754,7 +2762,9 @@ local function reconcileStepThreeSeatPlacements(intent, force)
             end
         end
     end
-    commitNpcSeatLayout(intent, force)
+    commitNpcSeatLayout(intent, force, {
+        deferScatterWorldLayout = reconcileStepEnabled(opts or {}, 5),
+    })
     return allOk
 end
 
@@ -2923,7 +2933,7 @@ function NPCS.reconcileAllFromState(opts)
         traceLoadMark("npc seat removals")
     end
     if reconcileStepEnabled(opts, 3) then
-        if not reconcileStepThreeSeatPlacements(intent, force) then
+        if not reconcileStepThreeSeatPlacements(intent, force, opts) then
             allOk = false
         end
         traceLoadMark("npc seat placements")

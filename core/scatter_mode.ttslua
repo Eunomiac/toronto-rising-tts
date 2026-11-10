@@ -860,9 +860,9 @@ function ScatterMode.enter(opts)
     end
     hideAllPhysicalTables()
     applyScatterPlayfieldOrigin()
-    ScatterMode.applyWorldLayout()
     applyScatterWorldChrome(true)
     local Sync = require("core.sync")
+    -- Sync.npcs owns the single physical Scatter layout through reconciler Step Five.
     Sync.npcs({ reason = "scatter_enter" })
 end
 
