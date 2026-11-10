@@ -4,7 +4,7 @@
 
 Read this when:
 - making the Storyteller Dashboard stay current with live play without polling TTS
-- adding a `sendExternalMessage` call or a new push topic
+- adding a dashboard push topic or changing the tagged console envelope
 - adding a dashboard tab that shows live `gameState`
 
 Source of truth:
@@ -18,7 +18,7 @@ Source of truth:
 - Agent guide for dashboard designers (what to listen for): [Listening to TTS.md](Listening%20to%20TTS.md)
 
 Verification:
-- § Verification below; Trace Sync shows `DashPush.seat` and `DashPush.world` rows with `sent` / `skipped`
+- § Verification below; Trace Sync shows `DashPush.seat` and `DashPush.world` rows with `emitted` / `skipped`
 - `npm test` in `.dev/storyteller-dashboard/` (`livePush.test.ts`, `ttsEvents.test.ts`, `worldState.test.ts`)
 
 Status:
@@ -37,18 +37,20 @@ Mutation (state only)
   → Sync.player(color)                    one announcer per touched seat
       → … lights, HUD, overlays, dice bags, CSHEET slices, PCs row …
       → DashPush.seat(color)              skip if encoded payload unchanged
-          → sendExternalMessage({...})    one-way, port 39998, no reply
-              → TTS Tools gateway          broadcasts table custom messages to every client
+          → print("<@DASHBOARD@>" .. JSON) passive console event, port 39998
+              → TTS Tools gateway          unicasts by route tag and strips the prefix
                   → dashboard server       keeps type == "dashboard", caches latest per topic/seat
                       → SSE /api/tts/events → browser tab merges the seat
 ```
 
-- `print` and `sendExternalMessage` use the same one-way connection the TTS Tools console already uses. Nothing in TTS waits for a reply.
-- The gateway's `<@TAG@>` unicast only works on text bodies, so table pushes are broadcast. The TTS Tools extension acts only on `type` `object` / `write`, so dashboard messages pass through it harmlessly.
-- When the gateway is down, the dashboard binds 39998 itself (direct mode) and receives the same messages.
+- Dashboard pushes use only ordinary `print`. Live gameplay must never call the blocking external-message API: large payloads froze the host long enough to disconnect every joined client.
+- The gateway recognizes `<@DASHBOARD@>` on the console string, delivers it only to the registered dashboard client, and strips the tag.
+- When the gateway is down, the dashboard binds 39998 itself (direct mode), receives the tagged print, and strips the tag in `parseDashboardPrint`.
 - TTS's own **loading a new game** event (`messageID` 1) becomes a `reload` topic on the dashboard.
 
-There is **no subscribe handshake, session id, sequence number or per-frame batching**. The author runs the dashboard as a co-component of every session, and pushes are small. The only guard against an absent extension is a one-time printed notice when `sendExternalMessage` is nil.
+There is **no subscribe handshake, session id or sequence number**. Dirty world slices are coalesced
+into one flush after 0.25 seconds. When the dashboard is absent, tagged lines remain ordinary TTS
+console output; no request waits for a dashboard response.
 
 ## 3. Messages
 
@@ -65,14 +67,16 @@ There is **no subscribe handshake, session id, sequence number or per-frame batc
 | `seats` | world flush | PC and NPC seat rows (table slot, `isPresent`, PC `absentFromSession`), stage NPCs with board position, spotlight order and front index | same |
 | `rolls` | world flush | each PC's live or last finished roll, the Storyteller drawers and live NPC roll, Werewolf NPCs, Oblivion-Rouse seats ([Listening to TTS](Listening%20to%20TTS.md) § 2) | Scenes tab Rolls cell redraws |
 
-Envelope from Lua: `{ type = "dashboard", v = 1, topic = "...", color?, json? }`. The server parses `json` into `data`, stamps `at` (server receive time, epoch ms) and forwards `{ topic, color?, data?, at }` as one SSE `data:` line.
+Console envelope from Lua: `<@DASHBOARD@>{"type":"dashboard","v":1,"topic":"...","color"?:...,"data"?:...}`.
+The gateway strips the route tag. The server parses the JSON, stamps `at` (server receive time, epoch
+ms), and forwards `{ topic, color?, data?, at }` as one SSE `data:` line.
 
 ### 3a. World topics — coalesced flush
 
 The six world topics share one mechanism in `dashboard/push.ttslua`:
 
 - `DashPush.markWorldDirty({ slice = true, … })` only records the slice names (O(1)). The first mark schedules one `U.await` flush **0.25 s** later, so a burst of syncs (scene Apply, phase change) sends each slice at most once.
-- The flush builds each dirty slice (`W.build`), encodes it, and skips it when the string equals the last one sent. Each slice reports `DashPush.world` with `slice`, `outcome` (`sent` / `skipped`) and `bytes` to Trace Sync.
+- The flush builds each dirty slice (`W.build`), encodes it, and skips it when the string equals the last one emitted. Each slice reports `DashPush.world` with `slice`, `outcome` (`emitted` / `skipped`) and `bytes` to Trace Sync.
 - Mark sites:
 
 | Site | Slices |
@@ -99,13 +103,15 @@ TTS does not stream the ticking clock. The `clock` slice is an anchor: `scene`, 
 - `GET /api/tts/cache` returns the server's cached latest events (`[{ topic, color?, data?, at }]`). Use it to eyeball what TTS last pushed.
 - A new SSE client is replayed the cache. If the dashboard server restarted mid-session, the cache is empty until each slice next changes; `refreshWorldSnapshot()` (client) calls `GlobalDashboardWorldSnapshot` once and fills only slices no push has delivered.
 
-**The envelope must stay flat.** A `sendExternalMessage` table that contains a nested table never reaches any gateway client (tested 2026-10-08: a flat message and a flat message with a 7 KB JSON string field both arrived; `{ data = { hunger = 2 } }` did not). Any structured payload travels as a JSON string field. `DashPush.seat` already encodes the seat for its unchanged-payload check, so it sends that string.
+`DashPush.seat` and world slices encode their data once for the unchanged-payload fingerprint, then
+insert that valid JSON directly into the outer envelope. Do not encode the payload as a JSON string:
+the server expects `data` to be the structured value.
 
 `DashPush.seat` ignores colors outside `C.PlayerColors`, seats with no player id, and the Storyteller. It keeps the last encoded payload per color, so repeat `Sync.player` calls with no visible change send nothing. `GlobalSetPlayerDesire` with `syncText = true` (end of desire editing on the CSHEET) calls `DashPush.seat` directly, because desire keystrokes deliberately skip the full announcer.
 
 ## 4. Dashboard server and client
 
-- **Server:** `bindSession` adds `customMessage` and `loadingANewGame` listeners next to `status`. `parseDashboardPush` keeps only `type == "dashboard"` and `v == 1`. `TtsEventHub` caches the latest event per `topic:color`, replays the cache to each new SSE client, and sends a comment heartbeat every 25 seconds (server-side only — nothing reaches TTS). Opening the SSE stream auto-connects the bridge (`getBridgeStatus`), so pushes arrive even before a tab calls execute-lua.
+- **Server:** `bindSession` adds persistent `print` and `loadingANewGame` listeners next to `status`. `parseDashboardPrint` accepts gateway-stripped JSON and direct-mode tagged lines, then keeps only `type == "dashboard"` and `v == 1`. `TtsEventHub` caches the latest event per `topic:color`, replays the cache to each new SSE client, and sends a comment heartbeat every 25 seconds (server-side only — nothing reaches TTS). Opening the SSE stream auto-connects the bridge (`getBridgeStatus`), so pushes arrive even before a tab calls execute-lua.
 - **Client:** one shared `EventSource` opened by the first subscriber and closed with the last. The browser reconnects it automatically; the server replay brings the tab current.
 - **Optimistic edits win:** while the PCs tab's apply queue or a modal `applyNow` is in flight, `pcSeat` pushes are dropped. TTS runs the apply (which announces the seat) before it answers, so the apply's returned snapshot already includes that state.
 
@@ -116,13 +122,14 @@ TTS does not stream the ticking clock. The `clock` slice is an anchor: `scene`, 
 - New per-seat data reaches the dashboard by being in `snapshotSeat` — do not add `DashPush.seat` calls at mutation sites. Call `Sync.player(color)` instead.
 - New world data reaches the dashboard by being in a `world_snapshot` builder. Add a `markWorldDirty` call only where a mutation bypasses `UpdateUIDisplays`, and never on a per-frame or per-tick path.
 - A new topic must name its Lua call site(s) and the dashboard reaction in § 3, and its entry in [Listening to TTS.md](Listening%20to%20TTS.md).
-- Heavy-workload rows: `sendExternalMessage` and `JSON.encode` in `TTS-API-Heavy-Workload-Catalog.md` / `TTS-API-Heavy-Workload-Usage-Inventory.md`.
+- The Lua API gate forbids the blocking external-message API outside the strict solo-only debug-file writer.
+- Heavy-workload rows: tagged dashboard `print` and `JSON.encode` in `TTS-API-Heavy-Workload-Catalog.md` / `TTS-API-Heavy-Workload-Usage-Inventory.md`.
 
 ## 6. Verification
 
 1. With the dashboard PCs tab open, change a PC in TTS (damage from the in-game PCs panel, a Rouse stain from a roll, a CSHEET dot). The tab updates within about a second without pressing anything.
-2. Trace Sync shows one `Sync.player` and one `DashPush.seat … sent` per change; a repeat with no visible change shows `skipped`.
+2. Trace Sync shows one `Sync.player` and one `DashPush.seat … emitted` per change; a repeat with no visible change shows `skipped`.
 3. Reload the save in TTS. The PCs tab refreshes once.
 4. Edit a project in TTS (Projects panel). Page 5 on the dashboard refetches.
 5. Close the dashboard server and play a few minutes. TTS should show no hitch while nothing listens on port 39998 (not yet confirmed in a live session).
-6. Advance the Play subphase, apply a clock change, Apply on the control board, and drag a Sound volume slider. Trace Sync shows `DashPush.world` rows (one `sent` per changed slice per burst), and `http://127.0.0.1:8788/api/tts/cache` shows the matching `phase` / `clock` / `seats` / `soundscape` entries.
+6. Advance the Play subphase, apply a clock change, Apply on the control board, and drag a Sound volume slider. Trace Sync shows `DashPush.world` rows (one `emitted` per changed slice per burst), and `http://127.0.0.1:8788/api/tts/cache` shows the matching `phase` / `clock` / `seats` / `soundscape` entries.

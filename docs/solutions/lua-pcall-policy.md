@@ -13,8 +13,17 @@ Run `npm run check:pcall-gate` (see `.tools/pcall-gate/check-pcall-gate.mjs`). I
 - **`waitCondition`** — `\bWait\.condition\s*\(` outside `lib/util.ttslua` only
 - **`setXml`** — `\bsetXml\s*\(` in all scanned trees (`UI.setXml`, `self.UI.setXml`, …)
 - **`setXmlTable`** — `\bsetXmlTable\s*\(` in all scanned trees
+- **`sendExternalMessage` hard prohibition** — any reference outside
+  `lib/debug_external_write.ttslua` fails immediately. Unlike the numeric metrics, there is no
+  baseline to raise. The sole allowed file is an explicit debug exporter that refuses multiplayer.
 
-That includes **comments and strings** that contain those substrings — avoid prose like `` `pcall(require)` `` or `` `Wait.time(...)` `` in comments outside util or counts will be inflated. Log format: `ISO8601\tpcall=N\twaitTime=N\twaitCondition=N\tsetXml=N\tsetXmlTable=N` in `.dev/build-logs/pcall-gate.txt`. The script **exits with an error** if any metric is **greater** than the last logged baseline. To approve increases, edit the **last** data line (or append) with counts ≥ the new totals, then re-run.
+The scan covers `core/`, `dashboard/`, `global/`, `lib/`, `objects/`, and `ui/`. Numeric metrics
+include comments and strings that contain those substrings, so avoid prose like
+`` `pcall(require)` `` or `` `Wait.time(...)` `` in comments outside util. Log format:
+`ISO8601\tpcall=N\twaitTime=N\twaitCondition=N\tsetXml=N\tsetXmlTable=N` in
+`.dev/build-logs/pcall-gate.txt`. The script **exits with an error** if any numeric metric is greater
+than the last logged baseline. To approve those increases, edit the last data line (or append) with
+counts at least as high as the new totals, then re-run.
 
 Wait API policy detail: [`lua-wait-api-policy.md`](lua-wait-api-policy.md). Full-UI XML policy: [`lua-ui-full-xml-policy.md`](lua-ui-full-xml-policy.md). Local function order: [`lua-local-function-order.md`](lua-local-function-order.md).
 

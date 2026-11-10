@@ -579,7 +579,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `DashPush.seat(color)` | Sends the slim seat snapshot when it differs from the last one sent. Called by `Sync.player`; do not call from mutation sites | (internal to `Sync.player`) |
+| `DashPush.seat(color)` | Emits the slim seat snapshot through the `<@DASHBOARD@>` console route when it differs from the last one emitted. Called by `Sync.player`; do not call from mutation sites | (internal to `Sync.player`) |
 | `DashPush.projects()` | Tells the dashboard the project list changed | `Projects.refreshAfterMutation` |
 | `DashPush.markWorldDirty(slices)` | Marks world slices (`phase`, `scene`, `clock`, `soundscape`, `seats`, `rolls`) for one coalesced push 0.25 s later; unchanged slices are skipped; errors on an unknown slice. Only needed where a mutation bypasses `UpdateUIDisplays` | `require("dashboard.push").markWorldDirty({ seats = true })` |
 | `DashPush.markAllWorldDirty()` | Marks every world slice (full `UpdateUIDisplays`) | (internal to `UpdateUIDisplays`) |

@@ -126,7 +126,9 @@ Order:
 4. `HO.reconcileForSeat(color)` — preceded by `HO.invalidateSeatCache(color)` when `opts.forceOverlays` (hunger changes, TOR-340).
 5. When the seat has a PC: `DBV.reconcileForPlayer` (Rouse / Oblivion-Rouse bag visibility), then `CharacterSheets.refreshCharacterSheetsForColor(color)` — Global slice fingerprints (`core/csheet_slices.ttslua`) call only CSHEET pages whose slice changed; Prince's Court trackers always reconcile (they show hunger).
 6. Clear the `Sync.full` seat-presentation fingerprint (other seats were not reconciled; TOR-672).
-7. `DashPush.seat(color)` (`dashboard/push.ttslua`) — slim seat snapshot to the Storyteller Dashboard via `sendExternalMessage`, skipped when the encoded payload is unchanged (TOR-676).
+7. `DashPush.seat(color)` (`dashboard/push.ttslua`) — slim seat snapshot to the Storyteller Dashboard
+   through the gateway's `<@DASHBOARD@>` tagged console route, skipped when the encoded payload is
+   unchanged (TOR-676).
 
 It skips scene ambient lighting, top fog, soundscape, NPC scene layout, scene-library mirroring, bootstrap light initialization, deferred retries, and the Scenes / Stats / Projects panels. Those domains do not depend on a single PC mutation.
 

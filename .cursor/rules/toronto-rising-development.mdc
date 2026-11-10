@@ -28,6 +28,12 @@ Host Lua waits use **`U.stagger` / `U.chain` / `U.await`** only — see [`docs/s
 ## Console `print` ordering
 TTS does not reliably show multiple `print` calls from one function in source order. In `U.chain` / `U.stagger`, put **each** `print` / `printHeader` in its own step function ([Dice-E2E.md](../../.dev/E2E%20Playbooks/Dice-E2E.md)). Use `log(...)` for table dumps when sequential formatting is not required. Canonical rule: [`.dev/TESTING.md`](../../.dev/TESTING.md#console-print-ordering-tts).
 
+## External application messages
+Live code must never call **`sendExternalMessage`**. Dashboard and application traffic uses the
+gateway's passive `<@TAG@>` console routing. `npm run check:pcall-gate` hard-fails every reference
+outside `lib/debug_external_write.ttslua`; that sole authority accepts explicit debug file exports
+only and refuses while more than one player is connected.
+
 ## TTS API heavy-workload guardrails
 Before merging Lua/XML changes that touch TTS APIs, read [TTS API Heavy-Workload Catalog](../../.dev/Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Catalog.md), [TTS API Heavy-Workload Usage Inventory](../../.dev/Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md), [Performance Audit](../../.dev/Sychronizing%20Game%20Functionality/Performance%20Audit.md), and [Event Listener Policy](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md). In hot callbacks, timers, repeated reconcilers, scene/table/seat/location apply paths, UI fan-out, and object scan/spawn/component-update paths, require a cheap guard or skip condition before expensive work: GUID/object identity, seat/color/tag bound, cached index, fingerprint/dirty check, narrower sync delta, chunk/defer plan, or explicit cold/setup/debug-only note. Do not duplicate broad `StorytellerScenesPanel.refresh`, `UpdateUIDisplays`, full HUD, top-fog, CSHEET, or other broad refreshes immediately after `Sync.full`, `Sync.player`, or a domain reconciler without documenting the missing delta.
 

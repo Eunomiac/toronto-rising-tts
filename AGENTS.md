@@ -122,6 +122,10 @@ Generated files, save snapshots, local tool apps, chronicle data, active task no
 - For Lua, define `local function` helpers above every caller in the same chunk or forward-declare them.
 - **Hide / reveal objects:** Every off-table park at `y = C.HIDDEN_OBJECT_WORLD_Y` (-200) must use `O.hideObject` / `O.restoreObject` in Global code, or `GlobalHideObject` / `GlobalRestoreObject` from object scripts — never hand-roll `setPosition({ y = -200 })` plus inline `setInvisibleTo`. See [`docs/solutions/lua-hide-restore-policy.md`](docs/solutions/lua-hide-restore-policy.md) and [`.cursor/rules/toronto-rising-hide-restore.mdc`](.cursor/rules/toronto-rising-hide-restore.mdc).
 - Object-hosted scripts must not require broad `core.*` or `lib.constants` graphs; route mutations through `Global.call`.
+- **No live `sendExternalMessage`:** dashboard/app traffic uses `<@TAG@>` console routing. The Lua API
+  gate permits this API only in `lib/debug_external_write.ttslua`, whose explicit file exports refuse
+  multiplayer use. Never call it from gameplay, synchronization, transitions, load, timers, or
+  object scripts.
 - Timing: use the **timing contract** `U.stagger` / `U.chain` / `U.await` (`docs/solutions/lua-wait-api-policy.md`); no raw `Wait.time` / `Wait.condition` / `Wait.stop` outside `lib/util.ttslua`. In `U.chain`, **`return <seconds>`** from a step to delay before the next (prefer that over a no-op `U.await` step).
 - Console `print` order is unreliable in TTS when several prints share one function. In `U.chain` / `U.stagger`, isolate each `print` / `printHeader` in its own step (see [Dice-E2E.md](.dev/E2E%20Playbooks/Dice-E2E.md)); use `log` for table dumps. Canonical rule: [`.dev/TESTING.md`](.dev/TESTING.md#console-print-ordering-tts).
 - Fail loudly. Do not add silent fallbacks or unannotated `pcall` in production paths.

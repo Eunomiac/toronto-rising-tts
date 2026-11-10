@@ -224,7 +224,8 @@ See [TTS_MCP.md](TTS_MCP.md) for the bundled MCP server and agent guidance.
 
 ### Issue 2a: Module only used inside functions → missing from bundle
 
-**Symptom**: Console shows `DEBUG.workspaceNdjsonBegin: lib.workspace_ndjson_log unavailable` (or `require failed: ...`) while other `sendExternalMessage` writes (e.g. `Print State` / `game_state.txt`) still work.
+**Symptom**: Console shows `DEBUG.workspaceNdjsonBegin: lib.workspace_ndjson_log unavailable` (or
+`require failed: ...`) while another explicit debug export such as **Print State** still works.
 
 **Cause**: Some bundlers only pull in modules reachable from **top-level** `require("...")` on the dependency graph. A module loaded **only** via `pcall(require, ...)` inside a function may never be embedded, so it is missing at runtime.
 

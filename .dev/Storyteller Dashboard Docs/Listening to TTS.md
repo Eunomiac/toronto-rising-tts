@@ -105,12 +105,16 @@ Prefer, in order:
 2. **Add a world slice** when the data is a separate concern with its own triggers: add the builder and its name to `W.SLICES`, mark it at its mutation/reconcile sites, add the client type and topic to `worldState.ts`, and add tests.
 3. **Fetch on demand** when the data is large, rarely changes, or is only needed while one view is open.
 
-Rules for any change on the TTS side: Global-only modules (never `require("dashboard.*")` from object scripts); no marks in per-frame or per-tick paths; payloads stay flat with structured data as the `json` string field; update this guide, Live Push Channel § 3, and the Lua half's Linear issue plus a Pending Author Verification row.
+Rules for any change on the TTS side: Global-only modules (never `require("dashboard.*")` from object
+scripts); no marks in per-frame or per-tick paths; emit one `<@DASHBOARD@>` tagged console envelope
+whose `data` field is structured JSON; never use the blocking external-message API; update this
+guide, Live Push Channel § 3, and the Lua half's Linear issue plus a Pending Author Verification row.
 
 ## 6. Checking it live
 
 - **What did TTS last send?** Open `http://127.0.0.1:8788/api/tts/cache`.
-- **Is TTS sending at all?** Turn on Trace Sync in TTS: each send logs `DashPush.seat` or `DashPush.world` with `sent` / `skipped` and the byte count.
+- **Is TTS emitting at all?** Turn on Trace Sync in TTS: each tagged console emit logs
+  `DashPush.seat` or `DashPush.world` with `emitted` / `skipped` and the byte count.
 - **Server changes need a restart** (`npm run dev` in `.dev/storyteller-dashboard/`); Lua changes need Save & Play.
 - If Trace Sync says `sent` but nothing arrives, suspect a nested table in the message (TTS drops those silently) or the server not connected to the gateway (`GET /api/tts-bridge-status`).
 

@@ -10,6 +10,7 @@ Read this when:
 Source of truth:
 - `core/debug.ttslua`
 - `lib/workspace_ndjson_log.ttslua`
+- `lib/debug_external_write.ttslua` — sole permitted external-message call site
 - `.tools/tts-bridge/`
 
 Verification:
@@ -18,7 +19,10 @@ Verification:
 
 Status: current logging workflow; `.dev/.debug/` output is ignored local runtime data.
 
-The debug module uses TTS **`sendExternalMessage`** with **`type: "write"`** so the game asks the **External Editor** bridge to create or overwrite a file under your opened workspace.
+The debug module routes explicit file exports through `lib/debug_external_write.ttslua`. This is the
+only game-facing file allowed to call TTS **`sendExternalMessage`**, and it refuses the write while
+more than one player is connected because the API can freeze the host long enough to disconnect
+joined clients. Never use debug file exports during a multiplayer session.
 
 **Where files land:** The repo **[`.tools/tts-bridge`](../.tools/tts-bridge)** listens on **localhost `39998`** (same inbound port as the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md)) and writes payloads to:
 
@@ -40,7 +44,7 @@ When adding **runtime logging** from Lua (especially **object scripts** or one-o
 | Use case | API | Notes |
 | -------- | --- | ----- |
 | Line-oriented console-style log (TTS `lua logToFile(...)`) | `DEBUG.logToFile` | Files under **`.dev/.debug/debug_logs/`** when the bridge is listening. |
-| One-off file body (overwrite) | `DEBUG.writeWorkspaceFile(relativePath, content, format?, silent?)` | `relativePath` is the **`name`** suffix (e.g. `debug_logs/npcs_panel.txt`). Prefer this over hand-rolled `sendExternalMessage` / `sendExternalCommand` writers (including Test Bed). |
+| One-off file body (overwrite) | `DEBUG.writeWorkspaceFile(relativePath, content, format?, silent?)` | `relativePath` is the **`name`** suffix (e.g. `debug_logs/npcs_panel.txt`). This is an explicit solo-only action; never hand-roll an external writer. |
 | Pretty JSON / scalars to string | `DEBUG.encodePretty(value)` | `JSON.encode_pretty` for tables; `tostring` otherwise. Does not print. |
 | Pretty-print to console | `DEBUG.printTable(value, label?)` | Uses `encodePretty`, then `print`. |
 | Format pose / tags for dumps | `DEBUG.fmtVec(v)` / `DEBUG.fmtTags(tags)` | Shared by audits and Test Bed. |
@@ -177,20 +181,26 @@ JSON pretty-printed when `format` is `"auto"`.
 ## Troubleshooting
 
 1. **Look under `.dev/.debug/`** — not `.tts/output/` or a top-level `debug_logs/` folder. Example: `toronto-rising-tts/.dev/.debug/debug_session.log`.
-2. **`sendExternalMessage` is nil** — Lua has **no path to the editor**; nothing is written and TTS prints a **`sendExternalMessage is nil`** line from `DEBUG.workspaceNdjsonBegin`. **Fix:** enable External Editor and ensure a bridge is listening on **39998** when you need file writes.
+2. **`[DebugExternalWrite] BLOCKED`** — more than one player is connected. Do not export files until
+   you are back in a solo debugging session.
 3. **`require lib.workspace_ndjson_log` failed** or **invalid** — often the Save & Play **bundle omitted** that module because it was only required inside functions. `core/debug.ttslua` includes a **top-level** `require("lib.workspace_ndjson_log")` so the bundler pulls it in. If you still see **`require failed:`**, read the error text and see **`.dev/TTS_BUNDLING_SETUP.md` (Issue 2a)**.
 4. **Multi-root workspace** — run npm scripts with **`cwd`** set to this repo.
 5. **`EADDRINUSE` on 39998** — run **`npm run tts-bridge:free-port`** (Cursor **Run Task → FREE TTS EDITOR PORT (39998)**) to stop leftover **node** listeners (dashboard / `tts-bridge:listen`). That leaves Cursor and Tabletop Simulator alone. Disable the TTS Tools extension only if you need its IPv6 bind released.
 
 ### After Save & Play: still no file?
 
-1. Open **TTS in-game console** (default `~`) and scroll for **`DEBUG.workspaceNdjsonBegin`** / **`sendExternalMessage`** lines.
-2. If you see **`sendExternalMessage is nil`**, fix External Editor connectivity first.
+1. Open **TTS in-game console** (default `~`) and scroll for `[DebugExternalWrite]` or
+   `DEBUG.workspaceNdjsonBegin` lines.
+2. If the exporter is unavailable, enable External Editor and ensure a bridge is listening on
+   **39998**. If it is blocked, disconnect joined clients before intentionally exporting.
 3. If you see **`NDJSON session + bootstrap line -> .dev/.debug/...`**, the write path is correct — open **`.dev/.debug/<filename>`** on disk (folder may be hidden in some UIs because it starts with `.`).
 
 ## Cursor “Debug Logs” panel vs these files
 
-**Cursor debug mode** can show a **Debug Logs** panel wired to an **HTTP ingest** (localhost). Logs from **Tabletop Simulator** use **`sendExternalMessage`** and land under **`.dev/.debug/`** when this repo’s bridge handles them. They are **not** posted to that HTTP ingest, so the panel may stay on **“Waiting for log entries…”** even when files are updating. Use the **on-disk path** (or TTS console `print` lines) to verify TTS instrumentation.
+**Cursor debug mode** can show a **Debug Logs** panel wired to an **HTTP ingest** (localhost).
+Explicit solo TTS file exports land under **`.dev/.debug/`** when this repo's bridge handles them.
+They are not posted to that HTTP ingest, so the panel may stay on **“Waiting for log entries…”**
+even when files are updating. Use the on-disk path or TTS console lines to verify instrumentation.
 
 ### “File disappeared” right after open
 

@@ -173,7 +173,10 @@ Canonical reference: [`docs/solutions/lua-hide-restore-policy.md`](../docs/solut
 
 ### Runtime logging and agent instrumentation
 
-- Workspace file output from **`sendExternalMessage`** `type: "write"` goes to **`.dev/.debug/`** when the repo **tts-bridge** listens on **39998** — see **`.dev/DEBUG_FILE_LOGGING.md`**.
+- Explicit solo-only workspace file output goes to **`.dev/.debug/`** when the repo **tts-bridge**
+  listens on **39998**. Live code must never call `sendExternalMessage`; the Lua API gate permits it
+  only inside `lib/debug_external_write.ttslua`, which refuses multiplayer use. See
+  **`.dev/DEBUG_FILE_LOGGING.md`**.
 - Use **`core/debug.ttslua`** helpers (`DEBUG.logToFile`, `DEBUG.writeWorkspaceFile`, **`DEBUG.workspaceNdjsonBegin`**, **`DEBUG.workspaceNdjsonAppend`**) instead of calling **`lib/workspace_ndjson_log`** directly from new code unless there is a specific exception.
 
 ## Module Dependencies

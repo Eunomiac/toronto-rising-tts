@@ -76,9 +76,15 @@ The first live isolation pass found the common boundary: the `dashboard` action 
 then its 0.25-second heartbeat resumed 37.3 seconds later. The Scatter figurine, hand, remaining
 seat objects, camera, combined player move, and HUD actions did not reproduce that freeze. Follow-up
 actions split the dashboard path into `seats` and `scene`, then into snapshot build, JSON encode, and
-`sendExternalMessage`. Production pushes also print one `[DashPushSlow]` line when any of those
-stages takes at least 250 ms. This narrows the next change without assuming that the bridge send,
-payload encoding, or a particular snapshot builder is responsible.
+the external-message call. Code review then confirmed that live dashboard updates had bypassed the
+gateway's passive route-tag path and called the blocking TTS API during scene synchronization. That
+path is removed: dashboard updates now print `<@DASHBOARD@>` plus a versioned JSON envelope, which
+the gateway routes only to the dashboard. Production pushes print one `[DashPushSlow]` line when
+snapshot build, JSON encoding, or tagged-console emission takes at least 250 ms.
+
+Automatic timing reports now stay on the TTS console. Writing `scene-load-report.txt` is an explicit
+`DEBUG.sceneLoadReport()` action and is refused while more than one player is connected. The Lua API
+gate hard-fails any use of the dangerous external-message API outside that single debug-file writer.
 
 Scatter entry now has one physical layout owner. `ScatterMode.enter` prepares Scatter state and
 chrome, then `Sync.npcs` reaches reconciler Step Five once. Step Three defers its Scatter table
