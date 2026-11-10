@@ -19,12 +19,13 @@ Architecture discussion and source-asset preparation are in progress. No applica
 - [x] Generate validated public JSON/GeoJSON; do not make generated data a hand-edited source.
 - [x] Keep Storyteller-only and unrevealed information out of the browser bundle.
 - [x] Do not require player authentication; treat the shared address as public and publish only player-safe data.
-- [ ] Accept Cloudflare Workers Free as the first public host, or deliberately choose GitHub Pages. Workers is recommended because its static hosting, optional API, and optional database can all remain within the free tier at this scale.
-- [ ] Choose the basemap/tile provider and confirm attribution, reliability, cost, and styling rights. OpenFreeMap is recommended for the first spike.
+- [x] Use Cloudflare Workers Free as the first public host; begin with static assets while preserving the option to add a Worker API and D1 later.
+- [x] Use OpenFreeMap as the initial basemap/tile provider and verify Toronto coverage, attribution, reliability, and style customization during the first spike.
 - [x] Treat phone-sized screens as a primary supported surface alongside desktop and tablets.
 - [ ] Decide whether the first release needs cross-device/shared state or Storyteller-controlled reveals. Same-browser persistence can use local storage without a server.
 - [ ] Choose the public address and whether to use a custom domain.
 - [x] Do not ship the original illustrated map as a raster overlay unless a later need emerges.
+- [x] Publish updated player-safe data through the existing TTS FULL build pipeline using its single validated Sheet snapshot.
 
 ## Source Assets
 
@@ -46,7 +47,7 @@ Architecture discussion and source-asset preparation are in progress. No applica
 - [ ] Parse all district and region SVG features while preserving holes and fill rules.
 - [ ] Prototype narrow-gap and overlap normalization with diagnostic output.
 - [ ] Load one generated district GeoJSON layer and prove hover, keyboard selection, click selection, and a details panel.
-- [ ] Deploy the spike to Cloudflare Workers Free and confirm static hosting, a placeholder API route, and mobile loading before making the hosting decision final.
+- [ ] Deploy the spike to Cloudflare Workers Free and confirm static hosting, an optional placeholder API route, and mobile loading.
 
 ## Phase 2 — Data Pipeline
 
@@ -57,7 +58,10 @@ Architecture discussion and source-asset preparation are in progress. No applica
 - [ ] Generate districts, regions, sites, and provenance manifest outputs.
 - [ ] Add key, schema, topology, bounds, privacy, and count validation.
 - [ ] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing.
-- [ ] Decide and document how Sheet changes trigger a reviewed deployment.
+- [ ] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
+- [ ] Add Player Map checks and its production Vite build before TTS save bundling.
+- [ ] Add Cloudflare publication as FULL's final stage so failed builds never publish.
+- [ ] Add a separate `player-map:deploy` command for intentional map-only releases and troubleshooting.
 
 ## Phase 3 — First Useful Release
 

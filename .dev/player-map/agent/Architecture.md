@@ -15,7 +15,7 @@ Verification:
 - keep architectural claims consistent with the actual package, build, deployment workflow, and browser behavior
 
 Status:
-- planning; core front-end stack accepted, hosting and server-side needs still to be decided
+- planning; core front-end stack, hosting, basemap, mobile support, and publication route accepted
 
 ## Product Boundary
 
@@ -108,7 +108,7 @@ This is not a lock-in at the application level. Keep the React/Vite client host-
 - all server calls behind a small typed API client
 - all deployment configuration outside domain and presentation code
 
-**Recommendation awaiting acceptance:** begin on the Cloudflare Workers Free plan. This lets the first release remain entirely static while reserving a free server/database boundary, so later feature ideas do not need to be decided now.
+**Accepted decision:** begin on the Cloudflare Workers Free plan. The first release may remain entirely static while reserving a free server/database boundary, so later feature ideas do not need to be decided now.
 
 References:
 - [Vite static deployment and GitHub Pages](https://vite.dev/guide/static-deploy.html)
@@ -144,9 +144,9 @@ GitHub Pages does not prevent the application from using browser storage:
 
 An NPC-activity system needs a server only if its inputs must stay hidden—for example, secret NPC locations, plans, or detection probabilities from which the app reveals partial clues. A fully client-side version is safe when the browser receives only player-visible inputs and outputs, or when its locally stored result is not intended to be authoritative.
 
-## Basemap Recommendation
+## Basemap Decision
 
-Use **OpenFreeMap** for the first MapLibre spike. Its public instance currently requires no registration or API key and states that it has no map-view or request limits. It uses OpenStreetMap data, permits commercial use, provides several ready-made styles, and allows a customized style JSON to be hosted with the application.
+Use **OpenFreeMap** for the first implementation. Its public instance currently requires no registration or API key and states that it has no map-view or request limits. It uses OpenStreetMap data, permits commercial use, provides several ready-made styles, and allows a customized style JSON to be hosted with the application.
 
 Start from its `Dark` or `Fiord` style and create the chronicle palette in Maputnik if the data coverage and label quality around Toronto are satisfactory. Keep the style URL isolated in configuration so changing providers later does not affect map components.
 
@@ -181,14 +181,14 @@ Map-data changes additionally follow the validation and visual diagnostic checks
 
 Before the first public deployment, determine:
 
-1. Hosting: accept the Cloudflare Workers Free-plan recommendation, or deliberately choose GitHub Pages for static-only scope.
-2. Public address: provider subdomain or a custom domain.
-3. Basemap and tile provider. OpenFreeMap is the current recommendation pending a visual and reliability spike.
-4. Whether any first-release feature needs persistent player identity, cross-device state, shared state, or Storyteller-controlled reveals.
-5. How a Sheet edit triggers publication: manual deployment, scheduled build, or an explicit release command.
+1. Whether any first-release feature needs persistent player identity, cross-device state, shared state, or Storyteller-controlled reveals.
+2. Whether to keep the free `workers.dev` address or purchase a custom domain later.
 
 Confirmed product decisions:
 
 - Phones are a primary supported surface.
 - The app has no planned login and publishes only player-safe information.
+- Host the application on the Cloudflare Workers Free plan.
+- Use OpenFreeMap as the basemap provider, subject to the implementation spike confirming Toronto coverage and visual suitability.
+- Generate, validate, and publish Player Map data through the existing TTS FULL build pipeline using its shared Sheet snapshot.
 - The original illustrated map will not be shipped as a raster overlay unless a later need emerges; the live basemap and generated vector overlays should replace it.

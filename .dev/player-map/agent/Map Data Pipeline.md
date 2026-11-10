@@ -55,7 +55,7 @@ Use the existing production ranges in the Toronto Rising workbook:
 
 The district export deliberately includes four non-geographical runtime districts in addition to the 32 mapped districts. A reviewed coverage manifest must identify those exceptions; the pipeline must not assume that every Sheet district requires a polygon or silently ignore an unmatched key.
 
-The importer must call the existing validated loader in `.dev/scripts/lib/sheet_exports.js`. It must not duplicate the Google URL, CSV parser, header rules, or value normalization. That keeps the Player Map on the same snapshot and contract as TTS and the Storyteller Dashboard.
+The importer must call the existing validated loader in `.dev/scripts/lib/sheet_exports.js`. It must not duplicate the Google URL, CSV parser, header rules, or value normalization. During FULL, it must consume the exact temporary snapshot supplied through `TR_EXPORT_SNAPSHOT`; it must not make a second live Sheet request. That keeps the Player Map, TTS, and the Storyteller Dashboard on one coherent build snapshot.
 
 ## Planned Build Stages
 
@@ -176,11 +176,18 @@ Warnings are appropriate only for reviewed, bounded conditions such as a tiny re
 
 ## Publication Cadence
 
-Sheet edits do not become live merely because the Sheet changed. The deployed site contains the validated snapshot produced by its most recent build, so its build pipeline must run again to publish newer Sheet values. Before implementation, choose one release policy:
+Sheet edits do not become live merely because the Sheet changed. The deployed site contains the validated snapshot produced by its most recent successful FULL build.
 
-- manual release after review
-- build on every Player Map deployment
-- scheduled data-only deployment
-- an explicit root command that validates and publishes a shared snapshot
+Publication is part of the existing TTS FULL pipeline:
 
-For initial development, prefer an explicit manual deployment after reviewing the generated data. Once the public allowlist and diagnostics are mature, a scheduled GitHub workflow can rebuild and deploy automatically—for example nightly—or an Apps Script/webhook can request a deployment after an approved Sheet edit. Do not fetch raw Sheet rows in each player's browser merely to make updates immediate.
+1. Perform the pipeline's existing approved Sheet write-backs.
+2. Fetch and validate the production export snapshot once.
+3. Pass that snapshot to TTS, Dashboard, and Player Map generators through `TR_EXPORT_SNAPSHOT`.
+4. Generate and validate the player-safe public map package.
+5. Run the Player Map type checks, tests, production Vite build, and focused browser smoke.
+6. Complete the remaining TTS asset joins, save bundling, and session-start build.
+7. Only after all earlier stages succeed, publish the already-validated Player Map build to Cloudflare Workers.
+
+A failed FULL build must not publish a partial or newer map-data snapshot. Deployment is the terminal external side effect and should be atomic. If the generated public data and application build are unchanged, the deployment step may report that there is nothing new to publish.
+
+Provide a separate `player-map:deploy` command for intentional map-only publication and troubleshooting, but the author's regular successful FULL run is the normal release route. Do not fetch raw Sheet rows in each player's browser merely to make updates immediate.
