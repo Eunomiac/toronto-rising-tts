@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "toronto-rising-player-map",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-11-10",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

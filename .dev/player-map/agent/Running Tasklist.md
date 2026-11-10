@@ -4,7 +4,11 @@ This is the working plan for the public Player Map. It is not the Storyteller Da
 
 ## Current Status
 
-Architecture discussion and source-asset preparation are in progress. No application package or public deployment exists yet.
+The Phase 1 application is implemented locally. It renders the live OpenFreeMap
+basemap, all 32 district vectors, district hover/click/keyboard selection, a
+mobile-first details panel, shareable district URLs, and a reserved Worker API
+health route. The Cloudflare package passes a dry run, but no public deployment
+exists yet because Wrangler requires the author's one-time Cloudflare sign-in.
 
 ## Decisions Recorded
 
@@ -35,19 +39,19 @@ Architecture discussion and source-asset preparation are in progress. No applica
 - [x] Confirm paths and polygons are both valid inputs.
 - [x] Confirm mixed explicit `evenodd` and default nonzero fill rules are valid and must be preserved.
 - [x] Inspect the corrected export: 32 geographical district features, three region features, no transforms, and no blank or duplicate IDs.
-- [ ] Copy the approved SVG into the Player Map's tracked `data/source` directory when implementation begins.
+- [x] Copy the approved SVG into the Player Map's tracked `data/source` directory when implementation begins.
 - [ ] Record the four non-geographical Sheet district exceptions in a reviewed coverage manifest.
 
 ## Phase 1 — Technical Spikes
 
-- [ ] Create the isolated Player Map package and lockfile.
-- [ ] Add React, TypeScript, Vite, Sass, GSAP, MapLibre, Vitest, Testing Library, and Playwright.
-- [ ] Render a bounded Toronto basemap with the intended visual style.
-- [ ] Establish SVG-to-map ground-control points and measure georeferencing error.
-- [ ] Parse all district and region SVG features while preserving holes and fill rules.
-- [ ] Prototype narrow-gap and overlap normalization with diagnostic output.
-- [ ] Load one generated district GeoJSON layer and prove hover, keyboard selection, click selection, and a details panel.
-- [ ] Deploy the spike to Cloudflare Workers Free and confirm static hosting, an optional placeholder API route, and mobile loading.
+- [x] Create the isolated Player Map package and lockfile.
+- [x] Add React, TypeScript, Vite, Sass, GSAP, MapLibre, Vitest, Testing Library, and Playwright.
+- [x] Render a bounded Toronto basemap with the intended visual style.
+- [x] Establish SVG-to-map ground-control points and measure georeferencing error. The current projective fit has a roughly 55-metre independent checkpoint; expand the control set before final geometry approval.
+- [x] Parse all district and region SVG features while preserving holes and fill rules.
+- [x] Prototype narrow-gap and overlap normalization with diagnostic output. This is deliberately not the runtime geometry until Phase 2 adds a reviewed winner manifest.
+- [x] Load generated district GeoJSON and prove hover, keyboard selection, click selection, shareable URL state, and a details panel.
+- [ ] Deploy the spike to Cloudflare Workers Free and confirm the public address. Static assets, the placeholder `/api/health` route, mobile loading, local Worker runtime, and Wrangler dry run are confirmed; live publication waits for `npx wrangler login`.
 
 ## Phase 2 — Data Pipeline
 

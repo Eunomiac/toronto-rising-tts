@@ -1,0 +1,34 @@
+{
+  "sourceViewBox": [0, 0, 4318, 5400],
+  "method": "projective-web-mercator-four-point",
+  "notes": "Controls use matching district-boundary corners at four named road intersections on the original 4318x5400 map. The projective model avoids west-side drift caused by rescaling or slight warping in the historical screenshot. Refine these points after visual comparison with the live basemap; district geometry does not need to be redrawn.",
+  "controlPoints": [
+    {
+      "name": "Yonge and Bloor",
+      "source": [2294.2672, 1630.4832],
+      "lngLat": [-79.3865615, 43.6699711]
+    },
+    {
+      "name": "Bathurst and Bloor",
+      "source": [1179.16, 1952.8],
+      "lngLat": [-79.4113092, 43.6664159]
+    },
+    {
+      "name": "Yonge and Queen",
+      "source": [2636.8904, 2770.1022],
+      "lngLat": [-79.3794575, 43.6529083]
+    },
+    {
+      "name": "Bathurst and Queen",
+      "source": [1513, 3109],
+      "lngLat": [-79.404257, 43.6471325]
+    }
+  ],
+  "validationPoints": [
+    {
+      "name": "University and Queen",
+      "source": [2305, 2885],
+      "lngLat": [-79.3865409, 43.6508016]
+    }
+  ]
+}

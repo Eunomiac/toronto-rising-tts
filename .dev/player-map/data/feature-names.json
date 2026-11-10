@@ -1,0 +1,41 @@
+{
+  "districts": {
+    "Annex": "The Annex",
+    "BayStFinancial": "Bay Street Financial District",
+    "Bennington": "Bennington Heights",
+    "Cabbagetown": "Cabbagetown",
+    "CentreIsland": "Centre Island",
+    "Chinatown": "Chinatown",
+    "Corktown": "Corktown",
+    "Danforth": "The Danforth",
+    "DeerPark": "Deer Park",
+    "Discovery": "Discovery District",
+    "DistilleryDist": "The Distillery District",
+    "DonRavine": "Don River Ravine",
+    "DupontByTheCastle": "Dupont by the Castle",
+    "GayVillage": "The Gay Village",
+    "HarbordVillage": "Harbord Village",
+    "Humewood": "Humewood",
+    "LakeOntario": "Lake Ontario",
+    "LibertyVillage": "Liberty Village",
+    "LittleItaly": "Little Italy",
+    "LittlePortugal": "Little Portugal",
+    "RegentPark": "Regent Park",
+    "Riverdale": "Riverdale",
+    "Rosedale": "Rosedale",
+    "StJamesTown": "St. James Town",
+    "Summerhill": "Summerhill",
+    "Waterfront": "The Waterfront",
+    "WestQueenWest": "West Queen West",
+    "Wychwood": "Wychwood",
+    "YongeBloorMuseum": "Museum District",
+    "YongeDundasHospital": "Hospital District",
+    "YongeStreet": "Yonge Street",
+    "Yorkville": "Yorkville"
+  },
+  "regions": {
+    "AnarchFreeZone": "Anarch Free Zone",
+    "TheBarrens": "The Barrens",
+    "TheRack": "The Rack"
+  }
+}

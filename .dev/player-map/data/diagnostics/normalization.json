@@ -1,0 +1,604 @@
+{
+  "schemaVersion": 1,
+  "status": "prototype-only-not-runtime-geometry",
+  "operation": "expand-each-district-then-cut-lower-features-against-earlier-winners",
+  "expansionMetres": 2.35,
+  "approximateSourcePixels": 1,
+  "winnerOrder": [
+    "Annex",
+    "GayVillage",
+    "Humewood",
+    "LittlePortugal",
+    "Wychwood",
+    "BayStFinancial",
+    "Bennington",
+    "Cabbagetown",
+    "CentreIsland",
+    "Chinatown",
+    "Corktown",
+    "Danforth",
+    "DeerPark",
+    "Discovery",
+    "DistilleryDist",
+    "DonRavine",
+    "DupontByTheCastle",
+    "HarbordVillage",
+    "LakeOntario",
+    "LibertyVillage",
+    "LittleItaly",
+    "RegentPark",
+    "Riverdale",
+    "Rosedale",
+    "StJamesTown",
+    "Summerhill",
+    "Waterfront",
+    "WestQueenWest",
+    "YongeBloorMuseum",
+    "YongeDundasHospital",
+    "YongeStreet",
+    "Yorkville"
+  ],
+  "summary": {
+    "districtCount": 32,
+    "districtsWithOverlapCuts": 23,
+    "totalExpansionAddedSquareMetres": -283694.87,
+    "totalOverlapRemovedSquareMetres": 656975.09
+  },
+  "features": [
+    {
+      "key": "Annex",
+      "sourceSquareMetres": 1002477.31,
+      "expansionAddedSquareMetres": -1002352.96,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "GayVillage",
+      "sourceSquareMetres": 975216.99,
+      "expansionAddedSquareMetres": 10176.46,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "Humewood",
+      "sourceSquareMetres": 3171753.37,
+      "expansionAddedSquareMetres": 17364.47,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "LittlePortugal",
+      "sourceSquareMetres": 4532228.63,
+      "expansionAddedSquareMetres": 23157.34,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "Wychwood",
+      "sourceSquareMetres": 5006995.77,
+      "expansionAddedSquareMetres": 21303.52,
+      "overlapRemovedSquareMetres": 25511.39,
+      "clippedBy": [
+        {
+          "key": "Humewood",
+          "squareMetres": 13135.27
+        },
+        {
+          "key": "LittlePortugal",
+          "squareMetres": 12376.12
+        }
+      ]
+    },
+    {
+      "key": "BayStFinancial",
+      "sourceSquareMetres": 561378.46,
+      "expansionAddedSquareMetres": 7370.19,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "Bennington",
+      "sourceSquareMetres": 281918.47,
+      "expansionAddedSquareMetres": 6130.16,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "Cabbagetown",
+      "sourceSquareMetres": 1194972.85,
+      "expansionAddedSquareMetres": 11270.94,
+      "overlapRemovedSquareMetres": 3279.32,
+      "clippedBy": [
+        {
+          "key": "GayVillage",
+          "squareMetres": 3279.32
+        }
+      ]
+    },
+    {
+      "key": "CentreIsland",
+      "sourceSquareMetres": 4134179.73,
+      "expansionAddedSquareMetres": 84729.64,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "Chinatown",
+      "sourceSquareMetres": 1442424.46,
+      "expansionAddedSquareMetres": 14753.33,
+      "overlapRemovedSquareMetres": 11506.77,
+      "clippedBy": [
+        {
+          "key": "LittlePortugal",
+          "squareMetres": 11506.77
+        }
+      ]
+    },
+    {
+      "key": "Corktown",
+      "sourceSquareMetres": 1294154.76,
+      "expansionAddedSquareMetres": 12127.7,
+      "overlapRemovedSquareMetres": 7932.82,
+      "clippedBy": [
+        {
+          "key": "Cabbagetown",
+          "squareMetres": 7932.82
+        }
+      ]
+    },
+    {
+      "key": "Danforth",
+      "sourceSquareMetres": 1829780.57,
+      "expansionAddedSquareMetres": 14215,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "DeerPark",
+      "sourceSquareMetres": 1836228.09,
+      "expansionAddedSquareMetres": 16409.43,
+      "overlapRemovedSquareMetres": 6059.85,
+      "clippedBy": [
+        {
+          "key": "Humewood",
+          "squareMetres": 5505
+        },
+        {
+          "key": "Bennington",
+          "squareMetres": 554.84
+        }
+      ]
+    },
+    {
+      "key": "Discovery",
+      "sourceSquareMetres": 973901.8,
+      "expansionAddedSquareMetres": 11710.16,
+      "overlapRemovedSquareMetres": 0,
+      "clippedBy": []
+    },
+    {
+      "key": "DistilleryDist",
+      "sourceSquareMetres": 1538124.94,
+      "expansionAddedSquareMetres": 19757.89,
+      "overlapRemovedSquareMetres": 3748.92,
+      "clippedBy": [
+        {
+          "key": "Corktown",
+          "squareMetres": 3748.92
+        }
+      ]
+    },
+    {
+      "key": "DonRavine",
+      "sourceSquareMetres": 1758488.37,
+      "expansionAddedSquareMetres": 28912.26,
+      "overlapRemovedSquareMetres": 28462.14,
+      "clippedBy": [
+        {
+          "key": "Bennington",
+          "squareMetres": 3641.97
+        },
+        {
+          "key": "Cabbagetown",
+          "squareMetres": 4123.29
+        },
+        {
+          "key": "Corktown",
+          "squareMetres": 3924.97
+        },
+        {
+          "key": "Danforth",
+          "squareMetres": 14690.7
+        },
+        {
+          "key": "DistilleryDist",
+          "squareMetres": 2081.22
+        }
+      ]
+    },
+    {
+      "key": "DupontByTheCastle",
+      "sourceSquareMetres": 878691.05,
+      "expansionAddedSquareMetres": 9529.87,
+      "overlapRemovedSquareMetres": 8241.3,
+      "clippedBy": [
+        {
+          "key": "Humewood",
+          "squareMetres": 3430.43
+        },
+        {
+          "key": "Wychwood",
+          "squareMetres": 4808.79
+        },
+        {
+          "key": "DeerPark",
+          "squareMetres": 2.08
+        }
+      ]
+    },
+    {
+      "key": "HarbordVillage",
+      "sourceSquareMetres": 1051999,
+      "expansionAddedSquareMetres": 10801.13,
+      "overlapRemovedSquareMetres": 3450.36,
+      "clippedBy": [
+        {
+          "key": "Annex",
+          "squareMetres": 124.35
+        },
+        {
+          "key": "Discovery",
+          "squareMetres": 3326
+        }
+      ]
+    },
+    {
+      "key": "LakeOntario",
+      "sourceSquareMetres": 22639693.78,
+      "expansionAddedSquareMetres": 179689.4,
+      "overlapRemovedSquareMetres": 189648.68,
+      "clippedBy": [
+        {
+          "key": "CentreIsland",
+          "squareMetres": 168820.62
+        },
+        {
+          "key": "DistilleryDist",
+          "squareMetres": 20828.06
+        }
+      ]
+    },
+    {
+      "key": "LibertyVillage",
+      "sourceSquareMetres": 4394285.98,
+      "expansionAddedSquareMetres": 19659.58,
+      "overlapRemovedSquareMetres": 22389.58,
+      "clippedBy": [
+        {
+          "key": "LittlePortugal",
+          "squareMetres": 4570.78
+        },
+        {
+          "key": "Chinatown",
+          "squareMetres": 8539.86
+        },
+        {
+          "key": "LakeOntario",
+          "squareMetres": 9278.95
+        }
+      ]
+    },
+    {
+      "key": "LittleItaly",
+      "sourceSquareMetres": 2872939.38,
+      "expansionAddedSquareMetres": 17648.93,
+      "overlapRemovedSquareMetres": 33846.25,
+      "clippedBy": [
+        {
+          "key": "Annex",
+          "squareMetres": 107.86
+        },
+        {
+          "key": "LittlePortugal",
+          "squareMetres": 14517.45
+        },
+        {
+          "key": "Wychwood",
+          "squareMetres": 7329.46
+        },
+        {
+          "key": "Chinatown",
+          "squareMetres": 4561.17
+        },
+        {
+          "key": "HarbordVillage",
+          "squareMetres": 7330.32
+        }
+      ]
+    },
+    {
+      "key": "RegentPark",
+      "sourceSquareMetres": 954896.78,
+      "expansionAddedSquareMetres": 10147.41,
+      "overlapRemovedSquareMetres": 16869.82,
+      "clippedBy": [
+        {
+          "key": "Danforth",
+          "squareMetres": 3096.52
+        },
+        {
+          "key": "DistilleryDist",
+          "squareMetres": 3395.75
+        },
+        {
+          "key": "DonRavine",
+          "squareMetres": 10377.54
+        }
+      ]
+    },
+    {
+      "key": "Riverdale",
+      "sourceSquareMetres": 750859.26,
+      "expansionAddedSquareMetres": 9824.59,
+      "overlapRemovedSquareMetres": 18308.32,
+      "clippedBy": [
+        {
+          "key": "GayVillage",
+          "squareMetres": 5708.7
+        },
+        {
+          "key": "Cabbagetown",
+          "squareMetres": 4576.18
+        },
+        {
+          "key": "DonRavine",
+          "squareMetres": 8023.44
+        }
+      ]
+    },
+    {
+      "key": "Rosedale",
+      "sourceSquareMetres": 1080973.58,
+      "expansionAddedSquareMetres": 11647.97,
+      "overlapRemovedSquareMetres": 17358.66,
+      "clippedBy": [
+        {
+          "key": "Bennington",
+          "squareMetres": 6489.4
+        },
+        {
+          "key": "DeerPark",
+          "squareMetres": 4494.75
+        },
+        {
+          "key": "DonRavine",
+          "squareMetres": 6374.52
+        }
+      ]
+    },
+    {
+      "key": "StJamesTown",
+      "sourceSquareMetres": 1240132.51,
+      "expansionAddedSquareMetres": 12108.94,
+      "overlapRemovedSquareMetres": 20129.55,
+      "clippedBy": [
+        {
+          "key": "GayVillage",
+          "squareMetres": 3952.81
+        },
+        {
+          "key": "DonRavine",
+          "squareMetres": 8140.35
+        },
+        {
+          "key": "Riverdale",
+          "squareMetres": 2067.13
+        },
+        {
+          "key": "Rosedale",
+          "squareMetres": 5969.25
+        }
+      ]
+    },
+    {
+      "key": "Summerhill",
+      "sourceSquareMetres": 1822541.64,
+      "expansionAddedSquareMetres": 14741.73,
+      "overlapRemovedSquareMetres": 23825.17,
+      "clippedBy": [
+        {
+          "key": "Humewood",
+          "squareMetres": 18.3
+        },
+        {
+          "key": "DeerPark",
+          "squareMetres": 8758.84
+        },
+        {
+          "key": "DupontByTheCastle",
+          "squareMetres": 6290.82
+        },
+        {
+          "key": "Rosedale",
+          "squareMetres": 2801.36
+        },
+        {
+          "key": "StJamesTown",
+          "squareMetres": 5955.84
+        }
+      ]
+    },
+    {
+      "key": "Waterfront",
+      "sourceSquareMetres": 3944424.07,
+      "expansionAddedSquareMetres": 63832.48,
+      "overlapRemovedSquareMetres": 122890.45,
+      "clippedBy": [
+        {
+          "key": "BayStFinancial",
+          "squareMetres": 5340.37
+        },
+        {
+          "key": "Chinatown",
+          "squareMetres": 6653.42
+        },
+        {
+          "key": "Corktown",
+          "squareMetres": 4751.03
+        },
+        {
+          "key": "DistilleryDist",
+          "squareMetres": 714.8
+        },
+        {
+          "key": "LakeOntario",
+          "squareMetres": 89459.67
+        },
+        {
+          "key": "LibertyVillage",
+          "squareMetres": 15971.17
+        }
+      ]
+    },
+    {
+      "key": "WestQueenWest",
+      "sourceSquareMetres": 1349509.59,
+      "expansionAddedSquareMetres": 14018.87,
+      "overlapRemovedSquareMetres": 19488.02,
+      "clippedBy": [
+        {
+          "key": "BayStFinancial",
+          "squareMetres": 5635.75
+        },
+        {
+          "key": "Chinatown",
+          "squareMetres": 1988.47
+        },
+        {
+          "key": "HarbordVillage",
+          "squareMetres": 4792.54
+        },
+        {
+          "key": "LittleItaly",
+          "squareMetres": 911.26
+        },
+        {
+          "key": "Waterfront",
+          "squareMetres": 6159.99
+        }
+      ]
+    },
+    {
+      "key": "YongeBloorMuseum",
+      "sourceSquareMetres": 410598.23,
+      "expansionAddedSquareMetres": 7128.47,
+      "overlapRemovedSquareMetres": 7413.56,
+      "clippedBy": [
+        {
+          "key": "Discovery",
+          "squareMetres": 7413.56
+        }
+      ]
+    },
+    {
+      "key": "YongeDundasHospital",
+      "sourceSquareMetres": 801177.35,
+      "expansionAddedSquareMetres": 9227.49,
+      "overlapRemovedSquareMetres": 15740.09,
+      "clippedBy": [
+        {
+          "key": "Discovery",
+          "squareMetres": 6440.15
+        },
+        {
+          "key": "HarbordVillage",
+          "squareMetres": 2791.24
+        },
+        {
+          "key": "WestQueenWest",
+          "squareMetres": 6508.71
+        }
+      ]
+    },
+    {
+      "key": "YongeStreet",
+      "sourceSquareMetres": 321071.19,
+      "expansionAddedSquareMetres": 18225.1,
+      "overlapRemovedSquareMetres": 33934.89,
+      "clippedBy": [
+        {
+          "key": "GayVillage",
+          "squareMetres": 7423.75
+        },
+        {
+          "key": "BayStFinancial",
+          "squareMetres": 3883.04
+        },
+        {
+          "key": "Cabbagetown",
+          "squareMetres": 3518.43
+        },
+        {
+          "key": "Corktown",
+          "squareMetres": 4483.79
+        },
+        {
+          "key": "Discovery",
+          "squareMetres": 2651.29
+        },
+        {
+          "key": "StJamesTown",
+          "squareMetres": 1150.7
+        },
+        {
+          "key": "Summerhill",
+          "squareMetres": 325.34
+        },
+        {
+          "key": "Waterfront",
+          "squareMetres": 3680.24
+        },
+        {
+          "key": "WestQueenWest",
+          "squareMetres": 2042.74
+        },
+        {
+          "key": "YongeBloorMuseum",
+          "squareMetres": 2070.41
+        },
+        {
+          "key": "YongeDundasHospital",
+          "squareMetres": 2705.17
+        }
+      ]
+    },
+    {
+      "key": "Yorkville",
+      "sourceSquareMetres": 1048030.59,
+      "expansionAddedSquareMetres": 11037.64,
+      "overlapRemovedSquareMetres": 16939.18,
+      "clippedBy": [
+        {
+          "key": "Discovery",
+          "squareMetres": 1672.81
+        },
+        {
+          "key": "DupontByTheCastle",
+          "squareMetres": 1810.12
+        },
+        {
+          "key": "Summerhill",
+          "squareMetres": 5801.34
+        },
+        {
+          "key": "YongeBloorMuseum",
+          "squareMetres": 4937.89
+        },
+        {
+          "key": "YongeStreet",
+          "squareMetres": 2717.03
+        }
+      ]
+    }
+  ]
+}

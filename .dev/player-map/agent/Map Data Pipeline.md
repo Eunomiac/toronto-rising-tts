@@ -18,7 +18,7 @@ Verification:
 - inspect the generated diagnostic map over the live basemap before accepting geometry changes
 
 Status:
-- designed but not implemented; the Illustrator SVG has passed initial structural inspection
+- current for the Phase 1 geometry spike; Sheet projection, reviewed normalization priority, and FULL-build integration remain Phase 2 work
 
 ## Principle: One Owner Per Fact
 
@@ -103,6 +103,14 @@ Every run should emit a visual diagnostic showing:
 
 The original and final area of each district should be recorded so an unexpectedly large change is obvious even when it is hard to spot visually.
 
+Phase 1 implements this as a non-runtime prototype in
+`scripts/diagnose-normalization.mjs`. It expands every district by approximately
+one source pixel, then simulates top-to-bottom Pathfinder-style cuts and records
+area changes in `data/diagnostics/normalization.json`. The generated runtime
+GeoJSON intentionally remains unchanged until Phase 2 replaces the current
+Illustrator-order simulation with a reviewed priority manifest and adds the
+full visual gap diagnostics described above.
+
 ## Georeferencing
 
 SVG pixel coordinates cannot be placed accurately on a live street map until they are tied to real-world coordinates. Use a reviewed set of ground-control points distributed across the map rather than inferring the transform from the artboard corners alone.
@@ -116,6 +124,14 @@ The first geometry spike should:
 5. If one transform cannot align the whole map, stop and decide whether to use a more flexible warp or treat the artwork as a raster overlay instead of quietly distorting district boundaries.
 
 The calibration file, not generated coordinates, is the editable source for georeferencing.
+
+Phase 1 uses four street-intersection controls in `data/calibration.json` and a
+projective Web Mercator transform. A plain affine fit showed visible west-side
+drift, so it was rejected. The independent University/Queen checkpoint is
+currently about 55 metres from the geocoded reference; this includes the
+uncertainty of locating the original road centre and station coordinate. The
+live-basemap comparison is acceptable for the technical spike, but the control
+and validation set should be expanded before geometry is called final.
 
 ## Public Output
 

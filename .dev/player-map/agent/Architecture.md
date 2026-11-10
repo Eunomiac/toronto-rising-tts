@@ -15,7 +15,7 @@ Verification:
 - keep architectural claims consistent with the actual package, build, deployment workflow, and browser behavior
 
 Status:
-- planning; core front-end stack, hosting, basemap, mobile support, and publication route accepted
+- current; Phase 1 application and Cloudflare Worker package implemented, with first live publication waiting for the author's Cloudflare sign-in
 
 ## Product Boundary
 
