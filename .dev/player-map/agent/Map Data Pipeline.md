@@ -141,6 +141,8 @@ The manifest should record:
 
 The browser consumes only generated public files. It does not call Google Sheets directly. This avoids CORS and availability problems, ensures schema validation happens before release, and gives every deployment one coherent data snapshot.
 
+The original illustrated map is not a planned runtime raster layer. Its reusable district and region geometry is extracted into GeoJSON and placed over the live basemap.
+
 ## Public Field Allowlist
 
 The first public district projection should be reviewed field by field. Likely candidates from the current contract are:
@@ -174,11 +176,11 @@ Warnings are appropriate only for reviewed, bounded conditions such as a tiny re
 
 ## Publication Cadence
 
-Sheet edits do not become live merely because the Sheet changed. The public data refreshes when its build pipeline runs. Before implementation, choose one release policy:
+Sheet edits do not become live merely because the Sheet changed. The deployed site contains the validated snapshot produced by its most recent build, so its build pipeline must run again to publish newer Sheet values. Before implementation, choose one release policy:
 
 - manual release after review
 - build on every Player Map deployment
 - scheduled data-only deployment
 - an explicit root command that validates and publishes a shared snapshot
 
-For initial development, prefer a manual reviewed build. Automatic publication becomes safe only after the public allowlist and geometry diagnostics are mature.
+For initial development, prefer an explicit manual deployment after reviewing the generated data. Once the public allowlist and diagnostics are mature, a scheduled GitHub workflow can rebuild and deploy automatically—for example nightly—or an Apps Script/webhook can request a deployment after an approved Sheet edit. Do not fetch raw Sheet rows in each player's browser merely to make updates immediate.

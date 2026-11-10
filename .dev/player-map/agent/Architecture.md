@@ -21,6 +21,8 @@ Status:
 
 The Player Map is a public player-facing web application built around an interactive map of Toronto. It is not an extension of the Storyteller Dashboard and must not expose Dashboard data, Storyteller-only state, unrevealed sites, hidden NPC activity, secrets, or private chronicle notes.
 
+No player login is planned. Treat the address and everything it serves as public even though it will normally be shared only with the chronicle's players. This is safe as long as the deployed app contains only player-safe information.
+
 The source stays in this repository under `.dev/player-map`. Being under `.dev` does not prevent web deployment: Vite can build from this directory, and a deployment workflow can publish only its generated `dist` directory.
 
 ## Accepted Front-End Stack
@@ -29,13 +31,23 @@ The source stays in this repository under `.dev/player-map`. Being under `.dev` 
 | --- | --- | --- |
 | UI | React with TypeScript | Use strict TypeScript and typed domain models. |
 | Development/build | Vite | The Player Map gets its own `package.json`, lockfile, TypeScript configuration, and Vite configuration, like the Storyteller Dashboard. It must not inherit the root CommonJS package implicitly. |
-| Styling | SCSS only | Use nesting for related descendants, pseudo-classes, state classes, and media queries. Do not add parallel hand-authored CSS sources. |
-| Animation | GSAP | Use for deliberate sequences, map-panel transitions, SVG effects, and other motion that benefits from a timeline. Use CSS for simple hover/focus transitions. |
+| Styling | SCSS only | Use nesting for related descendants, pseudo-classes, state classes, and media queries. SCSS owns static styling and responsive layout; do not add parallel hand-authored CSS sources. |
+| Animation | GSAP | GSAP owns all authored UI motion and animated style changes. Do not add CSS transitions or keyframe animations that can compete with it. |
 | Map renderer | MapLibre GL JS | Render the street map and interactive GeoJSON layers without tying the application to Google Maps. The basemap/tile provider is a separate decision. |
 | District/region geometry | GeoJSON generated from the canonical SVG | The browser must not interpret the Illustrator export directly as application data. |
 | Automated checks | Vitest, React Testing Library, and Playwright | Unit-test data/state logic and exercise the real built map in a browser. |
 
 GSAP's current standard licence permits this application, including commercial use. Keep motion optional under `prefers-reduced-motion` and clean up animation contexts when React components unmount.
+
+### Animation ownership
+
+Use one animation owner for each surface:
+
+- SCSS defines the resting appearance, layout, responsive rules, hover/focus appearance where no interpolation is required, and accessibility fallbacks.
+- GSAP performs all authored UI interpolation: transforms, opacity, colours, panel movement, SVG effects, and transitions between React states.
+- MapLibre owns camera movement and animation inside its rendered map. Use its camera and style APIs rather than trying to animate its WebGL canvas with GSAP.
+
+Do not put a CSS `transition` or `@keyframes` animation on a property that GSAP may control. GSAP caches transform state and applies animated CSS as inline styles; two systems writing the same property can produce jumps or stale values. This is an application policy rather than a claim that GSAP requires all static styling to be written in JavaScript.
 
 MapLibre supports a real zoomable and pannable street map, bounded to the chronicle's play area, with districts, regions, domains, sites, and future activity layers as independently styled and clickable sources. The initial implementation should use `maxBounds`, an intentional minimum and maximum zoom, and no map pitch or rotation unless a later design needs them.
 
@@ -82,7 +94,13 @@ Therefore:
 
 GitHub Pages can host the first version. Vite officially supports a GitHub Actions deployment, and keeping the app in `.dev/player-map` is not a problem. Without a custom domain the Vite base path would be `/toronto-rising-tts/`. GitHub Pages is, however, static hosting: it cannot itself run an API, authenticate players, protect hidden data, or save shared campaign state.
 
-Because the planned scope may include persistent minigame results, player-specific visibility, and hidden NPC activity, the recommended production host is **Cloudflare Workers with static assets**, not GitHub Pages. It can serve the same Vite build now and add API routes and storage later without moving the public application to a second platform. Cloudflare now recommends Workers as its primary platform for new projects; Pages remains viable but is no longer the preferred starting point for this shape of application.
+GitHub Pages is fully adequate if the application remains player-safe and any saved preferences or progress may remain local to each browser. Omitting unrevealed information from the published data is the correct protection; there is no requirement that a player-facing application carry Storyteller data at all.
+
+Because the planned scope may include persistent minigame results, player-specific visibility, or shared activity state, the recommended production host is **Cloudflare Workers with static assets**, not GitHub Pages. It can serve the same Vite build now and add API routes and storage later without moving the public application to a second platform. Cloudflare now recommends Workers as its primary platform for new projects; Pages remains viable but is no longer the preferred starting point for this shape of application.
+
+The Workers Free plan is sufficient for the expected player count. Static asset requests are free and unlimited; the free dynamic allowance is currently 100,000 Worker requests per day. If structured shared storage becomes useful, D1 is available on the free plan with limits far above this chronicle's expected use. Exceeding a free-tier limit stops the affected dynamic requests rather than silently moving the project onto usage billing.
+
+Cloudflare supplies a free `workers.dev` address. A custom domain is optional and is the only expected hosting-related purchase for this scale of application; its annual registration fee depends on the chosen name and top-level domain.
 
 This is not a lock-in at the application level. Keep the React/Vite client host-neutral:
 
@@ -90,13 +108,16 @@ This is not a lock-in at the application level. Keep the React/Vite client host-
 - all server calls behind a small typed API client
 - all deployment configuration outside domain and presentation code
 
-**Decision still required:** use GitHub Pages for a deliberately static first release, or begin on Cloudflare Workers to reserve a clean path to authenticated and persistent features.
+**Recommendation awaiting acceptance:** begin on the Cloudflare Workers Free plan. This lets the first release remain entirely static while reserving a free server/database boundary, so later feature ideas do not need to be decided now.
 
 References:
 - [Vite static deployment and GitHub Pages](https://vite.dev/guide/static-deploy.html)
 - [GitHub Pages site and custom build guidance](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
 - [Cloudflare Workers static assets](https://developers.cloudflare.com/workers/static-assets/)
+- [Cloudflare Workers static-asset billing](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/)
+- [Cloudflare Workers and D1 pricing](https://developers.cloudflare.com/workers/platform/pricing/)
 - [GSAP pricing and current free-use statement](https://gsap.com/pricing/)
+- [GSAP CSS property and transform handling](https://gsap.com/docs/v3/GSAP/CorePlugins/CSS/)
 
 ## Application State
 
@@ -110,9 +131,34 @@ Do not interpret "single source of truth" as "put everything in one global store
 
 Selected district/site and visible overlay choices should be representable in the URL, so a player can share a useful view. Prefer query parameters for the initial single-page map; this also avoids deep-link routing problems on static hosting.
 
+### What persistence and shared state mean
+
+GitHub Pages does not prevent the application from using browser storage:
+
+- `localStorage` or IndexedDB can remember preferences, progress, or minigame results on the same browser profile and device.
+- That data is not automatically available on another phone/computer or in another browser.
+- It is not shared with other players or the Storyteller.
+- A player can clear or edit it, so it cannot be authoritative for secret or rules-enforced state.
+
+"Shared state" means information that several players should see consistently, such as a common investigation result, the current revealed sites, a city-wide activity board, or a Storyteller-triggered change. "Persistent server state" means that information survives browser changes and is stored somewhere the players cannot casually alter. Those capabilities need an API and storage such as a Cloudflare Worker with D1; they do not need to be built until a feature actually requires them.
+
+An NPC-activity system needs a server only if its inputs must stay hidden—for example, secret NPC locations, plans, or detection probabilities from which the app reveals partial clues. A fully client-side version is safe when the browser receives only player-visible inputs and outputs, or when its locally stored result is not intended to be authoritative.
+
+## Basemap Recommendation
+
+Use **OpenFreeMap** for the first MapLibre spike. Its public instance currently requires no registration or API key and states that it has no map-view or request limits. It uses OpenStreetMap data, permits commercial use, provides several ready-made styles, and allows a customized style JSON to be hosted with the application.
+
+Start from its `Dark` or `Fiord` style and create the chronicle palette in Maputnik if the data coverage and label quality around Toronto are satisfactory. Keep the style URL isolated in configuration so changing providers later does not affect map components.
+
+The tradeoff is that the free public instance has no service-level guarantee or personalized support. If reliability ever becomes a concern, the compatible fallback is a paid provider or a Toronto-only self-hosted PMTiles archive; MapLibre and the application's GeoJSON overlays would remain unchanged.
+
+References:
+- [OpenFreeMap service, terms, attribution, and limits](https://openfreemap.org/)
+- [OpenFreeMap MapLibre and custom-style setup](https://openfreemap.org/quick_start/)
+
 ## Performance and Accessibility Baseline
 
-- Design for current desktop and tablet browsers first; confirm whether phones are a supported primary surface before layout work.
+- Treat phones as a primary supported surface alongside desktop and tablets. Controls and panels must be designed mobile-first rather than merely scaled down after desktop implementation.
 - Load map layers and large artwork on demand where practical.
 - Prefer MapLibre style expressions and feature state over rebuilding full GeoJSON sources for hover/selection effects.
 - Honour keyboard navigation, visible focus, sufficient contrast, screen-reader names, and reduced motion from the first component.
@@ -135,10 +181,14 @@ Map-data changes additionally follow the validation and visual diagnostic checks
 
 Before the first public deployment, determine:
 
-1. Hosting: GitHub Pages for static-only scope, or Cloudflare Workers for a ready server boundary.
+1. Hosting: accept the Cloudflare Workers Free-plan recommendation, or deliberately choose GitHub Pages for static-only scope.
 2. Public address: provider subdomain or a custom domain.
-3. Basemap and tile provider, including attribution, rate limits, token restrictions, and visual styling rights.
-4. Supported devices: desktop/tablet only, or a fully useful phone layout as well.
-5. Whether any first-release feature needs login, persistent player identity, shared state, or Storyteller-controlled reveals.
-6. How a Sheet edit triggers publication: manual deployment, scheduled build, or an explicit release command.
-7. Whether the first release needs a faithful raster "chronicle map" overlay in addition to the live street basemap.
+3. Basemap and tile provider. OpenFreeMap is the current recommendation pending a visual and reliability spike.
+4. Whether any first-release feature needs persistent player identity, cross-device state, shared state, or Storyteller-controlled reveals.
+5. How a Sheet edit triggers publication: manual deployment, scheduled build, or an explicit release command.
+
+Confirmed product decisions:
+
+- Phones are a primary supported surface.
+- The app has no planned login and publishes only player-safe information.
+- The original illustrated map will not be shipped as a raster overlay unless a later need emerges; the live basemap and generated vector overlays should replace it.

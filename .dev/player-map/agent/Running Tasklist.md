@@ -12,17 +12,19 @@ Architecture discussion and source-asset preparation are in progress. No applica
 - [x] Use React and strict TypeScript.
 - [x] Use Vite for development and production builds.
 - [x] Use SCSS with the repository's nesting-first policy.
-- [x] Use GSAP for deliberate animation sequences, with CSS for simple transitions and reduced-motion support throughout.
+- [x] Use GSAP for all authored UI motion and animated style changes; SCSS owns static styling and responsive layout, with no competing CSS transitions or keyframes.
 - [x] Use MapLibre GL JS as the interactive map renderer.
 - [x] Treat the Toronto Rising production exports as the sole source for authored district/site facts.
 - [x] Treat the Illustrator SVG as the sole source for district/region geometry.
 - [x] Generate validated public JSON/GeoJSON; do not make generated data a hand-edited source.
 - [x] Keep Storyteller-only and unrevealed information out of the browser bundle.
-- [ ] Choose GitHub Pages or Cloudflare Workers for the first public deployment. Cloudflare Workers is the current recommendation because it leaves room for protected and persistent features.
-- [ ] Choose the basemap/tile provider and confirm attribution, token restrictions, cost, and styling rights.
-- [ ] Decide whether phone-sized screens are a primary supported surface or a readable secondary view.
-- [ ] Decide whether the first release needs login, shared state, persistent state, or Storyteller-controlled reveals.
+- [x] Do not require player authentication; treat the shared address as public and publish only player-safe data.
+- [ ] Accept Cloudflare Workers Free as the first public host, or deliberately choose GitHub Pages. Workers is recommended because its static hosting, optional API, and optional database can all remain within the free tier at this scale.
+- [ ] Choose the basemap/tile provider and confirm attribution, reliability, cost, and styling rights. OpenFreeMap is recommended for the first spike.
+- [x] Treat phone-sized screens as a primary supported surface alongside desktop and tablets.
+- [ ] Decide whether the first release needs cross-device/shared state or Storyteller-controlled reveals. Same-browser persistence can use local storage without a server.
 - [ ] Choose the public address and whether to use a custom domain.
+- [x] Do not ship the original illustrated map as a raster overlay unless a later need emerges.
 
 ## Source Assets
 
@@ -44,7 +46,7 @@ Architecture discussion and source-asset preparation are in progress. No applica
 - [ ] Parse all district and region SVG features while preserving holes and fill rules.
 - [ ] Prototype narrow-gap and overlap normalization with diagnostic output.
 - [ ] Load one generated district GeoJSON layer and prove hover, keyboard selection, click selection, and a details panel.
-- [ ] Compare GitHub Pages and Cloudflare Workers with the actual built spike before making the hosting decision final.
+- [ ] Deploy the spike to Cloudflare Workers Free and confirm static hosting, a placeholder API route, and mobile loading before making the hosting decision final.
 
 ## Phase 2 — Data Pipeline
 
@@ -75,6 +77,5 @@ Architecture discussion and source-asset preparation are in progress. No applica
 - [ ] NPC-activity detection/minigame design.
 - [ ] Persistent player or campaign state, if required.
 - [ ] Storyteller-controlled reveals, if required.
-- [ ] Optional faithful raster overlay of the original chronicle artwork.
 
 Do not turn these placeholders into implementation assumptions. Each feature needs a short rules, visibility, persistence, and source-of-truth decision before development.
