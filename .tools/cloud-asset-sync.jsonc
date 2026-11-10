@@ -168,6 +168,26 @@
       "filenameToNameReplacePattern": "dot_$1"
     },
     {
+      // Page 1 resonance folder: condition backgrounds. Row name is the filename without .webp.
+      "id": "csheetPage1ConditionBackgrounds",
+      "folder": "CSheets/Page1/Resonance",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage1",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^bg_condition_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "bg_condition_$1"
+    },
+    {
+      // Page 1 resonance art. Row name is the filename without .webp.
+      "id": "csheetPage1Resonance",
+      "folder": "CSheets/Page1/Resonance",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage1",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^resonance_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "resonance_$1"
+    },
+    {
       "id": "csheetPage2DisciplineNames",
       "folder": "CSheets/Page2",
       "output": "ObjectCustomUIAssets",
@@ -202,6 +222,16 @@
       "ownsAllRows": true,
       "filenameToNameSearchPattern": "^dot_(.*)\\.webp$",
       "filenameToNameReplacePattern": "dot_$1"
+    },
+    {
+      // Page 2 condition backgrounds. Row name is the filename without .webp.
+      "id": "csheetPage2Conditions",
+      "folder": "CSheets/Page2/Conditions",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage2",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^bg_condition_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "bg_condition_$1"
     },
     {
       "id": "csheetPage3Dividers",

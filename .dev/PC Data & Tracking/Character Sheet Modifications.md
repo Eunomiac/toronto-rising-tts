@@ -78,7 +78,7 @@ Printed face is the object `CustomImage` (author-set). XmlUI uses one `Image` pe
 - Dots: `dot_<key>_<1..5>` — script sets `active` + `image` (`dot_yellow` / `dot_white` / `dot_grey`; Blood Potency uses `dot_red` with `dot_large` size class).
 - Boxes: `box_<tracker>_<1..10>` — `box_white` / `box_grey_slash` / `box_red_x` / `box_purple` (stain) / `box_red` (impaired).
 
-Cloud sync: job `csheetPage1Overlays` (`CSheets/Page1` → five page‑1 GUIDs).
+Cloud sync onto all five page‑1 sheets: `csheetPage1Boxes` and `csheetPage1Dots` (`CSheets/Page1`), `csheetPage1ConditionBackgrounds` and `csheetPage1Resonance` (`CSheets/Page1/Resonance`). A resonance or condition file is registered under its filename without `.webp` (`bg_condition_dyscrasia`, `resonance_acutelyCholeric`).
 
 When editing `page1.xml` offsets in PowerShell, use single-quoted strings — double-quoted strings expand `$850` / `$0` inside coordinates and silently corrupt them (`850`→`85`, `-940`→`-94`).
 
@@ -95,13 +95,13 @@ Blank disciplines area on the tile; runtime XmlUI builds a 2×3 discipline grid 
 
 **Cross-script ownership:** Page‑2 object scripts must not store Global-owned ritual/ceremony/power row tables in local arrays. Copy the scalar fields you need (`name`, `level`) into a fresh table owned by the object script (same rule in `lib/csheet_page2_xml.ttslua` and `lib/pc_sheet_collect.ttslua`). Otherwise TTS throws `Attempt to perform operations with resources owned by different scripts`.
 
-Cloud sync: job `csheetPage2Assets` (`CSheets/Page2` → five page‑2 GUIDs, no purge).
+Cloud sync onto all five page‑2 sheets: `csheetPage2DisciplineNames`, `csheetPage2Dividers`, `csheetPage2Dotlines`, and `csheetPage2Dots` (`CSheets/Page2`), plus `csheetPage2Conditions` (`CSheets/Page2/Conditions`, registered as `bg_condition_<name>`).
 
 ```text
-npm run cloud-asset-sync -- --job csheetPage1Overlays,csheetPage2Assets
+npm run cloud-asset-sync -- --job csheetPage1ConditionBackgrounds,csheetPage1Resonance,csheetPage2Conditions
 ```
 
-Runtime `UI.setXml` strings cannot resolve editor `<Include>`; pages 3–4 prepend `lib/csheet_defaults_xml` via Lua and must not embed `<Include src="csheet_defaults.xml" />` in `ui/.templates/csheet/pageN.xml`. Every sheet image row on Pages 1–6 comes from `assets/CSheets/` (`PageN/` for one page's art, `Shared/` for art several pages use, `Page4/Portraits/<key>Portrait.webp` for relationship portraits) via the `csheet*` jobs in `.tools/cloud-asset-sync.jsonc`; rows no job writes are purged. Add a portrait by dropping the file there and running `npm run build:full` with TTS closed.
+Runtime `UI.setXml` strings cannot resolve editor `<Include>`; pages 3–4 prepend `lib/csheet_defaults_xml` via Lua and must not embed `<Include src="csheet_defaults.xml" />` in `ui/.templates/csheet/pageN.xml`. Every sheet image row on Pages 1–6 comes from `assets/CSheets/` (`PageN/` for one page's art, `Page1/Resonance/` and `Page2/Conditions/` for those page's extra art, `Shared/` for art several pages use, `Page4/Portraits/<key>Portrait.webp` for relationship portraits) via the `csheet*` jobs in `.tools/cloud-asset-sync.jsonc`; rows no job writes are purged. Add a portrait by dropping the file there and running `npm run build:full` with TTS closed.
 
 ### Page 4 relationships
 

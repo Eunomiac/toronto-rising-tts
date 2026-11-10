@@ -78,4 +78,4 @@ Object scripts may only `require` thin generated modules (`lib.cloud_*`), never 
 
 ## Dashboard
 
-The dashboard server serves art straight from `assets/`: `/sheet-art/<name>` (sheet folders and NPC portraits) and `/figurine-images/` (NPC figurines). No copies under the dashboard tree.
+The dashboard server serves art straight from `assets/`: `/sheet-art/<name>` (sheet page folders, including `Page1/Resonance` and `Page2/Conditions`, and NPC portraits) and `/figurine-images/` (NPC figurines). No copies under the dashboard tree.

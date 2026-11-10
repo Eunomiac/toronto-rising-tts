@@ -115,6 +115,50 @@ test("renderLuaModule returns a sorted table keyed by name", () => {
   assert.match(lua, /return \{/);
 });
 
+test("character sheet condition and resonance jobs register the filename without its extension", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const { stripJsonc } = require("./cloud-asset-sync.js");
+  const jobs = validateConfig(JSON.parse(stripJsonc(fs.readFileSync(path.join(__dirname, "cloud-asset-sync.jsonc"), "utf8"))));
+  const page1 = ["21d213", "553538", "f10182", "c4abec", "0bdb4a"];
+  const page2 = ["c80132", "e2c921", "8a59a9", "c0f4b5", "7ac353"];
+  const job = (id) => {
+    const found = jobs.find((entry) => entry.id === id);
+    assert.ok(found, id);
+    return found;
+  };
+  const backgrounds = job("csheetPage1ConditionBackgrounds");
+  const resonance = job("csheetPage1Resonance");
+  const conditions = job("csheetPage2Conditions");
+  assert.equal(backgrounds.folder, "CSheets/Page1/Resonance");
+  assert.equal(resonance.folder, "CSheets/Page1/Resonance");
+  assert.equal(conditions.folder, "CSheets/Page2/Conditions");
+  assert.equal(backgrounds.searchPattern, "^bg_condition_(.*)\\.webp$");
+  assert.equal(resonance.searchPattern, "^resonance_(.*)\\.webp$");
+  assert.equal(conditions.searchPattern, "^bg_condition_(.*)\\.webp$");
+  assert.deepEqual(backgrounds.targets, page1);
+  assert.deepEqual(resonance.targets, page1);
+  assert.deepEqual(conditions.targets, page2);
+
+  const registeredName = (entry, filename) => {
+    const file = {
+      folder: entry.folder,
+      name: filename,
+      relPath: `${entry.folder}/${filename}`,
+      sha1: "abc",
+      key: `abc_${filename}`,
+      size: 1,
+    };
+    const ledger = { files: { [file.relPath]: { key: file.key, url: "https://example.test/x" } } };
+    return collectJobRows(entry, [file], ledger).rows.map((row) => row.name);
+  };
+  assert.deepEqual(registeredName(backgrounds, "bg_condition_dyscrasia.webp"), ["bg_condition_dyscrasia"]);
+  assert.deepEqual(registeredName(resonance, "resonance_acutelyCholeric.webp"), ["resonance_acutelyCholeric"]);
+  assert.deepEqual(registeredName(conditions, "bg_condition_theBeast.webp"), ["bg_condition_theBeast"]);
+  assert.deepEqual(registeredName(resonance, "bg_condition_dyscrasia.webp"), []);
+  assert.deepEqual(registeredName(backgrounds, "resonance_acutelyCholeric.webp"), []);
+});
+
 test("parseCli accepts job lists and push flags", () => {
   const cli = parseCli(["--job", "a,b", "--dry-run", "--no-push"]);
   assert.deepEqual(cli.jobFilter, ["a", "b"]);

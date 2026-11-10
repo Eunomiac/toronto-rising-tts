@@ -46,7 +46,17 @@ const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const sheetArtRoot = path.join(repoRoot, "assets", "CSheets");
 const sheetPortraitDir = path.join(repoRoot, "assets", "NPC Art", "Portraits");
 const sheetArtDirs = [
-  ...["Page1", "Page2", "Page3", "Page4", "Page5", "Page6", "Shared"].map((folder) => path.join(sheetArtRoot, folder)),
+  ...[
+    "Page1",
+    "Page1/Resonance",
+    "Page2",
+    "Page2/Conditions",
+    "Page3",
+    "Page4",
+    "Page5",
+    "Page6",
+    "Shared"
+  ].map((folder) => path.join(sheetArtRoot, folder)),
   sheetPortraitDir
 ];
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
