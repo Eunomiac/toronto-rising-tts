@@ -98,7 +98,7 @@ assert(tostring(err):find("at most 6", 1, true) ~= nil, "seven-discipline error 
 assertLacks(disciplinesOnly, 'id="condition_container_1"', "conditions")
 assertLacks(disciplinesOnly, "Condition 1 Title", "conditions")
 assertLacks(disciplinesOnly, "@@TITLE@@", "conditions")
-assertHas(disciplinesOnly, 'class="condition_container condition_slot_8"', "conditions")
+assertHas(disciplinesOnly, 'class="condition_slot_8"', "conditions")
 assertHas(disciplinesOnly, 'width="700"', "conditions")
 
 local withCard = Page2.buildPage2DocumentXml({
