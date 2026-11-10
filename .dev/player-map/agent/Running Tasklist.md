@@ -100,16 +100,16 @@ street map before the final values are promoted to tracked calibration data.
 
 ## Map Presentation Backlog — Captured, Not Scheduled
 
-These are promising presentation ideas, not settled implementation requirements.
-Review the visual behavior, performance, accessibility, and data ownership of
-each before moving it into a release phase.
+These are accepted presentation directions, but they are not yet scheduled into
+a release phase. Verify their visual behavior, mobile performance, accessibility,
+and data ownership during implementation.
 
-- [ ] Explore blurring or otherwise visually de-emphasizing the basemap outside the established square chronicle setting boundary.
+- [ ] De-emphasize the basemap outside the established square chronicle setting boundary with a pointer-transparent CSS overlay using `backdrop-filter` blur and brightness. Prefer an inverse rectangular mask or four screen-space panels whose projected edges follow the map while panning and zooming. Provide a simple dimmed-overlay fallback and verify the blur on supported phones.
 - [ ] Explore a very distant provincial-scale zoom level where story-relevant cities such as Montreal and Kingston appear as simple point markers rather than detailed playable map areas.
 - [ ] Replace or supplement the selected-district opacity treatment with a less obscuring edge treatment, such as an outline glow that leaves streets and labels readable.
-- [ ] Add a deliberate orientation-street layer with bold white labels for the major east/west streets used to help players locate themselves; review the exact street list before implementation.
-- [ ] Investigate how far the basemap can be fictionally altered, including suppressing building and house outlines inside changed areas such as the comparatively barren Giovanni Estate in Wychwood. Determine whether this belongs in a custom style, a masking layer, or custom replacement geometry.
-- [ ] Guarantee exactly one visible label per District at every zoom level, using dedicated label-point geometry rather than automatic placement from multipart district polygons.
+- [ ] Add a custom orientation-street layer with bold white labels driven by an explicit allow list of the major streets used to help players locate themselves. Keep its routes and labels independent of the basemap's automatic road-label selection so their styling, repetition, and zoom visibility remain under app control.
+- [ ] Support rare fictional basemap changes with small custom polygon masks rather than a general-purpose basemap editor. The only currently known case is the comparatively barren Giovanni Estate in Wychwood: cover the unwanted building and house detail at an appropriate layer depth, then add replacement geometry or a label only if needed.
+- [ ] Guarantee exactly one visible label per District at every zoom level with a dedicated one-point-per-District label source. Recalculate each point from the largest part of the District intersecting the visible map viewport so a partially visible District keeps its label onscreen; choose a valid interior point, throttle recalculation while the map moves, finalize it when movement stops, and retain a fixed preferred anchor as a fallback. Verify the approach on mobile rather than relying on automatic labels from tiled multipart polygons.
 
 ## Later Features — Not Yet Designed
 
