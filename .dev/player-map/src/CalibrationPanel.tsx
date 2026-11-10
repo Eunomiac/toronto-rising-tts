@@ -142,7 +142,7 @@ export function CalibrationPanel({ value, publishedHorizontalScale, onChange }: 
       <p className="calibration-panel__status" role="status">{copyStatus}</p>
       <details>
         <summary>Exact result</summary>
-        <p>Published horizontal scale: <strong>{publishedHorizontalScale}</strong>. Values below are additional live adjustments.</p>
+        <p>Published effective horizontal scale: <strong>{publishedHorizontalScale}</strong>. Values below are additional live adjustments.</p>
         <pre data-testid="calibration-result">{serializeVisualCalibration(value)}</pre>
       </details>
     </aside>

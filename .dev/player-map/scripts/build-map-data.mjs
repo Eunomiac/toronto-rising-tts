@@ -4,9 +4,11 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import {
+  createVisualCalibrationTransform,
   fitAffineCalibration,
   fitProjectiveCalibration,
   fitRectangularCalibration,
+  lngLatToMercator,
   pathToRings,
   polygonPointsToRings,
   ringsToMultiPolygon,
@@ -40,6 +42,31 @@ const transform = calibration.method.startsWith('rectangular')
     : fitAffineCalibration(calibration.controlPoints);
 const roundCoordinate = (value) => Number(value.toFixed(7));
 const project = (point) => transform.project(point).map(roundCoordinate);
+
+function collectionBounds(collections) {
+  return collections
+    .flatMap((collection) => collection.features)
+    .flatMap((feature) => feature.geometry.coordinates.flat(2))
+    .reduce((result, [longitude, latitude]) => [
+      [Math.min(result[0][0], longitude), Math.min(result[0][1], latitude)],
+      [Math.max(result[1][0], longitude), Math.max(result[1][1], latitude)],
+    ], [[Infinity, Infinity], [-Infinity, -Infinity]]);
+}
+
+function transformCollection(collection, transformLngLat) {
+  return {
+    ...collection,
+    features: collection.features.map((feature) => ({
+      ...feature,
+      geometry: {
+        ...feature.geometry,
+        coordinates: feature.geometry.coordinates.map((polygon) => (
+          polygon.map((ring) => ring.map((position) => transformLngLat(position).map(roundCoordinate)))
+        )),
+      },
+    })),
+  };
+}
 
 function buildCollection(groupId, kind, expectedNames) {
   const group = groups.get(groupId);
@@ -75,16 +102,30 @@ function buildCollection(groupId, kind, expectedNames) {
   return { type: 'FeatureCollection', features };
 }
 
-const districts = buildCollection('DISTRICTS', 'district', names.districts);
-const regions = buildCollection('REGIONS', 'region', names.regions);
-const allCoordinates = [...districts.features, ...regions.features]
-  .flatMap((feature) => feature.geometry.coordinates.flat(2));
-const bounds = allCoordinates.reduce((result, [longitude, latitude]) => [
-  [Math.min(result[0][0], longitude), Math.min(result[0][1], latitude)],
-  [Math.max(result[1][0], longitude), Math.max(result[1][1], latitude)],
-], [[Infinity, Infinity], [-Infinity, -Infinity]]);
+const baseDistricts = buildCollection('DISTRICTS', 'district', names.districts);
+const baseRegions = buildCollection('REGIONS', 'region', names.regions);
+const baseBounds = collectionBounds([baseDistricts, baseRegions]);
+const visualTransform = calibration.visualCalibration
+  ? createVisualCalibrationTransform(baseBounds, calibration.visualCalibration)
+  : (lngLat) => lngLat;
+const districts = transformCollection(baseDistricts, visualTransform);
+const regions = transformCollection(baseRegions, visualTransform);
+const bounds = collectionBounds([districts, regions]);
+const residualsFor = (points) => points.map((control) => {
+  const projected = lngLatToMercator(visualTransform(transform.project(control.source)));
+  const target = lngLatToMercator(control.lngLat);
+  return {
+    name: control.name,
+    metres: Math.hypot(projected[0] - target[0], projected[1] - target[1]),
+  };
+});
+const residuals = residualsFor(calibration.controlPoints);
+const validationResiduals = residualsFor(calibration.validationPoints ?? []);
+const rootMeanSquareError = (items) => items.length === 0
+  ? null
+  : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
 const manifest = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   source: {
     svg: 'data/source/toronto-rising-map.svg',
     sha256: createHash('sha256').update(svgText).digest('hex'),
@@ -97,15 +138,17 @@ const manifest = {
   },
   bounds,
   calibration: {
+    revision: calibration.revision,
     adjustments: calibration.adjustments ?? null,
+    visualCalibration: calibration.visualCalibration ?? null,
     controlPointCount: calibration.controlPoints.length,
-    rootMeanSquareErrorMetres: Number(transform.rootMeanSquareErrorMetres.toFixed(2)),
-    residuals: transform.residuals.map((item) => ({ ...item, metres: Number(item.metres.toFixed(2)) })),
-    validationPointCount: transform.validationResiduals?.length ?? 0,
-    validationRootMeanSquareErrorMetres: transform.validationRootMeanSquareErrorMetres === null || transform.validationRootMeanSquareErrorMetres === undefined
+    rootMeanSquareErrorMetres: Number(rootMeanSquareError(residuals).toFixed(2)),
+    residuals: residuals.map((item) => ({ ...item, metres: Number(item.metres.toFixed(2)) })),
+    validationPointCount: validationResiduals.length,
+    validationRootMeanSquareErrorMetres: rootMeanSquareError(validationResiduals) === null
       ? null
-      : Number(transform.validationRootMeanSquareErrorMetres.toFixed(2)),
-    validationResiduals: (transform.validationResiduals ?? []).map((item) => ({ ...item, metres: Number(item.metres.toFixed(2)) })),
+      : Number(rootMeanSquareError(validationResiduals).toFixed(2)),
+    validationResiduals: validationResiduals.map((item) => ({ ...item, metres: Number(item.metres.toFixed(2)) })),
   },
 };
 

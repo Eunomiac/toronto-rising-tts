@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  createVisualCalibrationTransform,
   fitAffineCalibration,
   fitProjectiveCalibration,
   fitRectangularCalibration,
@@ -78,4 +79,23 @@ test('rectangular calibration can contract horizontally around a fixed source an
   assert.ok(Math.abs(contracted.project([0, 50])[0] - baseline.project([0, 50])[0]) < 1e-12);
   assert.ok(contracted.project([100, 50])[0] < baseline.project([100, 50])[0]);
   assert.ok(Math.abs(contracted.project([0, 0])[1] - contracted.project([100, 0])[1]) < 1e-12);
+});
+
+test('visual calibration preserves selected edges and applies metre offsets', () => {
+  const transform = createVisualCalibrationTransform([[-80, 43], [-79, 44]], {
+    horizontalScale: 0.5,
+    verticalScale: 0.5,
+    offsetEastMetres: 10,
+    offsetNorthMetres: 20,
+    horizontalAnchor: 'west',
+    verticalAnchor: 'north',
+  });
+  const northwest = transform([-80, 44]);
+  const northeast = transform([-79, 44]);
+  const southwest = transform([-80, 43]);
+
+  assert.ok(northwest[0] > -80);
+  assert.ok(northwest[1] > 44);
+  assert.ok(northeast[0] < -79.49);
+  assert.ok(southwest[1] > 43.49);
 });

@@ -10,11 +10,11 @@ import { MapView } from './MapView';
 import { loadPublicMapData, selectedDistrictFromUrl, updateDistrictInUrl } from './data';
 import type { PublicMapData } from './types';
 
-const CALIBRATION_STORAGE_KEY = 'toronto-rising-map-visual-calibration';
+const CALIBRATION_STORAGE_PREFIX = 'toronto-rising-map-visual-calibration';
 
-function loadVisualCalibration(): VisualCalibration {
+function loadVisualCalibration(revision: number): VisualCalibration {
   try {
-    const stored = window.localStorage.getItem(CALIBRATION_STORAGE_KEY);
+    const stored = window.localStorage.getItem(`${CALIBRATION_STORAGE_PREFIX}-${revision}`);
     if (!stored) return DEFAULT_VISUAL_CALIBRATION;
     return { ...DEFAULT_VISUAL_CALIBRATION, ...JSON.parse(stored) } as VisualCalibration;
   } catch {
@@ -26,7 +26,8 @@ export function App() {
   const [data, setData] = useState<PublicMapData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(() => selectedDistrictFromUrl(window.location.search));
-  const [visualCalibration, setVisualCalibration] = useState(loadVisualCalibration);
+  const [visualCalibration, setVisualCalibration] = useState(DEFAULT_VISUAL_CALIBRATION);
+  const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
 
   useEffect(() => {
@@ -38,10 +39,18 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (calibrationMode) {
-      window.localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(visualCalibration));
-    }
-  }, [calibrationMode, visualCalibration]);
+    const revision = data?.manifest.calibration.revision;
+    if (!calibrationMode || revision === undefined || calibrationStorageRevision === revision) return;
+    window.localStorage.removeItem(CALIBRATION_STORAGE_PREFIX);
+    setVisualCalibration(loadVisualCalibration(revision));
+    setCalibrationStorageRevision(revision);
+  }, [calibrationMode, calibrationStorageRevision, data]);
+
+  useEffect(() => {
+    const revision = data?.manifest.calibration.revision;
+    if (!calibrationMode || revision === undefined || calibrationStorageRevision !== revision) return;
+    window.localStorage.setItem(`${CALIBRATION_STORAGE_PREFIX}-${revision}`, JSON.stringify(visualCalibration));
+  }, [calibrationMode, calibrationStorageRevision, data, visualCalibration]);
 
   const validSelectedKey = useMemo(() => {
     if (!data || !selectedKey) return null;
@@ -84,7 +93,10 @@ export function App() {
       {calibrationMode ? (
         <CalibrationPanel
           value={visualCalibration}
-          publishedHorizontalScale={data.manifest.calibration.adjustments?.horizontalScale ?? 1}
+          publishedHorizontalScale={
+            (data.manifest.calibration.adjustments?.horizontalScale ?? 1)
+            * (data.manifest.calibration.visualCalibration?.horizontalScale ?? 1)
+          }
           onChange={setVisualCalibration}
         />
       ) : (

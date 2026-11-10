@@ -21,9 +21,18 @@ export interface MapDataManifest {
   };
   bounds: [[number, number], [number, number]];
   calibration: {
+    revision: number;
     adjustments?: {
       horizontalScale?: number;
       anchorSourceX?: number;
+    } | null;
+    visualCalibration?: {
+      horizontalScale: number;
+      verticalScale: number;
+      offsetEastMetres: number;
+      offsetNorthMetres: number;
+      horizontalAnchor: 'west' | 'centre' | 'east';
+      verticalAnchor: 'north' | 'centre' | 'south';
     } | null;
     controlPointCount: number;
     rootMeanSquareErrorMetres: number;

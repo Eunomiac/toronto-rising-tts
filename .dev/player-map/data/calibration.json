@@ -1,10 +1,19 @@
 {
   "sourceViewBox": [0, 0, 4318, 5400],
+  "revision": 2,
   "method": "rectangular-web-mercator-least-squares",
-  "notes": "The source is a north-up rectangular map, so source x maps only to Web Mercator x and source y maps only to Web Mercator y. Controls use road centreline intersections checked against the source raster and OpenStreetMap. This deliberately forbids the perspective distortion produced by the former exact four-point projective fit. A reviewed 0.2% horizontal contraction preserves the far-west edge while correcting the small east-side visual overrun.",
+  "notes": "The source is a north-up rectangular map, so source x maps only to Web Mercator x and source y maps only to Web Mercator y. Controls use road centreline intersections checked against the source raster and OpenStreetMap. This deliberately forbids the perspective distortion produced by the former exact four-point projective fit. The initial 0.2% horizontal contraction is followed by the author's reviewed live visual calibration, preserving the west and north edges while applying the final scale and position correction.",
   "adjustments": {
     "horizontalScale": 0.998,
     "anchorSourceX": 0
+  },
+  "visualCalibration": {
+    "horizontalScale": 0.996,
+    "verticalScale": 1.0025,
+    "offsetEastMetres": 9,
+    "offsetNorthMetres": 11,
+    "horizontalAnchor": "west",
+    "verticalAnchor": "north"
   },
   "controlPoints": [
     {

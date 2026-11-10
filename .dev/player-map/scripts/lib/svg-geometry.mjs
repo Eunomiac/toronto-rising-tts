@@ -255,6 +255,32 @@ export function mercatorToLngLat([x, y]) {
   ];
 }
 
+function calibrationAnchor(minimum, maximum, anchor) {
+  if (anchor === 'west' || anchor === 'south') return minimum;
+  if (anchor === 'east' || anchor === 'north') return maximum;
+  if (anchor === 'centre') return (minimum + maximum) / 2;
+  throw new Error(`Unsupported visual calibration anchor: ${anchor}`);
+}
+
+export function createVisualCalibrationTransform(bounds, calibration) {
+  const [west, south] = lngLatToMercator(bounds[0]);
+  const [east, north] = lngLatToMercator(bounds[1]);
+  const anchorX = calibrationAnchor(west, east, calibration.horizontalAnchor);
+  const anchorY = calibrationAnchor(south, north, calibration.verticalAnchor);
+  const horizontalScale = calibration.horizontalScale ?? 1;
+  const verticalScale = calibration.verticalScale ?? 1;
+  const offsetEastMetres = calibration.offsetEastMetres ?? 0;
+  const offsetNorthMetres = calibration.offsetNorthMetres ?? 0;
+
+  return (lngLat) => {
+    const [sourceX, sourceY] = lngLatToMercator(lngLat);
+    return mercatorToLngLat([
+      anchorX + (sourceX - anchorX) * horizontalScale + offsetEastMetres,
+      anchorY + (sourceY - anchorY) * verticalScale + offsetNorthMetres,
+    ]);
+  };
+}
+
 function solve3(matrix, values) {
   const augmented = matrix.map((row, index) => [...row, values[index]]);
   for (let column = 0; column < 3; column += 1) {
