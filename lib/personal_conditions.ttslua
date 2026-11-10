@@ -442,24 +442,31 @@ function PC.sheetUpdates(pageNum, list)
   local updates = {}
   if pageNum == 1 then
     local resonance = PC.resonanceCard(list)
-    local title = resonance and tostring(resonance.dyscrasiaTitle or "") or ""
-    local description = resonance and tostring(resonance.dyscrasiaDescription or "") or ""
-    local showDyscrasia = resonance ~= nil and title ~= ""
+    local hasResonance = resonance ~= nil
+    local title = hasResonance and tostring(resonance.dyscrasiaTitle or "") or ""
+    local description = hasResonance and tostring(resonance.dyscrasiaDescription or "") or ""
+    local showDyscrasia = title ~= ""
+    updates[#updates + 1] = {
+      id = "resonance_container",
+      attributes = { active = hasResonance and "true" or "false" },
+    }
     updates[#updates + 1] = {
       id = "resonance_tag",
       attributes = {
-        image = resonance ~= nil
-          and PC.resonanceImage(resonance.temperament, resonance.resonanceType)
-          or "resonance_acutelyCholeric",
+        image = hasResonance and PC.resonanceImage(resonance.temperament, resonance.resonanceType) or "",
       },
     }
     updates[#updates + 1] = {
+      id = "dyscrasia_container",
+      attributes = { active = showDyscrasia and "true" or "false" },
+    }
+    updates[#updates + 1] = {
       id = "dyscrasia_title",
-      attributes = { text = showDyscrasia and title or "Dyscrasia Title" },
+      attributes = { text = showDyscrasia and title or "" },
     }
     updates[#updates + 1] = {
       id = "dyscrasia_description",
-      attributes = { text = showDyscrasia and description or "Dyscrasia Description" },
+      attributes = { text = showDyscrasia and description or "" },
     }
     return updates
   end

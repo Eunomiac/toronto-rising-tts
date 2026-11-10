@@ -52,12 +52,21 @@ local function attr(updates, id, key)
   end
   return nil
 end
+assert(attr(page1, "resonance_container", "active") == "true", "resonance shows")
 assert(attr(page1, "resonance_tag", "image") == "resonance_acutelySanguine", "resonance art")
+assert(attr(page1, "dyscrasia_container", "active") == "true", "dyscrasia shows")
 assert(attr(page1, "dyscrasia_title", "text") == "Thin blood", "dyscrasia title")
 
 list[4].dyscrasiaTitle = ""
-assert(attr(PC.sheetUpdates(1, list), "dyscrasia_title", "text") == "Dyscrasia Title", "blank dyscrasia keeps the sample title")
-assert(attr(PC.sheetUpdates(1, list), "resonance_tag", "image") == "resonance_acutelySanguine", "resonance art stays")
+local cleared = PC.sheetUpdates(1, list)
+assert(attr(cleared, "dyscrasia_container", "active") == "false", "a blank dyscrasia stays hidden")
+assert(attr(cleared, "dyscrasia_title", "text") == "", "a blank dyscrasia has no sample title")
+assert(attr(cleared, "resonance_container", "active") == "true", "resonance stays up without a dyscrasia")
+assert(attr(cleared, "resonance_tag", "image") == "resonance_acutelySanguine", "resonance art stays")
+
+local none = PC.sheetUpdates(1, {})
+assert(attr(none, "resonance_container", "active") == "false", "no resonance stays hidden")
+assert(attr(none, "dyscrasia_container", "active") == "false", "no dyscrasia stays hidden")
 
 local page2 = PC.sheetUpdates(2, list)
 assert(attr(page2, "condition_container_1_title", "text") == "Early", "first title")

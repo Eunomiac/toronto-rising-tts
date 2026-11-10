@@ -56,13 +56,13 @@ UISet("f10182", "resonance_tag", {
 
 
   <Panel id="pageRaised" class="page_raised page_top">
-    <Panel id="dyscrasia_container" class="dyscrasia_container">
+    <Panel id="dyscrasia_container" class="dyscrasia_container" active="false">
       <Image id="db_dyscrasia_container_background" class="dyscrasia_background" />
       <Text id="dyscrasia_title" class="dyscrasia_title" text="" />
       <Text id="dyscrasia_description" class="dyscrasia_description" text=""  />
     </Panel>
 
-    <Panel id="resonance_container" class="resonance_container" >
+    <Panel id="resonance_container" class="resonance_container" active="false">
       <Image id="resonance_tag" class="resonance_tag" />
     </Panel>
   </Panel>

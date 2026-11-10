@@ -26,11 +26,11 @@ A `resonance` Condition consists of a single image reference, which is derived b
   - Clicking a button should apply the Resonance Condition immediately to the player.
   - Only one Resonance Condition can be applied to a player at one time: Selecting one should deselect and unapply any previously-selected resonance conditions.
   - Clicking an already-selected resonance button should remove it.
-* **Displaying Resonance Conditions:** When a resonance condition is applied to a player, the `id="resonance_container"` element on page 1 of their sheet should be activated, and the `image` attribute of the `id="resonance_tag"` element should be set to `resonance_<temperament><type>`. For example, if the Storyteller activates the `"fleetingly Choleric"` resonance condition on a player, that image attribute should be set to `resonance_fleetinglyCholeric`.
+* **Displaying Resonance Conditions:** `id="resonance_container"` on page 1 starts hidden. When a resonance condition is applied, that element is activated, and the `image` attribute of `id="resonance_tag"` is set to `resonance_<temperament><type>`. For example, `"fleetingly Choleric"` sets that image to `resonance_fleetinglyCholeric`. Removing the resonance hides the container again.
 
 #### `dyscrasia`-Type Conditions
 Whenever the ST applies a resonance Condition to a player with `"acutely"` temperament, the ST should immediately be prompted to define a dyscrasia. There are two elements to a dyscrasia: a short title, and a short description of the effect. The Storyteller should be presented with input fields for both.
-**Displaying Dyscrasia Conditions:** The `id="dyscrasia_container"` element on page 1 should be activated, the `id="dyscrasia_title"` text element should be updated with the dyscrasia title, and the `id="dyscrasia_description"` text element should be updated with the short description.
+**Displaying Dyscrasia Conditions:** `id="dyscrasia_container"` on page 1 starts hidden. It is activated only when that resonance has a dyscrasia title. `id="dyscrasia_title"` and `id="dyscrasia_description"` then show the title and description. Cancelling the dyscrasia leaves the resonance up and the dyscrasia hidden.
 
 #### Other Complication Types
 A separate control on the PC tracker popup (near the top right corner; visibly distinct from the resonance & dyscrasia condition control) should open a modal containing inputs for all of the fields described above:
