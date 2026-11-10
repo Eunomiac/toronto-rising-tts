@@ -15,9 +15,11 @@ body,
 }
 
 button,
+input,
 select { font: inherit; }
 
 button,
+input,
 select,
 .maplibregl-ctrl button {
   &:focus-visible {
@@ -268,6 +270,7 @@ select,
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  text-decoration: none;
   backdrop-filter: blur(10px);
 
   span {
@@ -276,6 +279,156 @@ select,
     border-radius: 50%;
     background: #6ac48c;
     box-shadow: 0 0 0 3px rgba(#6ac48c, 0.12);
+  }
+}
+
+.calibration-panel {
+  position: absolute;
+  z-index: 6;
+  right: 0.65rem;
+  bottom: max(0.65rem, env(safe-area-inset-bottom));
+  left: 0.65rem;
+  max-height: min(72vh, 42rem);
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid rgba($blood-bright, 0.42);
+  border-radius: 1rem;
+  background: rgba($panel-solid, 0.96);
+  box-shadow: $shadow;
+  backdrop-filter: blur(18px);
+
+  &__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+
+    p,
+    h2 { margin: 0; }
+
+    p {
+      color: $blood-bright;
+      font-size: 0.65rem;
+      font-weight: 850;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin-top: 0.15rem;
+      font: 700 1.65rem/1 $serif;
+    }
+
+    a {
+      display: grid;
+      flex: 0 0 2.5rem;
+      height: 2.5rem;
+      place-items: center;
+      border: 1px solid $line;
+      border-radius: 50%;
+      color: $paper;
+      font-size: 1.5rem;
+      line-height: 1;
+      text-decoration: none;
+    }
+  }
+
+  &__instructions {
+    margin: 0.8rem 0 1rem;
+    color: $muted;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  &__actions {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 0.6rem;
+    margin-top: 1rem;
+
+    button {
+      min-height: 2.65rem;
+      border: 1px solid rgba($paper, 0.22);
+      border-radius: 0.55rem;
+      color: $paper;
+      background: transparent;
+      cursor: pointer;
+    }
+  }
+
+  &__copy { background: $blood !important; }
+
+  &__status {
+    min-height: 1.1rem;
+    margin: 0.45rem 0 0;
+    color: #efb8bb;
+    font-size: 0.72rem;
+  }
+
+  details {
+    margin-top: 0.4rem;
+    color: $muted;
+    font-size: 0.72rem;
+
+    summary { cursor: pointer; }
+    p { line-height: 1.4; }
+    pre {
+      overflow: auto;
+      padding: 0.7rem;
+      border: 1px solid $line;
+      border-radius: 0.5rem;
+      color: $paper;
+      background: rgba($ink, 0.72);
+      font-size: 0.68rem;
+    }
+  }
+}
+
+.calibration-control,
+.calibration-anchor {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+
+  > span {
+    color: $muted;
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+}
+
+.calibration-control {
+  > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  input[type='range'] { accent-color: $blood-bright; }
+
+  input[type='number'] {
+    min-height: 2.35rem;
+    width: 100%;
+    padding: 0 0.55rem;
+    border: 1px solid rgba($paper, 0.2);
+    border-radius: 0.45rem;
+    color: $paper;
+    background: #211013;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.calibration-anchor {
+  select {
+    min-height: 2.35rem;
+    padding: 0 0.55rem;
+    border: 1px solid rgba($paper, 0.2);
+    border-radius: 0.45rem;
+    color: $paper;
+    background: #211013;
   }
 }
 
@@ -295,6 +448,16 @@ select,
   }
 
   .calibration-badge { top: auto; right: 1.25rem; bottom: 1.25rem; }
+
+  .calibration-panel {
+    top: 1.25rem;
+    right: 1.25rem;
+    bottom: auto;
+    left: auto;
+    width: min(24rem, calc(100vw - 3rem));
+    max-height: calc(100vh - 2.5rem);
+    padding: 1.15rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

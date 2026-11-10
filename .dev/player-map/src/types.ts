@@ -21,6 +21,10 @@ export interface MapDataManifest {
   };
   bounds: [[number, number], [number, number]];
   calibration: {
+    adjustments?: {
+      horizontalScale?: number;
+      anchorSourceX?: number;
+    } | null;
     controlPointCount: number;
     rootMeanSquareErrorMetres: number;
     residuals: Array<{ name: string; metres: number }>;

@@ -11,6 +11,9 @@ health route. The public address is
 <https://toronto-rising-player-map.toronto-rising-player-map.workers.dev>.
 The deployed homepage, health route, desktop interaction path, and Pixel 7-sized
 interaction path were verified after publication.
+An author-only visual calibration panel is available through `/?calibrate=1` so
+the remaining small scale and position errors can be tuned against the live
+street map before the final values are promoted to tracked calibration data.
 
 ## Decisions Recorded
 
@@ -50,7 +53,8 @@ interaction path were verified after publication.
 - [x] Create the isolated Player Map package and lockfile.
 - [x] Add React, TypeScript, Vite, Sass, GSAP, MapLibre, Vitest, Testing Library, and Playwright.
 - [x] Render a bounded Toronto basemap with the intended visual style.
-- [x] Establish SVG-to-map ground-control points and measure georeferencing error. The rectangle-preserving fit has roughly 14-metre control RMS and a 27-metre independent checkpoint; expand the control set before final geometry approval.
+- [x] Establish SVG-to-map ground-control points and measure georeferencing error. The rectangle-preserving fit has roughly 17-metre control RMS and a 35-metre independent checkpoint after the reviewed horizontal contraction; expand the control set before final geometry approval.
+- [x] Add a browser-persistent visual calibration panel for live scale and position refinement without skewing the rectangular geometry.
 - [x] Parse all district and region SVG features while preserving holes and fill rules.
 - [x] Prototype narrow-gap and overlap normalization with diagnostic output. This is deliberately not the runtime geometry until Phase 2 adds a reviewed winner manifest.
 - [x] Load generated district GeoJSON and prove hover, keyboard selection, click selection, shareable URL state, and a details panel.

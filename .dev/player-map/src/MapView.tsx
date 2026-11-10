@@ -5,6 +5,7 @@ import {
   NavigationControl,
   setWorkerUrl,
   type ErrorEvent as MapLibreErrorEvent,
+  type GeoJSONSource,
   type MapGeoJSONFeature,
   type MapMouseEvent,
 } from 'maplibre-gl';
@@ -46,9 +47,13 @@ function focusDistrict(map: Map, districts: MapFeatureCollection, key: string) {
 export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
+  const districtsRef = useRef(districts);
+  const onSelectRef = useRef(onSelect);
   const hoveredRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const [status, setStatus] = useState('Loading street map…');
+  districtsRef.current = districts;
+  onSelectRef.current = onSelect;
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
@@ -70,7 +75,7 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
     map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
 
     const onLoad = () => {
-      map.addSource(SOURCE_ID, { type: 'geojson', data: districts, promoteId: 'key' });
+      map.addSource(SOURCE_ID, { type: 'geojson', data: districtsRef.current, promoteId: 'key' });
       map.addLayer({
         id: FILL_LAYER_ID,
         type: 'fill',
@@ -129,7 +134,7 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
       });
       if (selectedRef.current) {
         map.setFeatureState({ source: SOURCE_ID, id: selectedRef.current }, { selected: true });
-        focusDistrict(map, districts, selectedRef.current);
+        focusDistrict(map, districtsRef.current, selectedRef.current);
       }
       setStatus('Street map ready. Select a shaded district for details.');
     };
@@ -145,7 +150,7 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
     };
     const onClick = (event: MapMouseEvent) => {
       const key = districtKey(map.queryRenderedFeatures(event.point, { layers: [FILL_LAYER_ID] })[0]);
-      if (key) onSelect(key);
+      if (key) onSelectRef.current(key);
     };
     const onError = (event: MapLibreErrorEvent) => {
       if (event.error) setStatus(`Map error: ${event.error.message}`);
@@ -159,7 +164,14 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
       map.remove();
       mapRef.current = null;
     };
-  }, [districts, onSelect]);
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    source?.setData(districts);
+  }, [districts]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -169,8 +181,8 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
     if (previousKey) map.setFeatureState({ source: SOURCE_ID, id: previousKey }, { selected: false });
     if (!selectedKey) return;
     map.setFeatureState({ source: SOURCE_ID, id: selectedKey }, { selected: true });
-    focusDistrict(map, districts, selectedKey);
-  }, [districts, selectedKey]);
+    focusDistrict(map, districtsRef.current, selectedKey);
+  }, [selectedKey]);
 
   return (
     <section className="map-surface" aria-label="Interactive map of Toronto Rising districts">

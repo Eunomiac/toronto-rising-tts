@@ -17,6 +17,15 @@ The canonical district and region geometry lives in
 `data/source/toronto-rising-map.svg`. Generated GeoJSON in
 `public/generated/` is reproducible and must not be edited by hand.
 
+## Visual calibration
+
+Open `/?calibrate=1` to replace the district panel with the author-only visual
+calibration controls. Width, height, east/west position, and north/south
+position update live over the street map. The temporary result is stored in the
+current browser and can be copied as JSON for promotion into the tracked
+calibration data. These browser values are additional adjustments on top of the
+published calibration; they do not change the public geometry by themselves.
+
 ## Verification
 
 ```powershell

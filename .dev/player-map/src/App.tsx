@@ -1,13 +1,33 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { CalibrationPanel } from './CalibrationPanel';
+import {
+  applyVisualCalibration,
+  DEFAULT_VISUAL_CALIBRATION,
+  type VisualCalibration,
+} from './calibration';
 import { DistrictPanel } from './DistrictPanel';
 import { MapView } from './MapView';
 import { loadPublicMapData, selectedDistrictFromUrl, updateDistrictInUrl } from './data';
 import type { PublicMapData } from './types';
 
+const CALIBRATION_STORAGE_KEY = 'toronto-rising-map-visual-calibration';
+
+function loadVisualCalibration(): VisualCalibration {
+  try {
+    const stored = window.localStorage.getItem(CALIBRATION_STORAGE_KEY);
+    if (!stored) return DEFAULT_VISUAL_CALIBRATION;
+    return { ...DEFAULT_VISUAL_CALIBRATION, ...JSON.parse(stored) } as VisualCalibration;
+  } catch {
+    return DEFAULT_VISUAL_CALIBRATION;
+  }
+}
+
 export function App() {
   const [data, setData] = useState<PublicMapData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(() => selectedDistrictFromUrl(window.location.search));
+  const [visualCalibration, setVisualCalibration] = useState(loadVisualCalibration);
+  const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
 
   useEffect(() => {
     let active = true;
@@ -17,10 +37,23 @@ export function App() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    if (calibrationMode) {
+      window.localStorage.setItem(CALIBRATION_STORAGE_KEY, JSON.stringify(visualCalibration));
+    }
+  }, [calibrationMode, visualCalibration]);
+
   const validSelectedKey = useMemo(() => {
     if (!data || !selectedKey) return null;
     return data.districts.features.some((feature) => feature.properties.key === selectedKey) ? selectedKey : null;
   }, [data, selectedKey]);
+
+  const calibratedDistricts = useMemo(() => {
+    if (!data) return null;
+    return calibrationMode
+      ? applyVisualCalibration(data.districts, data.manifest.bounds, visualCalibration)
+      : data.districts;
+  }, [calibrationMode, data, visualCalibration]);
 
   const selectDistrict = useCallback((key: string) => {
     setSelectedKey(key);
@@ -47,19 +80,30 @@ export function App() {
         </div>
         <span className="app-header__phase">Map prototype</span>
       </header>
-      <MapView districts={data.districts} selectedKey={validSelectedKey} onSelect={selectDistrict} />
-      <DistrictPanel
-        districts={data.districts.features}
-        selectedKey={validSelectedKey}
-        onSelect={selectDistrict}
-        onClear={clearDistrict}
-      />
-      <div
-        className="calibration-badge"
-        title={`${data.manifest.calibration.controlPointCount} controls; ${data.manifest.calibration.validationRootMeanSquareErrorMetres ?? 'no'} m validation error`}
-      >
-        <span aria-hidden="true" /> Calibrated vector map
-      </div>
+      <MapView districts={calibratedDistricts ?? data.districts} selectedKey={validSelectedKey} onSelect={selectDistrict} />
+      {calibrationMode ? (
+        <CalibrationPanel
+          value={visualCalibration}
+          publishedHorizontalScale={data.manifest.calibration.adjustments?.horizontalScale ?? 1}
+          onChange={setVisualCalibration}
+        />
+      ) : (
+        <>
+          <DistrictPanel
+            districts={data.districts.features}
+            selectedKey={validSelectedKey}
+            onSelect={selectDistrict}
+            onClear={clearDistrict}
+          />
+          <a
+            className="calibration-badge"
+            href="/?calibrate=1"
+            title={`${data.manifest.calibration.controlPointCount} controls; ${data.manifest.calibration.validationRootMeanSquareErrorMetres ?? 'no'} m validation error`}
+          >
+            <span aria-hidden="true" /> Calibrated vector map
+          </a>
+        </>
+      )}
     </main>
   );
 }

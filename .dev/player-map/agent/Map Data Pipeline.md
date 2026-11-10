@@ -163,13 +163,20 @@ Source x maps only to Web Mercator x and source y maps only to Web Mercator y,
 which matches the north-up rectangular raster and prevents perspective or
 keystone distortion. The four fitting intersections were rechecked against the
 source raster and OpenStreetMap road centrelines. The current fit reports about
-14 metres control RMS and 27 metres at the independent University/Queen
+17 metres control RMS and 35 metres at the independent University/Queen
 checkpoint. Centre Island, Billy Bishop Airport, the harbour shoreline, and the
 central street grid were also compared visually over the live basemap. Expand
 the control and validation set before geometry is called final, but do not
 return to an exact four-point projective fit. A reviewed `0.998` horizontal
 scale adjustment is anchored at source x=0, preserving the aligned west edge
 while contracting the east side by 0.2 percent.
+
+For final visual refinement, `/?calibrate=1` exposes a live Web Mercator
+calibration panel. Its scale controls preserve horizontal and vertical edges;
+its position controls are measured in map metres. The panel persists temporary
+values in local storage and copies an exact JSON report. Those values are
+relative to the currently generated geometry and must be reviewed and promoted
+to `data/calibration.json`; browser-local settings are not a source of truth.
 
 ## Public Output
 

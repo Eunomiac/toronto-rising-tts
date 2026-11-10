@@ -1,4 +1,4 @@
-import { expect, test, type Route } from '@playwright/test';
+import { expect, test, type Page, type Route, type TestInfo } from '@playwright/test';
 
 async function relayThroughTestRunner(route: Route) {
   let response: Response | undefined;
@@ -20,22 +20,26 @@ async function relayThroughTestRunner(route: Route) {
   });
 }
 
+async function prepareNetwork(page: Page, testInfo: TestInfo) {
+  const baseURL = testInfo.project.use.baseURL;
+  if (typeof baseURL === 'string' && baseURL.startsWith('https://')) {
+    const origin = new URL(baseURL).origin;
+    await page.route(`${origin}/**`, relayThroughTestRunner);
+  }
+  await page.route('https://tiles.openfreemap.org/**', relayThroughTestRunner);
+}
+
 test('loads the real map and supports pointer and keyboard-friendly selection', async ({ page }, testInfo) => {
   const consoleErrors: string[] = [];
   const failedRequests: string[] = [];
   const baseURL = testInfo.project.use.baseURL;
+  await prepareNetwork(page, testInfo);
   if (typeof baseURL === 'string' && baseURL.startsWith('https://')) {
     const origin = new URL(baseURL).origin;
-    // Codex Chromium cannot reach the public internet directly. Relaying the
-    // deployed origin preserves the public URL while Node fetches live assets.
-    await page.route(`${origin}/**`, relayThroughTestRunner);
     const health = await page.request.get(`${origin}/api/health`);
     expect(health.status()).toBe(200);
     await expect(health.json()).resolves.toMatchObject({ ok: true, service: 'toronto-rising-player-map' });
   }
-  // The Codex browser is denied direct internet access. Relay OpenFreeMap through
-  // the test runner so this still exercises the real style, tiles, and glyphs.
-  await page.route('https://tiles.openfreemap.org/**', relayThroughTestRunner);
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   page.on('requestfailed', (request) => {
     const errorText = request.failure()?.errorText;
@@ -48,7 +52,7 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   await expect(page.getByRole('heading', { name: 'Toronto Rising' })).toBeVisible();
   const canvas = page.locator('.maplibregl-canvas');
   await expect(canvas).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByRole('status')).toContainText('Street map ready', { timeout: 30_000 });
+  await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
 
   if (testInfo.project.name === 'desktop-chromium') {
     // Focus a compact, simple district first so the pointer check does not
@@ -82,4 +86,26 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
 
   expect(consoleErrors).toEqual([]);
   expect(failedRequests).toEqual([]);
+});
+
+test('visual calibration mode updates and remembers exact adjustments', async ({ page }, testInfo) => {
+  const consoleErrors: string[] = [];
+  await prepareNetwork(page, testInfo);
+  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+
+  await page.goto('/?calibrate=1');
+  await expect(page.getByRole('heading', { name: 'Visual calibration' })).toBeVisible();
+  await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
+
+  const horizontalScale = page.getByLabel('Horizontal scale', { exact: true });
+  await horizontalScale.fill('0.9975');
+  await page.getByLabel('East / west shift (m)', { exact: true }).fill('-12');
+  await expect(page.getByTestId('calibration-result')).toContainText('"horizontalScale": 0.9975');
+  await expect(page.getByTestId('calibration-result')).toContainText('"offsetEastMetres": -12');
+
+  await page.reload();
+  await expect(page.getByLabel('Horizontal scale', { exact: true })).toHaveValue('0.9975');
+  await expect(page.getByLabel('East / west shift (m)', { exact: true })).toHaveValue('-12');
+  await expect(page.getByRole('heading', { name: 'Visual calibration' })).toBeVisible();
+  expect(consoleErrors).toEqual([]);
 });
