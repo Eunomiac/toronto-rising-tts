@@ -56,6 +56,11 @@ interaction path were verified after publication.
 - [x] Load generated district GeoJSON and prove hover, keyboard selection, click selection, shareable URL state, and a details panel.
 - [x] Deploy the spike to Cloudflare Workers Free and confirm its public address, homepage, `/api/health` route, and desktop/mobile browser behavior.
 
+## Known Geometry Defects — Resolve Before Final Approval
+
+- [ ] Promote overlap normalization from diagnostic-only output into the runtime district GeoJSON using the reviewed district-priority manifest. Acceptance: close-zoom inspection shows no doubled district fills or boundaries, and generated diagnostics account for every removed overlap fragment.
+- [ ] Repair Yorkville's malformed geometry: a doubled diagonal wedge currently runs northwest from the district's southeast corner. Determine whether the defect originates in the canonical SVG ring, compound-path interpretation, or SVG-to-GeoJSON parsing. Acceptance: Yorkville has one intended non-self-intersecting boundary with no diagonal wedge in both geometry diagnostics and the live map.
+
 ## Phase 2 — Data Pipeline
 
 - [ ] Reuse the production Sheet loader and exact export contract.
