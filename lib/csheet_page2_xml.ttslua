@@ -1,5 +1,6 @@
 --[[
   Build character sheet page 2 UI XML: disciplines grid + optional rituals/ceremonies.
+  Layout markup lives in ui/.templates/csheet/page2.xml and partials (embedded at build time).
   Consumed via PAGE_DYNAMIC_XML[2] / ui.ui_csheet_page2 (object entry).
 
   Agent guidance: .dev/PC Data & Tracking/Character Sheet Modifications.md
@@ -9,6 +10,25 @@ local M = {}
 
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
 local PSC = require("lib.pc_sheet_collect")
+local TPL = require("lib.ui_xml_template")
+TPL.registerPack(require("lib.ui_xml_templates_csheet_page2"))
+
+local TEMPLATE_PAGE = "csheet/page2"
+local TEMPLATE_DISC_CELL = "csheet/partials/page2_disc_cell"
+local TEMPLATE_DISC_CELL_EMPTY = "csheet/partials/page2_disc_cell_empty"
+local TEMPLATE_RC_ROW = "csheet/partials/page2_rc_row"
+local TEMPLATE_RC_SECTION = "csheet/partials/page2_rc_section"
+
+local PAGE_RAW_KEYS = {
+  DISC_ROW_1 = true,
+  DISC_ROW_2 = true,
+  RC_SECTION = true,
+}
+
+local RC_SECTION_RAW_KEYS = {
+  LEFT_ROWS = true,
+  RIGHT_ROWS = true,
+}
 
 local DISC_ORDER = {
   "animalism",
@@ -23,15 +43,6 @@ local DISC_ORDER = {
   "presence",
   "protean",
 }
-
-local function xmlEscape(s)
-  s = tostring(s or "")
-  s = s:gsub("&", "&amp;")
-  s = s:gsub("<", "&lt;")
-  s = s:gsub(">", "&gt;")
-  s = s:gsub('"', "&quot;")
-  return s
-end
 
 --- @param discs table|nil
 --- @return string[] owned keys in chronicle order
@@ -140,71 +151,39 @@ local function powersText(powers)
   return table.concat(lines, "\n")
 end
 
---- Absolute fill offsets within the 200px disc/ritual dotline (author-tuned).
-local DOT_FILL_OFFSET_XY = {
-  "0 2",
-  "35 2",
-  "70 2",
-  "105 2",
-  "140 2",
-}
+--- Bake fill state into the cell XML so remount shows dots without a same-frame setAttribute.
+--- @param params table
+--- @param slot number
+--- @param active boolean
+--- @param imageName string|nil
+local function setDotSlotParams(params, slot, active, imageName)
+  params["DOT_" .. slot .. "_ACTIVE"] = active and "true" or "false"
+  if active and type(imageName) == "string" and imageName ~= "" then
+    params["DOT_" .. slot .. "_IMAGE"] = imageName
+  end
+end
 
 --- @param key string
 --- @param row table
 --- @return string
 local function buildDisciplineCell(key, row)
-  local nameImg = "discName_" .. key
   local base = tonumber(row.base) or 0
   local temp = tonumber(row.temp) or 0
-  local parts = {
-    string.format('<VerticalLayout id="db_disc_cell_%s" class="page2_disc_cell">', key),
-    string.format('  <HorizontalLayout id="db_disc_header_%s" class="page2_disc_header">', key),
-    string.format(
-      '    <Image id="db_disc_name_%s" image="%s" class="page2_disc_name" />',
-      key,
-      nameImg
-    ),
-    string.format('    <Panel id="db_dotline_wrap_%s" class="page2_dotline_wrap page2_dotline_wrap_disc">', key),
-    string.format('      <Image id="db_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />', key),
-    string.format('      <HorizontalLayout id="db_dot_fills_%s" class="page2_dot_fills">', key),
+  local params = {
+    KEY = key,
+    NAME_IMAGE = "discName_" .. key,
   }
   for slot = 1, 5 do
-    -- Bake fill state into XML so remount shows dots without relying on same-frame setAttribute.
     local active, imageName = PSC.resolveDotSlotImage(key, base, temp, slot)
-    if active and type(imageName) == "string" and imageName ~= "" then
-      parts[#parts + 1] = string.format(
-        '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="true" image="%s" />',
-        key,
-        slot,
-        DOT_FILL_OFFSET_XY[slot],
-        imageName
-      )
-    else
-      parts[#parts + 1] = string.format(
-        '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="false" />',
-        key,
-        slot,
-        DOT_FILL_OFFSET_XY[slot]
-      )
-    end
+    setDotSlotParams(params, slot, active == true, imageName)
   end
-  parts[#parts + 1] = "      </HorizontalLayout>"
-  parts[#parts + 1] = "    </Panel>"
-  parts[#parts + 1] = "  </HorizontalLayout>"
-  -- Powers `text` is applied via UI.setAttribute after setXml — XML attribute whitespace
-  -- normalization collapses real newlines to spaces.
-  parts[#parts + 1] = string.format('  <Text id="db_powers_%s" class="page2_powers_text" text="" />', key)
-  parts[#parts + 1] = "</VerticalLayout>"
-  return table.concat(parts, "\n")
+  return TPL.apply(TEMPLATE_DISC_CELL, params)
 end
 
 --- @param cellIndex number 1..6
 --- @return string
 local function emptyDisciplineCell(cellIndex)
-  return string.format(
-    '<VerticalLayout id="db_disc_cell_empty_%d" class="page2_disc_cell" />',
-    cellIndex
-  )
+  return TPL.apply(TEMPLATE_DISC_CELL_EMPTY, { INDEX = cellIndex })
 end
 
 --- @param entry table|nil
@@ -218,47 +197,33 @@ local function buildRcRow(entry, side, rowIndex)
     name = tostring(entry.name or "")
     level = math.floor(tonumber(entry.level) or 0)
   end
-  local rowId = string.format("%s_%d", side, rowIndex)
-  local parts = {
-    string.format('<HorizontalLayout id="db_rc_row_%s" class="page2_rc_row">', rowId),
-    string.format(
-      '  <Panel id="db_rc_dotline_wrap_%s" class="page2_dotline_wrap page2_dotline_wrap_rc">',
-      rowId
-    ),
-    string.format(
-      '    <Image id="db_rc_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />',
-      rowId
-    ),
-    string.format('    <HorizontalLayout id="db_rc_dot_fills_%s" class="page2_dot_fills">', rowId),
+  local params = {
+    SIDE = side,
+    ROW = rowIndex,
+    NAME = name,
   }
   for slot = 1, 5 do
-    if slot <= level then
-      parts[#parts + 1] = string.format(
-        '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="true" image="dot_yellow" />',
-        side,
-        rowIndex,
-        slot,
-        DOT_FILL_OFFSET_XY[slot]
-      )
-    else
-      parts[#parts + 1] = string.format(
-        '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="false" />',
-        side,
-        rowIndex,
-        slot,
-        DOT_FILL_OFFSET_XY[slot]
-      )
-    end
+    setDotSlotParams(params, slot, slot <= level, slot <= level and "dot_yellow" or nil)
   end
-  parts[#parts + 1] = "    </HorizontalLayout>"
-  parts[#parts + 1] = "  </Panel>"
-  parts[#parts + 1] = string.format(
-    '  <Text id="db_rc_name_%s" class="page2_rc_name" text="%s" />',
-    rowId,
-    xmlEscape(name)
-  )
-  parts[#parts + 1] = "</HorizontalLayout>"
-  return table.concat(parts, "\n")
+  return TPL.apply(TEMPLATE_RC_ROW, params)
+end
+
+--- @param divider string
+--- @param leftList table
+--- @param rightList table
+--- @return string
+local function buildRcSection(divider, leftList, rightList)
+  local leftRows = {}
+  local rightRows = {}
+  for row = 1, 5 do
+    leftRows[row] = buildRcRow(leftList[row], "L", row)
+    rightRows[row] = buildRcRow(rightList[row], "R", row)
+  end
+  return TPL.apply(TEMPLATE_RC_SECTION, {
+    DIVIDER = divider,
+    LEFT_ROWS = table.concat(leftRows, "\n"),
+    RIGHT_ROWS = table.concat(rightRows, "\n"),
+  }, { rawKeys = RC_SECTION_RAW_KEYS })
 end
 
 --- @param stats table|nil
@@ -305,49 +270,13 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     end
   end
 
-  -- Single page-2 Defaults block: author-tuned overrides only (no prior 280px/spacing values that could win).
   -- paper_root must not also use padded_border — that class's padding would override page_root padding.
-  local parts = {
-    "<Defaults>",
-    '  <Panel class="page_root" childAlignment="UpperCenter" padding="50 50 110 100" />',
-    '  <VerticalLayout class="page2_dynamic" padding="40 40 0 0" childAlignment="UpperCenter" childForceExpandHeight="false" childForceExpandWidth="true" spacing="0" />',
-    '  <HorizontalLayout class="page2_disc_row" flexibleWidth="1" spacing="0" preferredHeight="225" flexibleHeight="0" />',
-    '  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" childForceExpandWidth="false" />',
-    '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" childForceExpandWidth="false" preferredWidth="800" flexibleWidth="1" spacing="0" />',
-    '  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />',
-    '  <Panel class="page2_dotline_wrap" raycastTarget="false" />',
-    '  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" preferredHeight="63" />',
-    '  <Panel class="page2_dotline_wrap_rc" preferredWidth="200" preferredHeight="63" flexibleWidth="0" padding="0 0 0 0" />',
-    '  <Image class="page2_dotline_bg" flexibleWidth="0" preferredWidth="200" preferredHeight="0" ignoreLayout="true" width="200" />',
-    '  <HorizontalLayout class="page2_dot_fills" preferredWidth="200" preferredHeight="63" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />',
-    '  <Image class="page2_dot_fill" ignoreLayout="true" width="63" height="63" />',
-    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" horizontalOverflow="Overflow" />',
-    '  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',
-    '  <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="0" />',
-    '  <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="0" />',
-    '  <HorizontalLayout class="page2_rc_row" preferredHeight="60" flexibleHeight="0" childForceExpandWidth="false" />',
-    '  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />',
-    "</Defaults>",
-    "",
-    '<Panel id="paper_root" class="page_root">',
-    '  <Button id="pageForward" class="page_navigation page_forward" />',
-    '  <Button id="pageInner" class="page_navigation page_inner_left" />',
-    "",
-    '  <VerticalLayout id="page2_dynamic" class="page2_dynamic">',
-    '    <HorizontalLayout id="db_disc_row_1" class="page2_disc_row">',
-    cells[1],
-    cells[2],
-    cells[3],
-    "    </HorizontalLayout>",
-    '    <HorizontalLayout id="db_disc_row_2" class="page2_disc_row">',
-    cells[4],
-    cells[5],
-    cells[6],
-    "    </HorizontalLayout>",
+  local pageParams = {
+    DISC_ROW_1 = table.concat({ cells[1], cells[2], cells[3] }, "\n"),
+    DISC_ROW_2 = table.concat({ cells[4], cells[5], cells[6] }, "\n"),
   }
 
-  local hasRc = #rituals > 0 or #ceremonies > 0
-  if hasRc then
+  if #rituals > 0 or #ceremonies > 0 then
     local divider = "divider_ritualsAndCeremonies"
     local leftList = {}
     local rightList = {}
@@ -372,32 +301,14 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
         rightList[i - 5] = ceremonies[i]
       end
     end
-
-    parts[#parts + 1] = string.format(
-      '    <Image id="db_rc_divider" image="%s" class="page2_rc_divider" />',
-      divider
-    )
-    parts[#parts + 1] = '    <HorizontalLayout id="db_rc_columns" class="page2_rc_columns">'
-    parts[#parts + 1] = '      <VerticalLayout id="db_rc_col_L" class="page2_rc_col">'
-    for row = 1, 5 do
-      parts[#parts + 1] = buildRcRow(leftList[row], "L", row)
-    end
-    parts[#parts + 1] = "      </VerticalLayout>"
-    parts[#parts + 1] = '      <VerticalLayout id="db_rc_col_R" class="page2_rc_col">'
-    for row = 1, 5 do
-      parts[#parts + 1] = buildRcRow(rightList[row], "R", row)
-    end
-    parts[#parts + 1] = "      </VerticalLayout>"
-    parts[#parts + 1] = "    </HorizontalLayout>"
+    pageParams.RC_SECTION = buildRcSection(divider, leftList, rightList)
   end
 
-  parts[#parts + 1] = "  </VerticalLayout>"
-  parts[#parts + 1] = "</Panel>"
-
+  local pageXml = TPL.apply(TEMPLATE_PAGE, pageParams, { rawKeys = PAGE_RAW_KEYS })
   return table.concat({
     CSHEET_DEFAULTS.getXml(),
     "",
-    table.concat(parts, "\n"),
+    pageXml,
     "",
   }, "\n")
 end

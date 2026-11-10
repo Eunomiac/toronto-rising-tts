@@ -1,0 +1,5 @@
+<!-- Parameters:
+@@INDEX@@ - empty slot 1..6
+-->
+
+<VerticalLayout id="db_disc_cell_empty_@@INDEX@@" class="page2_disc_cell" />

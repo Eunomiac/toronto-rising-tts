@@ -63,7 +63,7 @@ Pages with PCS-driven layout use a **separate object entry** so template builder
 
 | Page | Object stub | Builder / bake | Status |
 | :-- | :-- | :-- | :-- |
-| 2 | `require("ui.ui_csheet_page2")` | `lib/csheet_page2_xml.ttslua` | Live (`self.UI.setXml`) — disciplines + rituals/ceremonies |
+| 2 | `require("ui.ui_csheet_page2")` | `lib/csheet_page2_xml.ttslua` + `ui/.templates/csheet/page2.xml` | Live (`self.UI.setXml`) — disciplines + rituals/ceremonies |
 | 3 | `require("ui.ui_csheet_page3")` | `lib/csheet_page3_xml.ttslua` | Live (`self.UI.setXml`) |
 | 4 | `require("ui.ui_csheet_page4")` | `lib/csheet_page4_xml.ttslua` | Live (`self.UI.setXml` from `gameState.relationships` via `Global.call("GlobalGetRelationshipsForChar", charKey)`) |
 | 5 | `require("ui.ui_csheet_page5")` | `lib/csheet_page5_xml.ttslua` | Placeholder |
@@ -86,7 +86,7 @@ When editing `page1.xml` offsets in PowerShell, use single-quoted strings — do
 
 Blank disciplines area on the tile; runtime XmlUI builds a 2×3 discipline grid (`discName_<key>` + `page2_dotline` + fill overlays) and optional rituals/ceremonies section (`divider_rituals` / `divider_ceremonies` / `divider_ritualsAndCeremonies`). `stats.disciplines` keeps full PCS rows (`powers`, `rituals`, `ceremonies`) after bootstrap.
 
-**Generated XML conventions (`lib/csheet_page2_xml.ttslua`):**
+**Generated XML conventions** (`ui/.templates/csheet/page2.xml` and `partials/page2_*.xml`; the builder only fills the slots):
 - One page‑2 `<Defaults>` block with the author-tuned class values (no stale 280px / old spacing left to fight them). `paper_root` uses `class="page_root"` only — never `padded_border`, whose padding would override `page_root`.
 - Dot fills use class `page2_dot_fill` plus inline `offsetXY` (`0 2` … `140 2`). **Fill `active`/`image` are baked into the dynamic XML** at remount (so empty tracks are not waiting on setAttribute). Deferred `setAttributes` still refreshes after remount for condition/temp deltas. Discipline dotline wrap + fills row use `preferredHeight="63"`.
 - Rituals/ceremonies (same Defaults block, not a second one): `page2_dotline_wrap_rc` is 200px wide with zero padding; the column row does not stretch (`flexibleHeight="0"`); each name row is 60px and does not force its children wider; vertical spacing inside a column is 0.

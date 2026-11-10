@@ -10,6 +10,7 @@
  * e.g. csheet/page3, csheet/partials/bg_block.
  *
  * Packs (object-script isolation):
+ *   lib/ui_xml_templates_csheet_page2.ttslua
  *   lib/ui_xml_templates_csheet_page3.ttslua
  *   lib/ui_xml_templates_csheet_page4.ttslua
  *   lib/ui_xml_templates_csheet_page5.ttslua
@@ -41,6 +42,17 @@ const GENERATOR_REL = ".dev/scripts/embed_ui_xml_templates.js";
  * }>}
  */
 const PACKS = [
+  {
+    id: "csheet_page2",
+    outRel: ["lib", "ui_xml_templates_csheet_page2.ttslua"],
+    keys: [
+      "csheet/page2",
+      "csheet/partials/page2_disc_cell",
+      "csheet/partials/page2_disc_cell_empty",
+      "csheet/partials/page2_rc_row",
+      "csheet/partials/page2_rc_section",
+    ],
+  },
   {
     id: "csheet_page3",
     outRel: ["lib", "ui_xml_templates_csheet_page3.ttslua"],

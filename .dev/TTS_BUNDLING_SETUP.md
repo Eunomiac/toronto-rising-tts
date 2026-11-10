@@ -417,7 +417,8 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 
 | Pages | Mode today | What to edit |
 | ----- | ---------- | ------------- |
-| **1–2** | Static shipped XML | `ui/player/csheets/page1.xml`, `page2.xml` — dot/box updates via `UI.setAttribute` from `GlobalCollectSheetImageUpdates` |
+| **1** | Static shipped XML | `ui/player/csheets/page1.xml` — dot/box updates via `UI.setAttribute` from `GlobalCollectSheetImageUpdates` |
+| **2** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page2.xml`** + partials; builder: **`lib/csheet_page2_xml.ttslua`**. Shipped **`ui/player/csheets/page2.xml`** is the pre-refresh object XML; the builder replaces it. |
 | **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`**. Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder. |
 | **4** | **Dynamic** (`UI.setXml`) | `gameState.relationships` read via `Global.call("GlobalGetRelationshipsForChar", charKey)` → **`lib/csheet_page4_xml.ttslua`**; templates **`ui/.templates/csheet/page4.xml`** + partials. The object bundle no longer embeds relationship data; `lib/json/PC_Relationships.json` only seeds Global state on a save without relationships (`node .dev/scripts/generate_pc_relationships_lua.js`). |
 | **5** | **Dynamic** (`UI.setXml` via Global) | Object entry `ui.ui_csheet_page5`; XML built in Global `Projects.buildPage5DocumentXml` (templates pack `ui_xml_templates_csheet_page5`). |
@@ -428,13 +429,14 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 
 ## Runtime UI XML templates (`ui/.templates/`)
 
-Some panels are assembled at runtime via `UI.setXml` (character sheet **pages 3–4** today). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
+Some panels are assembled at runtime via `UI.setXml` (character sheet **pages 2–4** today). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
 
 - **Authoring**: Edit templates under **`ui/.templates/csheet/`** or **`ui/.templates/princes_court/`** (for example `page3.xml` and `partials/*.xml`). The embed script does not read top-level `ui/.templates/*.xml` (those are color-expansion sources).
 - **Parameters**: `@@NAME@@` tokens substituted by `lib/ui_xml_template.ttslua` at runtime.
 - **Conditionals**: `##IF @@NAME@@##` … `##ENDIF##` — inner XML is kept only when the caller included `NAME` in the params table (omit keys you do not want rendered).
 - **Build**: `npm run ui-xml-templates:embed` (also in `npm run build:xml` / `build:full`) writes **per-consumer packs**:
 - **Global remount docs (TOR-439):** `npm run ui-global-xml:embed` expands `ui/Global.xml` + `ui/Global.join_minimal.xml` into `lib/ui_global_xml_docs.ttslua` for Host Arm/Refresh remount (also in `build:xml` / `build:full`; Full runs it via `skyboxes:import` after location modals). Run generated HUD Includes **before** this embed — `debug-light-panel:generate`, `roll-dashboard:generate`, `roll-options-modal:generate`, and on Full also `skyboxes:import` / `scenes-location-modals:generate` (TOR-511). Save & Play updates Lua; an already-mounted HUD keeps the previous XmlUI until **Refresh XML** or a canary remount.
+  - `lib/ui_xml_templates_csheet_page2.ttslua` — page 2 + discipline / ritual partials
   - `lib/ui_xml_templates_csheet_page3.ttslua` — page 3 + bg/merit/flaw partials
   - `lib/ui_xml_templates_csheet_page4.ttslua` — page 4 + relationship partials
   - `lib/ui_xml_templates_csheet_page5.ttslua` — page 5 + project_block (Global `Projects.buildPage5DocumentXml`)

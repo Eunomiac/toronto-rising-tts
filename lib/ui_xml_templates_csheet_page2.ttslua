@@ -1,0 +1,111 @@
+--[[
+    Embedded UI XML template pack: csheet_page2
+    DO NOT EDIT BY HAND - regenerate: node .dev/scripts/embed_ui_xml_templates.js
+    Register with: require("lib.ui_xml_template").registerPack(require("…"))
+]]
+
+local M = {}
+
+M._byKey = {}
+
+M._byKey["csheet/page2"] = [=[
+<Defaults>
+  <Panel class="page_root" childAlignment="UpperCenter" padding="50 50 110 100" />
+  <VerticalLayout class="page2_dynamic" padding="40 40 0 0" childAlignment="UpperCenter" childForceExpandHeight="false" childForceExpandWidth="true" spacing="0" />
+  <HorizontalLayout class="page2_disc_row" flexibleWidth="1" spacing="0" preferredHeight="225" flexibleHeight="0" />
+  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" childForceExpandWidth="false" />
+  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" childForceExpandWidth="false" preferredWidth="800" flexibleWidth="1" spacing="0" />
+  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />
+  <Panel class="page2_dotline_wrap" raycastTarget="false" />
+  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" preferredHeight="63" />
+  <Panel class="page2_dotline_wrap_rc" preferredWidth="200" preferredHeight="63" flexibleWidth="0" padding="0 0 0 0" />
+  <Image class="page2_dotline_bg" flexibleWidth="0" preferredWidth="200" preferredHeight="0" ignoreLayout="true" width="200" />
+  <HorizontalLayout class="page2_dot_fills" preferredWidth="200" preferredHeight="63" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />
+  <Image class="page2_dot_fill" ignoreLayout="true" width="63" height="63" />
+  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" horizontalOverflow="Overflow" />
+  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />
+  <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="0" />
+  <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="0" />
+  <HorizontalLayout class="page2_rc_row" preferredHeight="60" flexibleHeight="0" childForceExpandWidth="false" />
+  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />
+</Defaults>
+
+<Panel id="paper_root" class="page_root">
+  <Button id="pageForward" class="page_navigation page_forward" />
+  <Button id="pageInner" class="page_navigation page_inner_left" />
+
+  <VerticalLayout id="page2_dynamic" class="page2_dynamic">
+    <HorizontalLayout id="db_disc_row_1" class="page2_disc_row">
+@@DISC_ROW_1@@
+    </HorizontalLayout>
+    <HorizontalLayout id="db_disc_row_2" class="page2_disc_row">
+@@DISC_ROW_2@@
+    </HorizontalLayout>
+##IF @@RC_SECTION@@##
+@@RC_SECTION@@
+##ENDIF##
+  </VerticalLayout>
+</Panel>
+]=]
+
+M._byKey["csheet/partials/page2_disc_cell"] = [=[
+<VerticalLayout id="db_disc_cell_@@KEY@@" class="page2_disc_cell">
+  <HorizontalLayout id="db_disc_header_@@KEY@@" class="page2_disc_header">
+    <Image id="db_disc_name_@@KEY@@" image="@@NAME_IMAGE@@" class="page2_disc_name" />
+    <Panel id="db_dotline_wrap_@@KEY@@" class="page2_dotline_wrap page2_dotline_wrap_disc">
+      <Image id="db_dotline_bg_@@KEY@@" image="page2_dotline" class="page2_dotline_bg" />
+      <HorizontalLayout id="db_dot_fills_@@KEY@@" class="page2_dot_fills">
+        <Image id="dot_@@KEY@@_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" active="@@DOT_1_ACTIVE@@"##IF @@DOT_1_IMAGE@@## image="@@DOT_1_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" active="@@DOT_2_ACTIVE@@"##IF @@DOT_2_IMAGE@@## image="@@DOT_2_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" active="@@DOT_3_ACTIVE@@"##IF @@DOT_3_IMAGE@@## image="@@DOT_3_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" active="@@DOT_4_ACTIVE@@"##IF @@DOT_4_IMAGE@@## image="@@DOT_4_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" active="@@DOT_5_ACTIVE@@"##IF @@DOT_5_IMAGE@@## image="@@DOT_5_IMAGE@@"##ENDIF## />
+      </HorizontalLayout>
+    </Panel>
+  </HorizontalLayout>
+  <Text id="db_powers_@@KEY@@" class="page2_powers_text" text="" />
+</VerticalLayout>
+]=]
+
+M._byKey["csheet/partials/page2_disc_cell_empty"] = [=[
+<VerticalLayout id="db_disc_cell_empty_@@INDEX@@" class="page2_disc_cell" />
+]=]
+
+M._byKey["csheet/partials/page2_rc_row"] = [=[
+<HorizontalLayout id="db_rc_row_@@SIDE@@_@@ROW@@" class="page2_rc_row">
+  <Panel id="db_rc_dotline_wrap_@@SIDE@@_@@ROW@@" class="page2_dotline_wrap page2_dotline_wrap_rc">
+    <Image id="db_rc_dotline_bg_@@SIDE@@_@@ROW@@" image="page2_dotline" class="page2_dotline_bg" />
+    <HorizontalLayout id="db_rc_dot_fills_@@SIDE@@_@@ROW@@" class="page2_dot_fills">
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" active="@@DOT_1_ACTIVE@@"##IF @@DOT_1_IMAGE@@## image="@@DOT_1_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" active="@@DOT_2_ACTIVE@@"##IF @@DOT_2_IMAGE@@## image="@@DOT_2_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" active="@@DOT_3_ACTIVE@@"##IF @@DOT_3_IMAGE@@## image="@@DOT_3_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" active="@@DOT_4_ACTIVE@@"##IF @@DOT_4_IMAGE@@## image="@@DOT_4_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" active="@@DOT_5_ACTIVE@@"##IF @@DOT_5_IMAGE@@## image="@@DOT_5_IMAGE@@"##ENDIF## />
+    </HorizontalLayout>
+  </Panel>
+  <Text id="db_rc_name_@@SIDE@@_@@ROW@@" class="page2_rc_name" text="@@NAME@@" />
+</HorizontalLayout>
+]=]
+
+M._byKey["csheet/partials/page2_rc_section"] = [=[
+<Image id="db_rc_divider" image="@@DIVIDER@@" class="page2_rc_divider" />
+<HorizontalLayout id="db_rc_columns" class="page2_rc_columns">
+  <VerticalLayout id="db_rc_col_L" class="page2_rc_col">
+@@LEFT_ROWS@@
+  </VerticalLayout>
+  <VerticalLayout id="db_rc_col_R" class="page2_rc_col">
+@@RIGHT_ROWS@@
+  </VerticalLayout>
+</HorizontalLayout>
+]=]
+
+--- @param templateKey string e.g. "csheet/page3"
+--- @return string|nil
+function M.get(templateKey)
+  if type(templateKey) ~= "string" or templateKey == "" then
+    return nil
+  end
+  return M._byKey[templateKey]
+end
+
+return M

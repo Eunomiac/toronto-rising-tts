@@ -1,0 +1,15 @@
+<!-- Parameters:
+@@DIVIDER@@ - divider_rituals, divider_ceremonies, or divider_ritualsAndCeremonies
+@@LEFT_ROWS@@ - raw XML for the five left-column rows
+@@RIGHT_ROWS@@ - raw XML for the five right-column rows
+-->
+
+<Image id="db_rc_divider" image="@@DIVIDER@@" class="page2_rc_divider" />
+<HorizontalLayout id="db_rc_columns" class="page2_rc_columns">
+  <VerticalLayout id="db_rc_col_L" class="page2_rc_col">
+@@LEFT_ROWS@@
+  </VerticalLayout>
+  <VerticalLayout id="db_rc_col_R" class="page2_rc_col">
+@@RIGHT_ROWS@@
+  </VerticalLayout>
+</HorizontalLayout>

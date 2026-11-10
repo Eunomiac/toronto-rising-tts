@@ -1,0 +1,21 @@
+<!-- Parameters:
+@@SIDE@@ - L or R
+@@ROW@@ - row 1..5
+@@NAME@@ - ritual or ceremony name (empty when the slot is unused)
+@@DOT_1_ACTIVE@@ .. @@DOT_5_ACTIVE@@ - "true" or "false"
+@@DOT_1_IMAGE@@ .. @@DOT_5_IMAGE@@ - omit the key when that dot is empty
+-->
+
+<HorizontalLayout id="db_rc_row_@@SIDE@@_@@ROW@@" class="page2_rc_row">
+  <Panel id="db_rc_dotline_wrap_@@SIDE@@_@@ROW@@" class="page2_dotline_wrap page2_dotline_wrap_rc">
+    <Image id="db_rc_dotline_bg_@@SIDE@@_@@ROW@@" image="page2_dotline" class="page2_dotline_bg" />
+    <HorizontalLayout id="db_rc_dot_fills_@@SIDE@@_@@ROW@@" class="page2_dot_fills">
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" active="@@DOT_1_ACTIVE@@"##IF @@DOT_1_IMAGE@@## image="@@DOT_1_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" active="@@DOT_2_ACTIVE@@"##IF @@DOT_2_IMAGE@@## image="@@DOT_2_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" active="@@DOT_3_ACTIVE@@"##IF @@DOT_3_IMAGE@@## image="@@DOT_3_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" active="@@DOT_4_ACTIVE@@"##IF @@DOT_4_IMAGE@@## image="@@DOT_4_IMAGE@@"##ENDIF## />
+      <Image id="dot_rc_@@SIDE@@_@@ROW@@_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" active="@@DOT_5_ACTIVE@@"##IF @@DOT_5_IMAGE@@## image="@@DOT_5_IMAGE@@"##ENDIF## />
+    </HorizontalLayout>
+  </Panel>
+  <Text id="db_rc_name_@@SIDE@@_@@ROW@@" class="page2_rc_name" text="@@NAME@@" />
+</HorizontalLayout>

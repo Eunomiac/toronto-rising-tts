@@ -1,0 +1,23 @@
+<!-- Parameters:
+@@KEY@@ - discipline key
+@@NAME_IMAGE@@ - discName_<key>
+@@DOT_1_ACTIVE@@ .. @@DOT_5_ACTIVE@@ - "true" or "false"
+@@DOT_1_IMAGE@@ .. @@DOT_5_IMAGE@@ - omit the key when that dot is empty
+-->
+
+<VerticalLayout id="db_disc_cell_@@KEY@@" class="page2_disc_cell">
+  <HorizontalLayout id="db_disc_header_@@KEY@@" class="page2_disc_header">
+    <Image id="db_disc_name_@@KEY@@" image="@@NAME_IMAGE@@" class="page2_disc_name" />
+    <Panel id="db_dotline_wrap_@@KEY@@" class="page2_dotline_wrap page2_dotline_wrap_disc">
+      <Image id="db_dotline_bg_@@KEY@@" image="page2_dotline" class="page2_dotline_bg" />
+      <HorizontalLayout id="db_dot_fills_@@KEY@@" class="page2_dot_fills">
+        <Image id="dot_@@KEY@@_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" active="@@DOT_1_ACTIVE@@"##IF @@DOT_1_IMAGE@@## image="@@DOT_1_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" active="@@DOT_2_ACTIVE@@"##IF @@DOT_2_IMAGE@@## image="@@DOT_2_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" active="@@DOT_3_ACTIVE@@"##IF @@DOT_3_IMAGE@@## image="@@DOT_3_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" active="@@DOT_4_ACTIVE@@"##IF @@DOT_4_IMAGE@@## image="@@DOT_4_IMAGE@@"##ENDIF## />
+        <Image id="dot_@@KEY@@_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" active="@@DOT_5_ACTIVE@@"##IF @@DOT_5_IMAGE@@## image="@@DOT_5_IMAGE@@"##ENDIF## />
+      </HorizontalLayout>
+    </Panel>
+  </HorizontalLayout>
+  <Text id="db_powers_@@KEY@@" class="page2_powers_text" text="" />
+</VerticalLayout>

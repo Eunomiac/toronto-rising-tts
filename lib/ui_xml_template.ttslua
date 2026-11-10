@@ -1,7 +1,7 @@
 --[[
   Runtime XML template engine: @@parameter@@ substitution and ##IF @@KEY@@## conditionals.
   Template bodies live in per-consumer packs from embed_ui_xml_templates.js
-  (lib/ui_xml_templates_csheet_page3.ttslua, …_page4, …_page5, …_princes_court).
+  (lib/ui_xml_templates_csheet_page2.ttslua, …_page3, …_page4, …_page5, …_princes_court).
 
   Object scripts must register only the pack(s) they need before apply():
     local TPL = require("lib.ui_xml_template")
