@@ -453,16 +453,22 @@ $signal-fire: #ff9a1f;
 
 .pc-cond-panel {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: calc(100% + 8px);
   z-index: 23;
-  width: 460px;
+  box-sizing: border-box;
+  width: min(460px, 70vw);
   max-height: 70vh;
   overflow: auto;
   padding: 8px;
   border: 2px solid var(--seat-color, #6a6a74);
   background: rgb(16 16 20 / 96%);
   box-shadow: 0 6px 18px rgb(0 0 0 / 70%);
+
+  &.left {
+    left: auto;
+    right: calc(100% + 8px);
+  }
 }
 
 .pc-cond-grid-row,
@@ -489,6 +495,8 @@ $signal-fire: #ff9a1f;
 .pc-cond-field select,
 .pc-cond-field textarea,
 .pc-cond-date input {
+  box-sizing: border-box;
+  width: 100%;
   font: inherit;
   color: inherit;
   background: #111;

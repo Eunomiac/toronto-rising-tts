@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactElement } from "react";
 import { isSeatColor } from "../catalogVocab";
 import type { ApplyCommand, ManualCondition, SeatSnapshot } from "../pcSheet/types";
 import type { PersonalDue } from "../worldState";
@@ -155,6 +155,26 @@ const useTrigger = (sessionNum: number): {
   };
 };
 
+/** Keep the form inside the stage. It grows up from the tracker popup, and opens to the left when the right side has no room. */
+const placeConditionPanel = (node: HTMLElement): void => {
+  const frame = node.closest(".lab-box") ?? node.closest(".lab-canvas");
+  const pop = node.parentElement;
+  if (frame === null || pop === null) {
+    return;
+  }
+  const bounds = frame.getBoundingClientRect();
+  const anchor = pop.getBoundingClientRect();
+  const gap = 8;
+  const roomRight = bounds.right - anchor.right - gap;
+  const roomLeft = anchor.left - bounds.left - gap;
+  const openLeft = roomRight < 360 && roomLeft > roomRight;
+  const available = Math.max(160, openLeft ? roomLeft : roomRight);
+  const room = Math.min(460, available);
+  node.classList.toggle("left", openLeft);
+  node.style.width = `${Math.floor(room)}px`;
+  node.style.maxHeight = `${Math.max(180, Math.floor(anchor.bottom - bounds.top - gap))}px`;
+};
+
 /** Resonance grid, or the other-condition form, beside the seat tracker popup. */
 export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply }: {
   seat: SeatSnapshot;
@@ -212,8 +232,14 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
     });
   };
 
+  const panelRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const node = panelRef.current;
+    if (node) placeConditionPanel(node);
+  }, [pane]);
+
   return (
-        <div className="pc-cond-panel" role="dialog" aria-label={pane === "resonance" ? "Resonance" : "Condition"}>
+        <div ref={panelRef} className="pc-cond-panel" role="dialog" aria-label={pane === "resonance" ? "Resonance" : "Condition"}>
           {pane === "resonance" ? (
             <>
               <div className="pc-cond-grid">
