@@ -7,6 +7,11 @@
   "TTSLua.includeOtherFilesPaths": ["${workspaceFolder}"],
   "ttslua.misc.debugSearchPaths": true,
   "ttsEditor.sync.preserveGlobalStubs": true,
+  "ttsEditor.bundleIntoSave.targets": [
+    {
+      "path": "D:/Owner/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json"
+    }
+  ],
   "ttslua.fileManagement.luaSearchPattern": [
     "?",
     "?.lua",

@@ -40,9 +40,9 @@ async function main() {
       const child = spawnSync("npm run build:tooling-after-exports", { cwd: root, env, stdio: "inherit", shell: true });
       if (child.error) throw child.error;
       if (child.status !== 0) throw new Error(`Remaining FULL tooling failed (${child.status})`);
-      run(".tools/tts-save/build-session-start.js", env, ["--full"]);
-      // After assetbundle pruning: install bundled scripts into main + session-start saves (no TTS).
+      // Inject scripts into the main save first so session-start copies those object scripts into 9001.
       run(".tools/tts-save/bundle-into-save.js", env);
+      run(".tools/tts-save/build-session-start.js", env, ["--full"]);
     }
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }

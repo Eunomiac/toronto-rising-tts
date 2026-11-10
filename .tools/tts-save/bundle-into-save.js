@@ -2,8 +2,9 @@
 "use strict";
 
 /**
- * Bundle `.tts/objects` stubs into the main save and the session-start save.
- * Used at the end of FULL after session-start assetbundle pruning.
+ * Bundle `.tts/objects` stubs into the main save (default TS_Save_230).
+ * FULL runs this before session-start generation so TS_Save_9001 inherits
+ * the injected object scripts when it is copied from the main save.
  *
  * Agent guidance: .dev/TTS_BUNDLING_SETUP.md (Bundle Into Save).
  */
@@ -49,12 +50,10 @@ function parseArgs(argv) {
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const mainSaveName = args.saveName || "230";
-  const sessionSaveName = args.sessionSaveName || "9001";
   const objectsDir = path.resolve(REPO_ROOT, args.objects || ".tts/objects");
   const includeDir = path.resolve(REPO_ROOT, args.include || ".");
 
   const mainResolved = resolveSavePath(mainSaveName, args.savesDir);
-  const sessionResolved = resolveSavePath(sessionSaveName, args.savesDir || mainResolved.savesDir);
 
   if (!fs.existsSync(objectsDir)) {
     throw new Error(
@@ -73,22 +72,11 @@ function main() {
       backup: !args.noBackup,
     },
   ];
-  if (fs.existsSync(sessionResolved.savePath)) {
-    targets.push({
-      path: sessionResolved.savePath,
-      preserveGlobal: true,
-      backup: !args.noBackup,
-    });
-  } else {
-    console.warn(
-      `[tts-save:bundle-into-save] Session-start save not found (${sessionResolved.savePath}); updating main save only.`
-    );
-  }
 
   console.log(`Objects: ${objectsDir}`);
   console.log(`Include: ${includeDir}`);
   for (const target of targets) {
-    console.log(`Target:  ${target.path}${target.preserveGlobal ? " (preserve Global)" : ""}`);
+    console.log(`Target:  ${target.path}`);
   }
 
   const result = bundleIntoSaveFiles({
@@ -101,7 +89,6 @@ function main() {
   for (const file of result.files) {
     console.log(
       `  ${path.basename(file.path)}: updated ${file.stats.updated}` +
-        (file.stats.skippedGlobal ? ", Global preserved" : "") +
         (file.stats.missingInSave.length ? `, ${file.stats.missingInSave.length} stub GUID(s) not in save` : "")
     );
   }
