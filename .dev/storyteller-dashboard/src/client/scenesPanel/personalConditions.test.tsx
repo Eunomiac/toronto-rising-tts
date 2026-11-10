@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ScenesCommandContext } from "./commands";
-import { PersonalDueList } from "./personalConditions";
+import { PersonalDueList, durationForTrigger } from "./personalConditions";
 import { Seats } from "./sketch";
 import type { ApplyCommand, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
@@ -161,5 +161,15 @@ describe("conditions ready to remove", () => {
     expect(screen.queryByRole("button", { name: "Change the ending" })).toBeNull();
     expect(screen.getByRole("button", { name: "Remove it" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Not yet" })).toBeTruthy();
+  });
+});
+
+describe("durationForTrigger", () => {
+  it("fills the short lines from the overview", () => {
+    expect(durationForTrigger("EndOfScene", 4, 2026, 9, 4)).toBe("The end of the current scene.");
+    expect(durationForTrigger("EndOfSession", 4, 2026, 9, 4)).toBe("The end of Session 4.");
+    expect(durationForTrigger("Clock", 4, 2026, 9, 4)).toBe("Nightfall on Sept 4th, 2026.");
+    expect(durationForTrigger("ChangeOfBlood", 4, 2026, 9, 4)).toBe("Until you Feed or Starve.");
+    expect(durationForTrigger("Manual", 4, 2026, 9, 4)).toBe("");
   });
 });

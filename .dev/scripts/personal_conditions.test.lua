@@ -20,11 +20,11 @@ end
 
 assert(PC.resonanceImage("fleetingly", "Choleric") == "resonance_fleetinglyCholeric", "resonance image")
 assert(PC.backgroundImage("theBeast") == "bg_condition_theBeast", "beast background")
-assert(PC.durationForTrigger("EndOfScene") == "This Condition persists until the end of the current scene.", "scene duration")
-assert(PC.durationForTrigger("EndOfSession4") == "This Condition persists until the end of Session 4.", "session duration")
-assert(PC.durationForTrigger("Clock:2026-09-04") == "This Condition persists until nightfall on Sept 4th, 2026.", "date duration")
+assert(PC.durationForTrigger("EndOfScene") == "The end of the current scene.", "scene duration")
+assert(PC.durationForTrigger("EndOfSession4") == "The end of Session 4.", "session duration")
+assert(PC.durationForTrigger("Clock:2026-09-04") == "Nightfall on Sept 4th, 2026.", "date duration")
 assert(PC.durationForTrigger("Manual") == "", "manual duration")
-assert(PC.durationForTrigger("ChangeOfBlood"):find("Hunger reaches 5", 1, true) ~= nil, "blood duration")
+assert(PC.durationForTrigger("ChangeOfBlood") == "Until you Feed or Starve.", "blood duration")
 
 local list = {
   card({ id = "late", seq = 2, appliedOn = 5, title = "Late" }),

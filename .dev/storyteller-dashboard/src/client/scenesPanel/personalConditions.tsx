@@ -37,10 +37,10 @@ const shortDate = (year: number, month: number, day: number): string =>
 
 /** The line the sheet shows for a removal trigger. Manual stays blank until you type one. */
 export const durationForTrigger = (kind: Kind, session: number, year: number, month: number, day: number): string => {
-  if (kind === "EndOfScene") return "This Condition persists until the end of the current scene.";
-  if (kind === "EndOfSession") return `This Condition persists until the end of Session ${session}.`;
-  if (kind === "Clock") return `This Condition persists until nightfall on ${shortDate(year, month, day)}.`;
-  if (kind === "ChangeOfBlood") return "This Condition persists until you feed on another mortal's blood or your Hunger reaches 5.";
+  if (kind === "EndOfScene") return "The end of the current scene.";
+  if (kind === "EndOfSession") return `The end of Session ${session}.`;
+  if (kind === "Clock") return `Nightfall on ${shortDate(year, month, day)}.`;
+  if (kind === "ChangeOfBlood") return "Until you Feed or Starve.";
   return "";
 };
 

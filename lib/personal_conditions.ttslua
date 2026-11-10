@@ -210,21 +210,21 @@ end
 --- @return string
 function PC.durationForTrigger(trigger)
   if trigger == "EndOfScene" then
-    return "This Condition persists until the end of the current scene."
+    return "The end of the current scene."
   end
   if trigger == "ChangeOfBlood" then
-    return "This Condition persists until you feed on another mortal's blood or your Hunger reaches 5."
+    return "Until you Feed or Starve."
   end
   if trigger == "Manual" then
     return ""
   end
   local session = string.match(tostring(trigger), "^EndOfSession(%d+)$")
   if session ~= nil then
-    return "This Condition persists until the end of Session " .. session .. "."
+    return "The end of Session " .. session .. "."
   end
   local y, m, d = string.match(tostring(trigger), "^Clock:(%d+)%-(%d+)%-(%d+)$")
   if y ~= nil then
-    return "This Condition persists until nightfall on " .. PC.shortDate(y, m, d) .. "."
+    return "Nightfall on " .. PC.shortDate(y, m, d) .. "."
   end
   return ""
 end
