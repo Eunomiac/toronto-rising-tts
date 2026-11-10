@@ -41,11 +41,17 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 Nothing comes off the sheet until you confirm it. When a scene ends for that player (they leave the scene, you switch to a scene they are in, or you advance from Play to Spotlight), or Hunger drops, or Hunger reaches 5, or the End phase arrives on the session you stored, or the present-day clock passes dusk on the date you stored, the Scenes tab lists that card. Remove it, change the ending, or choose Not yet. Not yet on a scene or Hunger waits for the next time. Not yet on a session or a date makes the ending Manual. After you remove it, the sheet slot goes away, and a mechanic turns off only if this card was what turned it on.
 
+#### 🟡 TOR-769 — Heavy scene transitions no longer use the external-send path that disconnected players
+
+> **Agent-assessment note:** The code and automated checks prove that ordinary play no longer calls `sendExternalMessage`, but only a live Tabletop Simulator session can confirm that the severe engine stall and joined-player disconnections are gone.
+
+**How to verify:** Save & Play, then restart the Storyteller Dashboard. Run `SceneStallProbe("dashboard")`, `SceneStallProbe("dashboard_emit_seats")`, and `SceneStallProbe("dashboard_emit_scene")` one at a time. The game should remain responsive, each probe should reach both heartbeat lines without the familiar freeze, and the dashboard should continue updating. Then repeat the Council Chamber → Elysium transition that previously stalled for about 100 seconds. The cover should finish normally. When you can repeat that heavy transition with joined players, confirm that none of them disconnect.
+
 #### 🟡 TOR-770 — Scene and Scatter stall probes identify the operation before the freeze
 
 > **Agent-assessment note:** Automated checks cover probe routing, scheduler-drift bookkeeping, and single-owner Scatter entry. Only the live TTS engine can show which heartbeat is delayed by the familiar hang.
 
-**How to verify:** Save & Play. Open `.dev/testbed/TEST BED.ttslua`, select the complete `SceneStallProbe` function, and run **Execute Code** once. Follow [Scene and Scatter Stall Isolation](E2E%20Playbooks/Scene-Stall-Isolation.md), running one commented example at a time. The first pass identified `dashboard`; now run the six `dashboard_build_*`, `dashboard_encode_*`, and `dashboard_send_*` actions in the guide. Each action should print `START`, `RETURN`, `HEARTBEAT 0`, and `HEARTBEAT 250`. Stop after the first heartbeat delayed by the familiar freeze and keep that block plus the one before it. This identifies the next fix; it does not by itself prove TOR-769 (the joined-client disconnect incident) is fixed.
+**How to verify:** Save & Play. Open `.dev/testbed/TEST BED.ttslua`, select the complete `SceneStallProbe` function, and run **Execute Code** once. Follow [Scene and Scatter Stall Isolation](E2E%20Playbooks/Scene-Stall-Isolation.md), running one commented example at a time. The first pass identified `dashboard`; now run the six `dashboard_build_*`, `dashboard_encode_*`, and `dashboard_emit_*` actions in the guide. Each action should print `START`, `RETURN`, `HEARTBEAT 0`, and `HEARTBEAT 250`. The emit actions now use the passive tagged-console path and should not produce the familiar freeze.
 
 #### 🟡 TOR-768 — Assume Connected shows the players at the table on the dashboard
 
@@ -63,7 +69,7 @@ Nothing comes off the sheet until you confirm it. When a scene ends for that pla
 
 > **Agent-assessment note:** The report's bookkeeping is covered by a script test. You still need to run it in the game, because only Tabletop Simulator shows the real waits.
 
-**How to verify:** Save & Play. On the scene library, click **Preload** for a scene, then play that scene, then in Scatter mode move one player to another group. Each of those three actions should print one `[SceneLoad]` block in the game console when it finishes, and the same text should appear in `.dev/.debug/scene-load-report.txt`. `lua DEBUG.sceneLoadReport()` reprints the recent blocks. The scene block should list the cover's scheduled waits separately from the world work, and it should say how many NPC figurines were reused, spawned, still loading, or reloaded. This report does not by itself mean the scene cover is fast; it is there so the next slow transition can be read. The NPC preload itself is still **TOR-760**.
+**How to verify:** Save & Play. On the scene library, click **Preload** for a scene, then play that scene, then in Scatter mode move one player to another group. Each of those three actions should print one `[SceneLoad]` block in the game console when it finishes. Automatic report file writes no longer happen during play. In a solo debug session, `lua DEBUG.sceneLoadReport()` should reprint the recent blocks and explicitly export them to `.dev/.debug/scene-load-report.txt`. The scene block should list the cover's scheduled waits separately from the world work, and it should say how many NPC figurines were reused, spawned, still loading, or reloaded. This report does not by itself mean the scene cover is fast; it is there so the next slow transition can be read. The NPC preload itself is still **TOR-760**.
 
 #### 🟡 TOR-765 — Character sheet Experience Log follows a dashboard JSON edit
 
