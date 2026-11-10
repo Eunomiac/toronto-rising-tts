@@ -29,12 +29,28 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   await expect(page.getByRole('status')).toContainText('Street map ready', { timeout: 30_000 });
 
   if (testInfo.project.name === 'desktop-chromium') {
+    // Focus a compact, simple district first so the pointer check does not
+    // depend on one arbitrary viewport percentage continuing to cross a shape.
+    await page.getByLabel('Choose a district').selectOption('YongeDundasHospital');
+    await page.getByRole('button', { name: 'Close district details' }).click();
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
-    await page.mouse.move(box!.x + box!.width * 0.48, box!.y + box!.height * 0.55);
+    let districtPoint: { x: number; y: number } | null = null;
+    for (const yRatio of [0.32, 0.38, 0.44, 0.5, 0.56]) {
+      for (const xRatio of [0.38, 0.44, 0.5, 0.56, 0.62]) {
+        const point = { x: box!.x + box!.width * xRatio, y: box!.y + box!.height * yRatio };
+        await page.mouse.move(point.x, point.y);
+        if (await canvas.evaluate((element) => getComputedStyle(element).cursor) === 'pointer') {
+          districtPoint = point;
+          break;
+        }
+      }
+      if (districtPoint) break;
+    }
+    expect(districtPoint).not.toBeNull();
     await expect(canvas).toHaveCSS('cursor', 'pointer');
-    await page.mouse.click(box!.x + box!.width * 0.48, box!.y + box!.height * 0.55);
-    await expect(page).toHaveURL(/district=/);
+    await page.mouse.click(districtPoint!.x, districtPoint!.y);
+    await expect(page).toHaveURL(/district=[A-Za-z]+/);
     await expect(page.getByTestId('selected-district')).toBeVisible();
   }
 
