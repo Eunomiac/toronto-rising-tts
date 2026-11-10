@@ -34,7 +34,8 @@ The source stays in this repository under `.dev/player-map`. Being under `.dev` 
 | Styling | SCSS only | Use nesting for related descendants, pseudo-classes, state classes, and media queries. SCSS owns static styling and responsive layout; do not add parallel hand-authored CSS sources. |
 | Animation | GSAP | GSAP owns all authored UI motion and animated style changes. Do not add CSS transitions or keyframe animations that can compete with it. |
 | Map renderer | MapLibre GL JS | Render the street map and interactive GeoJSON layers without tying the application to Google Maps. The basemap/tile provider is a separate decision. |
-| District/region geometry | GeoJSON generated from the canonical SVG | The browser must not interpret the Illustrator export directly as application data. |
+| Surface district/region geometry | GeoJSON generated from the canonical SVG | The browser must not interpret the Illustrator export directly as application data. |
+| PATH network geometry | Generated OpenStreetMap snapshot | Extract broadly tagged indoor/underground pedestrian routes within a reviewed downtown catchment; official branding and perfect real-world accuracy are not required. |
 | Automated checks | Vitest, React Testing Library, and Playwright | Unit-test data/state logic and exercise the real built map in a browser. |
 
 GSAP's current standard licence permits this application, including commercial use. Keep motion optional under `prefers-reduced-motion` and clean up animation contexts when React components unmount.

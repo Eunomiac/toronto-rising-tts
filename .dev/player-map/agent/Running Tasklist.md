@@ -21,7 +21,8 @@ interaction path were verified after publication.
 - [x] Use GSAP for all authored UI motion and animated style changes; SCSS owns static styling and responsive layout, with no competing CSS transitions or keyframes.
 - [x] Use MapLibre GL JS as the interactive map renderer.
 - [x] Treat the Toronto Rising production exports as the sole source for authored district/site facts.
-- [x] Treat the Illustrator SVG as the sole source for district/region geometry.
+- [x] Treat the Illustrator SVG as the sole source for surface district/region geometry.
+- [x] Treat PATH as a network District generated from a broad, dated OpenStreetMap indoor/underground pedestrian extraction rather than an SVG surface polygon.
 - [x] Generate validated public JSON/GeoJSON; do not make generated data a hand-edited source.
 - [x] Keep Storyteller-only and unrevealed information out of the browser bundle.
 - [x] Do not require player authentication; treat the shared address as public and publish only player-safe data.
@@ -62,6 +63,9 @@ interaction path were verified after publication.
 - [ ] Create a typed public-data schema and fail on unexpected fields.
 - [ ] Join Sheet facts to geometry by exact key.
 - [ ] Generate districts, regions, sites, and provenance manifest outputs.
+- [ ] Add the broad downtown PATH extraction rules, bounds, optional false-positive exclusions, and OpenStreetMap provenance to the build pipeline.
+- [ ] Generate PATH route, entrance/vertical-connection, interaction-corridor, and single-label-point outputs.
+- [ ] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
 - [ ] Add key, schema, topology, bounds, privacy, and count validation.
 - [ ] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing.
 - [ ] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
@@ -74,6 +78,7 @@ interaction path were verified after publication.
 - [ ] Build the full-screen map shell and responsive controls.
 - [ ] Add district selection and player-safe district details.
 - [ ] Add layer controls for districts, regions, and revealed sites.
+- [ ] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
 - [ ] Add shareable URL state for selection and visible overlays.
 - [ ] Add loading, empty, error, keyboard, touch, and reduced-motion behavior.
 - [ ] Add unit, component, and Playwright coverage for the release path.

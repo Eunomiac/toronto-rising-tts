@@ -22,7 +22,7 @@ Status:
 
 ## Principle: One Owner Per Fact
 
-The SVG owns shapes. The Sheet owns authored rules and descriptive content. A small checked-in configuration may own intentional exceptions such as which Sheet-only districts are non-geographical. Generated files own nothing.
+The SVG owns surface-district and region shapes. A build-time OpenStreetMap extraction owns the PATH network geometry. The Sheet owns authored rules and descriptive content. Small checked-in configurations may own intentional exceptions such as Sheet-only districts, PATH extraction bounds, and reviewed exclusions. Generated files own nothing.
 
 Do not:
 
@@ -110,6 +110,39 @@ area changes in `data/diagnostics/normalization.json`. The generated runtime
 GeoJSON intentionally remains unchanged until Phase 2 replaces the current
 Illustrator-order simulation with a reviewed priority manifest and adds the
 full visual gap diagnostics described above.
+
+## PATH Network District
+
+PATH is a fictional network District rather than a surface polygon. Perfect
+agreement with the officially branded real-world PATH system is neither required
+nor desirable: the chronicle emphasizes an unusually large, complicated, and
+maze-like underground network.
+
+Generate PATH from a dated OpenStreetMap snapshot using a deliberately broad,
+checked-in downtown catchment. Include every mapped pedestrian route in that
+catchment that is identified as indoor, underground, tunnelled, covered, or on
+a negative level. Candidate route types include corridors, footways, pedestrian
+ways, stairs, and escalators. Do not require official PATH branding or graph
+connectivity; disconnected fragments reinforce the intended fiction.
+
+The extraction rules are the source of truth. Keep only a small reviewed
+exclusion list for obvious false positives rather than curating the network way
+by way. Record the extraction date, geographic bounds, OpenStreetMap element IDs,
+and attribution in the generated provenance manifest. Players' browsers consume
+the validated generated snapshot and never query Overpass directly.
+
+Generate separate outputs for:
+
+- the visible PATH `MultiLineString` network
+- entrances, elevators, and other useful vertical connections as point features
+- a wider derived interaction corridor for reliable mouse and touch selection
+- one deliberately positioned label point, so PATH receives one label rather
+  than one label per disconnected route component
+
+PATH joins the Sheet district record by its exact key like any other District,
+but it is exempt from surface-polygon topology and coverage checks. Its network
+geometry receives route validity, bounds, provenance, and non-empty checks
+instead.
 
 ## Georeferencing
 
