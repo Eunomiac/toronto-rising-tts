@@ -45,15 +45,19 @@ freeze and keep the complete console block.
 
 After Save & Play with the follow-up probe actions, run these one at a time:
 
-1. `SceneStallProbe("dashboard_build_seats")`
-2. `SceneStallProbe("dashboard_encode_seats")`
-3. `SceneStallProbe("dashboard_emit_seats")`
-4. `SceneStallProbe("dashboard_build_scene")`
-5. `SceneStallProbe("dashboard_encode_scene")`
-6. `SceneStallProbe("dashboard_emit_scene")`
+1. `SceneStallProbe("dashboard_profile_seats")` — sectional build timings (`[DashPushProfile]`)
+2. `SceneStallProbe("dashboard_build_seats")`
+3. `SceneStallProbe("dashboard_encode_seats")`
+4. `SceneStallProbe("dashboard_emit_seats")`
+5. `SceneStallProbe("dashboard_build_scene")`
+6. `SceneStallProbe("dashboard_encode_scene")`
+7. `SceneStallProbe("dashboard_emit_scene")`
 
-The build probe stops before JSON encoding. The encode probe stops before the tagged console message.
-The emit probe exercises the complete single-slice path. Stop after the first delayed heartbeat.
+The profile probe prints one millisecond line per seats-builder section (seat rows, signal fires,
+scatter, trackers, each NPC condition key, and so on). The build probe stops before JSON encoding.
+The encode probe stops before the tagged console message. The emit probe exercises the complete
+single-slice path. Encode and emit both rebuild the slice first, so a slow build appears in all
+three totals; use the profile probe to see which subsection owns the cost.
 
 ## Scene slices
 

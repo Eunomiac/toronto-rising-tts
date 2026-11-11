@@ -21,6 +21,7 @@ for (const action of [
   "scatter_camera",
   "scatter_all",
   "scatter_hud",
+  "dashboard_profile_seats",
   "dashboard_build_seats",
   "dashboard_encode_seats",
   "dashboard_emit_seats",
@@ -51,6 +52,14 @@ assert.match(
   /function DashPush\.debugMeasureWorldSlice\(/,
   "dashboard probes should separate world-slice build, encode, and tagged-console emit",
 );
+assert.match(
+  dashboardPush,
+  /function DashPush\.debugProfileSeatsBuild\(/,
+  "dashboard probes should expose sectional seats-build timings",
+);
 assert.match(dashboardPush, /\[DashPushSlow\]/, "slow production dashboard flushes should name their expensive stage");
+const worldSnapshot = read("dashboard/world_snapshot.ttslua");
+assert.match(worldSnapshot, /snapshotsForKeys/, "seats build should batch NPC condition snapshots");
+assert.match(worldSnapshot, /function W\.profileSeatsBuild\(/, "seats profile helper should live on world_snapshot");
 
 console.log("scene_stall_probe_policy.test.mjs: OK");

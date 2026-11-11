@@ -130,6 +130,8 @@ local function runAction(action, spec)
     elseif action == "scatter_hud" then
         require("core.scatter_mode").reconcileControlHudFromState()
         return true
+    elseif action == "dashboard_profile_seats" then
+        return require("dashboard.push").debugProfileSeatsBuild()
     elseif dashboardMode ~= nil and dashboardSlice ~= nil then
         return require("dashboard.push").debugMeasureWorldSlice(dashboardSlice, dashboardMode)
     elseif action == "dashboard" then
@@ -223,6 +225,7 @@ function Probe.actions()
         "scatter_camera",
         "scatter_all",
         "scatter_hud",
+        "dashboard_profile_seats",
         "dashboard_build_seats",
         "dashboard_encode_seats",
         "dashboard_emit_seats",

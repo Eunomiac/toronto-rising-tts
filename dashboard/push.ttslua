@@ -166,6 +166,13 @@ local function flushWorld()
   end
 end
 
+--- Cold-path sectional timings for the seats slice builder.
+--- Ordinary dashboard updates do not call this.
+--- @return table
+function DashPush.debugProfileSeatsBuild()
+  return require("dashboard.world_snapshot").profileSeatsBuild()
+end
+
 --- Explicit diagnostic: measure one world slice's build and encode costs, then optionally emit it.
 --- Ordinary dashboard updates do not call this.
 --- @param slice string
