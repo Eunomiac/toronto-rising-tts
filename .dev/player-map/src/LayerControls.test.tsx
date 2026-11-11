@@ -9,7 +9,7 @@ describe('LayerControls', () => {
     const user = userEvent.setup();
     render(
       <LayerControls
-        visibility={{ districts: true, regions: false, sites: false, path: false }}
+        visibility={{ districts: true, regions: false, sites: false, path: false, orientation: true }}
         siteCount={0}
         onChange={onChange}
       />,
@@ -19,6 +19,8 @@ describe('LayerControls', () => {
     expect(onChange).toHaveBeenCalledWith('regions', true);
     await user.click(screen.getByRole('checkbox', { name: 'PATH' }));
     expect(onChange).toHaveBeenCalledWith('path', true);
+    await user.click(screen.getByRole('checkbox', { name: 'Orientation streets' }));
+    expect(onChange).toHaveBeenCalledWith('orientation', false);
     expect(screen.getByRole('checkbox', { name: 'Sites (none revealed)' })).toBeDisabled();
   });
 });

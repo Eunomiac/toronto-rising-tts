@@ -5,6 +5,7 @@ import {
   NavigationControl,
   setWorkerUrl,
   type ErrorEvent as MapLibreErrorEvent,
+  type FilterSpecification,
   type GeoJSONSource,
   type MapGeoJSONFeature,
   type MapMouseEvent,
@@ -49,6 +50,19 @@ const PATH_INTERACTION_LAYER_ID = 'path-interaction-corridors';
 const PATH_LABEL_LAYER_ID = 'path-label';
 const CITY_MARKER_CIRCLE_LAYER_ID = 'province-city-markers';
 const CITY_MARKER_LABEL_LAYER_ID = 'province-city-labels';
+const ORIENTATION_STREET_CASING_LAYER_ID = 'orientation-street-casing';
+const ORIENTATION_STREET_LINE_LAYER_ID = 'orientation-street-lines';
+const ORIENTATION_STREET_LABEL_LAYER_ID = 'orientation-street-labels';
+const ORIENTATION_STREET_NAMES = [
+  'Avenue Road', 'Bathurst Street', 'Bay Street', 'Bloor Street East', 'Bloor Street West',
+  'Broadview Avenue', 'Carlton Street', 'College Street', 'Danforth Avenue', 'Don Valley Parkway',
+  'Dufferin Street', 'Dundas Street East', 'Dundas Street West', 'Frederick G. Gardiner Expressway',
+  'Gardiner Expressway', 'King Street East', 'King Street West', 'Lake Shore Boulevard',
+  'Lake Shore Boulevard East', 'Lake Shore Boulevard West', 'Parliament Street', 'Queen Street East',
+  'Queen Street West', 'Sherbourne Street', 'Spadina Avenue', 'St Clair Avenue East',
+  'St Clair Avenue West', 'St. Clair Avenue East', 'St. Clair Avenue West', 'University Avenue',
+  'Yonge Street',
+];
 const PLAY_BOUNDS: [[number, number], [number, number]] = [[-80.2, 43.0], [-72.7, 46.2]];
 const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [-79.34, 43.70]];
 const PROVINCE_VIEW_BOUNDS: [[number, number], [number, number]] = [[-79.65, 43.35], [-73.2, 45.75]];
@@ -426,6 +440,61 @@ export function MapView({
         layout: { visibility: mapVisibility(layerVisibilityRef.current.path) },
         paint: { 'fill-color': '#ffffff', 'fill-opacity': 0.001 },
       });
+      const orientationFilter: FilterSpecification = [
+        'match', ['get', 'name'], ORIENTATION_STREET_NAMES, true, false,
+      ];
+      map.addLayer({
+        id: ORIENTATION_STREET_CASING_LAYER_ID,
+        type: 'line',
+        source: 'openmaptiles',
+        'source-layer': 'transportation_name',
+        minzoom: 10.5,
+        filter: orientationFilter,
+        layout: { visibility: mapVisibility(layerVisibilityRef.current.orientation), 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#14080a',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 10.5, 3.8, 15, 7],
+          'line-opacity': 0.9,
+        },
+      });
+      map.addLayer({
+        id: ORIENTATION_STREET_LINE_LAYER_ID,
+        type: 'line',
+        source: 'openmaptiles',
+        'source-layer': 'transportation_name',
+        minzoom: 10.5,
+        filter: orientationFilter,
+        layout: { visibility: mapVisibility(layerVisibilityRef.current.orientation), 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#f5efeb',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 10.5, 1.3, 15, 3.4],
+          'line-opacity': 0.95,
+        },
+      });
+      map.addLayer({
+        id: ORIENTATION_STREET_LABEL_LAYER_ID,
+        type: 'symbol',
+        source: 'openmaptiles',
+        'source-layer': 'transportation_name',
+        minzoom: 10.5,
+        filter: orientationFilter,
+        layout: {
+          visibility: mapVisibility(layerVisibilityRef.current.orientation),
+          'symbol-placement': 'line',
+          'symbol-spacing': 800,
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10.5, 11, 15, 15],
+          'text-letter-spacing': 0.08,
+          'text-max-angle': 30,
+          'text-padding': 4,
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': '#14080a',
+          'text-halo-width': 2.5,
+        },
+      });
       map.addLayer({
         id: CITY_MARKER_CIRCLE_LAYER_ID,
         type: 'circle',
@@ -557,6 +626,9 @@ export function MapView({
     map.setLayoutProperty(SITE_LAYER_ID, 'visibility', mapVisibility(layerVisibility.sites));
     for (const layer of [PATH_ROUTE_LAYER_ID, PATH_ENTRANCE_LAYER_ID, PATH_INTERACTION_LAYER_ID, PATH_LABEL_LAYER_ID]) {
       map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.path));
+    }
+    for (const layer of [ORIENTATION_STREET_CASING_LAYER_ID, ORIENTATION_STREET_LINE_LAYER_ID, ORIENTATION_STREET_LABEL_LAYER_ID]) {
+      map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.orientation));
     }
     if ((!layerVisibility.districts || !layerVisibility.path) && hoveredRef.current) {
       if (hoveredRef.current !== 'PATH') {

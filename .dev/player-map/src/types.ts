@@ -88,13 +88,14 @@ export type PathInteractionCollection = FeatureCollection<Polygon | MultiPolygon
 export type PathLabelCollection = FeatureCollection<Point, PathLabelProperties>;
 export type CityMarkerCollection = FeatureCollection<Point, CityMarkerProperties>;
 
-export type MapLayerId = 'districts' | 'regions' | 'sites' | 'path';
+export type MapLayerId = 'districts' | 'regions' | 'sites' | 'path' | 'orientation';
 
 export interface MapLayerVisibility {
   districts: boolean;
   regions: boolean;
   sites: boolean;
   path: boolean;
+  orientation: boolean;
 }
 
 export interface MapDataManifest {

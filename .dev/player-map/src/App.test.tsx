@@ -155,13 +155,13 @@ describe('App district selection', () => {
     const regions = await screen.findByRole('checkbox', { name: 'Regions' });
 
     await user.click(regions);
-    expect(window.location.search).toBe('?layers=districts%2Cregions');
+    expect(window.location.search).toBe('?layers=districts%2Cregions%2Corientation');
 
     await user.click(screen.getByRole('checkbox', { name: 'Districts' }));
-    expect(window.location.search).toBe('?layers=regions');
+    expect(window.location.search).toBe('?layers=regions%2Corientation');
 
     await user.click(screen.getByRole('checkbox', { name: 'PATH' }));
-    expect(window.location.search).toBe('?layers=regions%2Cpath');
+    expect(window.location.search).toBe('?layers=regions%2Corientation%2Cpath');
   });
 
   it('shows PATH as a selectable network district', async () => {

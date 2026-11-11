@@ -30,6 +30,7 @@ async function prepareNetwork(page: Page, testInfo: TestInfo) {
 }
 
 test('loads the real map and supports pointer and keyboard-friendly selection', async ({ page }, testInfo) => {
+  test.setTimeout(60_000);
   const consoleErrors: string[] = [];
   const failedRequests: string[] = [];
   const baseURL = testInfo.project.use.baseURL;
@@ -53,6 +54,7 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   await expect(page.getByRole('group', { name: 'Map layers' })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Districts' })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'Regions' })).not.toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Orientation streets' })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'PATH' })).not.toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'Sites (none revealed)' })).toBeDisabled();
   await expect(page.getByRole('button', { name: /Debug notes/ })).toHaveCount(0);
@@ -108,9 +110,10 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   await expect(page).toHaveURL(/district=PATH/);
 
   await page.getByRole('checkbox', { name: 'Regions' }).check();
-  await expect(page).toHaveURL(/layers=districts%2Cregions%2Cpath/);
+  await expect(page).toHaveURL(/layers=districts%2Cregions%2Corientation%2Cpath/);
   await page.reload();
   await expect(page.getByRole('checkbox', { name: 'Regions' })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Orientation streets' })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'PATH' })).toBeChecked();
   await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
 

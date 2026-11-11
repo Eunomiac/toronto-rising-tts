@@ -64,7 +64,10 @@ controls, comments, JSON data, and API do not exist in production builds. See
 [`agent/Debug Notes.md`](agent/Debug%20Notes.md) for the shared workflow.
 
 The **Map layers** control toggles districts, the three broad region overlays,
-and the optional gold PATH network. PATH routes are selectable as a District;
+the custom orientation-street layer, and the optional gold PATH network. The
+orientation layer draws only the explicit major-street allowlist in
+`src/MapView.tsx` as bold white routes with deliberately sparse labels; it does
+not rely on the basemap's automatic road-label choices. PATH routes are selectable as a District;
 entrance and vertical-connection markers appear at closer zooms. Revealed sites
 will use the same control, but it remains disabled while the reviewed public
 site collection is empty. Non-default layer choices are encoded in the

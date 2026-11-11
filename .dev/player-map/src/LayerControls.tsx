@@ -29,6 +29,14 @@ export function LayerControls({ visibility, siteCount, onChange }: LayerControls
       <label>
         <input
           type="checkbox"
+          checked={visibility.orientation}
+          onChange={(event) => onChange('orientation', event.target.checked)}
+        />
+        <span>Orientation streets</span>
+      </label>
+      <label>
+        <input
+          type="checkbox"
           checked={visibility.path}
           onChange={(event) => onChange('path', event.target.checked)}
         />

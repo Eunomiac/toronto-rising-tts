@@ -1,7 +1,17 @@
 import { expect, test, type APIRequestContext, type Page, type Route } from '@playwright/test';
 
 async function relay(route: Route) {
-  const response = await fetch(route.request().url());
+  let response: Response | undefined;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      response = await fetch(route.request().url());
+      break;
+    } catch (error) {
+      if (attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, attempt * 150));
+    }
+  }
+  if (!response) throw new Error(`Unable to relay ${route.request().url()}`);
   await route.fulfill({
     status: response.status,
     contentType: response.headers.get('content-type') ?? 'application/octet-stream',
