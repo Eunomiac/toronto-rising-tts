@@ -38,11 +38,11 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-11-10: TOR-769 traced the game-night stall to live `sendExternalMessage` use during dashboard pushes. The replacement uses the passive tagged-console route and is awaiting Save & Play plus a repeated heavy multiclient transition). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-11-10: TOR-769 removed live `sendExternalMessage`, then found the remaining hang in the seats-slice **BUILD** (~38 s of per-NPC condition snapshots). That builder is now batched and awaits Save & Play plus a repeated heavy multiclient transition). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
 
 _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred from the top** because it depends on your ability to get other people to test; the Focus stack should stay to items you can do solo.
 
-_No active Focus item. TOR-769 has shipped and is awaiting live verification._
+_No active Focus item. TOR-769 has shipped the seats-build follow-up and is awaiting live verification._
 
 **Proposed next (not promoted):** **TOR-81** (centralize light modes — also unblocks **TOR-320** / **TOR-321**), **TOR-301** (prune legacy seat layout generator, already In Progress), **TOR-466** (remove production onSave dumps).
 
@@ -166,7 +166,7 @@ _No active Focus item. TOR-769 has shipped and is awaiting live verification._
 
 ## NPC Spawning
 
-- [x] **Remove live external sends from scene transitions:** the stall probe identified the dashboard slice, then its send-only probes isolated `sendExternalMessage`. Dashboard snapshots now travel through the passive tagged-console route; the only remaining external send is an explicit debug file export that refuses to run with joined players. Pending Save & Play + a repeated heavy multiclient transition. _(TOR-769)_
+- [x] **Remove live external sends and the slow seats-slice rebuild from scene transitions:** the stall probe identified the dashboard slice, then `sendExternalMessage`, then a ~38 s seats **BUILD** that resolved NPC conditions one character at a time. Dashboard snapshots now use the passive tagged-console route; seats pushes batch NPC condition snapshots; the only remaining external send is an explicit debug file export that refuses to run with joined players. Pending Save & Play + a repeated heavy multiclient transition. _(TOR-769)_
 - [x] **Production-path scene/Scatter stall probes:** TEST BED can re-apply one current-state slice at a time and reports post-return heartbeats; scene timing separates host time from TTS game time; Scatter entry has one physical layout owner instead of three. Pending Save & Play. _(TOR-770)_
 - [x] **Existing dashboard stage edits use a bounded reconcile:** Moving an NPC already on stage or changing their light mode runs Step Five for the changed character keys only. Stage membership changes retain the complete NPC reconcile. Pending Save & Play. _(TOR-755)_
 - [x] **Recover game-night scene, Spotlight, and audio transition performance:** Scene rows can opt into bounded NPC preloading with ordinary-spawn fallback; Spotlight uses short purpose-specific cover timing and one incremental reconciliation; failed covered work restores persisted soundscape intent; one-shot health tools inspect the pool and all 12 emitters without recurring game-night work. Pending Save & Play. _(TOR-760)_
