@@ -284,7 +284,8 @@ local function markDisconnectedSeatsUnoccupied()
 end
 
 --- Connection checkpoint (under blindfold cover): every occupied PC seat that is not connected
---- becomes unoccupied (`absentFromSession`, no chair, satellites parked, hand zone left in place).
+--- becomes unoccupied (`absentFromSession`, no chair, satellites parked, hand cards temporarily
+--- stored in the player's container and the empty hand zone parked with the pile).
 --- @return string[] colors newly unoccupied
 function PC.applyConnectionCheckpoint()
   local FSL = require("lib.figurine_seat_layout")

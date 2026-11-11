@@ -2522,8 +2522,31 @@ end
 local function collectHandCards(hz, seatColor)
 	local seen = {}
 	local out = {}
+	local ownerTag = tostring(seatColor) .. "Card"
+	local playerCardTags = {}
+	for _, color in ipairs(C.PlayerColors or {}) do
+		playerCardTags[tostring(color) .. "Card"] = true
+	end
 	local function consider(obj)
 		if not isHandCardLikeObject(obj) then
+			return
+		end
+		-- Permanent <Color>Card tags are the ownership authority when hand zones overlap.
+		-- An untagged card is still eligible (newly acquired cards may not be authored yet),
+		-- but a card explicitly owned by another seat must never move with this hand.
+		local tags = obj.getTags and obj.getTags() or {}
+		local hasSeatOwner = false
+		local ownedByThisSeat = false
+		for i = 1, #tags do
+			local tag = tags[i]
+			if playerCardTags[tag] == true then
+				hasSeatOwner = true
+				if tag == ownerTag then
+					ownedByThisSeat = true
+				end
+			end
+		end
+		if hasSeatOwner and not ownedByThisSeat then
 			return
 		end
 		local guid = obj.getGUID and obj.getGUID() or nil
@@ -2649,9 +2672,11 @@ local function poseObjectWithHand(obj, pos, rot)
 	U.teleportSettled(obj, pos, rot, { keepUnlocked = keepUnlocked })
 end
 
---- Tag on cards `U.movePlayerHand` stashed in a parked player's storage container. Only cards
---- carrying it are dealt back — the player's own stored cards stay in the container.
-local STASHED_HAND_CARD_TAG = "StashedHandCard"
+--- Tag on cards temporarily moved out of a disconnected player's hand. Only cards carrying it
+--- are dealt back — cards the player deliberately stored remain in the container.
+local HELD_CARD_TAG = "HeldCard"
+--- Backward-compatible read for saves made by the earlier parking implementation.
+local LEGACY_STASHED_HAND_CARD_TAG = "StashedHandCard"
 
 --- Wait after an unparked hand zone is posed before dealing its stashed cards back.
 local HAND_DEAL_SETTLE_SECONDS = 0.5
@@ -2684,12 +2709,12 @@ local function stashHandCardsInStorage(color, cards)
 	local container = resolvePlayerStorageContainer(color, true)
 	for i = 1, #cards do
 		local card = cards[i]
-		card.addTag(STASHED_HAND_CARD_TAG)
+		card.addTag(HELD_CARD_TAG)
 		container.putObject(card)
 	end
 end
 
---- Deal every `STASHED_HAND_CARD_TAG` card in the player's storage container into the hand.
+--- Deal every `HeldCard` card in the player's storage container into the hand.
 --- `container.deal` only takes from the top (it would hand back the player's own stored cards),
 --- so each tagged card is taken by GUID and dealt individually with native `card.deal`.
 --- @param color string
@@ -2706,7 +2731,7 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 		local entry = contents[i]
 		local tags = entry.tags or {}
 		for t = 1, #tags do
-			if tags[t] == STASHED_HAND_CARD_TAG then
+			if tags[t] == HELD_CARD_TAG or tags[t] == LEGACY_STASHED_HAND_CARD_TAG then
 				guids[#guids + 1] = entry.guid
 				break
 			end
@@ -2724,7 +2749,8 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 				rotation = { x = 0, y = zoneRot.y + 180, z = 0 },
 				smooth = false,
 				callback_function = function(card)
-					card.removeTag(STASHED_HAND_CARD_TAG)
+					card.removeTag(HELD_CARD_TAG)
+					card.removeTag(LEGACY_STASHED_HAND_CARD_TAG)
 					card.deal(1, color)
 				end,
 			})
@@ -2737,15 +2763,14 @@ end
 --- `placeObjectExact` the zone first — that zeroes the delta and leaves cards behind.
 ---
 --- Behavior (Hand Lab `rigid_instant`): instant `setPosition`/`setRotation` on the zone and
---- every card (same rigid yaw + translation; card yaw snapped to zone Y + 180). Always instant:
+--- every card (same rigid yaw + translation, preserving each card's rotation relative to the
+--- hand zone). Always instant:
 --- smooth-moving a hand zone or its cards breaks the hand (Hand Lab). Never lock the cards: a
 --- locked card leaves the hand.
 ---
---- Parking: a target at `C.HIDDEN_OBJECT_WORLD_Y` moves the zone alone — the in-hand cards are
---- tagged `STASHED_HAND_CARD_TAG` and put into the player's storage container
---- (`G.GetPlayerStorageContainerGUID`). Seat occupancy must not use that path (TOR-763): it
---- scatters the hand. It remains so a zone already under the table (an older session) can be
---- brought back. Moving a parked zone up to the table deals those tagged cards (only those)
+--- Parking: a target at `C.HIDDEN_OBJECT_WORLD_Y` first tags the in-hand cards `HeldCard` and
+--- puts them into the player's storage container (`G.GetPlayerStorageContainerGUID`), then moves
+--- the empty zone. Moving a parked zone up to the table deals those tagged cards (only those)
 --- back into the hand after `HAND_DEAL_SETTLE_SECONDS` (the only wait here).
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
@@ -2801,15 +2826,11 @@ function U.movePlayerHand(playerRef, position, rotation)
 
 	local deltaYaw = shortestSignedYawDelta(hzBefore.rotation.y, targetRot.y)
 	poseObjectWithHand(hz, targetPos, targetRot)
-	-- Hand-zone facing is opposite card face yaw in TTS; snap card Y to zone Y ± 180
-	-- so rigid-transported cards sit square in the fan (TOR-590 follow-up).
-	local cardYaw = targetRot.y + 180
 	for i = 1, #captured do
 		local entry = captured[i]
 		local rotated = U.frameAfterRigidYawAboutCenter(hzBefore.position, entry.before, deltaYaw)
 		local newPos = Vector(rotated.position) + (targetPos - hzBefore.position)
 		local cardRot = Vector(rotated.rotation)
-		cardRot.y = cardYaw
 		poseObjectWithHand(entry.obj, newPos, cardRot)
 	end
 	return hzBefore

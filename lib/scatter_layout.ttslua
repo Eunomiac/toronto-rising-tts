@@ -38,7 +38,8 @@ function ScatterLayout.floorY()
     return y
 end
 
---- Authored PC figurine Y (Table A / camera authoring). Seated piles and cameras keep this; they do not use `FLOOR_Y`.
+--- Authored PC seat-rig Y (Table A / camera authoring). Sheets, hands, and cameras keep this;
+--- the PC figurine itself is placed on `FLOOR_Y` by Scatter Mode.
 --- @return number
 function ScatterLayout.pcSeatY()
     local tableA = C.Tables and C.Tables["Table A"]

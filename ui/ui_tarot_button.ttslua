@@ -110,6 +110,9 @@ function onLoad(savedData)
             isOn = parsed.isOn
         end
     end
+    -- Hidden-object restore snapshots can retain `interactable=false`. Host can still reach some
+    -- locked controls in that state, but a remote Pink client cannot invoke the button callback.
+    self.interactable = not self.hasTag("HiddenObject")
     createClickButtons()
     runWhenSeatLayoutReady(function()
         local inferred = isOn

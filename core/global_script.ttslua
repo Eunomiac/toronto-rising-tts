@@ -1025,6 +1025,18 @@ local function postMountGlobalUi(reason, armedMinimal)
     if type(HO.reapplyHungerAfterXmlRemount) == "function" then
         HO.reapplyHungerAfterXmlRemount()
     end
+    if armedMinimal ~= true then
+        HUDP.clearTemporaryReferenceHolds()
+        if GameStateOverlay and type(GameStateOverlay.invalidateAfterXmlRemount) == "function" then
+            GameStateOverlay.invalidateAfterXmlRemount()
+        end
+        if GameStateOverlay and type(GameStateOverlay.reconcileFromState) == "function" then
+            GameStateOverlay.reconcileFromState()
+        end
+        M.forPlayers(function(player, color)
+            HUDP.updatePlayerUI(player, color)
+        end)
+    end
     -- Join-minimal XmlUI has no Court tree. Full remount resets Court to baked defaults and the
     -- attribute caches would skip repainting the same values.
     if armedMinimal ~= true then
@@ -1462,6 +1474,9 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
     local shouldMarkRevealDone = false
 
     local function applyPostSeatUiRefresh()
+        if isPcSeat and type(HUDP.clearTemporaryReferenceHolds) == "function" then
+            HUDP.clearTemporaryReferenceHolds(seatColor)
+        end
         local HUDBF = require("core.hud_blindfold")
         if type(HUDBF.clearBlindfoldsForUnoccupiedPcSeats) == "function" then
             HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
@@ -4376,11 +4391,17 @@ function HUD_sessionStartJoinStep(player, button, id)
             function()
                 local connection = require("core.player_connection")
                 connection.prepareSessionStartSeats()
-                for _, seated in ipairs(Player.getPlayers()) do
-                    if connection.chronicleSeatColorForPlayer(seated) ~= nil then M.setCamera(seated, "default") end
-                end
+                HUDP.clearTemporaryReferenceHolds()
                 local intermissionThemeStarted = require("core.phases").reconcileIntermissionAmbientOnLoad()
                 Sync.full({ force = true, reason = "finish_session_start_join", skipSoundscape = intermissionThemeStarted })
+                -- Camera presets are rebuilt by Sync.full's seat layout. Snap only afterward;
+                -- doing this before the layout used the prior chair's preset (Brown could inherit
+                -- Orange's opening view on a random-seating table).
+                for _, seated in ipairs(Player.getPlayers()) do
+                    if connection.chronicleSeatColorForPlayer(seated) ~= nil then
+                        M.setCamera(seated, "default")
+                    end
+                end
                 invalidateGlobalBlindfoldAppliedState()
                 applySessionBlindfoldImagesFromState()
                 applyGlobalBlindfoldFromPhase()

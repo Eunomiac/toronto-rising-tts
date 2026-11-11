@@ -254,6 +254,9 @@ end
 ---     When set, district/site cards are not armed.
 function HUDBF.beginTransition(optsOrVariant)
   require("core.storyteller_panel_ui").closeAllPanelsUnconditionally()
+  -- Click-and-hold reference panels are a final XML layer so they can cover the map. They must not
+  -- survive into a scene cover (or a reconnect during it), where they would cover the blindfold too.
+  require("core.hud_player").clearTemporaryReferenceHolds()
   if pendingEndDelayId ~= nil then
     U.cancel(pendingEndDelayId)
     pendingEndDelayId = nil

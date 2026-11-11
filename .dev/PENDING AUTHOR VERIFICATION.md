@@ -31,6 +31,18 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-773 — First live multiplayer session recovery
+
+> **Agent-assessment note:** The dashboard behaviors, Lua syntax, safety gates, and the state changes are covered by automated checks. The important remaining evidence is real connected-client input, Tabletop Simulator's physical hand behavior, and listening to the Unity audio transition.
+
+**How to verify:** Save & Play. Connect Orange, Brown, Pink, and Purple, leaving Red disconnected, and start Play from Intermission. Each connected player should receive their own default camera after the session-start animation. Pink's Tarot button should respond for Pink, and Purple's Jean Ducheski-Francois companion toggles should have visible click targets and respond for Purple.
+
+Connect Red late, and also repeat the Intermission-to-Play start once with Red already present. The Rolls reference image should not remain visible for Red. Hold the Rolls reference button to show it, then release to hide it. Sidebar reference images should stay above the map and all other HUD panels while held, and disappear on release.
+
+Enter Scatter. PC figurines should stand on the Scatter floor rather than level with their character sheets. Red's Prince signet, border, and curtain should remain hidden, including after you move Red between Scatter groups.
+
+The connected-hand, repeated dice-click, Refresh UI, and Casa Loma listening checks are folded into TOR-763, TOR-761, TOR-757, and TOR-760 below so those existing verification rows stay authoritative.
+
 #### 🟡 TOR-772 — Phase and skybox blindfolds no longer stutter at the end of the drop
 
 > **Agent-assessment note:** The schedule now matches scene Apply’s 4-second lead-in in code and the TOR-760 cover-timing assertion. Only Save & Play shows whether the last frames of the SlideIn stay smooth in TTS.
@@ -89,13 +101,13 @@ Nothing comes off the sheet until you confirm it. A resonance, and its dyscrasia
 
 **How to verify:** Save & Play, then restart the Storyteller Dashboard if it was already open. On the PCs tab, open a character and go to the advantages page. Click **+ Background**, name it Allies, and click the **Dots** plus button until it reads 6. The circle count beside it should rise to 6 as well. Click **Add**. The new box on the dashboard and on that player's character sheet in the game should show six filled circles. Open an existing advantage that already has five dots and raise **Dots** to 6 the same way; after you save, that box should gain the sixth circle too. An advantage you have capped below five should still refuse to go higher when you click its dots.
 
-#### 🟡 TOR-763 — Disconnected player's hand stays on the table
+#### 🟡 TOR-763 — Disconnected player's hand is stored safely while the seat is hidden
 
-> **Agent-assessment note:** The code no longer aims a hand zone under the table when a seat is parked. You still need to watch the cards, because Tabletop Simulator dropping a hand is something only the live table shows.
+> **Agent-assessment note:** The ownership filter and temporary-card lifecycle are deterministic in code. You still need to watch the real TTS hand and container physics during a connected table change.
 
-**How to verify:** Save & Play. Turn on **Assume Connected** in the debug panel. Put a few cards in one player's hand. On the PCs panel, mark that player Disconnected. The seat should only go dark, and the hand should stay. Apply a scene, or any other change that brings the blindfold down. When the cover lifts, that player's chair, sheet, bags, and the rest of the seat should be gone. The hand zone should still be where it was, with the same cards still in it. Mark them Connected again. The chair and the rest of the seat should come back, and the hand should move to the new chair with those cards still in it.
+**How to verify:** Save & Play. Put several discipline cards in every player's hand, plus one unrelated card in Red's personal storage container. Disconnect Red, then apply a scene or change tables. Red's hand cards should receive the temporary `HeldCard` tag and move into Red's storage container before the empty hand zone, container, chair, sheet, and bags are hidden. The connected players should retain only their own cards; none should move into another player's overlapping hand zone, and every card should keep its original upright orientation.
 
-While they are still disconnected, a table change leaves that hand where it was until they connect. It should not dive under the table. If a hand is already under the table from an earlier disconnect, connecting that player should still bring the hand and those stored cards back.
+Reconnect Red. Red's hand zone should return beside the new chair, and only the cards marked `HeldCard` should be dealt back and lose that tag. The unrelated card that Red deliberately stored should remain in the container.
 
 #### 🟡 TOR-762 — Preload NPCs for a later entrance
 
@@ -105,7 +117,7 @@ The browser check covers saving the list, picking and dragging NPCs, and the com
 
 #### 🟡 TOR-761 — Dice bags and signal candle accept clicks after seating
 
-**How to verify:** After Save & Play, have Rashid toggle the signal candle before the first scene change. During a Standard roll, have him click the Standard bag repeatedly in quick succession, past his Hunger rating, both before and after you Open the roll. Each click while building the pool should add one die, and the Standard bag should stay clear. Repeat after a scene change and with another player seat if available.
+**How to verify:** After Save & Play, have Rashid toggle the signal candle before the first scene change. During a Standard roll, have him click the Standard bag repeatedly and quickly, past his Hunger rating, both before and after you Open the roll. Each accepted click should be queued until the Infinite Bag finishes its previous clone and should add exactly one die. The bag should not become intermittently unresponsive after three or four dice. Repeat after a scene change and with at least one other connected player. While no roll is active, right-click each player's Rouse bag; each should start the one-die quick Rouse check.
 
 Automated checks cover click access after repeated parking and the spawn positions for Standard and Hunger dice across all five seats. If the bag still misses clicks, turn on **Trace Sync**, repeat a few clicks, and turn it off. The console will show whether the host received each click, requested a die, and registered the spawn.
 
@@ -123,7 +135,7 @@ Automated checks cover click access after repeated parking and the spawn positio
 
 > **Agent-assessment note:** The agent checks cover schedules, bounded preload behavior, fallback, emitter health, Dashboard commands, and browser behavior. Your timed pass in the real save remains valuable because TTS asset-download speed and whether the music sounds continuous are environmental.
 
-**How to verify:** Save & Play, then run `lua log(DEBUG.verifyPav("TOR-760"))` in the TTS console. Its report should pass both short Spotlight schedules, the bounded preload grid, and all 12 configured soundscape emitters. Start on the Casa Loma Estate Grounds scene. In the Dashboard scene library, click **Preload** on Grand Audience and wait for the notice that its NPC packages are ready. Apply Grand Audience. The cover should still show its destination cards, but the transition should no longer spend several minutes creating NPCs; the music should return before the cover lifts. Next advance from Play into Spotlight: its cover should last roughly six seconds plus the table update, not tens of seconds. Advance from Spotlight into End: that cover should last roughly three seconds plus the table update, with Main music continuing. If a preload ever reports a failure, apply that scene anyway and confirm ordinary on-demand spawning still completes it.
+**How to verify:** Save & Play, then run `lua log(DEBUG.verifyPav("TOR-760"))` in the TTS console. Its report should pass both short Spotlight schedules, the bounded preload grid, and all 12 configured soundscape emitters. Start on the Casa Loma Estate Grounds scene. In the Dashboard scene library, click **Preload** on Grand Audience and wait for the notice that its NPC packages are ready. Apply Grand Audience at the CLGreatHall site. Listen from the instant the transition begins: there should be no full-volume Casa Loma burst before the intended fade-in. The cover should still show its destination cards, the transition should no longer spend several minutes creating NPCs, and the music should return before the cover lifts. Next advance from Play into Spotlight: its cover should last roughly six seconds plus the table update, not tens of seconds. Advance from Spotlight into End: that cover should last roughly three seconds plus the table update, with Main music continuing. If a preload ever reports a failure, apply that scene anyway and confirm ordinary on-demand spawning still completes it.
 
 #### 🔵 TOR-756 — Page 3 Advantages with no portrait have no white image box
 
@@ -133,7 +145,7 @@ Automated checks cover click access after repeated parking and the spawn positio
 
 #### 🔵 TOR-757 — Storyteller Refresh UI performs a complete UI rewrite
 
-**How to verify:** Save & Play with a connected player. Open the Storyteller debug toolbar and click **Refresh UI**. The complete Global UI should disappear and rebuild, then return with the correct panels, overlays, and per-colour visibility. If you can reproduce an overlay that remains stuck on a connected client, click **Refresh UI** and confirm that the stale overlay is cleared without reloading the save.
+**How to verify:** Save & Play with a connected player and enter an indoor scene. Open the Storyteller debug toolbar and click **Refresh UI**. The complete Global UI should disappear and rebuild, then return with the correct time, location, panels, overlays, and per-colour visibility. Repeat outdoors and confirm the current weather returns too. If Red's Rolls reference image remains stuck after joining or session start, **Refresh UI** should clear it without reloading the save and restore the normal hold-to-show, release-to-hide behavior.
 
 #### 🟢 TOR-758 — Blood Surge Rouse is independent from manual and Oblivion Rouse
 

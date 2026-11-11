@@ -31,6 +31,7 @@ local function createClickButtons()
 end
 
 function onLoad(_savedData)
+    self.interactable = not self.hasTag("HiddenObject")
     createClickButtons()
 end
 

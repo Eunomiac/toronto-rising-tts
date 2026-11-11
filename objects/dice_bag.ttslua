@@ -34,6 +34,8 @@ ARC_LAYER_Y_STEP = 2
 ARC_LAYER_RADIUS_STEP = 0.6
 
 spawnedDice = {}
+pendingSpawns = {}
+spawnInFlight = false
 
 function onSave()
     local guids = {}
@@ -56,6 +58,8 @@ function onLoad(saved_data)
         end
     end
     spawnedDice = {}
+    pendingSpawns = {}
+    spawnInFlight = false
     math.randomseed(os.time())
     createButtons()
 end
@@ -81,11 +85,15 @@ function getBagColor()
     return owner
 end
 
---- @param alt_click boolean|nil  TTS createButton: true for right-click (non-left mouse button)
+--- @param alt_click boolean|string|number|nil  TTS createButton right-click variants
 function click_roll(_, color, alt_click)
     local bagColor = getBagColor()
     local dieKind = getDieType()
     local isAlt = alt_click == true
+        or alt_click == "-2"
+        or alt_click == -2
+        or tostring(alt_click) == "true"
+        or tostring(alt_click) == "True"
 
     if bagColor == nil then
         print("[DiceBag] Bag is missing owner tag — cannot determine seat.")
@@ -245,6 +253,7 @@ local function acquireDie(position, rotation)
 end
 
 local spawnPostRollDie
+local processNextSpawn
 
 function spawnDieRedirect(params)
     if type(params) ~= "table" or type(params.bagColor) ~= "string" or type(params.dieType) ~= "string" then
@@ -261,6 +270,24 @@ end
 
 --- @param opts table|nil  { bloodSurgePool?, bloodSurgeRouse? }
 function spawnDie(bagColor, dieType, opts)
+    pendingSpawns[#pendingSpawns + 1] = {
+        bagColor = bagColor,
+        dieType = dieType,
+        opts = type(opts) == "table" and opts or {},
+    }
+    processNextSpawn()
+end
+
+--- Infinite bags can ignore overlapping takeObject calls while their previous clone is still initializing.
+--- Serialize player clicks through the takeObject completion callback so every accepted click becomes one die.
+processNextSpawn = function()
+    if spawnInFlight == true or #pendingSpawns == 0 then
+        return
+    end
+    local request = table.remove(pendingSpawns, 1)
+    local bagColor = request.bagColor
+    local dieType = request.dieType
+    local opts = request.opts
     opts = type(opts) == "table" and opts or {}
     local bloodSurgePool = opts.bloodSurgePool == true
     local bloodSurgeRouse = opts.bloodSurgeRouse == true
@@ -268,8 +295,10 @@ function spawnDie(bagColor, dieType, opts)
     local spawnRadius = radiusForSpawnKind(dieType, bloodSurgeRouse)
 
     local function finishSpawnedDie(die)
+        spawnInFlight = false
         if die == nil then
             print("[DiceBag] spawnDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
+            processNextSpawn()
             return
         end
         die.setScale({ SCALE, SCALE, SCALE })
@@ -294,6 +323,7 @@ function spawnDie(bagColor, dieType, opts)
             stagedCount = #spawnedDice,
             manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
         })
+        processNextSpawn()
     end
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
@@ -313,7 +343,20 @@ function spawnDie(bagColor, dieType, opts)
     })
 
     local arcPos = worldArcPoint(bagColor, ringSlot, ringTotal, spawnRadius)
-    finishSpawnedDie(acquireDie(arcPos, randomRotation()))
+    spawnInFlight = true
+    self.takeObject({
+        position = arcPos,
+        rotation = randomRotation(),
+        smooth = false,
+        callback_function = function(die)
+            if die ~= nil then
+                die.setScale({ SCALE, SCALE, SCALE })
+                die.setLock(true)
+                die.interactable = false
+            end
+            finishSpawnedDie(die)
+        end,
+    })
 end
 
 --- POST_ROLL correction: one die on a random arc slot (no reposition of existing pool dice).

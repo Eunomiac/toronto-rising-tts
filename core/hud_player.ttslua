@@ -32,6 +32,20 @@ local HUDP = {}
 -- While this is set, Update will override the visible reference panel.
 local tempHoldRefByPlayerID = {}
 
+--- Clear click-and-hold reference state that cannot survive a connection, cover transition, or
+--- full XmlUI remount. With no seat, clears every player; otherwise clears only that seat.
+--- @param seatColor string|nil
+function HUDP.clearTemporaryReferenceHolds(seatColor)
+    if type(seatColor) == "string" and seatColor ~= "" then
+        local pid = S.getPlayerID(seatColor)
+        if type(pid) == "string" and pid ~= "" then
+            tempHoldRefByPlayerID[pid] = nil
+        end
+        return
+    end
+    tempHoldRefByPlayerID = {}
+end
+
 -- PlayerID -> currently hovered right-sidebar base button id (overlay is id.."_hover")
 -- Used so UpdateUIDisplays doesn't wipe hover highlight.
 local currentHoverBaseIdByPlayerID = {}

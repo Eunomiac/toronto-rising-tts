@@ -44,6 +44,8 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 _No active Focus item. TOR-769 has shipped the seats-build follow-up and is awaiting live verification._
 
+**Pending Save & Play:** **TOR-773** repairs the first live multiplayer session regressions: disconnected hands and card ownership/orientation, post-layout session-start cameras, remote Tarot/companion controls, stale Rolls references, queued dice-bag clicks and quick Rouse right-clicks, Scatter figurine/Prince-prop placement, Refresh UI overlay repainting, topmost reference images, and the Casa Loma transition burst.
+
 **Proposed next (not promoted):** **TOR-81** (centralize light modes — also unblocks **TOR-320** / **TOR-321**), **TOR-301** (prune legacy seat layout generator, already In Progress), **TOR-466** (remove production onSave dumps).
 
 **Also unblocked (not Focus top):** **TOR-81** (centralize light modes). **TOR-301** (prune legacy seat layout generator, In Progress). **TOR-89** (PCs map location modal). **TOR-95** (play as NPC). Architecture follow-ups: **TOR-465** (UI asset / tag registry reconcile), **TOR-466** (remove production onSave dumps), **TOR-467** (extract Global bootstrap stages), **TOR-468** (headless Lua contract tests). Soft design wait: **TOR-99** (page 5 projects/equipment — needs your data-binding decision). **Blocked:** **TOR-320** / **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**. Living docs: **TOR-141**, **TOR-464**. External: **TOR-463**, **TOR-456**, **TOR-303**, **TOR-327**, **TOR-190**, **TOR-207**, **TOR-106**, **TOR-112**.

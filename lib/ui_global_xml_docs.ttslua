@@ -4633,31 +4633,6 @@ prettyPrintTable(draggableData, "draggableData")
 <!-- /include ui/player/panel_scatter_mode_control.xml -->
 
 
-  <!-- Shared nestedless ref popups (TOR-444); coteries remain in per-seat referenceLayer -->
-  
-<!-- include ui/shared/panel_ref_panels_nestedless.xml -->
-<!-- Shared nestedless reference popups (TOR-444).
-     One Image per sheet for all seats; audience via XmlUI visibility unions.
-     Open/close: core/hud_player.ttslua applyNestedlessRefForSeat → U.showTo / U.hideFrom.
-     Court / coteries stay per-seat until Phase 5. -->
-<Panel id="playerHud_referenceLayer_nestedless" class="popupImageContainer">
-  <Image id="playerHud_refPanel_chronicleTenets" visibility="None" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
-  <Image id="playerHud_refPanel_rolls" visibility="None" active="false" class="popupImage" image="refPanel_Rolls" />
-  <Image id="playerHud_refPanel_physicalCombat" visibility="None" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
-  <Image id="playerHud_refPanel_socialCombat" visibility="None" active="false" class="popupImage" image="refPanel_SocialCombat" />
-  <Image id="playerHud_refPanel_threats" visibility="None" active="false" class="popupImage" image="refPanel_Threats" />
-  <Image id="playerHud_refPanel_frenzy" visibility="None" active="false" class="popupImage" image="refPanel_Frenzy" />
-  <Image id="playerHud_refPanel_recovery" visibility="None" active="false" class="popupImage" image="refPanel_Recovery" />
-  <Image id="playerHud_refPanel_resonance" visibility="None" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_experience" visibility="None" active="false" class="popupImage" image="refPanel_Experience" />
-  <Image id="playerHud_refPanel_advantages" visibility="None" active="false" class="popupImage" image="refPanel_Advantages" />
-  <Image id="playerHud_refPanel_projects" visibility="None" active="false" class="popupImage" image="refPanel_Projects" />
-  <Image id="playerHud_refPanel_memoriam" visibility="None" active="false" class="popupImage" image="refPanel_Memoriam" />
-</Panel>
-
-<!-- /include ui/shared/panel_ref_panels_nestedless.xml -->
-
-
   <!-- Shared Prince's Court (TOR-444) -->
   
 <!-- include ui/shared/panel_ref_princes_court.xml -->
@@ -15577,6 +15552,31 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
 
   </Panel>
 </Panel>
+
+<!-- Shared click-and-hold reference images are deliberately the final Global UI layer so maps,
+     roll panels, modals, and other HUD chrome cannot cover them. -->
+
+<!-- include ui/shared/panel_ref_panels_nestedless.xml -->
+<!-- Shared nestedless reference popups (TOR-444).
+     One Image per sheet for all seats; audience via XmlUI visibility unions.
+     Open/close: core/hud_player.ttslua applyNestedlessRefForSeat → U.showTo / U.hideFrom.
+     Court / coteries stay per-seat until Phase 5. -->
+<Panel id="playerHud_referenceLayer_nestedless" class="popupImageContainer">
+  <Image id="playerHud_refPanel_chronicleTenets" visibility="None" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
+  <Image id="playerHud_refPanel_rolls" visibility="None" active="false" class="popupImage" image="refPanel_Rolls" />
+  <Image id="playerHud_refPanel_physicalCombat" visibility="None" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
+  <Image id="playerHud_refPanel_socialCombat" visibility="None" active="false" class="popupImage" image="refPanel_SocialCombat" />
+  <Image id="playerHud_refPanel_threats" visibility="None" active="false" class="popupImage" image="refPanel_Threats" />
+  <Image id="playerHud_refPanel_frenzy" visibility="None" active="false" class="popupImage" image="refPanel_Frenzy" />
+  <Image id="playerHud_refPanel_recovery" visibility="None" active="false" class="popupImage" image="refPanel_Recovery" />
+  <Image id="playerHud_refPanel_resonance" visibility="None" active="false" class="popupImage" image="refPanel_Resonance" />
+  <Image id="playerHud_refPanel_experience" visibility="None" active="false" class="popupImage" image="refPanel_Experience" />
+  <Image id="playerHud_refPanel_advantages" visibility="None" active="false" class="popupImage" image="refPanel_Advantages" />
+  <Image id="playerHud_refPanel_projects" visibility="None" active="false" class="popupImage" image="refPanel_Projects" />
+  <Image id="playerHud_refPanel_memoriam" visibility="None" active="false" class="popupImage" image="refPanel_Memoriam" />
+</Panel>
+
+<!-- /include ui/shared/panel_ref_panels_nestedless.xml -->
 ]=]
 
 -- CustomUIAssets names referenced by expanded join-minimal XmlUI.
