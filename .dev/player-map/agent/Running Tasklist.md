@@ -18,7 +18,11 @@ shift, and 11-metre northward shift anchored at the west and north edges. The
 panel now starts from a fresh identity baseline for any further refinement.
 The runtime geometry is canonicalized, expanded by the reviewed one-pixel
 tolerance, and cut in the explicit Illustrator top-to-bottom priority order.
-The latest generated diagnostic reports zero remaining district overlap.
+The latest generated diagnostic reports zero remaining district overlap. PATH
+is now generated from a dated, broad downtown OpenStreetMap extraction with
+1,517 route ways and 329 entrance or vertical-connection nodes. It is available
+as an optional selectable gold network layer with one intentional label and
+Sheet-backed District facts.
 
 ## Decisions Recorded
 
@@ -79,9 +83,9 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Create a typed public-data schema and fail on unexpected fields in both the generator and browser loader.
 - [x] Join Sheet facts to geometry by exact key, requiring all 32 surface districts and the four reviewed Sheet-only exceptions.
 - [x] Generate districts, regions, sites, and provenance manifest outputs. Sites are intentionally an empty collection until individual public sites and fields are reviewed.
-- [ ] Add the broad downtown PATH extraction rules, bounds, optional false-positive exclusions, and OpenStreetMap provenance to the build pipeline.
-- [ ] Generate PATH route, entrance/vertical-connection, interaction-corridor, and single-label-point outputs.
-- [ ] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
+- [x] Add the broad downtown PATH extraction rules, bounds, optional false-positive exclusions, and OpenStreetMap provenance to the build pipeline.
+- [x] Generate PATH route, entrance/vertical-connection, interaction-corridor, and single-label-point outputs.
+- [x] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
 - [x] Add key, schema, topology, bounds, privacy, and count validation for the current surface-district, region, and empty-site package.
 - [ ] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing.
 - [x] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
@@ -94,7 +98,7 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Build the full-screen map shell and responsive controls.
 - [x] Add district selection and player-safe district details, including Sheet-backed hunting difficulty and resonance.
 - [x] Add layer controls for districts and regions, with an honest disabled state while no sites are revealed.
-- [ ] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
+- [x] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
 - [x] Add shareable URL state for district selection and visible district, region, and site overlays.
 - [x] Add loading, empty, error, keyboard, touch, and reduced-motion behavior, including Escape-to-close and real mobile browser coverage.
 - [x] Add the development-only Debug notes toggle with Add note and Show notes controls, matching the Storyteller Dashboard workflow.

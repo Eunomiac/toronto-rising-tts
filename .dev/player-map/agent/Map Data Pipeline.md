@@ -18,7 +18,7 @@ Verification:
 - inspect the generated diagnostic map over the live basemap before accepting geometry changes
 
 Status:
-- current for geometry, runtime normalization, and the first player-safe Sheet projection; full visual diagnostics and FULL-build integration remain Phase 2 work
+- current for surface geometry, PATH extraction, runtime normalization, the first player-safe Sheet projection, and FULL-build integration; full visual diagnostics remain Phase 2 work
 
 ## Principle: One Owner Per Fact
 
@@ -68,7 +68,7 @@ Toronto Rising EXPORT_* -> validated shared Sheet loader -> public join -> valid
 reviewed public-field allowlist -----------------------------------+
 ```
 
-The build performs these stages, except for PATH extraction and the richer visual diagnostics that remain planned:
+The build performs these stages; only the richer visual diagnostics remain planned:
 
 1. Load and validate the existing Sheet export snapshot.
 2. Project Sheet rows to an explicit player-safe schema. Unexpected fields never pass through automatically.
@@ -77,7 +77,8 @@ The build performs these stages, except for PATH extraction and the richer visua
 5. Georeference SVG coordinates to longitude/latitude using reviewed ground-control points.
 6. Join geometry to public district data by exact key.
 7. Validate keys, geometry, bounds, properties, and privacy rules.
-8. Write generated public assets and diagnostic artifacts.
+8. Convert the checked-in, dated OpenStreetMap PATH snapshot into separately validated route, entrance, interaction, and label outputs.
+9. Write generated public assets and diagnostic artifacts.
 
 ## Geometry Normalization
 
@@ -153,6 +154,18 @@ but it is exempt from surface-polygon topology and coverage checks. Its network
 geometry receives route validity, bounds, provenance, and non-empty checks
 instead.
 
+This is implemented by `scripts/fetch-path-osm.mjs`,
+`scripts/lib/path-network.mjs`, and `data/path-network.json`. `npm run
+path:refresh` is the explicit network update command. It stores the complete
+dated Overpass response in `data/source/osm-path-snapshot.json`; ordinary builds
+consume that snapshot without making a network request. The current checked-in
+snapshot contains 1,517 route ways and 329 entrance or vertical-connection
+nodes. The public projection strips the raw tags down to the exact fields the
+map needs, clips routes to the reviewed catchment, derives a wider selectable
+corridor for each route, and records the query hash plus every included OSM
+element ID in the manifest. Both generation and browser loading fail on empty,
+malformed, out-of-bounds, count-mismatched, or provenance-mismatched data.
+
 ## Georeferencing
 
 SVG pixel coordinates cannot be placed accurately on a live street map until they are tied to real-world coordinates. Use a reviewed set of ground-control points distributed across the map rather than inferring the transform from the artboard corners alone.
@@ -202,6 +215,11 @@ public/generated/districts.geojson
 public/generated/regions.geojson
 public/generated/sites.geojson
 public/generated/labels.geojson
+public/generated/path-district.json
+public/generated/path-routes.geojson
+public/generated/path-entrances.geojson
+public/generated/path-interaction.geojson
+public/generated/path-label.geojson
 public/generated/map-data-manifest.json
 ```
 

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import pointOnFeature from '@turf/point-on-feature';
 import { normalizeDistrictCollection } from './lib/normalize-districts.mjs';
+import { buildPathNetwork } from './lib/path-network.mjs';
 import { emptyPublicSites, joinDistrictFacts, projectDistrictRows, validatePublicDataPolicy } from './lib/public-data.mjs';
 import {
   createVisualCalibrationTransform,
@@ -24,6 +25,8 @@ const calibrationPath = path.join(root, 'data/calibration.json');
 const namesPath = path.join(root, 'data/feature-names.json');
 const priorityPath = path.join(root, 'data/district-priority.json');
 const publicDataPolicyPath = path.join(root, 'data/public-data-policy.json');
+const pathNetworkConfigPath = path.join(root, 'data/path-network.json');
+const pathNetworkSnapshotPath = path.join(root, 'data/source/osm-path-snapshot.json');
 const normalizationDiagnosticsPath = path.join(root, 'data/diagnostics/normalization.json');
 const outputDirectory = path.join(root, 'public/generated');
 const checkOnly = process.argv.includes('--check');
@@ -50,16 +53,20 @@ if (!process.env.TR_EXPORT_SNAPSHOT && !refreshSheet) {
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const svgText = await fs.readFile(sourcePath, 'utf8');
-const [calibration, names, districtPriority, publicDataPolicy, sheetSnapshot] = await Promise.all([
+const [calibration, names, districtPriority, publicDataPolicy, pathNetworkConfig, pathNetworkSnapshot, sheetSnapshot] = await Promise.all([
   readJson(calibrationPath),
   readJson(namesPath),
   readJson(priorityPath),
   readJson(publicDataPolicyPath).then(validatePublicDataPolicy),
+  readJson(pathNetworkConfigPath),
+  readJson(pathNetworkSnapshotPath),
   loadSnapshot(),
 ]);
 const sheetDistrictRows = dataOf(sheetSnapshot, 'LOCATIONS_DISTRICTS');
 const sheetSiteRows = dataOf(sheetSnapshot, 'LOCATIONS_SITES');
 const publicDistrictFacts = projectDistrictRows(sheetDistrictRows, publicDataPolicy);
+const pathFacts = publicDistrictFacts.find((district) => district.key === 'PATH');
+const pathNetwork = buildPathNetwork(pathNetworkSnapshot, pathNetworkConfig, pathFacts);
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '',
@@ -222,7 +229,7 @@ const rootMeanSquareError = (items) => items.length === 0
   ? null
   : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
 const manifest = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   source: {
     svg: 'data/source/toronto-rising-map.svg',
     sha256: createHash('sha256').update(svgText).digest('hex'),
@@ -234,6 +241,10 @@ const manifest = {
     regions: regions.features.length,
     sites: sites.features.length,
     labels: labels.features.length,
+    pathRoutes: pathNetwork.routes.features.length,
+    pathEntrances: pathNetwork.entrances.features.length,
+    pathInteractionCorridors: pathNetwork.interaction.features.length,
+    pathLabels: pathNetwork.label.features.length,
     sheetDistricts: sheetDistrictRows.length,
     sheetSites: sheetSiteRows.length,
     sheetOnlyDistricts: publicDataPolicy.sheetOnlyDistricts.length,
@@ -271,10 +282,15 @@ const manifest = {
     districtsWithOverlapCuts: normalizationDiagnostics.summary.districtsWithOverlapCuts,
     remainingOverlapSquareMetres: normalizationDiagnostics.summary.remainingOverlapSquareMetres,
   },
+  pathNetwork: pathNetwork.provenance,
 };
 
 if (manifest.counts.districts !== 32 || manifest.counts.regions !== 3 || manifest.counts.labels !== 35) {
   throw new Error('Unexpected feature counts');
+}
+if (manifest.counts.pathRoutes === 0 || manifest.counts.pathEntrances === 0
+  || manifest.counts.pathInteractionCorridors !== manifest.counts.pathRoutes || manifest.counts.pathLabels !== 1) {
+  throw new Error('Unexpected PATH network counts');
 }
 if (manifest.counts.sheetDistricts !== 36 || manifest.counts.sheetOnlyDistricts !== 4) {
   throw new Error('Unexpected Sheet district coverage');
@@ -291,6 +307,11 @@ const outputs = [
   ['regions.geojson', regions],
   ['sites.geojson', sites],
   ['labels.geojson', labels],
+  ['path-district.json', pathNetwork.district],
+  ['path-routes.geojson', pathNetwork.routes],
+  ['path-entrances.geojson', pathNetwork.entrances],
+  ['path-interaction.geojson', pathNetwork.interaction],
+  ['path-label.geojson', pathNetwork.label],
   ['map-data-manifest.json', manifest],
 ];
 const calibrationSummary = `${manifest.calibration.rootMeanSquareErrorMetres} m control RMS${manifest.calibration.validationRootMeanSquareErrorMetres === null ? '' : `, ${manifest.calibration.validationRootMeanSquareErrorMetres} m validation RMS`}`;

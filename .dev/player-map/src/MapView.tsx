@@ -17,6 +17,10 @@ import type {
   DistrictFeatureCollection,
   MapLabelCollection,
   MapLayerVisibility,
+  PathEntranceCollection,
+  PathInteractionCollection,
+  PathLabelCollection,
+  PathRouteCollection,
   PublicSiteCollection,
   RegionFeatureCollection,
 } from './types';
@@ -25,6 +29,10 @@ const SOURCE_ID = 'districts';
 const REGION_SOURCE_ID = 'regions';
 const SITE_SOURCE_ID = 'sites';
 const LABEL_SOURCE_ID = 'map-labels';
+const PATH_ROUTE_SOURCE_ID = 'path-routes';
+const PATH_ENTRANCE_SOURCE_ID = 'path-entrances';
+const PATH_INTERACTION_SOURCE_ID = 'path-interaction';
+const PATH_LABEL_SOURCE_ID = 'path-label';
 const FILL_LAYER_ID = 'district-fills';
 const SELECTED_GLOW_LAYER_ID = 'district-selected-glow';
 const LINE_LAYER_ID = 'district-lines';
@@ -33,6 +41,10 @@ const REGION_FILL_LAYER_ID = 'region-fills';
 const REGION_LINE_LAYER_ID = 'region-lines';
 const REGION_LABEL_LAYER_ID = 'region-labels';
 const SITE_LAYER_ID = 'site-markers';
+const PATH_ROUTE_LAYER_ID = 'path-route-lines';
+const PATH_ENTRANCE_LAYER_ID = 'path-entrance-markers';
+const PATH_INTERACTION_LAYER_ID = 'path-interaction-corridors';
+const PATH_LABEL_LAYER_ID = 'path-label';
 const PLAY_BOUNDS: [[number, number], [number, number]] = [[-79.455, 43.61], [-79.325, 43.71]];
 const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [-79.34, 43.70]];
 
@@ -43,6 +55,11 @@ interface MapViewProps {
   regions: RegionFeatureCollection;
   sites: PublicSiteCollection;
   labels: MapLabelCollection;
+  pathRoutes: PathRouteCollection;
+  pathEntrances: PathEntranceCollection;
+  pathInteraction: PathInteractionCollection;
+  pathLabel: PathLabelCollection;
+  pathBounds: { south: number; west: number; north: number; east: number };
   chronicleBounds: [[number, number], [number, number]];
   layerVisibility: MapLayerVisibility;
   selectedKey: string | null;
@@ -93,6 +110,14 @@ function focusDistrict(map: Map, districts: DistrictFeatureCollection, key: stri
   });
 }
 
+function focusPath(map: Map, bounds: MapViewProps['pathBounds']) {
+  map.fitBounds([[bounds.west, bounds.south], [bounds.east, bounds.north]], {
+    padding: { top: 116, right: 52, bottom: 260, left: 52 },
+    maxZoom: 14,
+    duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 850,
+  });
+}
+
 function mapVisibility(visible: boolean) {
   return visible ? 'visible' as const : 'none' as const;
 }
@@ -102,6 +127,11 @@ export function MapView({
   regions,
   sites,
   labels,
+  pathRoutes,
+  pathEntrances,
+  pathInteraction,
+  pathLabel,
+  pathBounds,
   chronicleBounds,
   layerVisibility,
   selectedKey,
@@ -115,6 +145,10 @@ export function MapView({
   const regionsRef = useRef(regions);
   const sitesRef = useRef(sites);
   const labelsRef = useRef(labels);
+  const pathRoutesRef = useRef(pathRoutes);
+  const pathEntrancesRef = useRef(pathEntrances);
+  const pathInteractionRef = useRef(pathInteraction);
+  const pathLabelRef = useRef(pathLabel);
   const layerVisibilityRef = useRef(layerVisibility);
   const onSelectRef = useRef(onSelect);
   const onMapReadyRef = useRef(onMapReady);
@@ -125,6 +159,10 @@ export function MapView({
   regionsRef.current = regions;
   sitesRef.current = sites;
   labelsRef.current = labels;
+  pathRoutesRef.current = pathRoutes;
+  pathEntrancesRef.current = pathEntrances;
+  pathInteractionRef.current = pathInteraction;
+  pathLabelRef.current = pathLabel;
   layerVisibilityRef.current = layerVisibility;
   onSelectRef.current = onSelect;
   onMapReadyRef.current = onMapReady;
@@ -172,6 +210,10 @@ export function MapView({
       map.addSource(REGION_SOURCE_ID, { type: 'geojson', data: regionsRef.current, promoteId: 'key' });
       map.addSource(SITE_SOURCE_ID, { type: 'geojson', data: sitesRef.current, promoteId: 'key' });
       map.addSource(LABEL_SOURCE_ID, { type: 'geojson', data: labelsRef.current, promoteId: 'key' });
+      map.addSource(PATH_ROUTE_SOURCE_ID, { type: 'geojson', data: pathRoutesRef.current });
+      map.addSource(PATH_ENTRANCE_SOURCE_ID, { type: 'geojson', data: pathEntrancesRef.current });
+      map.addSource(PATH_INTERACTION_SOURCE_ID, { type: 'geojson', data: pathInteractionRef.current });
+      map.addSource(PATH_LABEL_SOURCE_ID, { type: 'geojson', data: pathLabelRef.current });
       map.addLayer({
         id: FILL_LAYER_ID,
         type: 'fill',
@@ -316,9 +358,69 @@ export function MapView({
           'circle-stroke-width': 2,
         },
       });
+      map.addLayer({
+        id: PATH_ROUTE_LAYER_ID,
+        type: 'line',
+        source: PATH_ROUTE_SOURCE_ID,
+        minzoom: 11.5,
+        layout: { visibility: mapVisibility(layerVisibilityRef.current.path), 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#e5cb6d',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11.5, 1.2, 16, 3.2],
+          'line-opacity': 0.9,
+          'line-blur': 0.35,
+        },
+      });
+      map.addLayer({
+        id: PATH_ENTRANCE_LAYER_ID,
+        type: 'circle',
+        source: PATH_ENTRANCE_SOURCE_ID,
+        minzoom: 14,
+        layout: { visibility: mapVisibility(layerVisibilityRef.current.path) },
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 2.5, 18, 6],
+          'circle-color': [
+            'match', ['get', 'kind'],
+            'elevator', '#d79af2',
+            'subway-entrance', '#f4e09a',
+            '#e5cb6d',
+          ],
+          'circle-stroke-color': '#211013',
+          'circle-stroke-width': 1.5,
+        },
+      });
+      map.addLayer({
+        id: PATH_LABEL_LAYER_ID,
+        type: 'symbol',
+        source: PATH_LABEL_SOURCE_ID,
+        minzoom: 11.5,
+        layout: {
+          visibility: mapVisibility(layerVisibilityRef.current.path),
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11.5, 13, 15, 18],
+          'text-letter-spacing': 0.2,
+        },
+        paint: {
+          'text-color': '#f4e09a',
+          'text-halo-color': '#14080a',
+          'text-halo-width': 2,
+        },
+      });
+      map.addLayer({
+        id: PATH_INTERACTION_LAYER_ID,
+        type: 'fill',
+        source: PATH_INTERACTION_SOURCE_ID,
+        minzoom: 11.5,
+        layout: { visibility: mapVisibility(layerVisibilityRef.current.path) },
+        paint: { 'fill-color': '#ffffff', 'fill-opacity': 0.001 },
+      });
       if (selectedRef.current) {
-        map.setFeatureState({ source: SOURCE_ID, id: selectedRef.current }, { selected: true });
-        focusDistrict(map, districtsRef.current, selectedRef.current);
+        if (selectedRef.current === 'PATH') focusPath(map, pathBounds);
+        else {
+          map.setFeatureState({ source: SOURCE_ID, id: selectedRef.current }, { selected: true });
+          focusDistrict(map, districtsRef.current, selectedRef.current);
+        }
       }
       setStatus('Street map ready. Select a shaded district for details.');
       updateBoundaryShade();
@@ -326,16 +428,18 @@ export function MapView({
     };
 
     const onMouseMove = (event: MapMouseEvent) => {
-      const feature = map.queryRenderedFeatures(event.point, { layers: [FILL_LAYER_ID] })[0];
+      const feature = map.queryRenderedFeatures(event.point, { layers: [PATH_INTERACTION_LAYER_ID, FILL_LAYER_ID] })[0];
       const key = districtKey(feature);
       if (key === hoveredRef.current) return;
-      if (hoveredRef.current) map.setFeatureState({ source: SOURCE_ID, id: hoveredRef.current }, { hovered: false });
+      if (hoveredRef.current && hoveredRef.current !== 'PATH') {
+        map.setFeatureState({ source: SOURCE_ID, id: hoveredRef.current }, { hovered: false });
+      }
       hoveredRef.current = key;
-      if (key) map.setFeatureState({ source: SOURCE_ID, id: key }, { hovered: true });
+      if (key && key !== 'PATH') map.setFeatureState({ source: SOURCE_ID, id: key }, { hovered: true });
       map.getCanvas().style.cursor = key ? 'pointer' : '';
     };
     const onClick = (event: MapMouseEvent) => {
-      const key = districtKey(map.queryRenderedFeatures(event.point, { layers: [FILL_LAYER_ID] })[0]);
+      const key = districtKey(map.queryRenderedFeatures(event.point, { layers: [PATH_INTERACTION_LAYER_ID, FILL_LAYER_ID] })[0]);
       if (key) onSelectRef.current(key);
     };
     const onError = (event: MapLibreErrorEvent) => {
@@ -387,6 +491,15 @@ export function MapView({
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
+    (map.getSource(PATH_ROUTE_SOURCE_ID) as GeoJSONSource | undefined)?.setData(pathRoutes);
+    (map.getSource(PATH_ENTRANCE_SOURCE_ID) as GeoJSONSource | undefined)?.setData(pathEntrances);
+    (map.getSource(PATH_INTERACTION_SOURCE_ID) as GeoJSONSource | undefined)?.setData(pathInteraction);
+    (map.getSource(PATH_LABEL_SOURCE_ID) as GeoJSONSource | undefined)?.setData(pathLabel);
+  }, [pathEntrances, pathInteraction, pathLabel, pathRoutes]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
     for (const layer of [FILL_LAYER_ID, SELECTED_GLOW_LAYER_ID, LINE_LAYER_ID, LABEL_LAYER_ID]) {
       map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.districts));
     }
@@ -394,8 +507,13 @@ export function MapView({
       map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.regions));
     }
     map.setLayoutProperty(SITE_LAYER_ID, 'visibility', mapVisibility(layerVisibility.sites));
-    if (!layerVisibility.districts && hoveredRef.current) {
-      map.setFeatureState({ source: SOURCE_ID, id: hoveredRef.current }, { hovered: false });
+    for (const layer of [PATH_ROUTE_LAYER_ID, PATH_ENTRANCE_LAYER_ID, PATH_INTERACTION_LAYER_ID, PATH_LABEL_LAYER_ID]) {
+      map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.path));
+    }
+    if ((!layerVisibility.districts || !layerVisibility.path) && hoveredRef.current) {
+      if (hoveredRef.current !== 'PATH') {
+        map.setFeatureState({ source: SOURCE_ID, id: hoveredRef.current }, { hovered: false });
+      }
       hoveredRef.current = null;
       map.getCanvas().style.cursor = '';
     }
@@ -406,10 +524,16 @@ export function MapView({
     const previousKey = selectedRef.current;
     selectedRef.current = selectedKey;
     if (!map?.isStyleLoaded()) return;
-    if (previousKey) map.setFeatureState({ source: SOURCE_ID, id: previousKey }, { selected: false });
+    if (previousKey && previousKey !== 'PATH') map.setFeatureState({ source: SOURCE_ID, id: previousKey }, { selected: false });
+    map.setPaintProperty(PATH_ROUTE_LAYER_ID, 'line-width', selectedKey === 'PATH'
+      ? ['interpolate', ['linear'], ['zoom'], 11.5, 2.4, 16, 5]
+      : ['interpolate', ['linear'], ['zoom'], 11.5, 1.2, 16, 3.2]);
     if (!selectedKey) return;
-    map.setFeatureState({ source: SOURCE_ID, id: selectedKey }, { selected: true });
-    focusDistrict(map, districtsRef.current, selectedKey);
+    if (selectedKey === 'PATH') focusPath(map, pathBounds);
+    else {
+      map.setFeatureState({ source: SOURCE_ID, id: selectedKey }, { selected: true });
+      focusDistrict(map, districtsRef.current, selectedKey);
+    }
   }, [selectedKey]);
 
   return (

@@ -49,9 +49,32 @@ const mapData = {
       properties: { key: 'Rosedale', name: 'Rosedale', kind: 'district' as const },
     }],
   },
+  pathDistrict: {
+    key: 'PATH' as const,
+    name: 'P.A.T.H.',
+    huntingDifficulty: 4,
+    resonancePlus: 'phlegmatic',
+    resonanceMinus: 'choleric',
+  },
+  pathRoutes: { type: 'FeatureCollection' as const, features: [] },
+  pathEntrances: { type: 'FeatureCollection' as const, features: [] },
+  pathInteraction: { type: 'FeatureCollection' as const, features: [] },
+  pathLabel: { type: 'FeatureCollection' as const, features: [] },
   manifest: {
-    schemaVersion: 4,
-    counts: { districts: 1, regions: 0, sites: 0, labels: 1, sheetDistricts: 1, sheetSites: 0, sheetOnlyDistricts: 0 },
+    schemaVersion: 5,
+    counts: {
+      districts: 1,
+      regions: 0,
+      sites: 0,
+      labels: 1,
+      pathRoutes: 0,
+      pathEntrances: 0,
+      pathInteractionCorridors: 0,
+      pathLabels: 0,
+      sheetDistricts: 1,
+      sheetSites: 0,
+      sheetOnlyDistricts: 0,
+    },
     bounds: [[-79.4, 43.6], [-79.39, 43.61]] as [[number, number], [number, number]],
     sheet: {
       spreadsheetId: 'test',
@@ -78,6 +101,18 @@ const mapData = {
       expansionMetres: 2.35,
       districtsWithOverlapCuts: 0,
       remainingOverlapSquareMetres: 0,
+    },
+    pathNetwork: {
+      fetchedAt: '2026-11-11T00:00:00.000Z',
+      osmTimestamp: '2026-11-11T00:00:00.000Z',
+      endpoint: 'https://overpass-api.de/api/interpreter',
+      bounds: { south: 43.635, west: -79.425, north: 43.672, east: -79.355 },
+      querySha256: 'test',
+      routeElementIds: [],
+      entranceElementIds: [],
+      excludedWayIds: [],
+      attribution: '© OpenStreetMap contributors',
+      licenseUrl: 'https://www.openstreetmap.org/copyright',
     },
   },
 };
@@ -115,6 +150,20 @@ describe('App district selection', () => {
 
     await user.click(screen.getByRole('checkbox', { name: 'Districts' }));
     expect(window.location.search).toBe('?layers=regions');
+
+    await user.click(screen.getByRole('checkbox', { name: 'PATH' }));
+    expect(window.location.search).toBe('?layers=regions%2Cpath');
+  });
+
+  it('shows PATH as a selectable network district', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.selectOptions(await screen.findByLabelText('Choose a district'), 'PATH');
+    expect(screen.getByTestId('selected-district')).toHaveTextContent('P.A.T.H.');
+    expect(screen.getByTestId('selected-district')).toHaveTextContent('4');
+    expect(screen.getByTestId('selected-district')).toHaveTextContent('Phlegmatic');
+    expect(screen.getByTestId('selected-district')).toHaveTextContent('Choleric');
+    expect(window.location.search).toBe('?district=PATH');
   });
 
   it('shows loading, empty, and failed-data states clearly', async () => {
@@ -141,7 +190,7 @@ describe('App district selection', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(await screen.findByRole('button', { name: 'Select Rosedale on map' }));
-    expect(screen.getByTestId('selected-district')).toBeVisible();
+    await waitFor(() => expect(screen.getByTestId('selected-district')).toBeVisible());
 
     await user.keyboard('{Escape}');
     expect(screen.queryByTestId('selected-district')).not.toBeInTheDocument();

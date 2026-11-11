@@ -34,6 +34,14 @@ empty until individual player-visible sites and their allowed fields are
 reviewed. Generated district, region, site, and provenance files must not be
 edited by hand.
 
+PATH uses the reviewed extraction configuration in `data/path-network.json`
+and the dated OpenStreetMap response in
+`data/source/osm-path-snapshot.json`. The normal build is deterministic and
+never contacts Overpass. Run `npm run path:refresh` only when deliberately
+updating that snapshot; review the resulting network and generated provenance
+before committing it. The browser receives only the allowlisted route facts,
+entrance points, interaction corridors, and one label—not raw OSM tags.
+
 `public/generated/labels.geojson` supplies one deliberate point for each
 district and region. Map labels render from those points rather than directly
 from multipart polygons, preventing the same name from appearing once per
@@ -47,11 +55,12 @@ Notes persist in `agent/debug-notes.json` for the next agent session. The
 controls, comments, JSON data, and API do not exist in production builds. See
 [`agent/Debug Notes.md`](agent/Debug%20Notes.md) for the shared workflow.
 
-The **Map layers** control toggles districts and the three broad region
-overlays. Revealed sites will use the same control, but it remains disabled
-while the reviewed public site collection is empty. Non-default layer choices
-are encoded in the `layers` URL parameter so a shared link restores the same
-view.
+The **Map layers** control toggles districts, the three broad region overlays,
+and the optional gold PATH network. PATH routes are selectable as a District;
+entrance and vertical-connection markers appear at closer zooms. Revealed sites
+will use the same control, but it remains disabled while the reviewed public
+site collection is empty. Non-default layer choices are encoded in the
+`layers` URL parameter so a shared link restores the same view.
 
 ## Visual calibration
 

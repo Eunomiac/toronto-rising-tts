@@ -77,7 +77,9 @@ export function App() {
 
   const validSelectedKey = useMemo(() => {
     if (!data || !selectedKey) return null;
-    return data.districts.features.some((feature) => feature.properties.key === selectedKey) ? selectedKey : null;
+    return data.districts.features.some((feature) => feature.properties.key === selectedKey) || data.pathDistrict.key === selectedKey
+      ? selectedKey
+      : null;
   }, [data, selectedKey]);
 
   const calibratedDistricts = useMemo(() => {
@@ -127,6 +129,11 @@ export function App() {
         regions={data.regions}
         sites={data.sites}
         labels={calibratedLabels ?? data.labels}
+        pathRoutes={data.pathRoutes}
+        pathEntrances={data.pathEntrances}
+        pathInteraction={data.pathInteraction}
+        pathLabel={data.pathLabel}
+        pathBounds={data.manifest.pathNetwork.bounds}
         chronicleBounds={data.manifest.bounds}
         layerVisibility={layerVisibility}
         selectedKey={validSelectedKey}
@@ -152,6 +159,7 @@ export function App() {
       ) : (
         <DistrictPanel
           districts={data.districts.features}
+          pathDistrict={data.pathDistrict}
           selectedKey={validSelectedKey}
           onSelect={selectDistrict}
           onClear={clearDistrict}

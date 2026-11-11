@@ -20,15 +20,15 @@ describe('map data helpers', () => {
   });
 
   it('reads and writes shareable layer visibility without losing other URL state', () => {
-    expect(layerVisibilityFromUrl('')).toEqual({ districts: true, regions: false, sites: false });
-    expect(layerVisibilityFromUrl('?layers=regions,sites')).toEqual({ districts: false, regions: true, sites: true });
+    expect(layerVisibilityFromUrl('')).toEqual({ districts: true, regions: false, sites: false, path: false });
+    expect(layerVisibilityFromUrl('?layers=regions,sites,path')).toEqual({ districts: false, regions: true, sites: true, path: true });
 
     window.history.replaceState(null, '', '/?district=Rosedale&calibrate=1');
-    expect(updateLayersInUrl({ districts: true, regions: true, sites: false }))
+    expect(updateLayersInUrl({ districts: true, regions: true, sites: false, path: false }))
       .toBe('/?district=Rosedale&calibrate=1&layers=districts%2Cregions');
 
     window.history.replaceState(null, '', '/?district=Rosedale&layers=regions');
-    expect(updateLayersInUrl({ districts: true, regions: false, sites: false }))
+    expect(updateLayersInUrl({ districts: true, regions: false, sites: false, path: false }))
       .toBe('/?district=Rosedale');
   });
 });

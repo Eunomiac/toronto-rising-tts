@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "bounds": {
+    "south": 43.635,
+    "west": -79.425,
+    "north": 43.672,
+    "east": -79.355
+  },
+  "routeHighways": [
+    "corridor",
+    "footway",
+    "pedestrian",
+    "steps",
+    "elevator",
+    "escalator"
+  ],
+  "interactionWidthMetres": 10,
+  "labelPoint": [-79.3828, 43.6487],
+  "excludedWayIds": [],
+  "attribution": "© OpenStreetMap contributors",
+  "licenseUrl": "https://www.openstreetmap.org/copyright"
+}

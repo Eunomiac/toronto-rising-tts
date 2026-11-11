@@ -26,6 +26,14 @@ export function LayerControls({ visibility, siteCount, onChange }: LayerControls
         />
         <span>Regions</span>
       </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={visibility.path}
+          onChange={(event) => onChange('path', event.target.checked)}
+        />
+        <span>PATH</span>
+      </label>
       <label title={siteCount === 0 ? 'No sites have been revealed yet.' : undefined}>
         <input
           type="checkbox"

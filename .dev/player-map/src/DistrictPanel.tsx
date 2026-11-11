@@ -2,18 +2,20 @@ import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import type { Feature, MultiPolygon } from 'geojson';
-import type { DistrictFeatureProperties } from './types';
+import type { DistrictFeatureProperties, NetworkDistrictFacts } from './types';
 
 interface DistrictPanelProps {
   districts: Array<Feature<MultiPolygon, DistrictFeatureProperties>>;
+  pathDistrict?: NetworkDistrictFacts;
   selectedKey: string | null;
   onSelect: (key: string) => void;
   onClear: () => void;
 }
 
-export function DistrictPanel({ districts, selectedKey, onSelect, onClear }: DistrictPanelProps) {
+export function DistrictPanel({ districts, pathDistrict, selectedKey, onSelect, onClear }: DistrictPanelProps) {
   const panelRef = useRef<HTMLElement>(null);
-  const selected = districts.find((feature) => feature.properties.key === selectedKey) ?? null;
+  const choices = [...districts.map((feature) => feature.properties), ...(pathDistrict ? [pathDistrict] : [])];
+  const selected = choices.find((district) => district.key === selectedKey) ?? null;
   const resonanceName = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
   useGSAP(() => {
@@ -34,30 +36,30 @@ export function DistrictPanel({ districts, selectedKey, onSelect, onClear }: Dis
         <span>Choose a district</span>
         <select value={selectedKey ?? ''} onChange={(event) => event.target.value ? onSelect(event.target.value) : onClear()}>
           <option value="">Explore the map…</option>
-          {[...districts]
-            .sort((a, b) => a.properties.name.localeCompare(b.properties.name))
-            .map((district) => <option key={district.properties.key} value={district.properties.key}>{district.properties.name}</option>)}
+          {[...choices]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((district) => <option key={district.key} value={district.key}>{district.name}</option>)}
         </select>
       </label>
 
       {selected ? (
         <div className="district-panel__content" data-testid="selected-district">
           <div className="district-panel__title-row">
-            <h2>{selected.properties.name}</h2>
+            <h2>{selected.name}</h2>
             <button type="button" onClick={onClear} aria-label="Close district details">×</button>
           </div>
           <dl className="district-panel__facts">
             <div>
               <dt>Hunting difficulty</dt>
-              <dd>{selected.properties.huntingDifficulty ?? '—'}</dd>
+              <dd>{selected.huntingDifficulty ?? '—'}</dd>
             </div>
             <div>
               <dt>Resonance +</dt>
-              <dd>{resonanceName(selected.properties.resonancePlus)}</dd>
+              <dd>{resonanceName(selected.resonancePlus)}</dd>
             </div>
             <div>
               <dt>Resonance −</dt>
-              <dd>{resonanceName(selected.properties.resonanceMinus)}</dd>
+              <dd>{resonanceName(selected.resonanceMinus)}</dd>
             </div>
           </dl>
         </div>

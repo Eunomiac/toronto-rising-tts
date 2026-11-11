@@ -1,4 +1,4 @@
-import type { FeatureCollection, MultiPolygon, Point } from 'geojson';
+import type { FeatureCollection, LineString, MultiLineString, MultiPolygon, Point, Polygon } from 'geojson';
 
 export type MapFeatureKind = 'district' | 'region';
 
@@ -36,17 +36,59 @@ export interface MapLabelProperties {
   kind: MapFeatureKind;
 }
 
+export interface NetworkDistrictFacts {
+  key: 'PATH';
+  name: string;
+  huntingDifficulty: number | null;
+  resonancePlus: string;
+  resonanceMinus: string;
+}
+
+export interface PathRouteProperties {
+  key: 'PATH';
+  osmId: number;
+  name: string | null;
+  highway: string;
+  level: string | null;
+  indoor: string | null;
+  tunnel: string | null;
+  covered: string | null;
+}
+
+export interface PathEntranceProperties {
+  key: 'PATH';
+  osmId: number;
+  kind: 'subway-entrance' | 'elevator' | 'underground-entrance';
+  name: string | null;
+}
+
+export interface PathInteractionProperties {
+  key: 'PATH';
+  osmId: number;
+}
+
+export interface PathLabelProperties {
+  key: 'PATH';
+  name: string;
+  kind: 'network-district';
+}
+
 export type DistrictFeatureCollection = FeatureCollection<MultiPolygon, DistrictFeatureProperties>;
 export type RegionFeatureCollection = FeatureCollection<MultiPolygon, RegionFeatureProperties>;
 export type PublicSiteCollection = FeatureCollection<Point, PublicSiteProperties>;
 export type MapLabelCollection = FeatureCollection<Point, MapLabelProperties>;
+export type PathRouteCollection = FeatureCollection<LineString | MultiLineString, PathRouteProperties>;
+export type PathEntranceCollection = FeatureCollection<Point, PathEntranceProperties>;
+export type PathInteractionCollection = FeatureCollection<Polygon | MultiPolygon, PathInteractionProperties>;
+export type PathLabelCollection = FeatureCollection<Point, PathLabelProperties>;
 
-export type MapLayerId = 'districts' | 'regions' | 'sites';
+export type MapLayerId = 'districts' | 'regions' | 'sites' | 'path';
 
 export interface MapLayerVisibility {
   districts: boolean;
   regions: boolean;
   sites: boolean;
+  path: boolean;
 }
 
 export interface MapDataManifest {
@@ -56,6 +98,10 @@ export interface MapDataManifest {
     regions: number;
     sites: number;
     labels: number;
+    pathRoutes: number;
+    pathEntrances: number;
+    pathInteractionCorridors: number;
+    pathLabels: number;
     sheetDistricts: number;
     sheetSites: number;
     sheetOnlyDistricts: number;
@@ -103,6 +149,18 @@ export interface MapDataManifest {
     districtsWithOverlapCuts: number;
     remainingOverlapSquareMetres: number;
   };
+  pathNetwork: {
+    fetchedAt: string;
+    osmTimestamp: string;
+    endpoint: string;
+    bounds: { south: number; west: number; north: number; east: number };
+    querySha256: string;
+    routeElementIds: number[];
+    entranceElementIds: number[];
+    excludedWayIds: number[];
+    attribution: string;
+    licenseUrl: string;
+  };
 }
 
 export interface PublicMapData {
@@ -110,5 +168,10 @@ export interface PublicMapData {
   regions: RegionFeatureCollection;
   sites: PublicSiteCollection;
   labels: MapLabelCollection;
+  pathDistrict: NetworkDistrictFacts;
+  pathRoutes: PathRouteCollection;
+  pathEntrances: PathEntranceCollection;
+  pathInteraction: PathInteractionCollection;
+  pathLabel: PathLabelCollection;
   manifest: MapDataManifest;
 }
