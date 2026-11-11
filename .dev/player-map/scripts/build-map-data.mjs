@@ -7,6 +7,7 @@ import { XMLParser } from 'fast-xml-parser';
 import pointOnFeature from '@turf/point-on-feature';
 import { normalizeDistrictCollection } from './lib/normalize-districts.mjs';
 import { buildPathNetwork } from './lib/path-network.mjs';
+import { renderMapDiagnosticsHtml } from './lib/map-diagnostics.mjs';
 import { emptyPublicSites, joinDistrictFacts, projectDistrictRows, validatePublicDataPolicy } from './lib/public-data.mjs';
 import {
   createVisualCalibrationTransform,
@@ -28,6 +29,8 @@ const publicDataPolicyPath = path.join(root, 'data/public-data-policy.json');
 const pathNetworkConfigPath = path.join(root, 'data/path-network.json');
 const pathNetworkSnapshotPath = path.join(root, 'data/source/osm-path-snapshot.json');
 const normalizationDiagnosticsPath = path.join(root, 'data/diagnostics/normalization.json');
+const visualDiagnosticsPath = path.join(root, 'data/diagnostics/map-visual-diagnostics.geojson');
+const visualDiagnosticsHtmlPath = path.join(root, 'data/diagnostics/map-visual-diagnostics.html');
 const outputDirectory = path.join(root, 'public/generated');
 const checkOnly = process.argv.includes('--check');
 const refreshSheet = process.argv.includes('--refresh-sheet');
@@ -204,7 +207,7 @@ const visualTransform = calibration.visualCalibration
   ? createVisualCalibrationTransform(baseBounds, calibration.visualCalibration)
   : (lngLat) => lngLat;
 const unnormalizedDistricts = transformCollection(baseDistricts, visualTransform);
-const { collection: normalizedDistricts, diagnostics: normalizationDiagnostics } = normalizeDistrictCollection(
+const { collection: normalizedDistricts, diagnostics: normalizationDiagnostics, visualDiagnostics } = normalizeDistrictCollection(
   unnormalizedDistricts,
   districtPriority,
 );
@@ -225,6 +228,25 @@ const residualsFor = (points) => points.map((control) => {
 });
 const residuals = residualsFor(calibration.controlPoints);
 const validationResiduals = residualsFor(calibration.validationPoints ?? []);
+const georeferencingFeatures = [
+  ...calibration.controlPoints.map((control) => ({ control, set: 'control' })),
+  ...(calibration.validationPoints ?? []).map((control) => ({ control, set: 'validation' })),
+].map(({ control, set }) => {
+  const actual = visualTransform(transform.project(control.source));
+  const target = control.lngLat;
+  const actualMercator = lngLatToMercator(actual);
+  const targetMercator = lngLatToMercator(target);
+  return {
+    type: 'Feature',
+    properties: {
+      diagnosticType: `georeferencing-${set}`,
+      name: control.name,
+      metres: Number(Math.hypot(actualMercator[0] - targetMercator[0], actualMercator[1] - targetMercator[1]).toFixed(2)),
+    },
+    geometry: { type: 'LineString', coordinates: [actual, target] },
+  };
+});
+visualDiagnostics.features.push(...georeferencingFeatures);
 const rootMeanSquareError = (items) => items.length === 0
   ? null
   : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
@@ -315,6 +337,7 @@ const outputs = [
   ['map-data-manifest.json', manifest],
 ];
 const calibrationSummary = `${manifest.calibration.rootMeanSquareErrorMetres} m control RMS${manifest.calibration.validationRootMeanSquareErrorMetres === null ? '' : `, ${manifest.calibration.validationRootMeanSquareErrorMetres} m validation RMS`}`;
+const visualDiagnosticsHtml = renderMapDiagnosticsHtml(bounds);
 
 if (checkOnly) {
   for (const [filename, value] of outputs) {
@@ -326,6 +349,13 @@ if (checkOnly) {
   if (JSON.stringify(existingDiagnostics) !== JSON.stringify(normalizationDiagnostics)) {
     throw new Error('Normalization diagnostics are stale; run npm run data:build');
   }
+  const existingVisualDiagnostics = JSON.parse(await fs.readFile(visualDiagnosticsPath, 'utf8'));
+  if (JSON.stringify(existingVisualDiagnostics) !== JSON.stringify(visualDiagnostics)) {
+    throw new Error('Map visual diagnostics are stale; run npm run data:build');
+  }
+  if (await fs.readFile(visualDiagnosticsHtmlPath, 'utf8') !== visualDiagnosticsHtml) {
+    throw new Error('Map visual diagnostic viewer is stale; run npm run data:build');
+  }
   console.log(`Map data is current: ${manifest.counts.districts} districts, ${manifest.counts.regions} regions, ${calibrationSummary}.`);
 } else {
   await fs.mkdir(outputDirectory, { recursive: true });
@@ -333,6 +363,8 @@ if (checkOnly) {
   await Promise.all(outputs.map(([filename, value]) =>
     fs.writeFile(path.join(outputDirectory, filename), `${JSON.stringify(value)}\n`, 'utf8')));
   await fs.writeFile(normalizationDiagnosticsPath, `${JSON.stringify(normalizationDiagnostics, null, 2)}\n`, 'utf8');
+  await fs.writeFile(visualDiagnosticsPath, `${JSON.stringify(visualDiagnostics)}\n`, 'utf8');
+  await fs.writeFile(visualDiagnosticsHtmlPath, visualDiagnosticsHtml, 'utf8');
   console.log(`Generated ${manifest.counts.districts} districts and ${manifest.counts.regions} regions. Calibration: ${calibrationSummary}.`);
   console.log(`Normalized district boundaries: ${normalizationDiagnostics.summary.districtsWithOverlapCuts} districts clipped; ${normalizationDiagnostics.summary.remainingOverlapSquareMetres} m² overlap remains.`);
 }

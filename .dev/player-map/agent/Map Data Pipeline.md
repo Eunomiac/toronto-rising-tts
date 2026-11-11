@@ -118,8 +118,15 @@ writes `data/diagnostics/normalization.json`, including each district's source,
 expanded, and final area plus the overlap removed. It fails if the manifest is
 incomplete or duplicated, a district becomes empty, or more than 0.01 square
 metres of pairwise overlap remains. The normalized geometry is the geometry
-written to `public/generated/districts.geojson`. The richer visual gap and
-boundary-movement diagnostics listed above remain Phase 2 work.
+written to `public/generated/districts.geojson`.
+
+`data/diagnostics/map-visual-diagnostics.geojson` records the source and final
+boundaries, area added and removed by normalization, each sequential overlap
+cut, remaining enclosed gaps and overlaps, and control/validation
+georeferencing residuals. `npm run diagnostics:view` opens the generated
+interactive review map over OpenFreeMap with whole-city, downtown, and island
+presets. The viewer and GeoJSON are checked for staleness by `data:check` and
+must not be hand-edited.
 
 ## PATH Network District
 

@@ -27,6 +27,14 @@ used to close tiny gaps and cut district overlaps during every data build.
 `data/diagnostics/normalization.json` records the resulting area changes and
 must report zero remaining overlap.
 
+Run `npm run diagnostics:view` to open the generated geometry review map over
+the live basemap. Its controls compare source and final boundaries and can show
+area added during gap repair, removed boundary area, every sequential overlap
+cut, any remaining enclosed gap or overlap, and the calibration control and
+validation residuals. Whole-city, downtown, and island camera presets make the
+same report useful at several scales. Both diagnostic files are derived and
+must not be edited by hand.
+
 `data/public-data-policy.json` is the explicit player-data privacy boundary.
 The current public district facts are name, hunting difficulty, and positive
 and negative resonance. `public/generated/sites.geojson` is intentionally

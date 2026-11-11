@@ -87,7 +87,7 @@ Sheet-backed District facts.
 - [x] Generate PATH route, entrance/vertical-connection, interaction-corridor, and single-label-point outputs.
 - [x] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
 - [x] Add key, schema, topology, bounds, privacy, and count validation for the current surface-district, region, and empty-site package.
-- [ ] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing.
+- [x] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing. The generated interactive review map overlays every diagnostic class on OpenFreeMap and includes whole-city, downtown, and island views.
 - [x] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
 - [x] Add Player Map checks and its production Vite build before TTS save bundling.
 - [x] Add Cloudflare publication as FULL's final stage so failed builds never publish; allow an explicit offline skip without skipping validation.

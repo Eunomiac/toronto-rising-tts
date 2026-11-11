@@ -31,6 +31,17 @@ function canonicalize(coordinates, key) {
   return result;
 }
 
+function diagnosticFeature(type, coordinates, properties = {}) {
+  if (!coordinates?.length) return null;
+  const squareMetres = featureArea(coordinates);
+  if (squareMetres <= 0.01) return null;
+  return {
+    type: 'Feature',
+    properties: { diagnosticType: type, squareMetres: Number(squareMetres.toFixed(2)), ...properties },
+    geometry: { type: 'MultiPolygon', coordinates },
+  };
+}
+
 export function normalizeDistrictCollection(collection, config) {
   if (config.schemaVersion !== 1 || !Number.isFinite(config.expansionMetres) || config.expansionMetres < 0) {
     throw new Error('Invalid district-priority manifest');
@@ -46,6 +57,7 @@ export function normalizeDistrictCollection(collection, config) {
   const winners = [];
   const normalizedByKey = new Map();
   const features = [];
+  const visualFeatures = [];
   for (const key of config.priority) {
     const sourceFeature = byKey.get(key);
     const source = canonicalize(asMultiPolygonCoordinates(sourceFeature.geometry), key);
@@ -63,11 +75,18 @@ export function normalizeDistrictCollection(collection, config) {
     for (const winner of winners) {
       if (!intersects(normalizedBounds, winner.bounds)) continue;
       const before = featureArea(normalized);
+      const overlapFragment = polygonClipping.intersection(normalized, winner.coordinates);
       const difference = polygonClipping.difference(normalized, winner.coordinates);
       if (!difference || difference.length === 0) throw new Error(`${key} was completely removed by winner ${winner.key}`);
       normalized = canonicalize(difference, key);
       const removed = before - featureArea(normalized);
-      if (removed > 0.01) clippedBy.push({ key: winner.key, squareMetres: Number(removed.toFixed(2)) });
+      if (removed > 0.01) {
+        clippedBy.push({ key: winner.key, squareMetres: Number(removed.toFixed(2)) });
+        visualFeatures.push(diagnosticFeature('removed-overlap', overlapFragment, {
+          districtKey: key,
+          winnerDistrictKey: winner.key,
+        }));
+      }
       normalizedBounds = bounds(normalized);
     }
 
@@ -85,6 +104,10 @@ export function normalizeDistrictCollection(collection, config) {
       ...sourceFeature,
       geometry: { type: 'MultiPolygon', coordinates: normalized },
     });
+    visualFeatures.push(diagnosticFeature('source-boundary', source, { districtKey: key }));
+    visualFeatures.push(diagnosticFeature('normalized-boundary', normalized, { districtKey: key }));
+    visualFeatures.push(diagnosticFeature('boundary-added', polygonClipping.difference(normalized, source), { districtKey: key }));
+    visualFeatures.push(diagnosticFeature('boundary-removed', polygonClipping.difference(source, normalized), { districtKey: key }));
     winners.push({ key, coordinates: normalized, bounds: normalizedBounds });
   }
 
@@ -93,7 +116,20 @@ export function normalizeDistrictCollection(collection, config) {
     for (let second = first + 1; second < winners.length; second += 1) {
       if (!intersects(winners[first].bounds, winners[second].bounds)) continue;
       const overlap = polygonClipping.intersection(winners[first].coordinates, winners[second].coordinates);
-      if (overlap?.length) remainingOverlapSquareMetres += featureArea(overlap);
+      if (overlap?.length) {
+        remainingOverlapSquareMetres += featureArea(overlap);
+        visualFeatures.push(diagnosticFeature('remaining-overlap', overlap, {
+          districtKey: winners[first].key,
+          otherDistrictKey: winners[second].key,
+        }));
+      }
+    }
+  }
+
+  const coverage = polygonClipping.union(...winners.map((winner) => winner.coordinates));
+  for (const polygon of coverage) {
+    for (const ring of polygon.slice(1)) {
+      visualFeatures.push(diagnosticFeature('remaining-gap', [[ring]], {}));
     }
   }
 
@@ -125,5 +161,9 @@ export function normalizeDistrictCollection(collection, config) {
       features: collection.features.map((feature) => normalizedByKey.get(feature.properties.key)),
     },
     diagnostics,
+    visualDiagnostics: {
+      type: 'FeatureCollection',
+      features: visualFeatures.filter(Boolean),
+    },
   };
 }
