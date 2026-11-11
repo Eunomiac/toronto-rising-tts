@@ -27,7 +27,7 @@ export function DistrictPanel({ districts, selectedKey, onSelect, onClear }: Dis
   }, { dependencies: [selectedKey], revertOnUpdate: true });
 
   return (
-    <aside ref={panelRef} className="district-panel" aria-label="District details">
+    <aside ref={panelRef} className="district-panel" data-note-surface="district-panel" aria-label="District details">
       <div className="district-panel__handle" aria-hidden="true" />
       <label className="district-panel__chooser">
         <span>Choose a district</span>

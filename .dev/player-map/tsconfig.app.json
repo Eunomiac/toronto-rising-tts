@@ -12,6 +12,9 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "paths": {
+      "#debug-notes": ["./src/debug/DebugNotesSlot.tsx"]
+    },
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,

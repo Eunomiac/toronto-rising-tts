@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Map } from 'maplibre-gl';
+import { DebugNotesSlot } from '#debug-notes';
 import { CalibrationPanel } from './CalibrationPanel';
 import {
   applyVisualCalibration,
@@ -28,6 +30,7 @@ export function App() {
   const [selectedKey, setSelectedKey] = useState<string | null>(() => selectedDistrictFromUrl(window.location.search));
   const [visualCalibration, setVisualCalibration] = useState(DEFAULT_VISUAL_CALIBRATION);
   const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
+  const [map, setMap] = useState<Map | null>(null);
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
 
   useEffect(() => {
@@ -82,14 +85,19 @@ export function App() {
 
   return (
     <main className="app">
-      <header className="app-header">
+      <header className="app-header" data-note-surface="app-header">
         <div>
           <p>Vampire: The Masquerade</p>
           <h1>Toronto Rising</h1>
         </div>
         <span className="app-header__phase">Map prototype</span>
       </header>
-      <MapView districts={calibratedDistricts ?? data.districts} selectedKey={validSelectedKey} onSelect={selectDistrict} />
+      <MapView
+        districts={calibratedDistricts ?? data.districts}
+        selectedKey={validSelectedKey}
+        onSelect={selectDistrict}
+        onMapReady={setMap}
+      />
       {calibrationMode ? (
         <CalibrationPanel
           value={visualCalibration}
@@ -109,6 +117,7 @@ export function App() {
           />
           <a
             className="calibration-badge"
+            data-note-surface="calibration-badge"
             href="/?calibrate=1"
             title={`${data.manifest.calibration.controlPointCount} controls; ${data.manifest.calibration.validationRootMeanSquareErrorMetres ?? 'no'} m validation error`}
           >
@@ -116,6 +125,7 @@ export function App() {
           </a>
         </>
       )}
+      <DebugNotesSlot map={map} selectedDistrict={validSelectedKey} />
     </main>
   );
 }
