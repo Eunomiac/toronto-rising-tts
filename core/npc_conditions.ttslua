@@ -7,8 +7,8 @@ local Effects = require("lib.condition_effects")
 local Derive = require("lib.condition_derive")
 local PSC = require("lib.pc_sheet_collect")
 
-local function record(key)
-  return require("core.npc_trackers").get(key) or {}
+local function record(key, night)
+  return require("core.npc_trackers").get(key, night) or {}
 end
 
 function NC.isPresent(key)
@@ -41,6 +41,66 @@ function NC.baseFor(key)
   return record(key).conditionStats or {}
 end
 
+--- Static manual-palette rows (id + label). Per-NPC `on` flags are stamped at snapshot time.
+--- @return table[]
+local function manualPaletteTemplate()
+  local manual = {}
+  for id, def in pairs(CD.Defs) do
+    if def.canApplyManually == true and not def.onlyRollType then
+      manual[#manual + 1] = { id = id, label = def.displayName }
+    end
+  end
+  table.sort(manual, function(a, b) return a.label < b.label end)
+  return manual
+end
+
+--- @param key string
+--- @param rec table|nil
+--- @return table
+local function statsFromRecord(key, rec)
+  rec = type(rec) == "table" and rec or record(key)
+  local b = type(rec.conditionStats) == "table" and rec.conditionStats or {}
+  local stats = {
+    health = { base = b.health or rec.healthMax or 0, superficial = rec.healthSup or 0, aggravated = rec.healthAgg or 0 },
+    willpower = { base = b.willpower or rec.wpMax or 0, superficial = rec.wpSup or 0, aggravated = rec.wpAgg or 0 },
+    humanity = { base = math.max(0, (b.humanity or 0) + (rec.humanityDelta or 0)), stains = rec.stains or 0 },
+    attributes = {}, skills = {}, hunger = rec.hunger or 0, isNpc = true,
+  }
+  if b.kind == "vampire" and b.bloodPotency ~= nil then stats.bloodPotency = { base = b.bloodPotency } end
+  return stats, b
+end
+
+--- @param key string
+--- @param opts table|nil `{ present=bool, hostedIds=table, record=table }`
+--- @return table active condition map
+local function conditionSetWithOpts(key, opts)
+  opts = type(opts) == "table" and opts or {}
+  local rec = type(opts.record) == "table" and opts.record or record(key)
+  local stats = statsFromRecord(key, rec)
+  local active = {}
+  for id, value in pairs(rec.conditions or {}) do active[id] = value end
+  local present = opts.present
+  if present == nil then
+    present = NC.isPresent(key)
+  end
+  if present then
+    local hosted = type(opts.hostedIds) == "table" and opts.hostedIds
+      or require("core.conditions").collectHostedIdsForSession()
+    for id in pairs(hosted) do
+      local def = CD.getDef(id)
+      if type(def.derive) ~= "function" or def.derive(stats, active) then active[id] = true end
+    end
+  end
+  for _ = 1, 2 do
+    local changes = Effects.resolveForPlayer(active, stats, "Black").statChanges
+    local desired = Derive.evaluateDesiredDerived(stats, active, changes)
+    for id, def in pairs(CD.Defs) do
+      if CD.isAutoDerived(def) then active[id] = desired[id] and true or nil end
+    end
+  end
+  return active, stats
+end
+
 -- The stat block stays in the dashboard; only primitive ratings needed for game rules are mirrored.
 function NC.syncStats(key, block)
   if type(key) ~= "string" or key == "" or type(block) ~= "table" then
@@ -64,41 +124,17 @@ function NC.syncStats(key, block)
 end
 
 function NC.statsFor(key)
-  local b, r = NC.baseFor(key), record(key)
-  local stats = {
-    health = { base = b.health or r.healthMax or 0, superficial = r.healthSup or 0, aggravated = r.healthAgg or 0 },
-    willpower = { base = b.willpower or r.wpMax or 0, superficial = r.wpSup or 0, aggravated = r.wpAgg or 0 },
-    humanity = { base = math.max(0, (b.humanity or 0) + (r.humanityDelta or 0)), stains = r.stains or 0 },
-    attributes = {}, skills = {}, hunger = r.hunger or 0, isNpc = true,
-  }
-  if b.kind == "vampire" and b.bloodPotency ~= nil then stats.bloodPotency = { base = b.bloodPotency } end
+  local stats = statsFromRecord(key, record(key))
   return stats
 end
 
 function NC.conditionSet(key)
-  local stats = NC.statsFor(key)
-  local active = {}
-  for id, value in pairs(record(key).conditions or {}) do active[id] = value end
-  if NC.isPresent(key) then
-    for id in pairs(require("core.conditions").collectHostedIdsForSession()) do
-      local def = CD.getDef(id)
-      if type(def.derive) ~= "function" or def.derive(stats, active) then active[id] = true end
-    end
-  end
-  -- Re-evaluate automatic impairment after location effects have changed tracker capacity.
-  for _ = 1, 2 do
-    local changes = Effects.resolveForPlayer(active, stats, "Black").statChanges
-    local desired = Derive.evaluateDesiredDerived(stats, active, changes)
-    for id, def in pairs(CD.Defs) do
-      if CD.isAutoDerived(def) then active[id] = desired[id] and true or nil end
-    end
-  end
+  local active = conditionSetWithOpts(key)
   return active
 end
 
 function NC.resolve(key)
-  local stats = NC.statsFor(key)
-  local active = NC.conditionSet(key)
+  local active, stats = conditionSetWithOpts(key)
   local resolved = Effects.resolveForPlayer(active, stats, "Black")
   return {
     stats = stats, conditions = active, statChanges = resolved.statChanges,
@@ -114,6 +150,47 @@ function NC.context(key)
     return require("lib.blood_potency_derived").ratingFromStats(ctx.stats, ctx.statChanges)
   end
   return ctx
+end
+
+--- @param active table
+--- @param stats table
+--- @param rec table
+--- @param manualTemplate table[]|nil
+--- @return table
+local function snapshotFromResolved(active, stats, rec, manualTemplate)
+  local resolved = Effects.resolveForPlayer(active, stats, "Black")
+  local rollPolicy = require("lib.condition_roll_policies").mergeForPlayer(active, stats)
+  local labels = {}
+  for _, id in ipairs(CD.sortedActiveIds(active)) do
+    local def = CD.getDef(id)
+    labels[#labels + 1] = { id = id, label = def.displayName, type = def.type }
+  end
+  local stored = type(rec.conditions) == "table" and rec.conditions or {}
+  local template = type(manualTemplate) == "table" and manualTemplate or manualPaletteTemplate()
+  local manual = {}
+  for i = 1, #template do
+    local row = template[i]
+    manual[i] = { id = row.id, label = row.label, on = stored[row.id] ~= nil }
+  end
+  local b = type(rec.conditionStats) == "table" and rec.conditionStats or {}
+  local healthMax = b.health ~= nil and PSC.trackerMaxFromStats(stats, resolved.statChanges, "health") or nil
+  local wpMax = b.willpower ~= nil and PSC.trackerMaxFromStats(stats, resolved.statChanges, "willpower") or nil
+  local bloodPotency = nil
+  if b.bloodPotency ~= nil then
+    bloodPotency = require("lib.blood_potency_derived").ratingFromStats(stats, resolved.statChanges)
+  end
+  return {
+    conditions = labels,
+    manual = manual,
+    statChanges = resolved.statChanges,
+    healthMax = healthMax,
+    wpMax = wpMax,
+    bloodPotency = bloodPotency,
+    humanity = stats.humanity.base,
+    rollFeatures = rollPolicy.features,
+    hungerDiceAllowed = rollPolicy.hungerDiceAllowed,
+    base = b,
+  }
 end
 
 function NC.initialPool(key, rollType, explicit)
@@ -195,26 +272,41 @@ function NC.queueCheck(config)
 end
 
 function NC.snapshot(key)
-  local ctx = NC.context(key)
-  local labels, manual = {}, {}
-  for _, id in ipairs(CD.sortedActiveIds(ctx.conditions)) do
-    local def = CD.getDef(id)
-    labels[#labels + 1] = { id = id, label = def.displayName, type = def.type }
-  end
-  for id, def in pairs(CD.Defs) do
-    if def.canApplyManually == true and not def.onlyRollType then
-      manual[#manual + 1] = { id = id, label = def.displayName,
-        on = (record(key).conditions or {})[id] ~= nil }
+  local out = NC.snapshotsForKeys({ key })
+  return out[key]
+end
+
+--- Dashboard seats push: one shared hosted-id set and manual palette for the whole cast.
+--- @param keys string[]
+--- @param profileFn function|nil optional `profileFn(name, elapsedMs)` for cold-path timing
+--- @return table<string, table>
+function NC.snapshotsForKeys(keys, profileFn)
+  local list = type(keys) == "table" and keys or {}
+  local hostedIds = require("core.conditions").collectHostedIdsForSession()
+  local manualTemplate = manualPaletteTemplate()
+  local night = require("core.npc_trackers").nightKey()
+  local presentCache = {}
+  local out = {}
+  for i = 1, #list do
+    local key = list[i]
+    if type(key) == "string" and key ~= "" then
+      local tKey = os.clock()
+      if presentCache[key] == nil then
+        presentCache[key] = NC.isPresent(key) == true
+      end
+      local rec = record(key, night)
+      local active, stats = conditionSetWithOpts(key, {
+        present = presentCache[key],
+        hostedIds = hostedIds,
+        record = rec,
+      })
+      out[key] = snapshotFromResolved(active, stats, rec, manualTemplate)
+      if type(profileFn) == "function" then
+        profileFn(key, math.floor((os.clock() - tKey) * 1000 + 0.5))
+      end
     end
   end
-  table.sort(manual, function(a,b) return a.label < b.label end)
-  local b = NC.baseFor(key)
-  return { conditions = labels, manual = manual, statChanges = ctx.statChanges,
-    healthMax = b.health ~= nil and ctx.trackerMax("health") or nil,
-    wpMax = b.willpower ~= nil and ctx.trackerMax("willpower") or nil,
-    bloodPotency = b.bloodPotency ~= nil and ctx.bloodPotencyRating() or nil,
-    humanity = ctx.stats.humanity.base, rollFeatures = ctx.rollPolicy.features,
-    hungerDiceAllowed = ctx.rollPolicy.hungerDiceAllowed, base = b }
+  return out
 end
 
 return NC

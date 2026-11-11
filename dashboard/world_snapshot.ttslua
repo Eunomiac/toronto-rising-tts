@@ -249,15 +249,48 @@ local function dashboardTrackerKeys()
   return keys
 end
 
-local function buildSeats()
+--- @param profileFn function|nil `profileFn(sectionName, elapsedMs, detail?)` cold-path only
+--- @return table
+local function buildSeats(profileFn)
+  local function mark(section, started, detail)
+    if type(profileFn) == "function" then
+      profileFn(section, math.floor((os.clock() - started) * 1000 + 0.5), detail)
+    end
+  end
+
+  local t = os.clock()
   local slots = S.getStateVal("sessionScene", "seatSlots") or {}
   local seats = {}
   for _, color in ipairs(C.PlayerColors) do
-    seats[#seats + 1] = seatRow(color, slots[color], true)
+    local row = type(slots[color]) == "table" and slots[color] or {}
+    local out = {
+      seat = color,
+      kind = "pc",
+      tableSlot = tonumber(row.tableSlot),
+      isPresent = row.isPresent ~= false,
+    }
+    local pid = C.GetPlayerIDOrNil(color)
+    out.playerId = pid
+    out.charKey = pid ~= nil and C.PlayerData[pid] ~= nil and C.PlayerData[pid].charKey or nil
+    out.absentFromSession = row.absentFromSession == true
+    out.playingNpcKey = row.isPlayingNPC == true and row.npcCharacterKey or nil
+    seats[#seats + 1] = out
   end
+  mark("pc_rows", t)
+
+  t = os.clock()
+  for i, color in ipairs(C.PlayerColors) do
+    seats[i].signal = require("core.objects").GetSignalFireState(color) == "on"
+  end
+  mark("signal_fires", t)
+
+  t = os.clock()
   for _, seatKey in ipairs(C.NPCSeats) do
     seats[#seats + 1] = seatRow(seatKey, slots[seatKey], false)
   end
+  mark("npc_seat_rows", t)
+
+  t = os.clock()
   local stage = {}
   local placements = S.getStateVal("sessionScene", "npcWorld", "placements") or {}
   for characterKey, p in pairs(placements) do
@@ -273,6 +306,9 @@ local function buildSeats()
   table.sort(stage, function(a, b)
     return tostring(a.characterKey) < tostring(b.characterKey)
   end)
+  mark("stage", t, #stage)
+
+  t = os.clock()
   local generics = {}
   for key, row in pairs(S.getStateVal("sessionScene", "npcWorld", "genericMembership") or {}) do
     if type(row) == "table" then
@@ -282,6 +318,9 @@ local function buildSeats()
   table.sort(generics, function(a, b)
     return a.characterKey < b.characterKey
   end)
+  mark("generics", t, #generics)
+
+  t = os.clock()
   local scatter = {}
   local pack = S.getStateVal("sessionScene", "scatterPlacements")
   if type(pack) == "table" then
@@ -305,24 +344,59 @@ local function buildSeats()
       scatter[#scatter + 1] = { group = i, pcs = pcs, npcs = npcs }
     end
   end
+  mark("scatter", t, #scatter)
+
   local spotlight = S.getStateVal("spotlight") or {}
   local NpcTrackers = require("core.npc_trackers")
+  t = os.clock()
   local trackerKeys = dashboardTrackerKeys()
-  local npcConditions = {}
-  for _, key in ipairs(trackerKeys) do
-    npcConditions[key] = require("core.npc_conditions").snapshot(key)
-  end
+  mark("tracker_keys", t, #trackerKeys)
+
+  t = os.clock()
+  local trackers = NpcTrackers.snapshotForKeys(trackerKeys)
+  mark("trackers", t)
+
+  t = os.clock()
+  local npcConditions = require("core.npc_conditions").snapshotsForKeys(trackerKeys, function(key, ms)
+    if type(profileFn) == "function" then
+      profileFn("npc_cond:" .. key, ms)
+    end
+  end)
+  mark("npc_conditions", t, #trackerKeys)
+
+  t = os.clock()
+  local personalDue = require("core.personal_conditions").dueRows()
+  mark("personal_due", t, #personalDue)
+
   return {
     seats = seats,
     stage = stage,
     generics = generics,
     scatter = scatter,
-    trackers = NpcTrackers.snapshotForKeys(trackerKeys),
+    trackers = trackers,
     npcConditions = npcConditions,
     spotlightOrder = spotlight.order or {},
     spotlightFrontIndex = tonumber(spotlight.frontIndex),
-    personalDue = require("core.personal_conditions").dueRows(),
+    personalDue = personalDue,
   }
+end
+
+--- Cold-path sectional timings for the seats world slice. Prints one line per section.
+--- @return table `{ sections = { { name, ms, detail? } }, buildMs = number }`
+function W.profileSeatsBuild()
+  local sections = {}
+  local started = os.clock()
+  buildSeats(function(name, ms, detail)
+    sections[#sections + 1] = { name = name, ms = ms, detail = detail }
+    if detail ~= nil then
+      print(string.format("[DashPushProfile] seats %s %d ms (%s)", name, ms, tostring(detail)))
+    else
+      print(string.format("[DashPushProfile] seats %s %d ms", name, ms))
+    end
+  end)
+  local buildMs = math.floor((os.clock() - started) * 1000 + 0.5)
+  print(string.format("[DashPushProfile] seats TOTAL %d ms", buildMs))
+  return { sections = sections, buildMs = buildMs }
 end
 
 local POOL_KINDS = { "normal", "hunger", "rouse", "oblivRouse", "bloodSurgeRouse", "werewolf", "rage" }
