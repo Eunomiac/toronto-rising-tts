@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-772 — Phase and skybox blindfolds no longer stutter at the end of the drop
+
+> **Agent-assessment note:** The schedule now matches scene Apply’s 4-second lead-in in code and the TOR-760 cover-timing assertion. Only Save & Play shows whether the last frames of the SlideIn stay smooth in TTS.
+
+**How to verify:** Save & Play. From Play, Advance into Spotlight and watch the blindfold come down — it should finish the slide smoothly, without hitching in the last moment before it is fully covering the table. Advance from Spotlight to End and check the same. Optionally apply a skybox-only change from the Scenes location controls: that cover should also finish dropping cleanly before the sky changes.
+
 #### 🟡 TOR-771 — Personal conditions on the character sheet
 
 > **Agent-assessment note:** The removal rules and the Scenes-tab buttons were checked outside the table. Only Save & Play shows the cards on the sheet and hears the removal prompts from a live scene, Hunger change, or the clock.

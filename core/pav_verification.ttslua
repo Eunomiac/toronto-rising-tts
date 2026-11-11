@@ -105,8 +105,10 @@ local function runTor760Contract()
     local Pool = require("core.npc_preload_pool")
     local poolStatus = require("core.npcs").inspectPreloadPool()
     local health = require("core.soundscape").validateEmitterHealth()
+    -- Lead-in matches scene Apply (`BLINDFOLD_DOWN_COMPLETE_SEC`) so the 2s SlideIn finishes first.
+    local leadIn = HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC
     local spotlightEnterSec = HUDBF.estimateStagedTransitionSec({
-        leadInDelaySec = 2,
+        leadInDelaySec = leadIn,
         fadeOutSec = 1,
         fadeInSec = 1.5,
         workSettleSec = 0,
@@ -114,16 +116,28 @@ local function runTor760Contract()
         skipLocationCardGate = true,
     })
     local spotlightExitSec = HUDBF.estimateStagedTransitionSec({
-        leadInDelaySec = 2,
+        leadInDelaySec = leadIn,
         fadeOutSec = 0,
         fadeInSec = 0,
         workSettleSec = 0,
         settleDelaySec = 1,
         skipLocationCardGate = true,
     })
+    local enterExpected = leadIn + 1 + 2.5
+    local exitExpected = leadIn + 1
     return resultFor("TOR-760", {
-        assertion("Spotlight enter cover schedule is 5.5 seconds", spotlightEnterSec == 5.5, 5.5, spotlightEnterSec),
-        assertion("Spotlight exit cover schedule is 3 seconds", spotlightExitSec == 3, 3, spotlightExitSec),
+        assertion(
+            "Spotlight enter cover schedule uses scene lead-in (" .. tostring(enterExpected) .. "s)",
+            spotlightEnterSec == enterExpected,
+            enterExpected,
+            spotlightEnterSec
+        ),
+        assertion(
+            "Spotlight exit cover schedule uses scene lead-in (" .. tostring(exitExpected) .. "s)",
+            spotlightExitSec == exitExpected,
+            exitExpected,
+            spotlightExitSec
+        ),
         assertion("NPC preload grid stays bounded at 1,024 pair slots", Pool.GRID_CAPACITY == 1024 and poolStatus.capacity == 1024, 1024, poolStatus.capacity),
         assertion("Every configured soundscape emitter is usable", health.ok == true, true, health),
     }, "Apply a preloaded large scene and listen through both Spotlight transitions to confirm real TTS asset speed and audible continuity.", {

@@ -110,8 +110,9 @@ Play → Spotlight inherited the ordinary location-card gate even though its des
 
 ### Current path
 
-- Play → Spotlight uses a two-second cover lead, one-second fade-out, no location-card gate, 1.5-second fade-in, and a 2.5-second total settle budget. Its scheduled cover duration is about 5.5 seconds, plus synchronous world work.
-- Spotlight → End uses a two-second cover lead, no audio fades or card gate, and a one-second settle. Its scheduled cover duration is about three seconds, plus synchronous world work.
+- Play → Spotlight uses the same cover lead-in as scene Apply (`BLINDFOLD_DOWN_COMPLETE_SEC`, 4s) so the 2s `SlideIn_Top` finishes before fade-out / world work, then one-second fade-out, no location-card gate, 1.5-second fade-in, and a 2.5-second total settle budget. Its scheduled cover duration is about 7.5 seconds, plus synchronous world work.
+- Spotlight → End uses that same scene lead-in, no audio fades or card gate, and a one-second settle. Its scheduled cover duration is about five seconds, plus synchronous world work.
+- Skybox-only Apply also uses the scene lead-in before its short settle (it previously matched the 2s slide and hitch-froze the last frames of the drop).
 - Spotlight entry uses an incremental `Sync.full` and lets that pass own carousel, toys, and overlay reconciliation once.
 - Failure still lifts the cover and now runs the same transition recovery described below.
 

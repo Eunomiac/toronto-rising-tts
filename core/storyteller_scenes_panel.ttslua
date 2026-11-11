@@ -2104,13 +2104,14 @@ function StorytellerScenesPanel.setLiveSkybox(key)
     if key ~= nil and (type(key) ~= "string" or not C.isValidSkyboxKey(key)) then
         return "Unknown skybox `" .. tostring(key) .. "`."
     end
+    -- Same lead-in as scene Apply so the 2s SlideIn_Top finishes before skybox work.
     HUDBF.runTransition(function()
         S.setStateVal(key, "sessionScene", "skyboxOverride")
         Scenes.reconcileSkyboxFromState({ force = true })
         require("dashboard.push").markWorldDirty({ scene = true })
         return true
     end, {
-        leadInDelaySec = 2,
+        leadInDelaySec = HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC,
         settleDelaySec = 2,
     })
     StorytellerScenesPanel.refresh()
