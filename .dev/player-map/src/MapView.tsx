@@ -15,6 +15,7 @@ import { featureBounds } from './data';
 import { labelsForViewport } from './viewport-labels';
 import type {
   DistrictFeatureCollection,
+  CityMarkerCollection,
   MapLabelCollection,
   MapLayerVisibility,
   PathEntranceCollection,
@@ -33,6 +34,7 @@ const PATH_ROUTE_SOURCE_ID = 'path-routes';
 const PATH_ENTRANCE_SOURCE_ID = 'path-entrances';
 const PATH_INTERACTION_SOURCE_ID = 'path-interaction';
 const PATH_LABEL_SOURCE_ID = 'path-label';
+const CITY_MARKER_SOURCE_ID = 'province-cities';
 const FILL_LAYER_ID = 'district-fills';
 const SELECTED_GLOW_LAYER_ID = 'district-selected-glow';
 const LINE_LAYER_ID = 'district-lines';
@@ -45,8 +47,11 @@ const PATH_ROUTE_LAYER_ID = 'path-route-lines';
 const PATH_ENTRANCE_LAYER_ID = 'path-entrance-markers';
 const PATH_INTERACTION_LAYER_ID = 'path-interaction-corridors';
 const PATH_LABEL_LAYER_ID = 'path-label';
-const PLAY_BOUNDS: [[number, number], [number, number]] = [[-79.455, 43.61], [-79.325, 43.71]];
+const CITY_MARKER_CIRCLE_LAYER_ID = 'province-city-markers';
+const CITY_MARKER_LABEL_LAYER_ID = 'province-city-labels';
+const PLAY_BOUNDS: [[number, number], [number, number]] = [[-80.2, 43.0], [-72.7, 46.2]];
 const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [-79.34, 43.70]];
+const PROVINCE_VIEW_BOUNDS: [[number, number], [number, number]] = [[-79.65, 43.35], [-73.2, 45.75]];
 
 setWorkerUrl(mapWorkerUrl);
 
@@ -59,6 +64,7 @@ interface MapViewProps {
   pathEntrances: PathEntranceCollection;
   pathInteraction: PathInteractionCollection;
   pathLabel: PathLabelCollection;
+  cityMarkers: CityMarkerCollection;
   pathBounds: { south: number; west: number; north: number; east: number };
   chronicleBounds: [[number, number], [number, number]];
   layerVisibility: MapLayerVisibility;
@@ -131,6 +137,7 @@ export function MapView({
   pathEntrances,
   pathInteraction,
   pathLabel,
+  cityMarkers,
   pathBounds,
   chronicleBounds,
   layerVisibility,
@@ -149,12 +156,14 @@ export function MapView({
   const pathEntrancesRef = useRef(pathEntrances);
   const pathInteractionRef = useRef(pathInteraction);
   const pathLabelRef = useRef(pathLabel);
+  const cityMarkersRef = useRef(cityMarkers);
   const layerVisibilityRef = useRef(layerVisibility);
   const onSelectRef = useRef(onSelect);
   const onMapReadyRef = useRef(onMapReady);
   const hoveredRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const [status, setStatus] = useState('Loading street map…');
+  const [provinceView, setProvinceView] = useState(false);
   districtsRef.current = districts;
   regionsRef.current = regions;
   sitesRef.current = sites;
@@ -163,6 +172,7 @@ export function MapView({
   pathEntrancesRef.current = pathEntrances;
   pathInteractionRef.current = pathInteraction;
   pathLabelRef.current = pathLabel;
+  cityMarkersRef.current = cityMarkers;
   layerVisibilityRef.current = layerVisibility;
   onSelectRef.current = onSelect;
   onMapReadyRef.current = onMapReady;
@@ -175,7 +185,7 @@ export function MapView({
       bounds: INITIAL_BOUNDS,
       fitBoundsOptions: { padding: 44 },
       maxBounds: PLAY_BOUNDS,
-      minZoom: 10.25,
+      minZoom: 5.5,
       maxZoom: 18,
       pitchWithRotate: false,
       dragRotate: false,
@@ -214,6 +224,7 @@ export function MapView({
       map.addSource(PATH_ENTRANCE_SOURCE_ID, { type: 'geojson', data: pathEntrancesRef.current });
       map.addSource(PATH_INTERACTION_SOURCE_ID, { type: 'geojson', data: pathInteractionRef.current });
       map.addSource(PATH_LABEL_SOURCE_ID, { type: 'geojson', data: pathLabelRef.current });
+      map.addSource(CITY_MARKER_SOURCE_ID, { type: 'geojson', data: cityMarkersRef.current });
       map.addLayer({
         id: FILL_LAYER_ID,
         type: 'fill',
@@ -415,6 +426,37 @@ export function MapView({
         layout: { visibility: mapVisibility(layerVisibilityRef.current.path) },
         paint: { 'fill-color': '#ffffff', 'fill-opacity': 0.001 },
       });
+      map.addLayer({
+        id: CITY_MARKER_CIRCLE_LAYER_ID,
+        type: 'circle',
+        source: CITY_MARKER_SOURCE_ID,
+        maxzoom: 9.5,
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5.5, 5, 9, 8],
+          'circle-color': '#d94852',
+          'circle-stroke-color': '#f4ddd8',
+          'circle-stroke-width': 1.5,
+        },
+      });
+      map.addLayer({
+        id: CITY_MARKER_LABEL_LAYER_ID,
+        type: 'symbol',
+        source: CITY_MARKER_SOURCE_ID,
+        maxzoom: 9.5,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 5.5, 12, 9, 16],
+          'text-transform': 'uppercase',
+          'text-letter-spacing': 0.16,
+          'text-offset': [0, 1.35],
+        },
+        paint: {
+          'text-color': '#f4ddd8',
+          'text-halo-color': '#14080a',
+          'text-halo-width': 2,
+        },
+      });
       if (selectedRef.current) {
         if (selectedRef.current === 'PATH') focusPath(map, pathBounds);
         else {
@@ -500,6 +542,12 @@ export function MapView({
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
+    (map.getSource(CITY_MARKER_SOURCE_ID) as GeoJSONSource | undefined)?.setData(cityMarkers);
+  }, [cityMarkers]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
     for (const layer of [FILL_LAYER_ID, SELECTED_GLOW_LAYER_ID, LINE_LAYER_ID, LABEL_LAYER_ID]) {
       map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.districts));
     }
@@ -536,16 +584,30 @@ export function MapView({
     }
   }, [selectedKey]);
 
+  const toggleProvinceView = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    const nextProvinceView = !provinceView;
+    setProvinceView(nextProvinceView);
+    map.fitBounds(nextProvinceView ? PROVINCE_VIEW_BOUNDS : INITIAL_BOUNDS, {
+      padding: 44,
+      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900,
+    });
+  };
+
   return (
     <section className="map-surface" data-note-surface="map" aria-label="Interactive map of Toronto Rising districts">
       <div ref={containerRef} className="map-surface__canvas" />
-      <div ref={boundaryShadeRef} className="chronicle-boundary-shade" aria-hidden="true">
+      <div ref={boundaryShadeRef} className={`chronicle-boundary-shade${provinceView ? ' chronicle-boundary-shade--province' : ''}`} aria-hidden="true">
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--north" />
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--south" />
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--west" />
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--east" />
       </div>
       <p className="map-surface__status" role="status">{status}</p>
+      <button type="button" className="map-surface__province-view" onClick={toggleProvinceView}>
+        {provinceView ? 'Return to Toronto' : 'Province view'}
+      </button>
     </section>
   );
 }

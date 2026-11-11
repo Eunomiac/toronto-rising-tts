@@ -28,6 +28,7 @@ const priorityPath = path.join(root, 'data/district-priority.json');
 const publicDataPolicyPath = path.join(root, 'data/public-data-policy.json');
 const pathNetworkConfigPath = path.join(root, 'data/path-network.json');
 const pathNetworkSnapshotPath = path.join(root, 'data/source/osm-path-snapshot.json');
+const provincialCitiesPath = path.join(root, 'data/provincial-cities.json');
 const normalizationDiagnosticsPath = path.join(root, 'data/diagnostics/normalization.json');
 const visualDiagnosticsPath = path.join(root, 'data/diagnostics/map-visual-diagnostics.geojson');
 const visualDiagnosticsHtmlPath = path.join(root, 'data/diagnostics/map-visual-diagnostics.html');
@@ -56,15 +57,33 @@ if (!process.env.TR_EXPORT_SNAPSHOT && !refreshSheet) {
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const svgText = await fs.readFile(sourcePath, 'utf8');
-const [calibration, names, districtPriority, publicDataPolicy, pathNetworkConfig, pathNetworkSnapshot, sheetSnapshot] = await Promise.all([
+const [calibration, names, districtPriority, publicDataPolicy, pathNetworkConfig, pathNetworkSnapshot, provincialCities, sheetSnapshot] = await Promise.all([
   readJson(calibrationPath),
   readJson(namesPath),
   readJson(priorityPath),
   readJson(publicDataPolicyPath).then(validatePublicDataPolicy),
   readJson(pathNetworkConfigPath),
   readJson(pathNetworkSnapshotPath),
+  readJson(provincialCitiesPath),
   loadSnapshot(),
 ]);
+if (provincialCities?.schemaVersion !== 1 || !Array.isArray(provincialCities.cities)
+  || provincialCities.cities.length === 0 || !provincialCities.cities.every((city) => (
+    city && Object.keys(city).sort().join(',') === 'coordinates,key,name'
+    && typeof city.key === 'string' && city.key && typeof city.name === 'string' && city.name
+    && Array.isArray(city.coordinates) && city.coordinates.length === 2 && city.coordinates.every(Number.isFinite)
+  )) || new Set(provincialCities.cities.map((city) => city.key)).size !== provincialCities.cities.length) {
+  throw new Error('Invalid provincial city marker configuration');
+}
+const cityMarkers = {
+  type: 'FeatureCollection',
+  features: provincialCities.cities.map((city) => ({
+    type: 'Feature',
+    id: city.key,
+    properties: { key: city.key, name: city.name },
+    geometry: { type: 'Point', coordinates: city.coordinates },
+  })),
+};
 const sheetDistrictRows = dataOf(sheetSnapshot, 'LOCATIONS_DISTRICTS');
 const sheetSiteRows = dataOf(sheetSnapshot, 'LOCATIONS_SITES');
 const publicDistrictFacts = projectDistrictRows(sheetDistrictRows, publicDataPolicy);
@@ -251,7 +270,7 @@ const rootMeanSquareError = (items) => items.length === 0
   ? null
   : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
 const manifest = {
-  schemaVersion: 5,
+  schemaVersion: 6,
   source: {
     svg: 'data/source/toronto-rising-map.svg',
     sha256: createHash('sha256').update(svgText).digest('hex'),
@@ -267,6 +286,7 @@ const manifest = {
     pathEntrances: pathNetwork.entrances.features.length,
     pathInteractionCorridors: pathNetwork.interaction.features.length,
     pathLabels: pathNetwork.label.features.length,
+    cityMarkers: cityMarkers.features.length,
     sheetDistricts: sheetDistrictRows.length,
     sheetSites: sheetSiteRows.length,
     sheetOnlyDistricts: publicDataPolicy.sheetOnlyDistricts.length,
@@ -314,6 +334,7 @@ if (manifest.counts.pathRoutes === 0 || manifest.counts.pathEntrances === 0
   || manifest.counts.pathInteractionCorridors !== manifest.counts.pathRoutes || manifest.counts.pathLabels !== 1) {
   throw new Error('Unexpected PATH network counts');
 }
+if (manifest.counts.cityMarkers !== 3) throw new Error('Unexpected provincial city marker count');
 if (manifest.counts.sheetDistricts !== 36 || manifest.counts.sheetOnlyDistricts !== 4) {
   throw new Error('Unexpected Sheet district coverage');
 }
@@ -334,6 +355,7 @@ const outputs = [
   ['path-entrances.geojson', pathNetwork.entrances],
   ['path-interaction.geojson', pathNetwork.interaction],
   ['path-label.geojson', pathNetwork.label],
+  ['city-markers.geojson', cityMarkers],
   ['map-data-manifest.json', manifest],
 ];
 const calibrationSummary = `${manifest.calibration.rootMeanSquareErrorMetres} m control RMS${manifest.calibration.validationRootMeanSquareErrorMetres === null ? '' : `, ${manifest.calibration.validationRootMeanSquareErrorMetres} m validation RMS`}`;

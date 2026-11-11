@@ -133,6 +133,7 @@ export function App() {
         pathEntrances={data.pathEntrances}
         pathInteraction={data.pathInteraction}
         pathLabel={data.pathLabel}
+        cityMarkers={data.cityMarkers}
         pathBounds={data.manifest.pathNetwork.bounds}
         chronicleBounds={data.manifest.bounds}
         layerVisibility={layerVisibility}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "cities": [
+    { "key": "Toronto", "name": "Toronto", "coordinates": [-79.3832, 43.6532] },
+    { "key": "Kingston", "name": "Kingston", "coordinates": [-76.4859, 44.2312] },
+    { "key": "Montreal", "name": "Montréal", "coordinates": [-73.5674, 45.5019] }
+  ]
+}

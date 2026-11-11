@@ -60,8 +60,16 @@ const mapData = {
   pathEntrances: { type: 'FeatureCollection' as const, features: [] },
   pathInteraction: { type: 'FeatureCollection' as const, features: [] },
   pathLabel: { type: 'FeatureCollection' as const, features: [] },
+  cityMarkers: {
+    type: 'FeatureCollection' as const,
+    features: [{
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [-79.3832, 43.6532] },
+      properties: { key: 'Toronto', name: 'Toronto' },
+    }],
+  },
   manifest: {
-    schemaVersion: 5,
+    schemaVersion: 6,
     counts: {
       districts: 1,
       regions: 0,
@@ -71,6 +79,7 @@ const mapData = {
       pathEntrances: 0,
       pathInteractionCorridors: 0,
       pathLabels: 0,
+      cityMarkers: 1,
       sheetDistricts: 1,
       sheetSites: 0,
       sheetOnlyDistricts: 0,

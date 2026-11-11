@@ -73,6 +73,11 @@ export interface PathLabelProperties {
   kind: 'network-district';
 }
 
+export interface CityMarkerProperties {
+  key: string;
+  name: string;
+}
+
 export type DistrictFeatureCollection = FeatureCollection<MultiPolygon, DistrictFeatureProperties>;
 export type RegionFeatureCollection = FeatureCollection<MultiPolygon, RegionFeatureProperties>;
 export type PublicSiteCollection = FeatureCollection<Point, PublicSiteProperties>;
@@ -81,6 +86,7 @@ export type PathRouteCollection = FeatureCollection<LineString | MultiLineString
 export type PathEntranceCollection = FeatureCollection<Point, PathEntranceProperties>;
 export type PathInteractionCollection = FeatureCollection<Polygon | MultiPolygon, PathInteractionProperties>;
 export type PathLabelCollection = FeatureCollection<Point, PathLabelProperties>;
+export type CityMarkerCollection = FeatureCollection<Point, CityMarkerProperties>;
 
 export type MapLayerId = 'districts' | 'regions' | 'sites' | 'path';
 
@@ -102,6 +108,7 @@ export interface MapDataManifest {
     pathEntrances: number;
     pathInteractionCorridors: number;
     pathLabels: number;
+    cityMarkers: number;
     sheetDistricts: number;
     sheetSites: number;
     sheetOnlyDistricts: number;
@@ -173,5 +180,6 @@ export interface PublicMapData {
   pathEntrances: PathEntranceCollection;
   pathInteraction: PathInteractionCollection;
   pathLabel: PathLabelCollection;
+  cityMarkers: CityMarkerCollection;
   manifest: MapDataManifest;
 }

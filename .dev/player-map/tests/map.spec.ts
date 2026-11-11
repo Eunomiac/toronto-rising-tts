@@ -60,6 +60,12 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   await expect(canvas).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
 
+  const provinceView = page.getByRole('button', { name: 'Province view' });
+  await provinceView.click();
+  await expect(page.getByRole('button', { name: 'Return to Toronto' })).toBeVisible();
+  await page.getByRole('button', { name: 'Return to Toronto' }).click();
+  await expect(provinceView).toBeVisible();
+
   if (testInfo.project.name === 'desktop-chromium') {
     // Focus a compact, simple district first so the pointer check does not
     // depend on one arbitrary viewport percentage continuing to cross a shape.

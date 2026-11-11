@@ -70,6 +70,12 @@ will use the same control, but it remains disabled while the reviewed public
 site collection is empty. Non-default layer choices are encoded in the
 `layers` URL parameter so a shared link restores the same view.
 
+**Province view** zooms out from the playable Toronto rectangle and replaces
+local detail with three deliberate orientation markers: Toronto, Kingston, and
+Montréal. **Return to Toronto** restores the normal chronicle view. The marker
+list and coordinates live in `data/provincial-cities.json`; the generated
+GeoJSON must not be edited directly.
+
 ## Visual calibration
 
 Open `/?calibrate=1` to replace the district panel with the author-only visual

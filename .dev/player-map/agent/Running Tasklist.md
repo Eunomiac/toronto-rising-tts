@@ -116,7 +116,7 @@ a release phase. Verify their visual behavior, mobile performance, accessibility
 and data ownership during implementation.
 
 - [x] De-emphasize the basemap outside the established rectangular chronicle boundary with four pointer-transparent projected panels using blur, brightness, and a simple dimmed fallback. Keep their edges aligned while panning and zooming, and verify interaction on phones.
-- [ ] Explore a very distant provincial-scale zoom level where story-relevant cities such as Montreal and Kingston appear as simple point markers rather than detailed playable map areas.
+- [x] Add a deliberate province view where Toronto, Kingston, and Montréal appear as simple point markers rather than detailed playable areas, with a one-click return to the chronicle map.
 - [x] Replace the heavy selected-district wash with a restrained tint and bright blurred edge treatment that leaves streets and labels readable.
 - [ ] Add a custom orientation-street layer with bold white labels driven by an explicit allow list of the major streets used to help players locate themselves. Keep its routes and labels independent of the basemap's automatic road-label selection so their styling, repetition, and zoom visibility remain under app control.
 - [ ] Support rare fictional basemap changes with small custom polygon masks rather than a general-purpose basemap editor. The only currently known case is the comparatively barren Giovanni Estate in Wychwood: cover the unwanted building and house detail at an appropriate layer depth, then add replacement geometry or a label only if needed.

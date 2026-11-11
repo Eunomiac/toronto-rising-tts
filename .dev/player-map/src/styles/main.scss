@@ -80,6 +80,20 @@ select,
     white-space: nowrap;
   }
 
+  &__province-view {
+    position: absolute;
+    z-index: 3;
+    right: 1rem;
+    bottom: 4.2rem;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid $line;
+    color: $paper;
+    background: rgba($panel-solid, 0.94);
+    box-shadow: $shadow;
+    cursor: pointer;
+  }
+
   .maplibregl-canvas { outline: none; }
 
   .maplibregl-ctrl-group {
@@ -116,6 +130,8 @@ select,
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+
+  &--province { display: none; }
 
   &__panel {
     position: absolute;
