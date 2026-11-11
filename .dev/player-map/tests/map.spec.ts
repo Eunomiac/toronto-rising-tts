@@ -49,7 +49,7 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   });
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Toronto Rising' })).toBeVisible();
+  await expect(page.getByLabel('Choose a district')).toBeVisible();
   await expect(page.getByRole('button', { name: /Debug notes/ })).toHaveCount(0);
   const canvas = page.locator('.maplibregl-canvas');
   await expect(canvas).toBeVisible({ timeout: 30_000 });

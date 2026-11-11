@@ -1,9 +1,10 @@
 {
-  "schemaVersion": 1,
-  "status": "prototype-only-not-runtime-geometry",
-  "operation": "expand-each-district-then-cut-lower-features-against-earlier-winners",
+  "schemaVersion": 2,
+  "status": "runtime-geometry",
+  "operation": "canonicalize-expand-and-cut-by-reviewed-priority",
   "expansionMetres": 2.35,
   "approximateSourcePixels": 1,
+  "priorityBasis": "Reviewed Illustrator DISTRICTS layer order, top to bottom",
   "winnerOrder": [
     "Annex",
     "GayVillage",
@@ -40,15 +41,16 @@
   ],
   "summary": {
     "districtCount": 32,
-    "districtsWithOverlapCuts": 23,
-    "totalExpansionAddedSquareMetres": -220027.18,
-    "totalOverlapRemovedSquareMetres": 638351.13
+    "districtsWithOverlapCuts": 24,
+    "totalExpansionAddedSquareMetres": 705247.13,
+    "totalOverlapRemovedSquareMetres": 658648.52,
+    "remainingOverlapSquareMetres": 0
   },
   "features": [
     {
       "key": "Annex",
-      "sourceSquareMetres": 915368.24,
-      "expansionAddedSquareMetres": -915249.04,
+      "sourceSquareMetres": 915367.82,
+      "expansionAddedSquareMetres": 10017.28,
       "overlapRemovedSquareMetres": 0,
       "clippedBy": []
     },
@@ -77,15 +79,19 @@
       "key": "Wychwood",
       "sourceSquareMetres": 3829684.98,
       "expansionAddedSquareMetres": 18666.96,
-      "overlapRemovedSquareMetres": 19355.01,
+      "overlapRemovedSquareMetres": 24354.94,
       "clippedBy": [
         {
+          "key": "Annex",
+          "squareMetres": 4999.84
+        },
+        {
           "key": "Humewood",
-          "squareMetres": 10847.05
+          "squareMetres": 10847.17
         },
         {
           "key": "LittlePortugal",
-          "squareMetres": 8507.95
+          "squareMetres": 8507.93
         }
       ]
     },
@@ -173,8 +179,13 @@
       "key": "Discovery",
       "sourceSquareMetres": 988155.04,
       "expansionAddedSquareMetres": 11815.09,
-      "overlapRemovedSquareMetres": 0,
-      "clippedBy": []
+      "overlapRemovedSquareMetres": 2039.03,
+      "clippedBy": [
+        {
+          "key": "Annex",
+          "squareMetres": 2039.03
+        }
+      ]
     },
     {
       "key": "DistilleryDist",
@@ -220,15 +231,19 @@
       "key": "DupontByTheCastle",
       "sourceSquareMetres": 852861.4,
       "expansionAddedSquareMetres": 9300.36,
-      "overlapRemovedSquareMetres": 8010.96,
+      "overlapRemovedSquareMetres": 11434.95,
       "clippedBy": [
+        {
+          "key": "Annex",
+          "squareMetres": 3447.42
+        },
         {
           "key": "Humewood",
           "squareMetres": 3217.35
         },
         {
           "key": "Wychwood",
-          "squareMetres": 4792.17
+          "squareMetres": 4768.74
         },
         {
           "key": "DeerPark",
@@ -240,15 +255,15 @@
       "key": "HarbordVillage",
       "sourceSquareMetres": 912410.38,
       "expansionAddedSquareMetres": 10127.38,
-      "overlapRemovedSquareMetres": 3344.88,
+      "overlapRemovedSquareMetres": 6300.92,
       "clippedBy": [
         {
           "key": "Annex",
-          "squareMetres": 119.2
+          "squareMetres": 3094.58
         },
         {
           "key": "Discovery",
-          "squareMetres": 3225.68
+          "squareMetres": 3206.34
         }
       ]
     },
@@ -292,11 +307,11 @@
       "key": "LittleItaly",
       "sourceSquareMetres": 2179639.98,
       "expansionAddedSquareMetres": 15485.29,
-      "overlapRemovedSquareMetres": 29302.61,
+      "overlapRemovedSquareMetres": 31228.17,
       "clippedBy": [
         {
           "key": "Annex",
-          "squareMetres": 104.69
+          "squareMetres": 2049.65
         },
         {
           "key": "LittlePortugal",
@@ -304,7 +319,7 @@
         },
         {
           "key": "Wychwood",
-          "squareMetres": 6094.15
+          "squareMetres": 6074.75
         },
         {
           "key": "Chinatown",
@@ -379,8 +394,8 @@
     {
       "key": "StJamesTown",
       "sourceSquareMetres": 1650018.19,
-      "expansionAddedSquareMetres": 13818.31,
-      "overlapRemovedSquareMetres": 23729.99,
+      "expansionAddedSquareMetres": 13826.3,
+      "overlapRemovedSquareMetres": 23737.99,
       "clippedBy": [
         {
           "key": "GayVillage",
@@ -396,7 +411,7 @@
         },
         {
           "key": "Rosedale",
-          "squareMetres": 6904.12
+          "squareMetres": 6912.12
         }
       ]
     },
@@ -576,15 +591,19 @@
       "key": "Yorkville",
       "sourceSquareMetres": 1101384.45,
       "expansionAddedSquareMetres": 11270.79,
-      "overlapRemovedSquareMetres": 17375.73,
+      "overlapRemovedSquareMetres": 22320.57,
       "clippedBy": [
         {
+          "key": "Annex",
+          "squareMetres": 4984.45
+        },
+        {
           "key": "Discovery",
-          "squareMetres": 1622.98
+          "squareMetres": 1603.7
         },
         {
           "key": "DupontByTheCastle",
-          "squareMetres": 1772.26
+          "squareMetres": 1751.93
         },
         {
           "key": "Summerhill",

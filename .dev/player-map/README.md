@@ -16,6 +16,10 @@ npm run dev
 The canonical district and region geometry lives in
 `data/source/toronto-rising-map.svg`. Generated GeoJSON in
 `public/generated/` is reproducible and must not be edited by hand.
+`data/district-priority.json` records the reviewed top-to-bottom winner order
+used to close tiny gaps and cut district overlaps during every data build.
+`data/diagnostics/normalization.json` records the resulting area changes and
+must report zero remaining overlap.
 
 The local development server also shows a **Debug notes** control. It lets the
 author pin numbered feedback directly to a map location or interface surface.

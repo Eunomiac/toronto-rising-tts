@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
+import { normalizeDistrictCollection } from './lib/normalize-districts.mjs';
 import {
   createVisualCalibrationTransform,
   fitAffineCalibration,
@@ -18,12 +19,18 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePath = path.join(root, 'data/source/toronto-rising-map.svg');
 const calibrationPath = path.join(root, 'data/calibration.json');
 const namesPath = path.join(root, 'data/feature-names.json');
+const priorityPath = path.join(root, 'data/district-priority.json');
+const normalizationDiagnosticsPath = path.join(root, 'data/diagnostics/normalization.json');
 const outputDirectory = path.join(root, 'public/generated');
 const checkOnly = process.argv.includes('--check');
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const svgText = await fs.readFile(sourcePath, 'utf8');
-const [calibration, names] = await Promise.all([readJson(calibrationPath), readJson(namesPath)]);
+const [calibration, names, districtPriority] = await Promise.all([
+  readJson(calibrationPath),
+  readJson(namesPath),
+  readJson(priorityPath),
+]);
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '',
@@ -108,7 +115,11 @@ const baseBounds = collectionBounds([baseDistricts, baseRegions]);
 const visualTransform = calibration.visualCalibration
   ? createVisualCalibrationTransform(baseBounds, calibration.visualCalibration)
   : (lngLat) => lngLat;
-const districts = transformCollection(baseDistricts, visualTransform);
+const unnormalizedDistricts = transformCollection(baseDistricts, visualTransform);
+const { collection: districts, diagnostics: normalizationDiagnostics } = normalizeDistrictCollection(
+  unnormalizedDistricts,
+  districtPriority,
+);
 const regions = transformCollection(baseRegions, visualTransform);
 const bounds = collectionBounds([districts, regions]);
 const residualsFor = (points) => points.map((control) => {
@@ -150,6 +161,13 @@ const manifest = {
       : Number(rootMeanSquareError(validationResiduals).toFixed(2)),
     validationResiduals: validationResiduals.map((item) => ({ ...item, metres: Number(item.metres.toFixed(2)) })),
   },
+  normalization: {
+    schemaVersion: normalizationDiagnostics.schemaVersion,
+    prioritySource: 'data/district-priority.json',
+    expansionMetres: normalizationDiagnostics.expansionMetres,
+    districtsWithOverlapCuts: normalizationDiagnostics.summary.districtsWithOverlapCuts,
+    remainingOverlapSquareMetres: normalizationDiagnostics.summary.remainingOverlapSquareMetres,
+  },
 };
 
 if (manifest.counts.districts !== 32 || manifest.counts.regions !== 3) throw new Error('Unexpected feature counts');
@@ -173,10 +191,17 @@ if (checkOnly) {
     const expected = structuredClone(value);
     if (JSON.stringify(existing) !== JSON.stringify(expected)) throw new Error(`${filename} is stale; run npm run data:build`);
   }
+  const existingDiagnostics = JSON.parse(await fs.readFile(normalizationDiagnosticsPath, 'utf8'));
+  if (JSON.stringify(existingDiagnostics) !== JSON.stringify(normalizationDiagnostics)) {
+    throw new Error('Normalization diagnostics are stale; run npm run data:build');
+  }
   console.log(`Map data is current: ${manifest.counts.districts} districts, ${manifest.counts.regions} regions, ${calibrationSummary}.`);
 } else {
   await fs.mkdir(outputDirectory, { recursive: true });
+  await fs.mkdir(path.dirname(normalizationDiagnosticsPath), { recursive: true });
   await Promise.all(outputs.map(([filename, value]) =>
     fs.writeFile(path.join(outputDirectory, filename), `${JSON.stringify(value)}\n`, 'utf8')));
+  await fs.writeFile(normalizationDiagnosticsPath, `${JSON.stringify(normalizationDiagnostics, null, 2)}\n`, 'utf8');
   console.log(`Generated ${manifest.counts.districts} districts and ${manifest.counts.regions} regions. Calibration: ${calibrationSummary}.`);
+  console.log(`Normalized district boundaries: ${normalizationDiagnostics.summary.districtsWithOverlapCuts} districts clipped; ${normalizationDiagnostics.summary.remainingOverlapSquareMetres} m² overlap remains.`);
 }

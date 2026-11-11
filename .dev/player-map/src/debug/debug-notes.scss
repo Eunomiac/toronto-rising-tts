@@ -16,15 +16,14 @@
   &__controls {
     position: fixed;
     z-index: 3;
-    bottom: max(0.7rem, env(safe-area-inset-bottom));
-    left: 0.7rem;
+    top: max(0.35rem, env(safe-area-inset-top));
+    left: 0.35rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.45rem;
     max-width: calc(100vw - 1.4rem);
-    padding: 0.42rem;
+    padding: 0.25rem;
     border: 1px solid rgba(#f2d4cf, 0.22);
-    border-radius: 0.8rem;
     background: rgba(#171012, 0.94);
     box-shadow: 0 0.65rem 2rem rgba(#000, 0.42);
     pointer-events: auto;
@@ -32,9 +31,8 @@
 
     button {
       min-height: 2.45rem;
-      padding: 0.45rem 0.72rem;
+      padding: 0.3rem 0.5rem;
       border: 1px solid rgba(#f2d4cf, 0.2);
-      border-radius: 0.55rem;
       color: $paper;
       background: rgba(#fff, 0.035);
       font-size: 0.76rem;
@@ -178,5 +176,5 @@
 }
 
 @media (min-width: 52rem) {
-  .debug-notes__controls { bottom: 1.25rem; left: 1.25rem; }
+  .debug-notes__controls { top: 0.5rem; left: 0.5rem; }
 }

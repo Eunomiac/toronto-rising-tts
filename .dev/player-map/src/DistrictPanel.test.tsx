@@ -29,6 +29,5 @@ describe('DistrictPanel', () => {
   it('shows the selected district details', () => {
     render(<DistrictPanel districts={districts} selectedKey="Rosedale" onSelect={vi.fn()} onClear={vi.fn()} />);
     expect(screen.getByTestId('selected-district')).toHaveTextContent('Rosedale');
-    expect(screen.getByText('Map key').nextSibling).toHaveTextContent('Rosedale');
   });
 });

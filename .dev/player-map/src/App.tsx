@@ -68,9 +68,10 @@ export function App() {
   }, [calibrationMode, data, visualCalibration]);
 
   const selectDistrict = useCallback((key: string) => {
-    setSelectedKey(key);
-    window.history.replaceState(null, '', updateDistrictInUrl(key));
-  }, []);
+    const nextKey = selectedKey === key ? null : key;
+    setSelectedKey(nextKey);
+    window.history.replaceState(null, '', updateDistrictInUrl(nextKey));
+  }, [selectedKey]);
   const clearDistrict = useCallback(() => {
     setSelectedKey(null);
     window.history.replaceState(null, '', updateDistrictInUrl(null));
@@ -85,13 +86,6 @@ export function App() {
 
   return (
     <main className="app">
-      <header className="app-header" data-note-surface="app-header">
-        <div>
-          <p>Vampire: The Masquerade</p>
-          <h1>Toronto Rising</h1>
-        </div>
-        <span className="app-header__phase">Map prototype</span>
-      </header>
       <MapView
         districts={calibratedDistricts ?? data.districts}
         selectedKey={validSelectedKey}
@@ -108,22 +102,12 @@ export function App() {
           onChange={setVisualCalibration}
         />
       ) : (
-        <>
-          <DistrictPanel
-            districts={data.districts.features}
-            selectedKey={validSelectedKey}
-            onSelect={selectDistrict}
-            onClear={clearDistrict}
-          />
-          <a
-            className="calibration-badge"
-            data-note-surface="calibration-badge"
-            href="/?calibrate=1"
-            title={`${data.manifest.calibration.controlPointCount} controls; ${data.manifest.calibration.validationRootMeanSquareErrorMetres ?? 'no'} m validation error`}
-          >
-            <span aria-hidden="true" /> Calibrated vector map
-          </a>
-        </>
+        <DistrictPanel
+          districts={data.districts.features}
+          selectedKey={validSelectedKey}
+          onSelect={selectDistrict}
+          onClear={clearDistrict}
+        />
       )}
       <DebugNotesSlot map={map} selectedDistrict={validSelectedKey} />
     </main>
