@@ -501,6 +501,8 @@ function S.GetDefaultGameState()
             simulatedConnection = {},
             --- Host console trace of heavy sync entry points (`DEBUG.setSyncTrace`). Default off.
             syncTraceEnabled = false,
+            --- Master switch for detailed interaction diagnostics. Also enables Sync Trace while on.
+            verboseLoggingEnabled = false,
         },
         --- Memoriam Play subphase runtime (TOR-101). Modal draft is not stored here until Advance.
         memoriam = {
@@ -872,6 +874,9 @@ function S.validateState()
     end
     if type(gameState.debug.simulatedConnection) ~= "table" then
         gameState.debug.simulatedConnection = {}
+    end
+    if type(gameState.debug.verboseLoggingEnabled) ~= "boolean" then
+        gameState.debug.verboseLoggingEnabled = false
     end
     if not gameState.soundscape or type(gameState.soundscape) ~= "table" then
         gameState.soundscape = {}

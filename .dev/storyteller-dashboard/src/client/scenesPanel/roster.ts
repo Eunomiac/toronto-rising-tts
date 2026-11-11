@@ -63,6 +63,20 @@ export const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; raw: Scene
   return { catalogs, raw, error };
 };
 
+/** Persist one catalog NPC in exactly one roster group. The server replaces any previous membership. */
+export const assignNpcRosterGroup = async (characterKey: string, groupKey: string): Promise<void> => {
+  const response = await fetch("/api/npc-roster/member", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ characterKey, groupKey })
+  });
+  const payload: unknown = await response.json();
+  if (!response.ok) {
+    const detail = typeof payload === "object" && payload !== null ? (payload as { error?: unknown }).error : undefined;
+    throw new Error(typeof detail === "string" ? detail : `Roster assignment failed (${response.status}).`);
+  }
+};
+
 export type { RosterCategory, RosterLayout } from "../../shared/sceneDeck";
 
 export const setRosterLayout = (next: RosterLayout): void => setSceneDeckSection("roster", next);

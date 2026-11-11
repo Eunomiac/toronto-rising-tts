@@ -689,8 +689,10 @@ local function runSpotlightEnterFromPlayTransition(ctx)
         and S.getStateVal("soundscape", "siteSilent") ~= true
         and S.getStateVal("soundscape", "backgroundMusicEnabled") == true
         and S.getStateVal("soundscape", "backgroundMusicMode") ~= "locationMusic"
+    -- Same lead-in as scene Apply (`BLINDFOLD_DOWN_COMPLETE_SEC`) so SlideIn_Top finishes
+    -- before fade-out / world work (short 2s lead-in hitch-froze the last frames of the drop).
     local transitionOpts = {
-        leadInDelaySec = 2,
+        leadInDelaySec = HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC,
         fadeOutSec = 1,
         fadeInSec = 1.5,
         workSettleSec = 0,
@@ -732,8 +734,9 @@ end
 local function runSpotlightExitToEndTransition(ctx)
     local HUDBF = require("core.hud_blindfold")
     local Spotlight = require("core.spotlight")
+    -- Same lead-in as scene Apply — see Play→Spotlight above.
     local transitionOpts = {
-        leadInDelaySec = 2,
+        leadInDelaySec = HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC,
         fadeOutSec = 0,
         fadeInSec = 0,
         workSettleSec = 0,

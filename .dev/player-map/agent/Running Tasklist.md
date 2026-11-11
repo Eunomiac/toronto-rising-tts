@@ -16,6 +16,9 @@ The first reviewed result has been promoted to tracked calibration data: an
 additional `0.996` horizontal scale, `1.0025` vertical scale, 9-metre eastward
 shift, and 11-metre northward shift anchored at the west and north edges. The
 panel now starts from a fresh identity baseline for any further refinement.
+The runtime geometry is canonicalized, expanded by the reviewed one-pixel
+tolerance, and cut in the explicit Illustrator top-to-bottom priority order.
+The latest generated diagnostic reports zero remaining district overlap.
 
 ## Decisions Recorded
 
@@ -58,14 +61,16 @@ panel now starts from a fresh identity baseline for any further refinement.
 - [x] Establish SVG-to-map ground-control points and measure georeferencing error. The rectangle-preserving fit has roughly 25-metre control RMS and a 50-metre independent checkpoint after the reviewed visual correction; expand the control set before final geometry approval.
 - [x] Add a browser-persistent visual calibration panel for live scale and position refinement without skewing the rectangular geometry.
 - [x] Parse all district and region SVG features while preserving holes and fill rules.
-- [x] Prototype narrow-gap and overlap normalization with diagnostic output. This is deliberately not the runtime geometry until Phase 2 adds a reviewed winner manifest.
+- [x] Prototype narrow-gap and overlap normalization with diagnostic output.
+- [x] Promote the reviewed priority manifest and sequential overlap cuts into the runtime district GeoJSON.
 - [x] Load generated district GeoJSON and prove hover, keyboard selection, click selection, shareable URL state, and a details panel.
 - [x] Deploy the spike to Cloudflare Workers Free and confirm its public address, homepage, `/api/health` route, and desktop/mobile browser behavior.
 
 ## Known Geometry Defects — Resolve Before Final Approval
 
-- [ ] Promote overlap normalization from diagnostic-only output into the runtime district GeoJSON using the reviewed district-priority manifest. Acceptance: close-zoom inspection shows no doubled district fills or boundaries, and generated diagnostics account for every removed overlap fragment.
-- [ ] Repair Yorkville's malformed geometry: a doubled diagonal wedge currently runs northwest from the district's southeast corner. Determine whether the defect originates in the canonical SVG ring, compound-path interpretation, or SVG-to-GeoJSON parsing. Acceptance: Yorkville has one intended non-self-intersecting boundary with no diagonal wedge in both geometry diagnostics and the live map.
+- [x] Promote overlap normalization from diagnostic-only output into the runtime district GeoJSON using the reviewed district-priority manifest. Generated diagnostics account for every cut and report zero remaining overlap.
+- [x] Repair Yorkville's malformed geometry. Polygon canonicalization removes its self-intersection before priority cutting; the live map no longer shows the diagonal wedge.
+- [x] Repair the Bay Street Financial District's malformed geometry through the same canonicalization stage and verify it in the live map.
 
 ## Phase 2 — Data Pipeline
 
@@ -92,11 +97,11 @@ panel now starts from a fresh identity baseline for any further refinement.
 - [ ] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
 - [ ] Add shareable URL state for selection and visible overlays.
 - [ ] Add loading, empty, error, keyboard, touch, and reduced-motion behavior.
-- [ ] Add the development-only Debug notes toggle with Add note and Show notes controls, matching the Storyteller Dashboard workflow.
-- [ ] Anchor map pins by longitude/latitude and interface pins by stable surface plus normalized coordinates.
-- [ ] Persist numbered notes, reproduction context, comments, and agent replies through a tracked `agent/` file and development-only API.
-- [ ] Exclude debug-note controls, API routes, data, and comments from every production build and Cloudflare deployment.
-- [ ] Document the one-pass agent workflow for replying to, preserving unresolved, and clearing resolved pins.
+- [x] Add the development-only Debug notes toggle with Add note and Show notes controls, matching the Storyteller Dashboard workflow.
+- [x] Anchor map pins by longitude/latitude and interface pins by stable surface plus normalized coordinates.
+- [x] Persist numbered notes, reproduction context, comments, and agent replies through a tracked `agent/` file and development-only API.
+- [x] Exclude debug-note controls, API routes, data, and comments from every production build and Cloudflare deployment.
+- [x] Document the one-pass agent workflow for replying to, preserving unresolved, and clearing resolved pins.
 - [ ] Add unit, component, and Playwright coverage for the release path.
 - [ ] Deploy to the selected host and verify the public address on desktop and the supported smaller viewport.
 

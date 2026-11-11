@@ -184,20 +184,20 @@ local function normalizeDeg(x)
     return a
 end
 
---- Keep the tile face-up so createButton local +Y stays world-up (no flip).
+--- Keep the tile face-up so createButton local +Y stays world-up (no X/Z flip).
 --- @param toggleObj Object
 local function ensureFaceUpRotation(toggleObj)
     local rot = toggleObj.getRotation()
     if type(rot) ~= "userdata" and type(rot) ~= "table" then
         return
     end
-    if math.abs(normalizeDeg(rot.x)) < 1 then
+    if math.abs(normalizeDeg(rot.x)) < 1 and math.abs(normalizeDeg(rot.z)) < 1 then
         return
     end
     toggleObj.setRotation({
         x = 0,
         y = rot.y or 0,
-        z = rot.z or 0,
+        z = 0,
     })
 end
 
@@ -447,6 +447,40 @@ function CompanionToggle.handleClick(params)
     applyFigurineVisibility(owner, nextActive, state)
     setToggleTokenFace(toggleObj, nextActive)
     return nextActive
+end
+
+--- Emergency recovery for all three known companion controls.
+--- Rebuilds each scripted button layer and corrects a tile whose local +Y face points below the table.
+--- Current figurine visibility/state remains authoritative.
+--- @return table { found: number, rebuilt: number, owners: table }
+function CompanionToggle.rebootInteractions()
+    local report = { found = 0, rebuilt = 0, owners = {} }
+    for toggleGuid, owner in pairs(OWNER_BY_TOGGLE_GUID) do
+        local toggleObj = G.getObject(toggleGuid)
+        if toggleObj ~= nil then
+            report.found = report.found + 1
+            ensureFaceUpRotation(toggleObj)
+            if not O.isHiddenObject(toggleObj) then
+                toggleObj.interactable = true
+            end
+            local result = nil
+            if type(toggleObj.call) == "function" then
+                result = toggleObj.call("rebootInteractions")
+            end
+            setToggleTokenFace(toggleObj, isFigurineActive(owner))
+            report.owners[owner] = {
+                guid = toggleGuid,
+                rebuilt = type(result) == "table",
+                hidden = O.isHiddenObject(toggleObj),
+            }
+            if type(result) == "table" then
+                report.rebuilt = report.rebuilt + 1
+            end
+        else
+            report.owners[owner] = { guid = toggleGuid, missing = true }
+        end
+    end
+    return report
 end
 
 return CompanionToggle

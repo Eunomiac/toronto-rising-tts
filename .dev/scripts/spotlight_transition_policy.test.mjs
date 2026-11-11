@@ -10,7 +10,10 @@ const [phases, spotlight, blindfold, soundscape] = await Promise.all([
 ]);
 
 assert.ok(phases.includes("skipLocationCardGate = true"), "Spotlight transitions must skip the scene location-card gate");
-assert.ok(phases.includes("leadInDelaySec = 2"), "Spotlight transitions must use the short lead-in");
+assert.ok(
+  phases.includes("leadInDelaySec = HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC"),
+  "Spotlight transitions must wait for the complete blindfold lead-in",
+);
 assert.ok(phases.includes("settleDelaySec = 2.5"), "Spotlight enter must use the short settle budget");
 assert.ok(phases.includes("settleDelaySec = 1"), "Spotlight exit must use the short settle budget");
 assert.ok(blindfold.includes("phases.fadeIn(not workFailed)"), "Staged transitions must attempt audio recovery after failed work");

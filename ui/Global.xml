@@ -43,9 +43,6 @@
   <!-- Scatter Mode Control Panel -->
   <Include src="player/panel_scatter_mode_control.xml" />
 
-  <!-- Shared nestedless ref popups (TOR-444); coteries remain in per-seat referenceLayer -->
-  <Include src="shared/panel_ref_panels_nestedless.xml" />
-
   <!-- Shared Prince's Court (TOR-444) -->
   <Include src="shared/panel_ref_princes_court.xml" />
 
@@ -85,3 +82,7 @@
 <Include src="storyteller/advantage_editor_modal.xml" />
 <Include src="storyteller/project_editor_modal.xml" />
 <Include src="storyteller/panel_session_start_join.xml" />
+
+<!-- Shared click-and-hold reference images are deliberately the final Global UI layer so maps,
+     roll panels, modals, and other HUD chrome cannot cover them. -->
+<Include src="shared/panel_ref_panels_nestedless.xml" />

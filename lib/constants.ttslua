@@ -617,6 +617,10 @@ for _, color in ipairs(C.PlayerColors) do
     C.ClickableSeatControls[guid] = true
   end
 end
+C.ClickableSeatControls[G.GUIDS.TAROT_BUTTON_PINK] = true
+C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = true
+C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = true
+C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = true
 
 -- C.HiddenObjects: values are viewer colors for `setInvisibleTo`. Keys are GUID role
 -- names resolved through G.mapGuidKeys (missing G.GUIDS entries fail with one clear error

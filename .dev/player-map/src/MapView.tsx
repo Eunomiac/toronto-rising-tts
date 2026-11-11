@@ -27,6 +27,7 @@ interface MapViewProps {
   districts: MapFeatureCollection;
   selectedKey: string | null;
   onSelect: (key: string) => void;
+  onMapReady?: (map: Map | null) => void;
 }
 
 function districtKey(feature: MapGeoJSONFeature | undefined): string | null {
@@ -44,16 +45,18 @@ function focusDistrict(map: Map, districts: MapFeatureCollection, key: string) {
   });
 }
 
-export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
+export function MapView({ districts, selectedKey, onSelect, onMapReady }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const districtsRef = useRef(districts);
   const onSelectRef = useRef(onSelect);
+  const onMapReadyRef = useRef(onMapReady);
   const hoveredRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const [status, setStatus] = useState('Loading street map…');
   districtsRef.current = districts;
   onSelectRef.current = onSelect;
+  onMapReadyRef.current = onMapReady;
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
@@ -71,6 +74,7 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
       attributionControl: false,
     });
     mapRef.current = map;
+    onMapReadyRef.current?.(map);
     map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
     map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
 
@@ -161,6 +165,7 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
     map.on('click', onClick);
     map.on('error', onError);
     return () => {
+      onMapReadyRef.current?.(null);
       map.remove();
       mapRef.current = null;
     };
@@ -185,7 +190,7 @@ export function MapView({ districts, selectedKey, onSelect }: MapViewProps) {
   }, [selectedKey]);
 
   return (
-    <section className="map-surface" aria-label="Interactive map of Toronto Rising districts">
+    <section className="map-surface" data-note-surface="map" aria-label="Interactive map of Toronto Rising districts">
       <div ref={containerRef} className="map-surface__canvas" />
       <p className="map-surface__status" role="status">{status}</p>
     </section>

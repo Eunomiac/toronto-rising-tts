@@ -1776,17 +1776,27 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             RSL.SetTableTo("Scatter", {
                 skipTransitionBlindfold = true,
                 authored = true,
+                skipConditionReconcile = true,
             })
         elseif tk ~= "" then
             -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>");
             -- SetTableTo resolves family → concrete by occupied NPC seat count.
             if C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk) then
-                RSL.SetTableTo(tk, { skipTransitionBlindfold = true, sessionChairs = true, skipScatterRestore = true })
+                RSL.SetTableTo(tk, {
+                    skipTransitionBlindfold = true,
+                    sessionChairs = true,
+                    skipScatterRestore = true,
+                    skipConditionReconcile = true,
+                })
             else
                 U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
             end
         elseif Occupancy.isScatterLayoutActive() then
-            RSL.SetTableTo("Table A", { skipTransitionBlindfold = true, skipScatterRestore = true })
+            RSL.SetTableTo("Table A", {
+                skipTransitionBlindfold = true,
+                skipScatterRestore = true,
+                skipConditionReconcile = true,
+            })
         end
         mark("table")
 
@@ -1814,8 +1824,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             end
         end
         local changedSeatColors = reconcileHostedConditions({ skipPresentation = true })
+        mark("hosted conditions")
 
         MapPins.onSceneApplied()
+        mark("map pins")
 
         -- Soundscape (incl. weather) is applied authoritatively in the staged `fadeIn` phase with the
         -- transition fade window open; skip it here so the work-phase reconcile cannot slam weather to
@@ -2001,7 +2013,11 @@ function StorytellerScenesPanel.setLiveTable(tableKey)
     HUDBF.runTransition(function()
         -- Store the key as intent (family or explicit); SetTableTo resolves family → concrete.
         S.setStateVal(tableKey, "sessionScene", "tableKey")
-        RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true, sessionChairs = true })
+        RSL.SetTableTo(tableKey, {
+            skipTransitionBlindfold = true,
+            sessionChairs = true,
+            skipConditionReconcile = true,
+        })
         reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.table")
         return true
     end)
@@ -2088,13 +2104,14 @@ function StorytellerScenesPanel.setLiveSkybox(key)
     if key ~= nil and (type(key) ~= "string" or not C.isValidSkyboxKey(key)) then
         return "Unknown skybox `" .. tostring(key) .. "`."
     end
+    -- Same lead-in as scene Apply so the 2s SlideIn_Top finishes before skybox work.
     HUDBF.runTransition(function()
         S.setStateVal(key, "sessionScene", "skyboxOverride")
         Scenes.reconcileSkyboxFromState({ force = true })
         require("dashboard.push").markWorldDirty({ scene = true })
         return true
     end, {
-        leadInDelaySec = 2,
+        leadInDelaySec = HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC,
         settleDelaySec = 2,
     })
     StorytellerScenesPanel.refresh()

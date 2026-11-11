@@ -16,6 +16,16 @@ npm run dev
 The canonical district and region geometry lives in
 `data/source/toronto-rising-map.svg`. Generated GeoJSON in
 `public/generated/` is reproducible and must not be edited by hand.
+`data/district-priority.json` records the reviewed top-to-bottom winner order
+used to close tiny gaps and cut district overlaps during every data build.
+`data/diagnostics/normalization.json` records the resulting area changes and
+must report zero remaining overlap.
+
+The local development server also shows a **Debug notes** control. It lets the
+author pin numbered feedback directly to a map location or interface surface.
+Notes persist in `agent/debug-notes.json` for the next agent session. The
+controls, comments, JSON data, and API do not exist in production builds. See
+[`agent/Debug Notes.md`](agent/Debug%20Notes.md) for the shared workflow.
 
 ## Visual calibration
 
@@ -31,6 +41,7 @@ published calibration; they do not change the public geometry by themselves.
 ```powershell
 npm run check
 npm run test:browser
+npm run test:debug-notes:browser
 ```
 
 See `agent/Architecture.md`, `agent/Map Data Pipeline.md`, and

@@ -41,6 +41,13 @@ export interface MapDataManifest {
     validationRootMeanSquareErrorMetres: number | null;
     validationResiduals: Array<{ name: string; metres: number }>;
   };
+  normalization: {
+    schemaVersion: number;
+    prioritySource: string;
+    expansionMetres: number;
+    districtsWithOverlapCuts: number;
+    remainingOverlapSquareMetres: number;
+  };
 }
 
 export interface PublicMapData {

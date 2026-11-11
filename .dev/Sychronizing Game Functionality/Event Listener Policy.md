@@ -139,6 +139,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_debugToggleSimulatedConnection` | B+C | Yes | Debug column, Assume Connected mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
 | `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`); marks the dashboard seats slice dirty so the scene board updates without a server restart |
 | `HUD_toggleSyncTrace` | A | Yes | Debug panel: persisted `debug.syncTraceEnabled`; grey off / yellow on; on installs timing wrappers on sync targets, off removes them and prints the summary; host `[SyncTrace]` prints only (TOR-634, TOR-657) |
+| `HUD_toggleVerboseLogging` | A | Yes | Debug panel master diagnostic switch: persists `debug.verboseLoggingEnabled`, enables the bounded dice-bag/Tarot/companion event log, and follows it with Sync Trace so one switch captures both interaction and reconciliation evidence. |
+| `HUD_rebootInteractions` | B+C | Yes | Emergency bounded recovery over the five PC seats and known Tarot/companion GUIDs: cancels active PC rolls, clears bag spawn queues/dice, rebuilds object button layers, and reapplies current Tarot/companion poses. No broad world scan. |
 | `HUD_toggleStRollUi` | — | — | Removed. In-game Storyteller roll panels and the debug toggle are gone. Storyteller rolls come from the dashboard. |
 | `HUD_togglePanel` | A | — | XmlUI collapse |
 | `HUD_soundscape*` (mutators) | B+C | Yes | inspect read-only |

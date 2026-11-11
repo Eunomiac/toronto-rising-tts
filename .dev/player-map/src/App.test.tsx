@@ -1,0 +1,82 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { App } from './App';
+
+const { loadPublicMapDataMock } = vi.hoisted(() => ({
+  loadPublicMapDataMock: vi.fn(),
+}));
+
+vi.mock('./data', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./data')>();
+  return { ...actual, loadPublicMapData: loadPublicMapDataMock };
+});
+
+vi.mock('./MapView', () => ({
+  MapView: ({ onSelect }: { onSelect: (key: string) => void }) => (
+    <button type="button" onClick={() => onSelect('Rosedale')}>Select Rosedale on map</button>
+  ),
+}));
+
+const feature = {
+  type: 'Feature' as const,
+  geometry: {
+    type: 'MultiPolygon' as const,
+    coordinates: [[[[-79.4, 43.6], [-79.39, 43.6], [-79.39, 43.61], [-79.4, 43.6]]]],
+  },
+  properties: {
+    key: 'Rosedale',
+    name: 'Rosedale',
+    kind: 'district' as const,
+    sourceElement: 'path' as const,
+    fillRule: 'nonzero' as const,
+    sourceRingCount: 1,
+  },
+};
+
+const mapData = {
+  districts: { type: 'FeatureCollection' as const, features: [feature] },
+  regions: { type: 'FeatureCollection' as const, features: [] },
+  manifest: {
+    schemaVersion: 1,
+    counts: { districts: 1, regions: 0 },
+    bounds: [[-79.4, 43.6], [-79.39, 43.61]] as [[number, number], [number, number]],
+    calibration: {
+      revision: 1,
+      controlPointCount: 0,
+      rootMeanSquareErrorMetres: 0,
+      residuals: [],
+      validationPointCount: 0,
+      validationRootMeanSquareErrorMetres: null,
+      validationResiduals: [],
+    },
+    normalization: {
+      schemaVersion: 2,
+      prioritySource: 'test',
+      expansionMetres: 2.35,
+      districtsWithOverlapCuts: 0,
+      remainingOverlapSquareMetres: 0,
+    },
+  },
+};
+
+describe('App district selection', () => {
+  beforeEach(() => {
+    window.history.replaceState(null, '', '/');
+    loadPublicMapDataMock.mockResolvedValue(mapData);
+  });
+
+  it('deselects a district when the same map feature is clicked again', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const mapDistrict = await screen.findByRole('button', { name: 'Select Rosedale on map' });
+
+    await user.click(mapDistrict);
+    expect(screen.getByTestId('selected-district')).toHaveTextContent('Rosedale');
+    expect(window.location.search).toBe('?district=Rosedale');
+
+    await user.click(mapDistrict);
+    await waitFor(() => expect(screen.queryByTestId('selected-district')).not.toBeInTheDocument());
+    expect(window.location.search).toBe('');
+  });
+});

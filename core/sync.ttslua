@@ -351,6 +351,11 @@ function Sync.npcs(opts)
     })
     if opts.skipConditionReconcile ~= true then
         require("core.npc_conditions").reconcileForSession()
+        if LoadTrace.isRecording() then
+            LoadTrace.mark("sync npc conditions")
+        end
+    elseif LoadTrace.isRecording() then
+        LoadTrace.mark("sync npc conditions skipped")
     end
     require("dashboard.push").markWorldDirty({ seats = true })
     finishSyncMetrics("npcs", t0, { reason = reason })

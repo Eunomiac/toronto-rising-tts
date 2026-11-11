@@ -223,9 +223,9 @@ local offsets = {
       },
     },
     Purple = {
-      COMPANION_TOGGLE_A = { localXZ = { x = -6.4341, z = -30.3745 }, localRotation = { x = 0.0000, y = 0.0428, z = 180.0000 }, defaultY = 6.0050 },
-      COMPANION_TOGGLE_B = { localXZ = { x = -8.6364, z = -30.3444 }, localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 }, defaultY = 6.0000 },
-      COMPANION_TOGGLE_C = { localXZ = { x = -10.7167, z = -30.3444 }, localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 }, defaultY = 6.0050 },
+      COMPANION_TOGGLE_A = { localXZ = { x = -6.4341, z = -30.3745 }, localRotation = { x = 0.0000, y = 0.0428, z = 0.0000 }, defaultY = 6.0050 },
+      COMPANION_TOGGLE_B = { localXZ = { x = -8.6364, z = -30.3444 }, localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 }, defaultY = 6.0000 },
+      COMPANION_TOGGLE_C = { localXZ = { x = -10.7167, z = -30.3444 }, localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 }, defaultY = 6.0050 },
       DICEBAG_OBLIVROUSE = { localXZ = { x = 4.7491, z = -30.2169 }, localRotation = { x = 0.0000, y = -0.0143, z = 0.0000 }, defaultY = 5.9800 },
       SEAT_CHAIR = { localXZ = { x = 0, z = 13.0852 }, localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 }, defaultY = -37.0800 },
     },

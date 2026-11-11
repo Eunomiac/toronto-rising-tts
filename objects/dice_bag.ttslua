@@ -34,6 +34,37 @@ ARC_LAYER_Y_STEP = 2
 ARC_LAYER_RADIUS_STEP = 0.6
 
 spawnedDice = {}
+pendingSpawns = {}
+spawnInFlight = false
+spawnEpoch = 0
+
+--- Route bounded object diagnostics through Global so the persisted master switch stays authoritative.
+--- @param event string
+--- @param details table|nil
+--- @return boolean
+local function verboseLog(event, details)
+    if Global == nil or type(Global.call) ~= "function" then
+        return false
+    end
+    return Global.call("GlobalInteractionVerboseLog", {
+        component = "DiceBag",
+        event = event,
+        details = type(details) == "table" and details or {},
+    }) == true
+end
+
+--- Invalidate queued/in-flight requests. A late callback destroys its stale clone instead of reviving a cancelled roll.
+--- @param reason string
+local function resetSpawnQueue(reason)
+    spawnEpoch = spawnEpoch + 1
+    pendingSpawns = {}
+    spawnInFlight = false
+    verboseLog("spawn-queue-reset", {
+        guid = self ~= nil and self.getGUID ~= nil and self.getGUID() or nil,
+        reason = reason,
+        epoch = spawnEpoch,
+    })
+end
 
 function onSave()
     local guids = {}
@@ -56,8 +87,17 @@ function onLoad(saved_data)
         end
     end
     spawnedDice = {}
+    pendingSpawns = {}
+    spawnInFlight = false
+    spawnEpoch = 0
     math.randomseed(os.time())
     createButtons()
+    verboseLog("loaded", {
+        guid = self.getGUID(),
+        interactable = self.interactable == true,
+        hidden = self.hasTag("HiddenObject") == true,
+        buttonCount = #(self.getButtons() or {}),
+    })
 end
 
 --- @return string|nil logical die kind (DK.KIND_*)
@@ -81,39 +121,77 @@ function getBagColor()
     return owner
 end
 
---- @param alt_click boolean|nil  TTS createButton: true for right-click (non-left mouse button)
+--- @param alt_click boolean|string|number|nil  TTS createButton right-click variants
 function click_roll(_, color, alt_click)
     local bagColor = getBagColor()
     local dieKind = getDieType()
     local isAlt = alt_click == true
+        or alt_click == "-2"
+        or alt_click == -2
+        or tostring(alt_click) == "true"
+        or tostring(alt_click) == "True"
+
+    local pos = self.getPosition()
+    local posType = type(pos)
+    verboseLog("click-received", {
+        guid = self.getGUID(),
+        clickerColor = color,
+        ownerColor = bagColor,
+        dieKind = dieKind,
+        altClick = isAlt,
+        interactable = self.interactable == true,
+        hidden = self.hasTag("HiddenObject") == true,
+        position = (posType == "table" or posType == "userdata")
+            and { x = pos.x, y = pos.y, z = pos.z }
+            or nil,
+        buttonCount = #(self.getButtons() or {}),
+        queued = #pendingSpawns,
+        spawnInFlight = spawnInFlight == true,
+    })
 
     if bagColor == nil then
+        verboseLog("click-rejected", { reason = "missing-owner-tag", clickerColor = color })
         print("[DiceBag] Bag is missing owner tag — cannot determine seat.")
         return
     end
 
     if color ~= bagColor then
+        verboseLog("click-rejected", {
+            reason = "wrong-clicker-color",
+            clickerColor = color,
+            ownerColor = bagColor,
+        })
         return
     end
 
     if not isAlt then
         local consumedCleanup = Global.call("GlobalConsumePendingRollCleanup", { color = bagColor })
         if consumedCleanup == true then
+            verboseLog("click-consumed", { reason = "pending-roll-cleanup", ownerColor = bagColor })
             return
         end
     end
 
     if dieKind == nil then
+        verboseLog("click-rejected", { reason = "missing-die-kind", ownerColor = bagColor })
         print("[DiceBag] Bag is missing a die-type tag.")
         return
     end
 
     local phase = Global.call("GlobalGetRollPhase", { color = bagColor })
-    Global.call("GlobalDiceBagClick", {
+    local routeResult = Global.call("GlobalDiceBagClick", {
         color = bagColor,
+        clickerColor = color,
+        bagGuid = self.getGUID(),
         dieKind = dieKind,
         phase = phase,
         alt_click = isAlt,
+    })
+    verboseLog("click-routed", {
+        ownerColor = bagColor,
+        dieKind = dieKind,
+        phase = phase,
+        result = routeResult,
     })
 end
 
@@ -245,6 +323,7 @@ local function acquireDie(position, rotation)
 end
 
 local spawnPostRollDie
+local processNextSpawn
 
 function spawnDieRedirect(params)
     if type(params) ~= "table" or type(params.bagColor) ~= "string" or type(params.dieType) ~= "string" then
@@ -261,15 +340,61 @@ end
 
 --- @param opts table|nil  { bloodSurgePool?, bloodSurgeRouse? }
 function spawnDie(bagColor, dieType, opts)
+    pendingSpawns[#pendingSpawns + 1] = {
+        bagColor = bagColor,
+        dieType = dieType,
+        opts = type(opts) == "table" and opts or {},
+    }
+    verboseLog("spawn-queued", {
+        ownerColor = bagColor,
+        dieType = dieType,
+        queued = #pendingSpawns,
+        spawnInFlight = spawnInFlight == true,
+        epoch = spawnEpoch,
+    })
+    processNextSpawn()
+end
+
+--- A taken object needs several frames to finish spawning. Serialize initialization through the documented
+--- completion callback; this is defensive ordering, not an assumption that TTS discards overlapping calls.
+processNextSpawn = function()
+    if spawnInFlight == true or #pendingSpawns == 0 then
+        return
+    end
+    local request = table.remove(pendingSpawns, 1)
+    local bagColor = request.bagColor
+    local dieType = request.dieType
+    local opts = request.opts
     opts = type(opts) == "table" and opts or {}
     local bloodSurgePool = opts.bloodSurgePool == true
     local bloodSurgeRouse = opts.bloodSurgeRouse == true
     local bagKind = getDieType()
     local spawnRadius = radiusForSpawnKind(dieType, bloodSurgeRouse)
+    local requestEpoch = spawnEpoch
 
     local function finishSpawnedDie(die)
+        if requestEpoch ~= spawnEpoch then
+            if die ~= nil then
+                destroyStagedDie(die)
+            end
+            verboseLog("spawn-callback-stale", {
+                ownerColor = bagColor,
+                dieType = dieType,
+                requestEpoch = requestEpoch,
+                currentEpoch = spawnEpoch,
+            })
+            return
+        end
+        spawnInFlight = false
         if die == nil then
+            verboseLog("spawn-callback-failed", {
+                ownerColor = bagColor,
+                dieType = dieType,
+                queued = #pendingSpawns,
+                epoch = spawnEpoch,
+            })
             print("[DiceBag] spawnDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
+            processNextSpawn()
             return
         end
         die.setScale({ SCALE, SCALE, SCALE })
@@ -294,6 +419,15 @@ function spawnDie(bagColor, dieType, opts)
             stagedCount = #spawnedDice,
             manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
         })
+        verboseLog("spawn-completed", {
+            ownerColor = bagColor,
+            dieType = dieType,
+            dieGuid = die.getGUID(),
+            stagedCount = #spawnedDice,
+            queued = #pendingSpawns,
+            epoch = spawnEpoch,
+        })
+        processNextSpawn()
     end
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
@@ -313,7 +447,27 @@ function spawnDie(bagColor, dieType, opts)
     })
 
     local arcPos = worldArcPoint(bagColor, ringSlot, ringTotal, spawnRadius)
-    finishSpawnedDie(acquireDie(arcPos, randomRotation()))
+    spawnInFlight = true
+    verboseLog("spawn-started", {
+        ownerColor = bagColor,
+        dieType = dieType,
+        queued = #pendingSpawns,
+        epoch = requestEpoch,
+        position = { x = arcPos.x, y = arcPos.y, z = arcPos.z },
+    })
+    self.takeObject({
+        position = arcPos,
+        rotation = randomRotation(),
+        smooth = false,
+        callback_function = function(die)
+            if die ~= nil then
+                die.setScale({ SCALE, SCALE, SCALE })
+                die.setLock(true)
+                die.interactable = false
+            end
+            finishSpawnedDie(die)
+        end,
+    })
 end
 
 --- POST_ROLL correction: one die on a random arc slot (no reposition of existing pool dice).
@@ -549,6 +703,7 @@ function releaseDice()
 end
 
 function destroyDice()
+    resetSpawnQueue("destroy-dice")
     for _, die in ipairs(spawnedDice) do
         destroyStagedDie(die)
     end
@@ -693,6 +848,7 @@ function randomRotation()
 end
 
 function createButtons()
+    self.clearButtons()
     self.createButton({
         click_function = "click_roll",
         function_owner = self,
@@ -701,4 +857,37 @@ function createButtons()
         width          = 650,
         color          = { 1, 1, 1, 0 },
     })
+end
+
+--- Emergency recovery entry called by Storyteller Debug → Reboot Interactions.
+--- Keeps already-staged dice, but clears pending clone work, rebuilds the click layer, and re-spreads the arc.
+--- @return table
+function rebootInteractions()
+    local queuedBefore = #pendingSpawns
+    local inFlightBefore = spawnInFlight == true
+    resetSpawnQueue("reboot-interactions")
+    createButtons()
+    local hidden = self.hasTag("HiddenObject") == true
+    if not hidden then
+        self.interactable = true
+    end
+    local color = getBagColor()
+    local kind = getDieType()
+    if type(color) == "string" and type(kind) == "string" then
+        repositionStagedDiceOnRingArc(color, kind, spawnedDice, false)
+    end
+    local result = {
+        guid = self.getGUID(),
+        ownerColor = color,
+        dieKind = kind,
+        hidden = hidden,
+        interactable = self.interactable == true,
+        buttonCount = #(self.getButtons() or {}),
+        stagedCount = #spawnedDice,
+        clearedQueued = queuedBefore,
+        clearedInFlight = inFlightBefore,
+        epoch = spawnEpoch,
+    }
+    verboseLog("rebooted", result)
+    return result
 end

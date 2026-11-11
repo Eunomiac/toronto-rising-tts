@@ -15,6 +15,20 @@ local BUTTON_HEIGHT = 900
 --- Local +Y above the tile top face (token stays face-up; enabled/disabled is image swap).
 local BUTTON_Y = 0.2
 
+--- @param event string
+--- @param details table|nil
+--- @return boolean
+local function verboseLog(event, details)
+    if Global == nil or type(Global.call) ~= "function" then
+        return false
+    end
+    return Global.call("GlobalInteractionVerboseLog", {
+        component = "CompanionToggle",
+        event = event,
+        details = type(details) == "table" and details or {},
+    }) == true
+end
+
 local function createClickButtons()
     self.clearButtons()
     self.createButton({
@@ -31,7 +45,16 @@ local function createClickButtons()
 end
 
 function onLoad(_savedData)
+    self.interactable = not self.hasTag("HiddenObject")
     createClickButtons()
+    local rot = self.getRotation()
+    verboseLog("loaded", {
+        guid = self.getGUID(),
+        interactable = self.interactable == true,
+        hidden = self.hasTag("HiddenObject") == true,
+        rotation = { x = rot.x, y = rot.y, z = rot.z },
+        buttonCount = #(self.getButtons() or {}),
+    })
 end
 
 --- @param _obj Object
@@ -44,13 +67,49 @@ function click_companionToggle(_obj, clickColor, altClick)
         or altClick == -2
         or tostring(altClick) == "true"
         or tostring(altClick) == "True"
+    local rot = self.getRotation()
+    verboseLog("click-received", {
+        guid = self.getGUID(),
+        clickerColor = clickColor,
+        altClick = isAlt,
+        interactable = self.interactable == true,
+        hidden = self.hasTag("HiddenObject") == true,
+        rotation = { x = rot.x, y = rot.y, z = rot.z },
+        buttonCount = #(self.getButtons() or {}),
+    })
     if Global == nil or type(Global.call) ~= "function" then
         print("[CompanionToggle] Global.call unavailable")
         return
     end
-    Global.call("GlobalApplyCompanionToggleClick", {
+    local result = Global.call("GlobalApplyCompanionToggleClick", {
         toggleGuid = self.getGUID(),
         playerColor = clickColor,
         altClick = isAlt,
     })
+    verboseLog("click-routed", {
+        guid = self.getGUID(),
+        clickerColor = clickColor,
+        altClick = isAlt,
+        result = result,
+    })
+end
+
+--- Emergency recovery entry called by Storyteller Debug → Reboot Interactions.
+--- @return table
+function rebootInteractions()
+    createClickButtons()
+    local hidden = self.hasTag("HiddenObject") == true
+    if not hidden then
+        self.interactable = true
+    end
+    local rot = self.getRotation()
+    local result = {
+        guid = self.getGUID(),
+        hidden = hidden,
+        interactable = self.interactable == true,
+        rotation = { x = rot.x, y = rot.y, z = rot.z },
+        buttonCount = #(self.getButtons() or {}),
+    }
+    verboseLog("rebooted", result)
+    return result
 end

@@ -17,6 +17,20 @@ local TOP_BUTTON_POS = { 0, 0.18, 0 }
 local BOTTOM_BUTTON_POS = { 0, -0.18, 0 }
 local BOTTOM_BUTTON_ROT = { 180, 0, 0 }
 
+--- @param event string
+--- @param details table|nil
+--- @return boolean
+local function verboseLog(event, details)
+    if Global == nil or type(Global.call) ~= "function" then
+        return false
+    end
+    return Global.call("GlobalInteractionVerboseLog", {
+        component = "TarotButton",
+        event = event,
+        details = type(details) == "table" and details or {},
+    }) == true
+end
+
 --- @return table|nil
 local function getSeatLayoutCenterPoint()
     if Global ~= nil and type(Global.call) == "function" then
@@ -58,14 +72,17 @@ local function runWhenSeatLayoutReady(callback, attempt)
 
     local function retry(currentAttempt)
         if isSeatLayoutReady() then
+            verboseLog("seat-layout-ready", { attempt = currentAttempt })
             callback()
             return
         end
         if currentAttempt >= maxAttempts then
+            verboseLog("seat-layout-timeout", { attempts = currentAttempt })
             print("[TarotButton] seatLayout.currentTableKey is not ready after retries; skipping tarot toggle.")
             return
         end
         local delaySeconds = getBackoffDelaySeconds(currentAttempt)
+        verboseLog("seat-layout-wait", { attempt = currentAttempt, delaySeconds = delaySeconds })
         CU.await(function()
             retry(currentAttempt + 1)
         end, delaySeconds)
@@ -110,7 +127,16 @@ function onLoad(savedData)
             isOn = parsed.isOn
         end
     end
+    -- Keep the visible world control selectable; its two scripted buttons cover the top and bottom faces.
+    self.interactable = not self.hasTag("HiddenObject")
     createClickButtons()
+    verboseLog("loaded", {
+        guid = self.getGUID(),
+        interactable = self.interactable == true,
+        hidden = self.hasTag("HiddenObject") == true,
+        buttonCount = #(self.getButtons() or {}),
+        savedOn = isOn,
+    })
     runWhenSeatLayoutReady(function()
         local inferred = isOn
         if Global ~= nil and type(Global.call) == "function" then
@@ -129,7 +155,17 @@ end
 --- @param _obj Object
 --- @param clickColor string
 function click_tarotToggle(_obj, clickColor)
+    verboseLog("click-received", {
+        guid = self.getGUID(),
+        clickerColor = clickColor,
+        interactable = self.interactable == true,
+        hidden = self.hasTag("HiddenObject") == true,
+        buttonCount = #(self.getButtons() or {}),
+        isOn = isOn,
+        desiredOn = desiredOn,
+    })
     if clickColor ~= "Pink" and clickColor ~= "Black" then
+        verboseLog("click-rejected", { reason = "wrong-clicker-color", clickerColor = clickColor })
         print("[TarotButton] Only Pink (or GM) can toggle tarot objects.")
         return
     end
@@ -140,14 +176,45 @@ function click_tarotToggle(_obj, clickColor)
             applied = Global.call("GlobalApplyTarotState", {
                 targetOn = desiredOn,
                 buttonGuid = self.getGUID(),
+                playerColor = clickColor,
             })
         end
         if type(applied) == "boolean" then
             isOn = applied
             desiredOn = applied
+            verboseLog("click-applied", { clickerColor = clickColor, appliedOn = applied })
         else
             desiredOn = not desiredOn
+            verboseLog("click-failed", { clickerColor = clickColor, targetOn = not desiredOn })
             print("[TarotButton] GlobalApplyTarotState failed; reverted desired state.")
         end
     end)
+end
+
+--- Emergency recovery entry called by Storyteller Debug → Reboot Interactions.
+--- Rebuilds both face buttons and rehydrates local desired state without changing the live Tarot state.
+--- @return table
+function rebootInteractions()
+    createClickButtons()
+    local hidden = self.hasTag("HiddenObject") == true
+    if not hidden then
+        self.interactable = true
+    end
+    local inferred = Global.call("GlobalInferTarotState", {
+        buttonGuid = self.getGUID(),
+        fallback = isOn,
+    })
+    if type(inferred) == "boolean" then
+        isOn = inferred
+        desiredOn = inferred
+    end
+    local result = {
+        guid = self.getGUID(),
+        hidden = hidden,
+        interactable = self.interactable == true,
+        buttonCount = #(self.getButtons() or {}),
+        inferredOn = isOn,
+    }
+    verboseLog("rebooted", result)
+    return result
 end

@@ -68,7 +68,7 @@ export function CalibrationPanel({ value, publishedHorizontalScale, onChange }: 
   };
 
   return (
-    <aside className="calibration-panel" aria-label="Map calibration controls">
+    <aside className="calibration-panel" data-note-surface="calibration-panel" aria-label="Map calibration controls">
       <div className="calibration-panel__heading">
         <div>
           <p>Author tool</p>

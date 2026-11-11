@@ -3498,6 +3498,22 @@ function NPCS.inspectPreloadPool()
     return status
 end
 
+--- Character keys currently parked in the explicit preload pool, for the Storyteller Dashboard roster.
+--- This is a bounded registry walk with no object lookups; it only runs while building a dashboard snapshot.
+--- @return string[]
+function NPCS.dashboardPreloadedKeys()
+    local Pool = require("core.npc_preload_pool")
+    local keys = {}
+    for name, rec in pairs(getInstances()) do
+        if U.Type(name) == "string" and U.Type(rec) == "table"
+            and rec.preloadSlot ~= nil and rec.areaKey == Pool.AREA_KEY then
+            keys[#keys + 1] = name
+        end
+    end
+    table.sort(keys)
+    return keys
+end
+
 function NPCS.destroyAllWorldAndState()
     require("core.npc_preload_pool").disable("NPC world reset")
     for _, name in ipairs(U.getKeys(getInstances())) do

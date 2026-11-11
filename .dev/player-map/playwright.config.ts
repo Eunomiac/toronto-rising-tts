@@ -4,6 +4,7 @@ const deployedBaseURL = process.env.PLAYER_MAP_BASE_URL;
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: 'debug-notes.spec.ts',
   fullyParallel: true,
   forbidOnly: true,
   retries: 0,

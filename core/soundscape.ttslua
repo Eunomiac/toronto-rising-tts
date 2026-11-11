@@ -29,7 +29,10 @@ local singleEmitterTransitionGeneration = {}
 --- Bumped on each `playCatalogEntry` clip swap and `cancelSingleEmitterTransition`; stale `U.await` volume arms no-op.
 local playCatalogEntryGeneration = {}
 --- Let Unity finish AssetBundle clip swap before unmute/fade (~one frame at 30fps).
-local EMITTER_POST_SWAP_ARM_SECONDS = 0.034
+local EMITTER_POST_SWAP_SILENCE_SECONDS = 0.034
+local EMITTER_POST_SWAP_ARM_SECONDS = 0.10
+--- Per-emitter generation cancels scheduled volume steps when the same AssetBundle changes clips.
+local emitterFadeGeneration = {}
 local cachedEmitters = {}
 --- Cached Custom AssetBundle for outdoor rain particles (`G.GUIDS.PARTICLE_EMITTER`).
 local cachedRainParticleObj = nil
@@ -515,7 +518,14 @@ local function armEmitterSilentBeforePlayback(obj)
     setEmitterVolume(obj, 0)
 end
 
+local function nextEmitterFadeGeneration(obj)
+    local key = obj ~= nil and obj.getGUID ~= nil and obj.getGUID() or tostring(obj)
+    emitterFadeGeneration[key] = (emitterFadeGeneration[key] or 0) + 1
+    return key, emitterFadeGeneration[key]
+end
+
 local function fadeEmitterVolume(obj, fromVolume, toVolume, seconds)
+    local fadeKey, fadeGeneration = nextEmitterFadeGeneration(obj)
     local duration = tonumber(seconds) or 0
     if duration <= 0 then
         local okImmediate = setEmitterVolume(obj, toVolume)
@@ -534,7 +544,9 @@ local function fadeEmitterVolume(obj, fromVolume, toVolume, seconds)
         local ratio = i / steps
         local volume = fromVolume + ((toVolume - fromVolume) * ratio)
         scheduled = waitTime(function()
-            setEmitterVolume(obj, volume)
+            if emitterFadeGeneration[fadeKey] == fadeGeneration then
+                setEmitterVolume(obj, volume)
+            end
         end, duration * ratio) or scheduled
     end
     if not scheduled then
@@ -624,6 +636,9 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     end
 
     ensureState()
+    -- Stop any scheduled fade belonging to the outgoing clip. Otherwise one of its late volume
+    -- steps can raise the replacement clip before the post-swap silence passes run.
+    nextEmitterFadeGeneration(obj)
 
     local naturalWeather = nil
     local targetVolume = clamp01(volume or track.volume or channelDef.defaultVolume or 0)
@@ -691,6 +706,14 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     if startAtTarget then
         armEmitterVolumeAfterClipSwap()
     elseif U ~= nil and type(U.await) == "function" then
+        -- AssetBundle clip swaps can replace the AudioSource one frame after the play call. Re-silence
+        -- that newly-created source before any gain is restored; casaLoma exposed the race as a
+        -- full-volume burst during the CLGreatHall transition.
+        U.await(function()
+            if thisPlayGeneration == playCatalogEntryGeneration[channelKey] then
+                armEmitterSilentBeforePlayback(obj)
+            end
+        end, EMITTER_POST_SWAP_SILENCE_SECONDS)
         U.await(armEmitterVolumeAfterClipSwap, EMITTER_POST_SWAP_ARM_SECONDS)
     else
         armEmitterVolumeAfterClipSwap()

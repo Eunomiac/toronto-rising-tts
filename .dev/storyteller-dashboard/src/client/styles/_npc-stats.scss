@@ -54,6 +54,26 @@ $power-height: 20px;
   }
 }
 
+.npc-stats-delete {
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid #7d3b3b;
+  color: #e9a6a6;
+  background: #321919;
+  cursor: pointer;
+
+  &.armed {
+    border-color: #ff7373;
+    color: #fff;
+    background: #7a2020;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+}
+
 .npc-stats-identity {
   display: flex;
   align-items: center;

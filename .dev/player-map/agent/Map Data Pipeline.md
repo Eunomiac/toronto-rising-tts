@@ -18,7 +18,7 @@ Verification:
 - inspect the generated diagnostic map over the live basemap before accepting geometry changes
 
 Status:
-- current for the Phase 1 geometry spike; Sheet projection, reviewed normalization priority, and FULL-build integration remain Phase 2 work
+- current for the Phase 1 geometry and runtime-normalization pipeline; Sheet projection, full visual diagnostics, and FULL-build integration remain Phase 2 work
 
 ## Principle: One Owner Per Fact
 
@@ -44,7 +44,8 @@ data/source/toronto-rising-map.svg
 
 The prepared SVG has one artboard/view box of `0 0 4318 5400`, a `DISTRICTS` group containing the 32 geographically relevant districts, and a `REGIONS` group containing `TheBarrens`, `TheRack`, and `AnarchFreeZone`. Its features use stable TTS-compatible keys. Some features are `<path>` and some are `<polygon>`; both are valid input. Compound paths and their `fill-rule` must be preserved during parsing.
 
-The original SVG is the editable source. A normalized intermediate SVG may be generated for diagnosis, but it must not silently replace the source.
+The original SVG is the editable source. Runtime normalization is a reproducible
+build step and must not silently replace the SVG.
 
 ### Authored location data
 
@@ -88,7 +89,7 @@ Required behavior:
 - Convert all supported SVG shapes to a common polygon representation.
 - Preserve holes. Respect both explicit `fill-rule="evenodd"` and the SVG default nonzero rule.
 - Snap or fill only gaps below an agreed map-space tolerance.
-- Resolve overlaps according to an explicit district-priority manifest. Do not rely on a developer's memory of Illustrator layer order. In SVG rendering, later elements paint above earlier ones, which is not a sufficiently clear ownership rule for data generation.
+- Resolve overlaps according to the explicit priority in `data/district-priority.json`. The reviewed order records the Illustrator `DISTRICTS` layer from top to bottom; the build must not infer it from SVG paint order or a developer's memory.
 - Preserve the winning district's original outer edge wherever possible and cut only the overlap.
 - Report rather than repair gaps or overlaps above the safe tolerance.
 - Reject invalid rings, self-intersections that cannot be repaired unambiguously, empty features, duplicate IDs, and unexpected transforms.
@@ -103,13 +104,21 @@ Every run should emit a visual diagnostic showing:
 
 The original and final area of each district should be recorded so an unexpectedly large change is obvious even when it is hard to spot visually.
 
-Phase 1 implements this as a non-runtime prototype in
-`scripts/diagnose-normalization.mjs`. It expands every district by approximately
-one source pixel, then simulates top-to-bottom Pathfinder-style cuts and records
-area changes in `data/diagnostics/normalization.json`. The generated runtime
-GeoJSON intentionally remains unchanged until Phase 2 replaces the current
-Illustrator-order simulation with a reviewed priority manifest and adds the
-full visual gap diagnostics described above.
+The current runtime pipeline canonicalizes every district with a polygon union.
+That repairs unambiguous self-intersections such as the diagonal wedges formerly
+visible in Yorkville and the Bay Street Financial District. It then expands every
+district by the reviewed `expansionMetres` tolerance (currently 2.35 metres,
+approximately one source pixel) and processes the priority manifest from top to
+bottom. Each winner cuts its occupied area from every lower-priority district.
+This is the build-time equivalent of the planned sequential Pathfinder operation.
+
+`scripts/lib/normalize-districts.mjs` owns the implementation. Every data build
+writes `data/diagnostics/normalization.json`, including each district's source,
+expanded, and final area plus the overlap removed. It fails if the manifest is
+incomplete or duplicated, a district becomes empty, or more than 0.01 square
+metres of pairwise overlap remains. The normalized geometry is the geometry
+written to `public/generated/districts.geojson`. The richer visual gap and
+boundary-movement diagnostics listed above remain Phase 2 work.
 
 ## PATH Network District
 

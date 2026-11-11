@@ -1170,6 +1170,73 @@ function DEBUG.resetSyncTraceSummary()
     print("[SyncTrace] summary totals reset")
 end
 
+--- Whether the master interaction diagnostic switch is active.
+--- @return boolean
+function DEBUG.isVerboseLoggingEnabled()
+    return S.getStateVal("debug", "verboseLoggingEnabled") == true
+end
+
+--- Paint the Debug panel Verbose Logging button from persisted state.
+function DEBUG.refreshVerboseLoggingButton()
+    UI.setClass(
+        "debug_verboseLogging",
+        DEBUG.isVerboseLoggingEnabled()
+            and "hud_storyteller_button toggled_active"
+            or "hud_storyteller_button toggled_inactive"
+    )
+end
+
+--- Print one structured interaction diagnostic when Verbose Logging is active.
+--- Object scripts route here through `GlobalInteractionVerboseLog`.
+--- @param component string|nil
+--- @param event string|nil
+--- @param details table|nil
+--- @return boolean true when a line was printed
+function DEBUG.logVerboseInteraction(component, event, details)
+    if not DEBUG.isVerboseLoggingEnabled() then
+        return false
+    end
+    local payload = type(details) == "table" and details or {}
+    print(string.format(
+        "[VerboseInteraction] %s | %s | %s",
+        tostring(component or "unknown"),
+        tostring(event or "event"),
+        JSON.encode(payload)
+    ))
+    return true
+end
+
+--- Set the master verbose switch. Sync Trace follows it so one button enables all aggressive traces.
+--- @param enabled boolean
+--- @return boolean
+function DEBUG.setVerboseLogging(enabled)
+    local on = enabled == true
+    S.setStateVal(on, "debug", "verboseLoggingEnabled")
+    require("lib.sync_trace").setEnabled(on)
+    DEBUG.refreshVerboseLoggingButton()
+    DEBUG.refreshSyncTraceButton()
+    print("[VerboseInteraction] verbose logging " .. (on and "enabled" or "disabled"))
+    return on
+end
+
+--- Restore persisted verbose logging after load without changing its saved value.
+--- @return boolean
+function DEBUG.restoreVerboseLogging()
+    local on = DEBUG.isVerboseLoggingEnabled()
+    if on then
+        require("lib.sync_trace").setEnabled(true)
+    end
+    DEBUG.refreshVerboseLoggingButton()
+    DEBUG.refreshSyncTraceButton()
+    return on
+end
+
+--- Toggle the master interaction diagnostic switch.
+--- @return boolean enabled after the toggle
+function DEBUG.toggleVerboseLogging()
+    return DEBUG.setVerboseLogging(not DEBUG.isVerboseLoggingEnabled())
+end
+
 --- List the opt-in Pending Author Verification checks (TOR-759).
 --- The harness is lazy-loaded and has no timers, listeners, scans, or wrappers while idle.
 function DEBUG.verifyPavList()

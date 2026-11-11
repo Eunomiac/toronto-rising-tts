@@ -91,6 +91,17 @@ chrome, then `Sync.npcs` reaches reconciler Step Five once. Step Three defers it
 layout when Step Five is enabled, so the old enter + seat commit + Step Five triple application is
 gone. This is confirmed waste removal, not yet proof that the client-disconnect incident is fixed.
 
+Live dashboard world flushes no longer call the blocking external-message API. Seats pushes use a
+thin NPC-condition view (labels and base ratings only); the rich derive path is reserved for a
+mid-session full snapshot. While a blindfold transition is active, coalesced world flushes keep
+their dirty marks and retry after the cover instead of competing with fade Wait callbacks.
+
+Scene Apply and live table switches into Scatter also skip the NPC-condition reconcile inside
+`ScatterMode.enter`'s `Sync.npcs`, because the hosted-condition pass that follows already runs
+`NC.reconcileForSession` once. That session reconcile only forces `onHostedEnter` for NPCs that
+just became present, so already-present cast members do not pay a full condition derive under the
+cover.
+
 ## 3. Spotlight transitions
 
 ### Previous work and delay
@@ -99,8 +110,9 @@ Play → Spotlight inherited the ordinary location-card gate even though its des
 
 ### Current path
 
-- Play → Spotlight uses a two-second cover lead, one-second fade-out, no location-card gate, 1.5-second fade-in, and a 2.5-second total settle budget. Its scheduled cover duration is about 5.5 seconds, plus synchronous world work.
-- Spotlight → End uses a two-second cover lead, no audio fades or card gate, and a one-second settle. Its scheduled cover duration is about three seconds, plus synchronous world work.
+- Play → Spotlight uses the same cover lead-in as scene Apply (`BLINDFOLD_DOWN_COMPLETE_SEC`, 4s) so the 2s `SlideIn_Top` finishes before fade-out / world work, then one-second fade-out, no location-card gate, 1.5-second fade-in, and a 2.5-second total settle budget. Its scheduled cover duration is about 7.5 seconds, plus synchronous world work.
+- Spotlight → End uses that same scene lead-in, no audio fades or card gate, and a one-second settle. Its scheduled cover duration is about five seconds, plus synchronous world work.
+- Skybox-only Apply also uses the scene lead-in before its short settle (it previously matched the 2s slide and hitch-froze the last frames of the drop).
 - Spotlight entry uses an incremental `Sync.full` and lets that pass own carousel, toys, and overlay reconciliation once.
 - Failure still lifts the cover and now runs the same transition recovery described below.
 

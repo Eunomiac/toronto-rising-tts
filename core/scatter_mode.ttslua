@@ -619,7 +619,8 @@ local function worldSlotFromPackedTableSlot(tableSlot)
     return ((math.floor(tonumber(tableSlot) or 0) - 1) % 10) + 1
 end
 
---- Direct figurine pose before satellite layout. XZ from the scatter slot; Y stays authored (`pcSeatY`).
+--- Direct figurine pose before satellite layout. PC figurines stand on the Scatter floor while
+--- their character sheets, hands, and cameras retain their authored seated Y values.
 --- @param color string
 --- @param frame table `{ position, rotation }`
 local function movePcFigurineToScatterPose(color, frame)
@@ -634,7 +635,7 @@ local function movePcFigurineToScatterPose(color, frame)
     local src = frame.position
     local pos = Vector({
         x = tonumber(src and (src.x or src[1])) or 0,
-        y = tonumber(src and (src.y or src[2])) or ScatterLayout.pcSeatY(),
+        y = ScatterLayout.floorY(),
         z = tonumber(src and (src.z or src[3])) or 0,
     })
     local rot = Vector(frame.rotation)
@@ -702,7 +703,7 @@ end
 local function applyPcRigs(framesBySlot, occupants)
     local FSL = require("lib.figurine_seat_layout")
     local RSL = require("lib.rotational-seat-layout")
-    local tableA, refFig, center = scatterTableARef()
+    local tableA, refFig, center, authoredY = scatterTableARef()
     local seatRigidByKey = {}
     local slot1Rigid = nil
     local packedFrames = {}
@@ -732,6 +733,7 @@ local function applyPcRigs(framesBySlot, occupants)
         centerPoint = center,
     }, {
         skipRoleKeys = { SEAT_CHAIR = true },
+        skipFigurine = true,
     })
     for i = 1, #occupants do
         hideChairForOccupant(occupants[i].occupantKey)
@@ -863,7 +865,12 @@ function ScatterMode.enter(opts)
     applyScatterWorldChrome(true)
     local Sync = require("core.sync")
     -- Sync.npcs owns the single physical Scatter layout through reconciler Step Five.
-    Sync.npcs({ reason = "scatter_enter" })
+    -- Scene Apply / live table switch run hosted reconcile right after SetTableTo, which already
+    -- calls NC.reconcileForSession — skip the duplicate pass under the cover.
+    Sync.npcs({
+        reason = "scatter_enter",
+        skipConditionReconcile = opts.skipConditionReconcile == true,
+    })
 end
 
 function ScatterMode.leave()
@@ -1001,6 +1008,7 @@ local function applyScatterMovedPcSeat(context, slice)
         skipRoleKeys = { SEAT_CHAIR = true },
         keepOtherOccupants = true,
         skipOwnedReconcile = true,
+        skipFigurine = true,
     }
     if slice == "hand" then
         helpers.onlyRoleKeys = { HAND_ZONE = true }
@@ -1068,6 +1076,9 @@ local function applyScatterMovedPc(pcKey)
     end
     movePcFigurineToScatterPose(context.found.color, context.poseFrame)
     applyScatterMovedPcSeat(context, "all")
+    -- Restoring a previously parked Red pile can reveal Prince props. Scatter owns their hidden
+    -- state, so re-assert it after every one-player rig update as well as the full layout pass.
+    applyScatterObjectsToHide()
     applyScatterMovedPcCamera(context)
 end
 

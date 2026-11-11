@@ -389,6 +389,19 @@ local function clearOverlayChromeCaches()
     overlayClassCache = {}
 end
 
+--- Global `UI.setXml` restores baked copy/classes/active flags while these Lua caches still
+--- describe the document that was replaced. Invalidate every presentation cache before the
+--- post-remount reconcile so time, location, and weather are written again even when gameState
+--- itself did not change.
+function GameStateOverlay.invalidateAfterXmlRemount()
+    overlayTextCache = {}
+    overlayActiveCache = {}
+    overlayClassCache = {}
+    lastDistrictSeparatorFingerprint = nil
+    lastOverlayChromeFingerprint = nil
+    lastSessionSceneOverlayFingerprint = nil
+end
+
 --- Narrative clock + location row are shown only when chronicle phase is in-world play (not session bookends).
 --- @return boolean
 local function shouldShowNarrativeClockOnOverlay()

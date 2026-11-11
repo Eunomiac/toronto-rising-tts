@@ -27,6 +27,7 @@ export const createSceneDeckStore = async (options: {
   readonly dataDir: string;
   readonly backupDir: string | null;
   readonly now?: () => Date;
+  readonly rosterStore?: DataFileStore<NpcRoster>;
 }): Promise<DataFileStore<SceneDeck>> => {
   const { dataDir, backupDir, now } = options;
   const deckPath = path.join(dataDir, "scene-deck.json");
@@ -37,7 +38,7 @@ export const createSceneDeckStore = async (options: {
     normalize: normalizeSceneDeckFile,
     ...(now ? { now } : {})
   });
-  const roster = createDataFileStore<NpcRoster>({
+  const roster = options.rosterStore ?? createDataFileStore<NpcRoster>({
     filePath: path.join(dataDir, "npc-roster.json"),
     backupDir,
     backupPrefix: "npc-roster",
