@@ -116,6 +116,14 @@ end
 
 local function flushWorld()
   worldFlushPending = false
+  -- Keep dirty marks and try again after the cover: seats/scene builds must not compete with
+  -- blindfold fade Wait callbacks (that class of stall disconnected joined clients).
+  local HUDBF = require("core.hud_blindfold")
+  if type(HUDBF.getActiveTransitionVariant) == "function" and HUDBF.getActiveTransitionVariant() ~= nil then
+    worldFlushPending = true
+    U.await(flushWorld, WORLD_FLUSH_DELAY_SEC)
+    return
+  end
   local W = require("dashboard.world_snapshot")
   local Trace = require("lib.sync_trace")
   local dirty = dirtyWorld
@@ -123,7 +131,8 @@ local function flushWorld()
   for _, slice in ipairs(W.SLICES) do
     if dirty[slice] == true then
       local buildStarted = os.clock()
-      local snapshot = W.build(slice)
+      -- Coalesced flushes use the thin seats push path; mid-session tab open uses W.snapshot (rich).
+      local snapshot = W.build(slice, slice == "seats" and { npcConditionMode = "push" } or nil)
       local buildMs = elapsedMs(buildStarted)
       local encodeStarted = os.clock()
       local encoded = JSON.encode(snapshot)

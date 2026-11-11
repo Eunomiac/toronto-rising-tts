@@ -243,12 +243,19 @@ function NC.reconcileEntry(key, forceEntry)
   return true
 end
 
+--- Presence map only: run the expensive onHostedEnter resolve for NPCs that just became present.
+--- Already-present cast members keep their presence bit without another full condition derive
+--- (scene Apply / Scatter enter used to pay this twice under the cover).
 function NC.reconcileForSession()
   local previous = S.getStateVal("npcConditionPresence") or {}
   local nextPresence = {}
   for _, key in ipairs(require("core.npc_trackers").sceneCastKeys()) do
     if NC.isPresent(key) then
-      nextPresence[key] = NC.reconcileEntry(key, previous[key] ~= true) == true
+      if previous[key] == true then
+        nextPresence[key] = true
+      else
+        nextPresence[key] = NC.reconcileEntry(key, true) == true
+      end
     end
   end
   S.setStateVal(nextPresence, "npcConditionPresence")
@@ -272,15 +279,73 @@ function NC.queueCheck(config)
 end
 
 function NC.snapshot(key)
-  local out = NC.snapshotsForKeys({ key })
+  local out = NC.snapshotsForKeys({ key }, { mode = "rich" })
   return out[key]
 end
 
---- Dashboard seats push: one shared hosted-id set and manual palette for the whole cast.
+--- Live seats push: stored + hosted labels and base ratings only (no full derive/effects pass).
+--- @param key string
+--- @param rec table
+--- @param present boolean
+--- @param hostedIds table
+--- @param manualTemplate table[]
+--- @return table
+local function pushSnapshotForKey(key, rec, present, hostedIds, manualTemplate)
+  local stored = type(rec.conditions) == "table" and rec.conditions or {}
+  local b = type(rec.conditionStats) == "table" and rec.conditionStats or {}
+  local active = {}
+  for id, value in pairs(stored) do
+    active[id] = value
+  end
+  if present then
+    for id in pairs(hostedIds) do
+      if active[id] == nil then
+        active[id] = true
+      end
+    end
+  end
+  local labels = {}
+  for _, id in ipairs(CD.sortedActiveIds(active)) do
+    if CD.isKnownId(id) then
+      local def = CD.getDef(id)
+      labels[#labels + 1] = { id = id, label = def.displayName, type = def.type }
+    end
+  end
+  local manual = {}
+  for i = 1, #manualTemplate do
+    local row = manualTemplate[i]
+    manual[i] = { id = row.id, label = row.label, on = stored[row.id] ~= nil }
+  end
+  return {
+    conditions = labels,
+    manual = manual,
+    statChanges = {},
+    healthMax = b.health,
+    wpMax = b.willpower,
+    bloodPotency = b.bloodPotency,
+    humanity = math.max(0, (b.humanity or 0) + (tonumber(rec.humanityDelta) or 0)),
+    rollFeatures = {},
+    hungerDiceAllowed = b.kind ~= "werewolf",
+    base = b,
+  }
+end
+
+--- Dashboard seats slice: one shared hosted-id set and manual palette for the whole cast.
 --- @param keys string[]
---- @param profileFn function|nil optional `profileFn(name, elapsedMs)` for cold-path timing
+--- @param opts function|table|nil profile callback, or `{ mode = "push"|"rich", profileFn = fun? }`
+---   `push` (default): thin live view for coalesced flushes. `rich`: full resolve for mid-session snapshot.
 --- @return table<string, table>
-function NC.snapshotsForKeys(keys, profileFn)
+function NC.snapshotsForKeys(keys, opts)
+  local profileFn = nil
+  local mode = "push"
+  if type(opts) == "function" then
+    profileFn = opts
+  elseif type(opts) == "table" then
+    profileFn = opts.profileFn
+    if opts.mode == "rich" or opts.mode == "push" then
+      mode = opts.mode
+    end
+  end
   local list = type(keys) == "table" and keys or {}
   local hostedIds = require("core.conditions").collectHostedIdsForSession()
   local manualTemplate = manualPaletteTemplate()
@@ -295,12 +360,16 @@ function NC.snapshotsForKeys(keys, profileFn)
         presentCache[key] = NC.isPresent(key) == true
       end
       local rec = record(key, night)
-      local active, stats = conditionSetWithOpts(key, {
-        present = presentCache[key],
-        hostedIds = hostedIds,
-        record = rec,
-      })
-      out[key] = snapshotFromResolved(active, stats, rec, manualTemplate)
+      if mode == "rich" then
+        local active, stats = conditionSetWithOpts(key, {
+          present = presentCache[key],
+          hostedIds = hostedIds,
+          record = rec,
+        })
+        out[key] = snapshotFromResolved(active, stats, rec, manualTemplate)
+      else
+        out[key] = pushSnapshotForKey(key, rec, presentCache[key], hostedIds, manualTemplate)
+      end
       if type(profileFn) == "function" then
         profileFn(key, math.floor((os.clock() - tKey) * 1000 + 0.5))
       end
