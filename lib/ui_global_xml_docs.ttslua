@@ -10113,7 +10113,7 @@ UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", of
     rectAlignment="LowerRight"
     childAlignment="LowerRight"
     width="200"
-    height="460"
+    height="510"
     ignoreLayout = "true"
     offsetXY = "-1650 250"
     childForceExpandWidth="true"
@@ -10279,6 +10279,8 @@ UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>
+      <Button id="debug_verboseLogging" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleVerboseLogging">Verbose Logging</Button>
+      <Button class="hud_storyteller_button" onClick="HUD_rebootInteractions">Reboot Interactions</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
       <Button id="debug_ambient" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
@@ -14580,6 +14582,32 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
 
 <!-- /include ui/storyteller/panel_session_start_join.xml -->
 
+
+<!-- Shared click-and-hold reference images are deliberately the final Global UI layer so maps,
+     roll panels, modals, and other HUD chrome cannot cover them. -->
+
+<!-- include ui/shared/panel_ref_panels_nestedless.xml -->
+<!-- Shared nestedless reference popups (TOR-444).
+     One Image per sheet for all seats; audience via XmlUI visibility unions.
+     Open/close: core/hud_player.ttslua applyNestedlessRefForSeat → U.showTo / U.hideFrom.
+     Court / coteries stay per-seat until Phase 5. -->
+<Panel id="playerHud_referenceLayer_nestedless" class="popupImageContainer">
+  <Image id="playerHud_refPanel_chronicleTenets" visibility="None" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
+  <Image id="playerHud_refPanel_rolls" visibility="None" active="false" class="popupImage" image="refPanel_Rolls" />
+  <Image id="playerHud_refPanel_physicalCombat" visibility="None" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
+  <Image id="playerHud_refPanel_socialCombat" visibility="None" active="false" class="popupImage" image="refPanel_SocialCombat" />
+  <Image id="playerHud_refPanel_threats" visibility="None" active="false" class="popupImage" image="refPanel_Threats" />
+  <Image id="playerHud_refPanel_frenzy" visibility="None" active="false" class="popupImage" image="refPanel_Frenzy" />
+  <Image id="playerHud_refPanel_recovery" visibility="None" active="false" class="popupImage" image="refPanel_Recovery" />
+  <Image id="playerHud_refPanel_resonance" visibility="None" active="false" class="popupImage" image="refPanel_Resonance" />
+  <Image id="playerHud_refPanel_experience" visibility="None" active="false" class="popupImage" image="refPanel_Experience" />
+  <Image id="playerHud_refPanel_advantages" visibility="None" active="false" class="popupImage" image="refPanel_Advantages" />
+  <Image id="playerHud_refPanel_projects" visibility="None" active="false" class="popupImage" image="refPanel_Projects" />
+  <Image id="playerHud_refPanel_memoriam" visibility="None" active="false" class="popupImage" image="refPanel_Memoriam" />
+</Panel>
+
+<!-- /include ui/shared/panel_ref_panels_nestedless.xml -->
+
 ]=]
 
 -- Expanded from ui/Global.join_minimal.xml
@@ -15292,7 +15320,7 @@ M.minimal = [=[
     rectAlignment="LowerRight"
     childAlignment="LowerRight"
     width="200"
-    height="460"
+    height="510"
     ignoreLayout = "true"
     offsetXY = "-1650 250"
     childForceExpandWidth="true"
@@ -15552,31 +15580,6 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
 
   </Panel>
 </Panel>
-
-<!-- Shared click-and-hold reference images are deliberately the final Global UI layer so maps,
-     roll panels, modals, and other HUD chrome cannot cover them. -->
-
-<!-- include ui/shared/panel_ref_panels_nestedless.xml -->
-<!-- Shared nestedless reference popups (TOR-444).
-     One Image per sheet for all seats; audience via XmlUI visibility unions.
-     Open/close: core/hud_player.ttslua applyNestedlessRefForSeat → U.showTo / U.hideFrom.
-     Court / coteries stay per-seat until Phase 5. -->
-<Panel id="playerHud_referenceLayer_nestedless" class="popupImageContainer">
-  <Image id="playerHud_refPanel_chronicleTenets" visibility="None" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
-  <Image id="playerHud_refPanel_rolls" visibility="None" active="false" class="popupImage" image="refPanel_Rolls" />
-  <Image id="playerHud_refPanel_physicalCombat" visibility="None" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
-  <Image id="playerHud_refPanel_socialCombat" visibility="None" active="false" class="popupImage" image="refPanel_SocialCombat" />
-  <Image id="playerHud_refPanel_threats" visibility="None" active="false" class="popupImage" image="refPanel_Threats" />
-  <Image id="playerHud_refPanel_frenzy" visibility="None" active="false" class="popupImage" image="refPanel_Frenzy" />
-  <Image id="playerHud_refPanel_recovery" visibility="None" active="false" class="popupImage" image="refPanel_Recovery" />
-  <Image id="playerHud_refPanel_resonance" visibility="None" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_experience" visibility="None" active="false" class="popupImage" image="refPanel_Experience" />
-  <Image id="playerHud_refPanel_advantages" visibility="None" active="false" class="popupImage" image="refPanel_Advantages" />
-  <Image id="playerHud_refPanel_projects" visibility="None" active="false" class="popupImage" image="refPanel_Projects" />
-  <Image id="playerHud_refPanel_memoriam" visibility="None" active="false" class="popupImage" image="refPanel_Memoriam" />
-</Panel>
-
-<!-- /include ui/shared/panel_ref_panels_nestedless.xml -->
 ]=]
 
 -- CustomUIAssets names referenced by expanded join-minimal XmlUI.

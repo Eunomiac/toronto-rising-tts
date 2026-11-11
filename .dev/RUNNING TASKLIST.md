@@ -44,7 +44,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 _No active Focus item. TOR-769 has shipped the seats-build follow-up and is awaiting live verification._
 
-**Pending Save & Play:** **TOR-773** repairs the first live multiplayer session regressions: disconnected hands and card ownership/orientation, post-layout session-start cameras, remote Tarot/companion controls, stale Rolls references, queued dice-bag clicks and quick Rouse right-clicks, Scatter figurine/Prince-prop placement, Refresh UI overlay repainting, topmost reference images, and the Casa Loma transition burst.
+**Pending Save & Play:** **TOR-773** repairs the first live multiplayer session regressions: disconnected hands and card ownership/orientation, post-layout session-start cameras, Purple's inverted companion control, stale Rolls references, Scatter figurine/Prince-prop placement, Refresh UI overlay repainting, topmost reference images, and the Casa Loma transition burst. Pink's player-only Tarot failure and the long dice-bag stalls remain unproven; the Storyteller debug panel now has **Verbose Logging** to capture their exact route and **Reboot Interactions** to recover every player bag, the Tarot control, and all companion toggles during play.
 
 **Proposed next (not promoted):** **TOR-81** (centralize light modes — also unblocks **TOR-320** / **TOR-321**), **TOR-301** (prune legacy seat layout generator, already In Progress), **TOR-466** (remove production onSave dumps).
 

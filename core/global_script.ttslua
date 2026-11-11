@@ -1585,6 +1585,27 @@ function GlobalIsStorytellerSteamPlayer(params)
     return U.isStorytellerSteamPlayer(color) == true
 end
 
+--- Read-only master switch for object-script diagnostics.
+--- @return boolean
+function GlobalIsVerboseLogging()
+    return DEBUG ~= nil
+        and type(DEBUG.isVerboseLoggingEnabled) == "function"
+        and DEBUG.isVerboseLoggingEnabled() == true
+end
+
+--- Bundle-safe structured diagnostic entry for dice bags, Tarot, and companion object scripts.
+--- @param params table { component?: string, event?: string, details?: table }
+--- @return boolean true when a line was printed
+function GlobalInteractionVerboseLog(params)
+    if type(params) ~= "table"
+        or DEBUG == nil
+        or type(DEBUG.logVerboseInteraction) ~= "function"
+    then
+        return false
+    end
+    return DEBUG.logVerboseInteraction(params.component, params.event, params.details)
+end
+
 
 --- Park object via `O.hideObject` (object scripts: pass `guid` + optional park opts).
 --- @param params table `{ obj?, guid?, parkPosition?, parkRotation?, snapshotPosition? }`
@@ -1649,8 +1670,22 @@ end
 --- @return boolean|nil applied on-state, or nil on failure / non-host
 function GlobalApplyTarotState(params)
     if type(params) ~= "table" or type(params.targetOn) ~= "boolean" then
+        GlobalInteractionVerboseLog({
+            component = "Tarot",
+            event = "apply-rejected",
+            details = { reason = "invalid-params" },
+        })
         return nil
     end
+    GlobalInteractionVerboseLog({
+        component = "Tarot",
+        event = "apply-start",
+        details = {
+            targetOn = params.targetOn,
+            buttonGuid = params.buttonGuid,
+            playerColor = params.playerColor,
+        },
+    })
     local TarotToggle = require("lib.tarot_toggle")
     local applied = TarotToggle.applyState(params.targetOn, params.buttonGuid)
     if applied ~= nil then
@@ -1659,6 +1694,11 @@ function GlobalApplyTarotState(params)
             mode = params.targetOn and "diceTray" or "default",
         })
     end
+    GlobalInteractionVerboseLog({
+        component = "Tarot",
+        event = "apply-finished",
+        details = { requestedOn = params.targetOn, applied = applied },
+    })
     return applied
 end
 
@@ -1667,10 +1707,34 @@ end
 --- @return boolean|nil
 function GlobalApplyCompanionToggleClick(params)
     if type(params) ~= "table" then
+        GlobalInteractionVerboseLog({
+            component = "CompanionToggle",
+            event = "route-rejected",
+            details = { reason = "invalid-params" },
+        })
         return nil
     end
+    GlobalInteractionVerboseLog({
+        component = "CompanionToggle",
+        event = "route-start",
+        details = {
+            toggleGuid = params.toggleGuid,
+            playerColor = params.playerColor,
+            altClick = params.altClick == true,
+        },
+    })
     local CompanionToggle = require("lib.companion_toggle")
-    return CompanionToggle.handleClick(params)
+    local result = CompanionToggle.handleClick(params)
+    GlobalInteractionVerboseLog({
+        component = "CompanionToggle",
+        event = "route-finished",
+        details = {
+            toggleGuid = params.toggleGuid,
+            playerColor = params.playerColor,
+            result = result,
+        },
+    })
+    return result
 end
 
 --- Read-only tarot on/off inference for object onLoad (keeps ui_tarot_button bundle thin).
@@ -2017,12 +2081,28 @@ end
 -- @param dieKind string  DK.KIND_*
 local function spawnRequestedDie(color, dieKind)
     if type(color) ~= "string" or type(dieKind) ~= "string" then
-        return
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "spawn-request-rejected",
+            details = { reason = "invalid-color-or-kind", color = color, dieKind = dieKind },
+        })
+        return nil
     end
     local logical = GlobalRollSpawnDieRequest({ color = color, requested = dieKind })
+    GlobalInteractionVerboseLog({
+        component = "DiceBag",
+        event = logical ~= nil and "spawn-request-approved" or "spawn-request-rejected",
+        details = {
+            color = color,
+            requestedKind = dieKind,
+            logicalKind = logical,
+            reason = logical == nil and "roll-rules-rejected-kind" or nil,
+        },
+    })
     if logical ~= nil then
         GlobalSpawnDieFromBag(color, logical)
     end
+    return logical
 end
 
 --- Whether a player dice bag accepts clicks (visibility reconcile).
@@ -2054,23 +2134,24 @@ local pendingRollCleanupTimerIds = {}
 -- one is active or while post-confirm dice cleanup is still pending.
 -- @param color string
 -- @param dieKind string  DK.KIND_ROUSE or DK.KIND_OBLIV_ROUSE
+-- @return boolean
 local function startQuickDedicatedRouseCheck(color, dieKind)
     if type(color) ~= "string" or RC == nil then
-        return
+        return false
     end
     if pendingRollCleanupTimerIds[color] ~= nil then
-        return
+        return false
     end
     local rollType = nil
     if dieKind == DK.KIND_ROUSE then
         rollType = C.RollType.ROUSE
     elseif dieKind == DK.KIND_OBLIV_ROUSE then
         if math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0) >= C.MAX_HUNGER then
-            return
+            return false
         end
         rollType = C.RollType.ROUSE_OBLIVION
     else
-        return
+        return false
     end
     local ok = RC.initiateRoll(color, {
         rollType = rollType,
@@ -2079,24 +2160,44 @@ local function startQuickDedicatedRouseCheck(color, dieKind)
         idleBagAutoRouse = true,
     })
     if ok ~= true then
-        return
+        return false
     end
     HUD_rollRollButton(nil, "-2", "rollControl_btnRoll_" .. color)
+    return true
 end
 
 --- Player dice bag right-click: opposite of left-click (usually remove one die).
 -- Idle Rouse / Oblivion-Rouse bag: quick 1-die check (initiate + Open + auto-toss). Other idle bags: no-op.
 -- @param params table  { color, dieKind, phase }
 function GlobalDiceBagRightClick(params)
-    if type(params) ~= "table" or RC == nil then return end
+    if type(params) ~= "table" or RC == nil then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "right-click-rejected",
+            details = { reason = "invalid-params-or-controller" },
+        })
+        return "invalid"
+    end
     local RO = require("lib.roll_options")
     local color = params.color
     local dieKind = params.dieKind
     local phase = params.phase
-    if type(color) ~= "string" or type(dieKind) ~= "string" then return end
+    if type(color) ~= "string" or type(dieKind) ~= "string" then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "right-click-rejected",
+            details = { reason = "missing-color-or-kind", color = color, dieKind = dieKind },
+        })
+        return "invalid"
+    end
 
     if GlobalIsPlayerDiceBagEnabled({ color = color, dieKind = dieKind }) ~= true then
-        return
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "right-click-rejected",
+            details = { reason = "bag-disabled", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "bag-disabled"
     end
 
     if phase == nil
@@ -2106,26 +2207,65 @@ function GlobalDiceBagRightClick(params)
         if pid ~= nil then
             local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
             if type(active) == "table" and active.rollType == C.RollType.REMORSE then
-                return
+                GlobalInteractionVerboseLog({
+                    component = "DiceBag",
+                    event = "right-click-rejected",
+                    details = { reason = "remorse-roll", color = color, dieKind = dieKind, phase = phase },
+                })
+                return "remorse-roll"
             end
         end
     end
 
     if phase == nil then
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
-            startQuickDedicatedRouseCheck(color, dieKind)
+            local started = startQuickDedicatedRouseCheck(color, dieKind)
+            GlobalInteractionVerboseLog({
+                component = "DiceBag",
+                event = started and "quick-rouse-started" or "quick-rouse-rejected",
+                details = {
+                    color = color,
+                    dieKind = dieKind,
+                    reason = started and nil or "roll-busy-cleaning-or-not-eligible",
+                },
+            })
+            return started and "quick-rouse-started" or "quick-rouse-rejected"
         end
-        return
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "right-click-rejected",
+            details = { reason = "idle-non-rouse-bag", color = color, dieKind = dieKind },
+        })
+        return "idle-non-rouse"
     end
 
     if phase ~= C.RollPhase.PRE_ROLL and phase ~= C.RollPhase.SETUP then
-        return
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "right-click-rejected",
+            details = { reason = "phase-blocked", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "phase-blocked"
     end
 
     local pid = S.getPlayerID(color)
-    if pid == nil then return end
+    if pid == nil then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "right-click-rejected",
+            details = { reason = "missing-player-id", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "missing-player-id"
+    end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil then return end
+    if active == nil then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "right-click-rejected",
+            details = { reason = "missing-active-roll", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "missing-active-roll"
+    end
 
     local meta = type(active.meta) == "table" and active.meta or {}
     local surgeActive = meta.bloodSurgeActive == true
@@ -2133,79 +2273,117 @@ function GlobalDiceBagRightClick(params)
 
     if C.RollTypesBloodSurge[active.rollType] then
         if dieKind == DK.KIND_NORMAL then
-            if removeMainPoolDie(color) then
+            local removed = removeMainPoolDie(color)
+            if removed then
                 maybeCancelRollIfPoolEmpty(color)
             end
-            return
+            return removed and "removed-main-pool-die" or "nothing-to-remove"
         end
         if dieKind == DK.KIND_HUNGER then
             if surgeActive then
                 RC.removeOneBloodSurgeRouse(color)
             end
-            return
+            return surgeActive and "removed-blood-surge-rouse" or "blood-surge-inactive"
         end
         if dieKind == DK.KIND_ROUSE then
-            if (pool.rouse or 0) > 0 and removeDieFromBag(color, dieKind) then
+            local removed = (pool.rouse or 0) > 0 and removeDieFromBag(color, dieKind)
+            if removed then
                 maybeCancelRollIfPoolEmpty(color)
             end
-            return
+            return removed and "removed-rouse" or "nothing-to-remove"
         end
         if dieKind == DK.KIND_OBLIV_ROUSE then
-            if (pool.oblivRouse or 0) > 0 and removeDieFromBag(color, dieKind) then
+            local removed = (pool.oblivRouse or 0) > 0 and removeDieFromBag(color, dieKind)
+            if removed then
                 maybeCancelRollIfPoolEmpty(color)
             end
-            return
+            return removed and "removed-oblivion-rouse" or "nothing-to-remove"
         end
-        return
+        return "unsupported-blood-surge-kind"
     end
 
     if RO.isRouseFamilyRoll(active.rollType) then
         if dieKind == DK.KIND_NORMAL then
-            if (pool.normal or 0) + (pool.hunger or 0) > 0 and removeMainPoolDie(color) then
+            local removed = (pool.normal or 0) + (pool.hunger or 0) > 0 and removeMainPoolDie(color)
+            if removed then
                 maybeCancelRollIfPoolEmpty(color)
             end
-            return
+            return removed and "removed-main-pool-die" or "nothing-to-remove"
         end
         if dieKind == DK.KIND_HUNGER then
-            return
+            return "rouse-family-hunger-no-op"
         end
         if dieKind == DK.KIND_ROUSE and active.rollType == C.RollType.ROUSE then
-            if (pool.rouse or 0) > 0 and removeDieFromBag(color, dieKind) then
+            local removed = (pool.rouse or 0) > 0 and removeDieFromBag(color, dieKind)
+            if removed then
                 maybeCancelRollIfPoolEmpty(color)
             end
-            return
+            return removed and "removed-rouse" or "nothing-to-remove"
         end
         if dieKind == DK.KIND_OBLIV_ROUSE and active.rollType == C.RollType.ROUSE_OBLIVION then
-            if (pool.oblivRouse or 0) > 0 and removeDieFromBag(color, dieKind) then
+            local removed = (pool.oblivRouse or 0) > 0 and removeDieFromBag(color, dieKind)
+            if removed then
                 maybeCancelRollIfPoolEmpty(color)
             end
-            return
+            return removed and "removed-oblivion-rouse" or "nothing-to-remove"
         end
-        return
+        return "rouse-family-kind-no-op"
     end
 
-    if removeDieFromBag(color, dieKind) then
+    local removed = removeDieFromBag(color, dieKind)
+    if removed then
         maybeCancelRollIfPoolEmpty(color)
     end
+    return removed and "removed-die" or "nothing-to-remove"
 end
 
 --- Player dice bag click routing (objects/dice_bag.ttslua).
 -- @param params table  { color, dieKind, phase, alt_click?: boolean }
 function GlobalDiceBagClick(params)
-    if type(params) ~= "table" or RC == nil then return end
+    if type(params) ~= "table" or RC == nil then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "route-rejected",
+            details = { reason = "invalid-params-or-controller" },
+        })
+        return "invalid"
+    end
+    GlobalInteractionVerboseLog({
+        component = "DiceBag",
+        event = "route-start",
+        details = {
+            bagGuid = params.bagGuid,
+            clickerColor = params.clickerColor,
+            ownerColor = params.color,
+            dieKind = params.dieKind,
+            phase = params.phase,
+            altClick = params.alt_click == true,
+        },
+    })
     if params.alt_click == true then
-        GlobalDiceBagRightClick(params)
-        return
+        return GlobalDiceBagRightClick(params)
     end
 
     local RO = require("lib.roll_options")
     local color = params.color
     local dieKind = params.dieKind
     local phase = params.phase
-    if type(color) ~= "string" or type(dieKind) ~= "string" then return end
+    if type(color) ~= "string" or type(dieKind) ~= "string" then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "route-rejected",
+            details = { reason = "missing-color-or-kind", color = color, dieKind = dieKind },
+        })
+        return "invalid"
+    end
 
     if GlobalIsPlayerDiceBagEnabled({ color = color, dieKind = dieKind }) ~= true then
-        return
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "route-rejected",
+            details = { reason = "bag-disabled", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "bag-disabled"
     end
 
     if phase == nil
@@ -2215,14 +2393,24 @@ function GlobalDiceBagClick(params)
         if pid ~= nil then
             local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
             if type(active) == "table" and active.rollType == C.RollType.REMORSE then
-                return
+                GlobalInteractionVerboseLog({
+                    component = "DiceBag",
+                    event = "route-rejected",
+                    details = { reason = "remorse-roll", color = color, dieKind = dieKind, phase = phase },
+                })
+                return "remorse-roll"
             end
         end
     end
 
     if phase == nil then
         if dieKind == DK.KIND_HUNGER then
-            return
+            GlobalInteractionVerboseLog({
+                component = "DiceBag",
+                event = "route-rejected",
+                details = { reason = "idle-hunger-bag", color = color, dieKind = dieKind },
+            })
+            return "idle-hunger-bag"
         elseif dieKind == DK.KIND_ROUSE then
             RC.initiateRoll(color, {
                 rollType = C.RollType.ROUSE,
@@ -2231,7 +2419,12 @@ function GlobalDiceBagClick(params)
             })
         elseif dieKind == DK.KIND_OBLIV_ROUSE then
             if math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0) >= C.MAX_HUNGER then
-                return
+                GlobalInteractionVerboseLog({
+                    component = "DiceBag",
+                    event = "route-rejected",
+                    details = { reason = "maximum-hunger", color = color, dieKind = dieKind },
+                })
+                return "maximum-hunger"
             end
             RC.initiateRoll(color, {
                 rollType = C.RollType.ROUSE_OBLIVION,
@@ -2246,31 +2439,54 @@ function GlobalDiceBagClick(params)
             })
         end
         GlobalRollSeatCamera({ color = color, mode = "roll" })
-        return
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "roll-initiated",
+            details = { color = color, dieKind = dieKind },
+        })
+        return "roll-initiated"
     end
 
     if phase ~= C.RollPhase.PRE_ROLL and phase ~= C.RollPhase.SETUP then
-        return
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "route-rejected",
+            details = { reason = "phase-blocked", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "phase-blocked"
     end
 
     local pid = S.getPlayerID(color)
-    if pid == nil then return end
+    if pid == nil then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "route-rejected",
+            details = { reason = "missing-player-id", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "missing-player-id"
+    end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil then return end
+    if active == nil then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "route-rejected",
+            details = { reason = "missing-active-roll", color = color, dieKind = dieKind, phase = phase },
+        })
+        return "missing-active-roll"
+    end
 
     if RO.isRouseFamilyRoll(active.rollType) then
         -- A Rouse check stays a Rouse check: Normal and Hunger bags are silent no-ops.
         if dieKind == DK.KIND_HUNGER or dieKind == DK.KIND_NORMAL then
-            return
+            return "rouse-family-kind-no-op"
         end
         if active.rollType == C.RollType.ROUSE and dieKind == DK.KIND_ROUSE then
-            spawnRequestedDie(color, dieKind)
-            return
+            return spawnRequestedDie(color, dieKind) ~= nil and "spawn-requested" or "spawn-rejected"
         end
         if active.rollType == C.RollType.ROUSE_OBLIVION and dieKind == DK.KIND_OBLIV_ROUSE then
-            spawnRequestedDie(color, dieKind)
+            return spawnRequestedDie(color, dieKind) ~= nil and "spawn-requested" or "spawn-rejected"
         end
-        return
+        return "rouse-family-kind-no-op"
     end
 
     if C.RollTypesBloodSurge[active.rollType] then
@@ -2281,28 +2497,30 @@ function GlobalDiceBagClick(params)
             local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
             if meta.bloodSurgeActive == true then
                 if DK.isVoluntaryRouseBlocked(hunger) then
-                    return
+                    return "voluntary-rouse-blocked"
                 end
                 RC.addBloodSurgeRouse(color)
             else
                 if DK.isVoluntaryRouseBlocked(hunger) then
-                    return
+                    return "voluntary-rouse-blocked"
                 end
                 RC.activateBloodSurge(color)
             end
-            return
+            return meta.bloodSurgeActive == true
+                and "blood-surge-rouse-added"
+                or "blood-surge-activated"
         end
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
             local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
             if DK.isVoluntaryRouseBlocked(hunger) then
-                return
+                return "voluntary-rouse-blocked"
             end
-            spawnRequestedDie(color, dieKind)
-            return
+            return spawnRequestedDie(color, dieKind) ~= nil and "spawn-requested" or "spawn-rejected"
         end
     end
 
-    spawnRequestedDie(color, dieKind)
+    local logical = spawnRequestedDie(color, dieKind)
+    return logical ~= nil and "spawn-requested" or "spawn-rejected"
 end
 
 --- Writes active roll id to a spawned die's GM Notes (leave-container backup for programmatic takeObject).
@@ -2721,6 +2939,11 @@ function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
         opts = colorOrParams
     end
     if type(color) ~= "string" or type(dieKind) ~= "string" then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "spawn-route-rejected",
+            details = { reason = "invalid-color-or-kind", color = color, dieKind = dieKind },
+        })
         return
     end
     local bloodSurgePool = type(opts) == "table" and opts.bloodSurgePool == true
@@ -2733,12 +2956,35 @@ function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
     elseif dieKind == DK.KIND_OBLIV_ROUSE then guid = G.GetDiceOblivRouseGUID(color)
     end
     if type(guid) ~= "string" then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "spawn-route-rejected",
+            details = { reason = "missing-bag-guid", color = color, dieKind = dieKind },
+        })
         return
     end
     local bag = G.getObject(guid)
     if bag == nil then
+        GlobalInteractionVerboseLog({
+            component = "DiceBag",
+            event = "spawn-route-rejected",
+            details = { reason = "missing-bag-object", color = color, dieKind = dieKind, bagGuid = guid },
+        })
         return
     end
+    GlobalInteractionVerboseLog({
+        component = "DiceBag",
+        event = "spawn-route-call",
+        details = {
+            color = color,
+            dieKind = dieKind,
+            bagGuid = guid,
+            bagInteractable = bag.interactable == true,
+            bagHidden = O.isHiddenObject(bag),
+            bloodSurgePool = bloodSurgePool,
+            bloodSurgeRouse = bloodSurgeRouse,
+        },
+    })
     bag.call("spawnDieRedirect", {
         bagColor = color,
         dieType = (dieKind == DK.KIND_BLOOD_SURGE_ROUSE) and DK.KIND_ROUSE or dieKind,
@@ -3385,7 +3631,9 @@ function onLoad(saved_data)
             end
             syncDebugConnectionControls()
             RUI.applyStRollUiEnabled()
-            if type(DEBUG.refreshSyncTraceButton) == "function" then
+            if type(DEBUG.restoreVerboseLogging) == "function" then
+                DEBUG.restoreVerboseLogging()
+            elseif type(DEBUG.refreshSyncTraceButton) == "function" then
                 DEBUG.refreshSyncTraceButton()
             end
             do
@@ -3862,6 +4110,12 @@ function HUD_togglePanel(player, button, id)
         syncDebugLastLoadClockLabel()
         syncDebugSeatColorButtons()
         syncDebugConnectionControls()
+        if type(DEBUG.refreshVerboseLoggingButton) == "function" then
+            DEBUG.refreshVerboseLoggingButton()
+        end
+        if type(DEBUG.refreshSyncTraceButton) == "function" then
+            DEBUG.refreshSyncTraceButton()
+        end
     end
 end
 
@@ -4699,6 +4953,19 @@ function HUD_toggleSyncTrace(player, button, id)
     )
 end
 
+--- Debug panel master switch: detailed interaction diagnostics plus the existing heavy-sync trace.
+function HUD_toggleVerboseLogging(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleVerboseLogging") then
+        return
+    end
+    local on = DEBUG.toggleVerboseLogging()
+    broadcastToColor(
+        string.format("Verbose logging: %s", on and "on" or "off"),
+        player.color,
+        { 0, 1, 1 }
+    )
+end
+
 --- TOR-293 Debug panel: "Assume Connected" (PCs-panel simulated connection) vs "By Connection Status"
 --- (real Steam connection). Switching fires connect / disconnect handlers for every seat that changes.
 function HUD_toggleConnectionMode(player, button, id)
@@ -5290,6 +5557,12 @@ function UpdateUIDisplays(delta)
 
     if refreshAll then
         syncDebugLastLoadClockLabel()
+        if type(DEBUG.refreshVerboseLoggingButton) == "function" then
+            DEBUG.refreshVerboseLoggingButton()
+        end
+        if type(DEBUG.refreshSyncTraceButton) == "function" then
+            DEBUG.refreshSyncTraceButton()
+        end
     end
 
     if refreshAll or wants("debugSeatColors") then
@@ -6984,6 +7257,85 @@ function HUD_refreshUi(player, value, id)
         return
     end
     performFullUiResync("Storyteller debug Refresh UI", { mode = "full" })
+end
+
+--- Debug panel emergency recovery for the known physical interaction controls.
+--- Cancels active PC rolls, clears bag queues/dice, rebuilds all scripted button layers,
+--- and reapplies Tarot/companion poses without changing their current on/off choices.
+function HUD_rebootInteractions(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_rebootInteractions") then
+        return
+    end
+
+    GlobalInteractionVerboseLog({
+        component = "InteractionReboot",
+        event = "started",
+        details = { clickerColor = player.color },
+    })
+
+    local cancelledRolls = 0
+    local bagsFound = 0
+    local bagsRebuilt = 0
+    for _, color in ipairs(C.PlayerColors) do
+        if RC.cancelRoll(color) then
+            cancelledRolls = cancelledRolls + 1
+        end
+        DBV.reconcileForPlayer(color, nil)
+        for _, guid in pairs(G.GetAllPlayerDiceBagGUIDs(color)) do
+            local bag = G.getObject(guid)
+            if bag ~= nil then
+                bagsFound = bagsFound + 1
+                local rebuilt = bag.call("rebootInteractions")
+                if type(rebuilt) == "table" then
+                    bagsRebuilt = bagsRebuilt + 1
+                end
+            end
+        end
+    end
+
+    local TarotToggle = require("lib.tarot_toggle")
+    local tarotState = TarotToggle.reconcileAfterSeatLayout(G.GUIDS.TAROT_BUTTON_PINK)
+    local tarotButton = G.getObject(G.GUIDS.TAROT_BUTTON_PINK)
+    local tarotRebuilt = false
+    if tarotButton ~= nil then
+        if not O.isHiddenObject(tarotButton) then
+            tarotButton.interactable = true
+        end
+        tarotRebuilt = type(tarotButton.call("rebootInteractions")) == "table"
+    end
+
+    local CompanionToggle = require("lib.companion_toggle")
+    local companionReport = CompanionToggle.rebootInteractions()
+    local companionRebuilt = type(companionReport) == "table" and companionReport.rebuilt or 0
+
+    local report = {
+        cancelledRolls = cancelledRolls,
+        bagsFound = bagsFound,
+        bagsRebuilt = bagsRebuilt,
+        tarotFound = tarotButton ~= nil,
+        tarotRebuilt = tarotRebuilt,
+        tarotOn = tarotState,
+        companionFound = type(companionReport) == "table" and companionReport.found or 0,
+        companionRebuilt = companionRebuilt,
+    }
+    GlobalInteractionVerboseLog({
+        component = "InteractionReboot",
+        event = "finished",
+        details = report,
+    })
+    print("[InteractionReboot] " .. JSON.encode(report))
+    broadcastToColor(
+        string.format(
+            "Interactions rebooted: %d/%d dice bags, Tarot %s, %d companion toggles. %d active player roll(s) cancelled.",
+            bagsRebuilt,
+            bagsFound,
+            tarotRebuilt and "rebuilt" or "unavailable",
+            companionRebuilt,
+            cancelledRolls
+        ),
+        player.color,
+        { 0.2, 1, 0.6 }
+    )
 end
 
 --- Admin panel: arm a quick test roll for a player color (difficulty 2, Standard).

@@ -35,7 +35,11 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 > **Agent-assessment note:** The dashboard behaviors, Lua syntax, safety gates, and the state changes are covered by automated checks. The important remaining evidence is real connected-client input, Tabletop Simulator's physical hand behavior, and listening to the Unity audio transition.
 
-**How to verify:** Save & Play. Connect Orange, Brown, Pink, and Purple, leaving Red disconnected, and start Play from Intermission. Each connected player should receive their own default camera after the session-start animation. Pink's Tarot button should respond for Pink, and Purple's Jean Ducheski-Francois companion toggles should have visible click targets and respond for Purple.
+**How to verify:** Save & Play. Connect Orange, Brown, Pink, and Purple, leaving Red disconnected, and start Play from Intermission. Each connected player should receive their own default camera after the session-start animation. Purple's Jean Ducheski-Francois companion control should be face-up, with its scripted click layer above rather than below the tile, and respond for Purple.
+
+Before Pink tests her Tarot button, turn on **Verbose Logging** in the Storyteller debug panel. Pink's click should work and the console should show `TarotButton | click-received`, followed by its route and result. If the button does nothing, preserve the console output: the presence or absence of `click-received` tells us whether TTS delivered Pink's click to the object script at all. Black being able to use the same button is not treated as evidence that Pink's route is healthy.
+
+With an active player roll, click **Reboot Interactions**. It should cancel active player rolls, clear pending dice-bag work and staged dice, rebuild all player bag buttons, rebuild the Tarot and companion button layers, and preserve the current Tarot and companion on/off choices. Afterwards, Pink, Purple, and each connected player's dice bags should respond normally. Turn **Verbose Logging** off after the check.
 
 Connect Red late, and also repeat the Intermission-to-Play start once with Red already present. The Rolls reference image should not remain visible for Red. Hold the Rolls reference button to show it, then release to hide it. Sidebar reference images should stay above the map and all other HUD panels while held, and disappear on release.
 
@@ -119,7 +123,9 @@ The browser check covers saving the list, picking and dragging NPCs, and the com
 
 **How to verify:** After Save & Play, have Rashid toggle the signal candle before the first scene change. During a Standard roll, have him click the Standard bag repeatedly and quickly, past his Hunger rating, both before and after you Open the roll. Each accepted click should be queued until the Infinite Bag finishes its previous clone and should add exactly one die. The bag should not become intermittently unresponsive after three or four dice. Repeat after a scene change and with at least one other connected player. While no roll is active, right-click each player's Rouse bag; each should start the one-die quick Rouse check.
 
-Automated checks cover click access after repeated parking and the spawn positions for Standard and Hunger dice across all five seats. If the bag still misses clicks, turn on **Trace Sync**, repeat a few clicks, and turn it off. The console will show whether the host received each click, requested a die, and registered the spawn.
+Automated checks cover click access after repeated parking, burst-queue ordering, and the spawn positions for Standard and Hunger dice across all five seats. They do not reproduce the long live stall. If a bag still misses clicks, turn on **Verbose Logging**, repeat several clicks, and leave the console untouched until the failure has lasted long enough to match the live-session symptom. The log distinguishes a click that never reached the bag from a rejected route, a queued request, a started Infinite Bag clone, and a missing or completed clone callback. **Verbose Logging** also enables the existing Sync Trace while it is on.
+
+While the bag is still stuck, click **Reboot Interactions**. It should cancel active player rolls, invalidate pending or in-flight bag work, remove their staged dice, rebuild every player bag's button, and return the visible bags to their idle rules. Start a fresh roll and confirm all connected players can add dice again.
 
 #### 🟢 TOR-759 — Opt-in agent verification harness stays dormant and cleans up after itself
 

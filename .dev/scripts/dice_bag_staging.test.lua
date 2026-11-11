@@ -9,13 +9,14 @@ local normalBag = {
     end,
 }
 
-local color, dieKind, takeCount, registeredCount
+local color, dieKind, takeCount, registeredCount, pendingCallbacks
 getObjectFromGUID = function(guid)
     if guid == G.GetDiceNormalGUID(color) then return normalBag end
 end
 Global = { call = function(name, args)
     if name == "GlobalGetPcRollTrayYOffset" then return 0 end
     if name == "GlobalTagDieForActiveRoll" then return end
+    if name == "GlobalInteractionVerboseLog" then return false end
     assert(name == "GlobalOnBagDieSpawned", name)
     registeredCount = registeredCount + 1
     assert(args.color == color and args.dieType == dieKind and args.stagedCount == registeredCount)
@@ -24,8 +25,11 @@ dofile("objects/dice_bag.ttslua")
 randomRotation = function() return { 0, 0, 0 } end
 
 local function testPool(seatColor, kind, tag, radius)
-    color, dieKind, takeCount, registeredCount = seatColor, kind, 0, 0
+    color, dieKind, takeCount, registeredCount, pendingCallbacks = seatColor, kind, 0, 0, {}
     spawnedDice = {}
+    pendingSpawns = {}
+    spawnInFlight = false
+    spawnEpoch = 0
     self = {
         getTags = function() return { color .. "Object", tag } end,
         takeObject = function(args)
@@ -40,17 +44,27 @@ local function testPool(seatColor, kind, tag, radius)
                 color .. " " .. kind .. " die spawned outside the staging ring")
             assert(args.position.y == STAGING_WORLD_Y + layer * ARC_LAYER_Y_STEP)
             local guid = string.format("%06x", takeCount)
-            return {
+            local die = {
                 getGUID = function() return guid end,
                 getLock = function() return true end,
                 setScale = function() end,
                 setLock = function() end,
                 setPositionSmooth = function() end,
             }
+            pendingCallbacks[#pendingCallbacks + 1] = function()
+                args.callback_function(die)
+            end
+            return die
         end,
     }
     for _ = 1, 12 do
         spawnDieRedirect({ bagColor = color, dieType = kind })
+    end
+    assert(takeCount == 1 and #pendingSpawns == 11 and spawnInFlight == true,
+        color .. " " .. kind .. " burst was not serialized behind the first spawn callback")
+    while #pendingCallbacks > 0 do
+        local callback = table.remove(pendingCallbacks, 1)
+        callback()
     end
     assert(#spawnedDice == 12 and takeCount == 12 and registeredCount == 12)
 end
