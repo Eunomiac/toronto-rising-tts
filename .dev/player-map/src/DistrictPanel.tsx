@@ -2,10 +2,10 @@ import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import type { Feature, MultiPolygon } from 'geojson';
-import type { MapFeatureProperties } from './types';
+import type { DistrictFeatureProperties } from './types';
 
 interface DistrictPanelProps {
-  districts: Array<Feature<MultiPolygon, MapFeatureProperties>>;
+  districts: Array<Feature<MultiPolygon, DistrictFeatureProperties>>;
   selectedKey: string | null;
   onSelect: (key: string) => void;
   onClear: () => void;
@@ -14,6 +14,7 @@ interface DistrictPanelProps {
 export function DistrictPanel({ districts, selectedKey, onSelect, onClear }: DistrictPanelProps) {
   const panelRef = useRef<HTMLElement>(null);
   const selected = districts.find((feature) => feature.properties.key === selectedKey) ?? null;
+  const resonanceName = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
   useGSAP(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -45,6 +46,20 @@ export function DistrictPanel({ districts, selectedKey, onSelect, onClear }: Dis
             <h2>{selected.properties.name}</h2>
             <button type="button" onClick={onClear} aria-label="Close district details">×</button>
           </div>
+          <dl className="district-panel__facts">
+            <div>
+              <dt>Hunting difficulty</dt>
+              <dd>{selected.properties.huntingDifficulty ?? '—'}</dd>
+            </div>
+            <div>
+              <dt>Resonance +</dt>
+              <dd>{resonanceName(selected.properties.resonancePlus)}</dd>
+            </div>
+            <div>
+              <dt>Resonance −</dt>
+              <dd>{resonanceName(selected.properties.resonanceMinus)}</dd>
+            </div>
+          </dl>
         </div>
       ) : null}
     </aside>

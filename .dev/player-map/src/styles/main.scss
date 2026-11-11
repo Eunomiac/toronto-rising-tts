@@ -173,6 +173,41 @@ select,
       cursor: pointer;
     }
   }
+
+  &__facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0.4rem 0 0;
+    background: $line;
+
+    div {
+      min-width: 0;
+      padding: 0.35rem 0.4rem;
+      background: rgba($panel-solid, 0.96);
+    }
+
+    dt {
+      overflow: hidden;
+      color: $muted;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    dd {
+      margin: 0.15rem 0 0;
+      overflow: hidden;
+      color: $paper;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
 .calibration-panel {

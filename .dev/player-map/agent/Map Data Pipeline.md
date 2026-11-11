@@ -18,7 +18,7 @@ Verification:
 - inspect the generated diagnostic map over the live basemap before accepting geometry changes
 
 Status:
-- current for the Phase 1 geometry and runtime-normalization pipeline; Sheet projection, full visual diagnostics, and FULL-build integration remain Phase 2 work
+- current for geometry, runtime normalization, and the first player-safe Sheet projection; full visual diagnostics and FULL-build integration remain Phase 2 work
 
 ## Principle: One Owner Per Fact
 
@@ -58,7 +58,7 @@ The district export deliberately includes four non-geographical runtime district
 
 The importer must call the existing validated loader in `.dev/scripts/lib/sheet_exports.js`. It must not duplicate the Google URL, CSV parser, header rules, or value normalization. During FULL, it must consume the exact temporary snapshot supplied through `TR_EXPORT_SNAPSHOT`; it must not make a second live Sheet request. That keeps the Player Map, TTS, and the Storyteller Dashboard on one coherent build snapshot.
 
-## Planned Build Stages
+## Build Stages
 
 ```text
 canonical SVG --------------------> parse and normalize geometry ---+
@@ -68,7 +68,7 @@ Toronto Rising EXPORT_* -> validated shared Sheet loader -> public join -> valid
 reviewed public-field allowlist -----------------------------------+
 ```
 
-The build should perform these stages:
+The build performs these stages, except for PATH extraction and the richer visual diagnostics that remain planned:
 
 1. Load and validate the existing Sheet export snapshot.
 2. Project Sheet rows to an explicit player-safe schema. Unexpected fields never pass through automatically.
@@ -195,7 +195,7 @@ browser-local corrections are not applied a second time.
 
 ## Public Output
 
-The exact filenames can be settled during implementation, but the public package should contain the equivalent of:
+The public package contains:
 
 ```text
 public/generated/districts.geojson
@@ -206,7 +206,7 @@ public/generated/map-data-manifest.json
 
 Each geographical feature needs a stable exact key. Other content should be present only when required for rendering or a player-facing panel. Keep large prose or frequently changing data separate from geometry if doing so improves caching and updates.
 
-The manifest should record:
+The manifest records:
 
 - schema version
 - source export package names
@@ -221,16 +221,49 @@ The original illustrated map is not a planned runtime raster layer. Its reusable
 
 ## Public Field Allowlist
 
-The first public district projection should be reviewed field by field. Likely candidates from the current contract are:
+`data/public-data-policy.json` is the reviewed privacy boundary. The first public district projection contains only:
 
 - `Key`
 - `Name`
 - `Hunting Difficulty`
 - `Resonance Plus`
 - `Resonance Minus`
-- selected aspect and condition fields once their player visibility is confirmed
+
+The public property names are `key`, `name`, `huntingDifficulty`,
+`resonancePlus`, and `resonanceMinus`. The generator constructs these objects
+field by field and the browser validates the exact property set again at load
+time. A new Sheet column therefore cannot enter the site accidentally.
+
+The same policy records the four reviewed Sheet-only districts: `PATH`,
+`Sewers`, `Streets`, and `Subway`. They are required in the validated Sheet
+snapshot but are deliberately exempt from the 32 surface-polygon join. PATH
+will receive its separately generated network geometry; the other three are
+runtime abstractions without Player Map geometry.
+
+No site is public yet. `sites.geojson` is intentionally generated as an empty
+feature collection, and the policy's site allowlist is empty. The sites export
+contains room-level and unrevealed chronicle data without a sufficiently clear
+player-visibility flag, so publishing it wholesale would violate the privacy
+boundary. Adding a site later requires both an explicit reviewed key and an
+explicit field projection; changing the allowlist alone fails the build.
 
 Domain-control values, aspects, conditions, sites, and future NPC-activity fields must not be assumed public merely because they exist in a link-viewable Sheet. Add them only through an explicit decision. New Sheet columns do not automatically enter the Player Map.
+
+## Sheet Snapshot Modes
+
+`npm run data:build` always calls the production loader in
+`.dev/scripts/lib/sheet_exports.js` and validates the exact shared export
+contract. It chooses the snapshot in this order:
+
+1. `TR_EXPORT_SNAPSHOT`, when the FULL pipeline supplies its temporary shared snapshot.
+2. The validated Storyteller Dashboard snapshot cache, when it exists during local development.
+3. A fresh production Sheet fetch, when neither shared source is available.
+
+Use `npm run data:refresh` to force a fresh fetch while developing the Player
+Map. The manifest records the snapshot mode, workbook ID, fetch time, export
+names, source-row hash, safe fields, row counts, and reviewed Sheet-only
+exceptions. Player browsers still load only generated files and never contact
+Google Sheets.
 
 If some rows or values change visibility during play, a static public file is insufficient. Those values must be served through an authenticated API that returns only what the current player is allowed to know.
 

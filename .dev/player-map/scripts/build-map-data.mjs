@@ -1,9 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import { normalizeDistrictCollection } from './lib/normalize-districts.mjs';
+import { emptyPublicSites, joinDistrictFacts, projectDistrictRows, validatePublicDataPolicy } from './lib/public-data.mjs';
 import {
   createVisualCalibrationTransform,
   fitAffineCalibration,
@@ -20,17 +22,43 @@ const sourcePath = path.join(root, 'data/source/toronto-rising-map.svg');
 const calibrationPath = path.join(root, 'data/calibration.json');
 const namesPath = path.join(root, 'data/feature-names.json');
 const priorityPath = path.join(root, 'data/district-priority.json');
+const publicDataPolicyPath = path.join(root, 'data/public-data-policy.json');
 const normalizationDiagnosticsPath = path.join(root, 'data/diagnostics/normalization.json');
 const outputDirectory = path.join(root, 'public/generated');
 const checkOnly = process.argv.includes('--check');
+const refreshSheet = process.argv.includes('--refresh-sheet');
+
+const require = createRequire(import.meta.url);
+const {
+  contract: sheetContract,
+  dataOf,
+  defaultSnapshotPath,
+  loadSnapshot,
+} = require('../../scripts/lib/sheet_exports.js');
+
+let sheetSnapshotMode = process.env.TR_EXPORT_SNAPSHOT ? 'shared-snapshot' : 'live-fetch';
+if (!process.env.TR_EXPORT_SNAPSHOT && !refreshSheet) {
+  try {
+    await fs.access(defaultSnapshotPath);
+    process.env.TR_EXPORT_SNAPSHOT = defaultSnapshotPath;
+    sheetSnapshotMode = 'validated-cache';
+  } catch {
+    // No validated local cache exists yet. The shared loader will fetch and validate the live exports.
+  }
+}
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const svgText = await fs.readFile(sourcePath, 'utf8');
-const [calibration, names, districtPriority] = await Promise.all([
+const [calibration, names, districtPriority, publicDataPolicy, sheetSnapshot] = await Promise.all([
   readJson(calibrationPath),
   readJson(namesPath),
   readJson(priorityPath),
+  readJson(publicDataPolicyPath).then(validatePublicDataPolicy),
+  loadSnapshot(),
 ]);
+const sheetDistrictRows = dataOf(sheetSnapshot, 'LOCATIONS_DISTRICTS');
+const sheetSiteRows = dataOf(sheetSnapshot, 'LOCATIONS_SITES');
+const publicDistrictFacts = projectDistrictRows(sheetDistrictRows, publicDataPolicy);
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '',
@@ -75,6 +103,35 @@ function transformCollection(collection, transformLngLat) {
   };
 }
 
+function validatePolygonCollection(collection, kind) {
+  const keys = new Set();
+  for (const feature of collection.features) {
+    const key = feature.properties?.key;
+    if (typeof key !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) || keys.has(key)) {
+      throw new Error(`${kind}: invalid or duplicate key ${JSON.stringify(key)}`);
+    }
+    keys.add(key);
+    if (feature.type !== 'Feature' || feature.geometry?.type !== 'MultiPolygon' || feature.geometry.coordinates.length === 0) {
+      throw new Error(`${key}: invalid ${kind} geometry`);
+    }
+    for (const polygon of feature.geometry.coordinates) {
+      if (!Array.isArray(polygon) || polygon.length === 0) throw new Error(`${key}: empty polygon`);
+      for (const ring of polygon) {
+        if (!Array.isArray(ring) || ring.length < 4) throw new Error(`${key}: invalid polygon ring`);
+        const [firstLongitude, firstLatitude] = ring[0];
+        const [lastLongitude, lastLatitude] = ring[ring.length - 1];
+        if (firstLongitude !== lastLongitude || firstLatitude !== lastLatitude) throw new Error(`${key}: open polygon ring`);
+        for (const [longitude, latitude] of ring) {
+          if (!Number.isFinite(longitude) || !Number.isFinite(latitude)
+            || longitude < -79.46 || longitude > -79.32 || latitude < 43.60 || latitude > 43.72) {
+            throw new Error(`${key}: coordinate lies outside the reviewed Toronto map bounds`);
+          }
+        }
+      }
+    }
+  }
+}
+
 function buildCollection(groupId, kind, expectedNames) {
   const group = groups.get(groupId);
   if (!group) throw new Error(`Missing SVG group: ${groupId}`);
@@ -116,11 +173,15 @@ const visualTransform = calibration.visualCalibration
   ? createVisualCalibrationTransform(baseBounds, calibration.visualCalibration)
   : (lngLat) => lngLat;
 const unnormalizedDistricts = transformCollection(baseDistricts, visualTransform);
-const { collection: districts, diagnostics: normalizationDiagnostics } = normalizeDistrictCollection(
+const { collection: normalizedDistricts, diagnostics: normalizationDiagnostics } = normalizeDistrictCollection(
   unnormalizedDistricts,
   districtPriority,
 );
+const districts = joinDistrictFacts(normalizedDistricts, publicDistrictFacts, publicDataPolicy);
 const regions = transformCollection(baseRegions, visualTransform);
+const sites = emptyPublicSites(publicDataPolicy);
+validatePolygonCollection(districts, 'district');
+validatePolygonCollection(regions, 'region');
 const bounds = collectionBounds([districts, regions]);
 const residualsFor = (points) => points.map((control) => {
   const projected = lngLatToMercator(visualTransform(transform.project(control.source)));
@@ -136,7 +197,7 @@ const rootMeanSquareError = (items) => items.length === 0
   ? null
   : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
 const manifest = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   source: {
     svg: 'data/source/toronto-rising-map.svg',
     sha256: createHash('sha256').update(svgText).digest('hex'),
@@ -146,8 +207,24 @@ const manifest = {
   counts: {
     districts: districts.features.length,
     regions: regions.features.length,
+    sites: sites.features.length,
+    sheetDistricts: sheetDistrictRows.length,
+    sheetSites: sheetSiteRows.length,
+    sheetOnlyDistricts: publicDataPolicy.sheetOnlyDistricts.length,
   },
   bounds,
+  sheet: {
+    spreadsheetId: sheetContract.spreadsheetId,
+    fetchedAt: sheetSnapshot.fetchedAt,
+    snapshotMode: sheetSnapshotMode,
+    exports: ['EXPORT_LOCATIONS_DISTRICTS', 'EXPORT_LOCATIONS_SITES'],
+    sourceSha256: createHash('sha256')
+      .update(JSON.stringify({ districts: sheetDistrictRows, sites: sheetSiteRows }))
+      .digest('hex'),
+    publicDistrictFields: [...publicDataPolicy.districtFields],
+    publicSiteFields: [...publicDataPolicy.siteFields],
+    sheetOnlyDistricts: publicDataPolicy.sheetOnlyDistricts,
+  },
   calibration: {
     revision: calibration.revision,
     adjustments: calibration.adjustments ?? null,
@@ -171,6 +248,9 @@ const manifest = {
 };
 
 if (manifest.counts.districts !== 32 || manifest.counts.regions !== 3) throw new Error('Unexpected feature counts');
+if (manifest.counts.sheetDistricts !== 36 || manifest.counts.sheetOnlyDistricts !== 4) {
+  throw new Error('Unexpected Sheet district coverage');
+}
 if (manifest.calibration.rootMeanSquareErrorMetres > 150) {
   throw new Error(`Calibration error is too high: ${manifest.calibration.rootMeanSquareErrorMetres} metres RMS`);
 }
@@ -181,6 +261,7 @@ if (manifest.calibration.validationRootMeanSquareErrorMetres !== null && manifes
 const outputs = [
   ['districts.geojson', districts],
   ['regions.geojson', regions],
+  ['sites.geojson', sites],
   ['map-data-manifest.json', manifest],
 ];
 const calibrationSummary = `${manifest.calibration.rootMeanSquareErrorMetres} m control RMS${manifest.calibration.validationRootMeanSquareErrorMetres === null ? '' : `, ${manifest.calibration.validationRootMeanSquareErrorMetres} m validation RMS`}`;

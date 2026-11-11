@@ -1,4 +1,4 @@
-import type { FeatureCollection, MultiPolygon } from 'geojson';
+import type { FeatureCollection, MultiPolygon, Point } from 'geojson';
 
 export type MapFeatureKind = 'district' | 'region';
 
@@ -13,13 +13,52 @@ export interface MapFeatureProperties {
 
 export type MapFeatureCollection = FeatureCollection<MultiPolygon, MapFeatureProperties>;
 
+export interface DistrictFeatureProperties extends MapFeatureProperties {
+  kind: 'district';
+  huntingDifficulty: number | null;
+  resonancePlus: string;
+  resonanceMinus: string;
+}
+
+export interface RegionFeatureProperties extends MapFeatureProperties {
+  kind: 'region';
+}
+
+export interface PublicSiteProperties {
+  key: string;
+  name: string;
+  districtKey: string;
+}
+
+export type DistrictFeatureCollection = FeatureCollection<MultiPolygon, DistrictFeatureProperties>;
+export type RegionFeatureCollection = FeatureCollection<MultiPolygon, RegionFeatureProperties>;
+export type PublicSiteCollection = FeatureCollection<Point, PublicSiteProperties>;
+
 export interface MapDataManifest {
   schemaVersion: number;
   counts: {
     districts: number;
     regions: number;
+    sites: number;
+    sheetDistricts: number;
+    sheetSites: number;
+    sheetOnlyDistricts: number;
   };
   bounds: [[number, number], [number, number]];
+  sheet: {
+    spreadsheetId: string;
+    fetchedAt: string;
+    snapshotMode: 'shared-snapshot' | 'validated-cache' | 'live-fetch';
+    exports: ['EXPORT_LOCATIONS_DISTRICTS', 'EXPORT_LOCATIONS_SITES'];
+    sourceSha256: string;
+    publicDistrictFields: string[];
+    publicSiteFields: string[];
+    sheetOnlyDistricts: Array<{
+      key: string;
+      geometryKind: 'network' | 'none';
+      reason: string;
+    }>;
+  };
   calibration: {
     revision: number;
     adjustments?: {
@@ -51,7 +90,8 @@ export interface MapDataManifest {
 }
 
 export interface PublicMapData {
-  districts: MapFeatureCollection;
-  regions: MapFeatureCollection;
+  districts: DistrictFeatureCollection;
+  regions: RegionFeatureCollection;
+  sites: PublicSiteCollection;
   manifest: MapDataManifest;
 }

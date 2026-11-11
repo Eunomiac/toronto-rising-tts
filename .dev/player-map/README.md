@@ -13,6 +13,12 @@ npm run data:build
 npm run dev
 ```
 
+`npm run data:build` reuses the production Sheet loader and exact export
+contract. During the normal FULL pipeline it consumes the shared
+`TR_EXPORT_SNAPSHOT`; during local work it uses the validated Dashboard cache
+when available and otherwise fetches a fresh snapshot. Use `npm run
+data:refresh` when you deliberately want to bypass the cache.
+
 The canonical district and region geometry lives in
 `data/source/toronto-rising-map.svg`. Generated GeoJSON in
 `public/generated/` is reproducible and must not be edited by hand.
@@ -20,6 +26,13 @@ The canonical district and region geometry lives in
 used to close tiny gaps and cut district overlaps during every data build.
 `data/diagnostics/normalization.json` records the resulting area changes and
 must report zero remaining overlap.
+
+`data/public-data-policy.json` is the explicit player-data privacy boundary.
+The current public district facts are name, hunting difficulty, and positive
+and negative resonance. `public/generated/sites.geojson` is intentionally
+empty until individual player-visible sites and their allowed fields are
+reviewed. Generated district, region, site, and provenance files must not be
+edited by hand.
 
 The local development server also shows a **Debug notes** control. It lets the
 author pin numbered feedback directly to a map location or interface surface.

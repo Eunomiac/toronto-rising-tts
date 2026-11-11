@@ -12,7 +12,7 @@ import {
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { featureBounds } from './data';
-import type { MapFeatureCollection } from './types';
+import type { DistrictFeatureCollection } from './types';
 
 const SOURCE_ID = 'districts';
 const FILL_LAYER_ID = 'district-fills';
@@ -24,7 +24,7 @@ const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [
 setWorkerUrl(mapWorkerUrl);
 
 interface MapViewProps {
-  districts: MapFeatureCollection;
+  districts: DistrictFeatureCollection;
   selectedKey: string | null;
   onSelect: (key: string) => void;
   onMapReady?: (map: Map | null) => void;
@@ -35,7 +35,7 @@ function districtKey(feature: MapGeoJSONFeature | undefined): string | null {
   return typeof value === 'string' ? value : null;
 }
 
-function focusDistrict(map: Map, districts: MapFeatureCollection, key: string) {
+function focusDistrict(map: Map, districts: DistrictFeatureCollection, key: string) {
   const feature = districts.features.find((candidate) => candidate.properties.key === key);
   if (!feature) return;
   map.fitBounds(featureBounds(feature.geometry.coordinates), {

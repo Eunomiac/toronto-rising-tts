@@ -83,6 +83,9 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
 
   await page.getByLabel('Choose a district').selectOption('Rosedale');
   await expect(page.getByTestId('selected-district')).toContainText('Rosedale');
+  await expect(page.getByTestId('selected-district')).toContainText('Hunting difficulty6');
+  await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
+  await expect(page.getByTestId('selected-district')).toContainText('Melancholic');
   await expect(page).toHaveURL(/district=Rosedale/);
 
   expect(consoleErrors).toEqual([]);

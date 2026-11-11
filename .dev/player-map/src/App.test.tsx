@@ -31,16 +31,30 @@ const feature = {
     sourceElement: 'path' as const,
     fillRule: 'nonzero' as const,
     sourceRingCount: 1,
+    huntingDifficulty: 6,
+    resonancePlus: 'phlegmatic',
+    resonanceMinus: 'melancholic',
   },
 };
 
 const mapData = {
   districts: { type: 'FeatureCollection' as const, features: [feature] },
   regions: { type: 'FeatureCollection' as const, features: [] },
+  sites: { type: 'FeatureCollection' as const, features: [] },
   manifest: {
-    schemaVersion: 1,
-    counts: { districts: 1, regions: 0 },
+    schemaVersion: 3,
+    counts: { districts: 1, regions: 0, sites: 0, sheetDistricts: 1, sheetSites: 0, sheetOnlyDistricts: 0 },
     bounds: [[-79.4, 43.6], [-79.39, 43.61]] as [[number, number], [number, number]],
+    sheet: {
+      spreadsheetId: 'test',
+      fetchedAt: '2026-11-11T00:00:00.000Z',
+      snapshotMode: 'validated-cache' as const,
+      exports: ['EXPORT_LOCATIONS_DISTRICTS', 'EXPORT_LOCATIONS_SITES'] as const,
+      sourceSha256: 'test',
+      publicDistrictFields: [],
+      publicSiteFields: [],
+      sheetOnlyDistricts: [],
+    },
     calibration: {
       revision: 1,
       controlPointCount: 0,

@@ -37,7 +37,7 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Use Cloudflare Workers Free as the first public host; begin with static assets while preserving the option to add a Worker API and D1 later.
 - [x] Use OpenFreeMap as the initial basemap/tile provider and verify Toronto coverage, attribution, reliability, and style customization during the first spike.
 - [x] Treat phone-sized screens as a primary supported surface alongside desktop and tablets.
-- [ ] Decide whether the first release needs cross-device/shared state or Storyteller-controlled reveals. Same-browser persistence can use local storage without a server.
+- [x] Keep the first release stateless and free of Storyteller-controlled reveals. Same-browser author tooling may use local storage; shared campaign state remains a later feature decision.
 - [x] Use Cloudflare's generated `workers.dev` address initially; a paid custom domain remains an optional later upgrade.
 - [x] Do not ship the original illustrated map as a raster overlay unless a later need emerges.
 - [x] Publish updated player-safe data through the existing TTS FULL build pipeline using its single validated Sheet snapshot.
@@ -51,7 +51,7 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Confirm mixed explicit `evenodd` and default nonzero fill rules are valid and must be preserved.
 - [x] Inspect the corrected export: 32 geographical district features, three region features, no transforms, and no blank or duplicate IDs.
 - [x] Copy the approved SVG into the Player Map's tracked `data/source` directory when implementation begins.
-- [ ] Record the four non-geographical Sheet district exceptions in a reviewed coverage manifest.
+- [x] Record `PATH`, `Sewers`, `Streets`, and `Subway` as the four reviewed non-geographical Sheet district exceptions in the public-data policy.
 
 ## Phase 1 — Technical Spikes
 
@@ -74,15 +74,15 @@ The latest generated diagnostic reports zero remaining district overlap.
 
 ## Phase 2 — Data Pipeline
 
-- [ ] Reuse the production Sheet loader and exact export contract.
-- [ ] Define and review the first player-safe district field allowlist.
-- [ ] Create a typed public-data schema and fail on unexpected fields.
-- [ ] Join Sheet facts to geometry by exact key.
-- [ ] Generate districts, regions, sites, and provenance manifest outputs.
+- [x] Reuse the production Sheet loader and exact export contract.
+- [x] Define and review the first player-safe district field allowlist: key, name, hunting difficulty, positive resonance, and negative resonance.
+- [x] Create a typed public-data schema and fail on unexpected fields in both the generator and browser loader.
+- [x] Join Sheet facts to geometry by exact key, requiring all 32 surface districts and the four reviewed Sheet-only exceptions.
+- [x] Generate districts, regions, sites, and provenance manifest outputs. Sites are intentionally an empty collection until individual public sites and fields are reviewed.
 - [ ] Add the broad downtown PATH extraction rules, bounds, optional false-positive exclusions, and OpenStreetMap provenance to the build pipeline.
 - [ ] Generate PATH route, entrance/vertical-connection, interaction-corridor, and single-label-point outputs.
 - [ ] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
-- [ ] Add key, schema, topology, bounds, privacy, and count validation.
+- [x] Add key, schema, topology, bounds, privacy, and count validation for the current surface-district, region, and empty-site package.
 - [ ] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing.
 - [ ] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
 - [ ] Add Player Map checks and its production Vite build before TTS save bundling.
@@ -91,8 +91,8 @@ The latest generated diagnostic reports zero remaining district overlap.
 
 ## Phase 3 — First Useful Release
 
-- [ ] Build the full-screen map shell and responsive controls.
-- [ ] Add district selection and player-safe district details.
+- [x] Build the full-screen map shell and responsive controls.
+- [x] Add district selection and player-safe district details, including Sheet-backed hunting difficulty and resonance.
 - [ ] Add layer controls for districts, regions, and revealed sites.
 - [ ] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
 - [ ] Add shareable URL state for selection and visible overlays.
@@ -102,8 +102,8 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Persist numbered notes, reproduction context, comments, and agent replies through a tracked `agent/` file and development-only API.
 - [x] Exclude debug-note controls, API routes, data, and comments from every production build and Cloudflare deployment.
 - [x] Document the one-pass agent workflow for replying to, preserving unresolved, and clearing resolved pins.
-- [ ] Add unit, component, and Playwright coverage for the release path.
-- [ ] Deploy to the selected host and verify the public address on desktop and the supported smaller viewport.
+- [x] Add unit, component, and Playwright coverage for the current release path on desktop and a Pixel 7-sized viewport.
+- [x] Deploy the Phase 1 release to Cloudflare and verify the public address on desktop and the supported smaller viewport. Later slices still require their own deployment verification.
 
 ## Map Presentation Backlog — Captured, Not Scheduled
 

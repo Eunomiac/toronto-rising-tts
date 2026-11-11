@@ -1,5 +1,6 @@
 import type { Position } from 'geojson';
-import type { MapFeatureCollection } from './types';
+import type { FeatureCollection, MultiPolygon } from 'geojson';
+import type { MapFeatureProperties } from './types';
 
 const EARTH_RADIUS_METRES = 6_378_137;
 const DEG_TO_RAD = Math.PI / 180;
@@ -48,11 +49,11 @@ function anchorValue(minimum: number, maximum: number, anchor: HorizontalAnchor 
   return (minimum + maximum) / 2;
 }
 
-export function applyVisualCalibration(
-  collection: MapFeatureCollection,
+export function applyVisualCalibration<T extends MapFeatureProperties>(
+  collection: FeatureCollection<MultiPolygon, T>,
   bounds: [[number, number], [number, number]],
   calibration: VisualCalibration,
-): MapFeatureCollection {
+): FeatureCollection<MultiPolygon, T> {
   if (
     calibration.horizontalScale === 1
     && calibration.verticalScale === 1
