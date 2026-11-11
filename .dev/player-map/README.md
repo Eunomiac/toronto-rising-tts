@@ -37,7 +37,9 @@ edited by hand.
 `public/generated/labels.geojson` supplies one deliberate point for each
 district and region. Map labels render from those points rather than directly
 from multipart polygons, preventing the same name from appearing once per
-visible polygon or map tile.
+visible polygon or map tile. While the map moves, district labels are
+throttled to a valid point in the largest visible part of their district and
+finalized when movement stops; the generated point remains the fallback.
 
 The local development server also shows a **Debug notes** control. It lets the
 author pin numbered feedback directly to a map location or interface surface.

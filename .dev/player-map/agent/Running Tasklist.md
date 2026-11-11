@@ -117,7 +117,7 @@ and data ownership during implementation.
 - [ ] Add a custom orientation-street layer with bold white labels driven by an explicit allow list of the major streets used to help players locate themselves. Keep its routes and labels independent of the basemap's automatic road-label selection so their styling, repetition, and zoom visibility remain under app control.
 - [ ] Support rare fictional basemap changes with small custom polygon masks rather than a general-purpose basemap editor. The only currently known case is the comparatively barren Giovanni Estate in Wychwood: cover the unwanted building and house detail at an appropriate layer depth, then add replacement geometry or a label only if needed.
 - [x] Stop repeated District and Region names with generated one-point-per-feature label sources rather than automatic labels from tiled multipart polygons.
-- [ ] Keep a partly visible District's single label onscreen by recalculating from the largest intersection with the visible viewport; choose a valid interior point, throttle while the map moves, finalize on movement end, and retain the generated point as a fallback. Verify the dynamic approach on mobile.
+- [x] Keep a partly visible District's single label onscreen by recalculating from the largest intersection with the visible viewport; choose a valid on-surface point, throttle while the map moves, finalize on movement end, and retain the generated point as a fallback. Verify the dynamic approach on mobile.
 
 ## Later Features — Not Yet Designed
 

@@ -12,6 +12,7 @@ import {
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { featureBounds } from './data';
+import { labelsForViewport } from './viewport-labels';
 import type {
   DistrictFeatureCollection,
   MapLabelCollection,
@@ -63,6 +64,18 @@ function positionBoundaryShade(
   element.style.setProperty('--chronicle-east', `${clamp(southEast.x, width)}px`);
   element.style.setProperty('--chronicle-north', `${clamp(northWest.y, height)}px`);
   element.style.setProperty('--chronicle-south', `${clamp(southEast.y, height)}px`);
+}
+
+function updateViewportLabels(
+  map: Map,
+  districts: DistrictFeatureCollection,
+  labels: MapLabelCollection,
+) {
+  const bounds = map.getBounds();
+  const source = map.getSource(LABEL_SOURCE_ID) as GeoJSONSource | undefined;
+  source?.setData(labelsForViewport(districts, labels, [
+    bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth(),
+  ]));
 }
 
 function districtKey(feature: MapGeoJSONFeature | undefined): string | null {
@@ -136,12 +149,22 @@ export function MapView({
     map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
     map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
     let boundaryFrame: number | null = null;
+    let labelTimer: number | null = null;
     const updateBoundaryShade = () => {
       if (boundaryFrame !== null) return;
       boundaryFrame = window.requestAnimationFrame(() => {
         boundaryFrame = null;
         if (boundaryShadeRef.current) positionBoundaryShade(map, chronicleBounds, boundaryShadeRef.current);
       });
+    };
+    const finalizeViewportLabels = () => {
+      if (labelTimer !== null) window.clearTimeout(labelTimer);
+      labelTimer = null;
+      updateViewportLabels(map, districtsRef.current, labelsRef.current);
+    };
+    const queueViewportLabels = () => {
+      if (labelTimer !== null) return;
+      labelTimer = window.setTimeout(finalizeViewportLabels, 150);
     };
 
     const onLoad = () => {
@@ -299,6 +322,7 @@ export function MapView({
       }
       setStatus('Street map ready. Select a shaded district for details.');
       updateBoundaryShade();
+      finalizeViewportLabels();
     };
 
     const onMouseMove = (event: MapMouseEvent) => {
@@ -323,9 +347,12 @@ export function MapView({
     map.on('click', onClick);
     map.on('error', onError);
     map.on('move', updateBoundaryShade);
+    map.on('move', queueViewportLabels);
+    map.on('moveend', finalizeViewportLabels);
     map.on('resize', updateBoundaryShade);
     return () => {
       if (boundaryFrame !== null) window.cancelAnimationFrame(boundaryFrame);
+      if (labelTimer !== null) window.clearTimeout(labelTimer);
       onMapReadyRef.current?.(null);
       map.remove();
       mapRef.current = null;
@@ -354,7 +381,7 @@ export function MapView({
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
-    (map.getSource(LABEL_SOURCE_ID) as GeoJSONSource | undefined)?.setData(labels);
+    updateViewportLabels(map, districtsRef.current, labels);
   }, [labels]);
 
   useEffect(() => {

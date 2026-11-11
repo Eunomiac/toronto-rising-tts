@@ -210,9 +210,11 @@ Each geographical feature needs a stable exact key. Other content should be pres
 The generator derives exactly one in-feature label point for every district
 and region after normalization and calibration. Labels use this point source,
 not the multipart polygon sources, so MapLibre cannot repeat one name across
-several polygon parts or internal tiles. These generated points are a stable
-fallback; a later viewport-aware refinement may move a displayed label while a
-feature is only partly onscreen.
+several polygon parts or internal tiles. These generated points are the stable
+fallback. At runtime, districts are clipped to the viewport and the single
+label is placed in the largest visible polygon, with work throttled while the
+map moves and finalized on movement end. Region labels retain their generated
+anchors.
 
 The manifest records:
 
