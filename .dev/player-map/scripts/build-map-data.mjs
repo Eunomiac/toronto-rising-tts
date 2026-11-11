@@ -29,6 +29,7 @@ const publicDataPolicyPath = path.join(root, 'data/public-data-policy.json');
 const pathNetworkConfigPath = path.join(root, 'data/path-network.json');
 const pathNetworkSnapshotPath = path.join(root, 'data/source/osm-path-snapshot.json');
 const provincialCitiesPath = path.join(root, 'data/provincial-cities.json');
+const basemapMasksPath = path.join(root, 'data/basemap-masks.json');
 const normalizationDiagnosticsPath = path.join(root, 'data/diagnostics/normalization.json');
 const visualDiagnosticsPath = path.join(root, 'data/diagnostics/map-visual-diagnostics.geojson');
 const visualDiagnosticsHtmlPath = path.join(root, 'data/diagnostics/map-visual-diagnostics.html');
@@ -57,7 +58,7 @@ if (!process.env.TR_EXPORT_SNAPSHOT && !refreshSheet) {
 
 const readJson = async (filePath) => JSON.parse(await fs.readFile(filePath, 'utf8'));
 const svgText = await fs.readFile(sourcePath, 'utf8');
-const [calibration, names, districtPriority, publicDataPolicy, pathNetworkConfig, pathNetworkSnapshot, provincialCities, sheetSnapshot] = await Promise.all([
+const [calibration, names, districtPriority, publicDataPolicy, pathNetworkConfig, pathNetworkSnapshot, provincialCities, basemapMasks, sheetSnapshot] = await Promise.all([
   readJson(calibrationPath),
   readJson(namesPath),
   readJson(priorityPath),
@@ -65,6 +66,7 @@ const [calibration, names, districtPriority, publicDataPolicy, pathNetworkConfig
   readJson(pathNetworkConfigPath),
   readJson(pathNetworkSnapshotPath),
   readJson(provincialCitiesPath),
+  readJson(basemapMasksPath),
   loadSnapshot(),
 ]);
 if (provincialCities?.schemaVersion !== 1 || !Array.isArray(provincialCities.cities)
@@ -84,6 +86,17 @@ const cityMarkers = {
     geometry: { type: 'Point', coordinates: city.coordinates },
   })),
 };
+if (basemapMasks?.schemaVersion !== 1 || !Array.isArray(basemapMasks.masks)
+  || basemapMasks.masks.length === 0 || !basemapMasks.masks.every((mask) => (
+    mask && Object.keys(mask).sort().join(',') === 'key,name,sourceLabelPoint,sourcePolygon'
+    && typeof mask.key === 'string' && mask.key && typeof mask.name === 'string' && mask.name
+    && Array.isArray(mask.sourceLabelPoint) && mask.sourceLabelPoint.length === 2 && mask.sourceLabelPoint.every(Number.isFinite)
+    && Array.isArray(mask.sourcePolygon) && mask.sourcePolygon.length >= 4
+    && mask.sourcePolygon.every((position) => Array.isArray(position) && position.length === 2 && position.every(Number.isFinite))
+    && JSON.stringify(mask.sourcePolygon[0]) === JSON.stringify(mask.sourcePolygon.at(-1))
+  )) || new Set(basemapMasks.masks.map((mask) => mask.key)).size !== basemapMasks.masks.length) {
+  throw new Error('Invalid basemap mask configuration');
+}
 const sheetDistrictRows = dataOf(sheetSnapshot, 'LOCATIONS_DISTRICTS');
 const sheetSiteRows = dataOf(sheetSnapshot, 'LOCATIONS_SITES');
 const publicDistrictFacts = projectDistrictRows(sheetDistrictRows, publicDataPolicy);
@@ -225,6 +238,25 @@ const baseBounds = collectionBounds([baseDistricts, baseRegions]);
 const visualTransform = calibration.visualCalibration
   ? createVisualCalibrationTransform(baseBounds, calibration.visualCalibration)
   : (lngLat) => lngLat;
+const projectSourcePoint = (source) => visualTransform(transform.project(source));
+const basemapMaskPolygons = {
+  type: 'FeatureCollection',
+  features: basemapMasks.masks.map((mask) => ({
+    type: 'Feature',
+    id: mask.key,
+    properties: { key: mask.key, name: mask.name },
+    geometry: { type: 'Polygon', coordinates: [mask.sourcePolygon.map(projectSourcePoint)] },
+  })),
+};
+const basemapMaskLabels = {
+  type: 'FeatureCollection',
+  features: basemapMasks.masks.map((mask) => ({
+    type: 'Feature',
+    id: mask.key,
+    properties: { key: mask.key, name: mask.name },
+    geometry: { type: 'Point', coordinates: projectSourcePoint(mask.sourceLabelPoint) },
+  })),
+};
 const unnormalizedDistricts = transformCollection(baseDistricts, visualTransform);
 const { collection: normalizedDistricts, diagnostics: normalizationDiagnostics, visualDiagnostics } = normalizeDistrictCollection(
   unnormalizedDistricts,
@@ -270,7 +302,7 @@ const rootMeanSquareError = (items) => items.length === 0
   ? null
   : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
 const manifest = {
-  schemaVersion: 6,
+  schemaVersion: 7,
   source: {
     svg: 'data/source/toronto-rising-map.svg',
     sha256: createHash('sha256').update(svgText).digest('hex'),
@@ -287,6 +319,8 @@ const manifest = {
     pathInteractionCorridors: pathNetwork.interaction.features.length,
     pathLabels: pathNetwork.label.features.length,
     cityMarkers: cityMarkers.features.length,
+    basemapMasks: basemapMaskPolygons.features.length,
+    basemapMaskLabels: basemapMaskLabels.features.length,
     sheetDistricts: sheetDistrictRows.length,
     sheetSites: sheetSiteRows.length,
     sheetOnlyDistricts: publicDataPolicy.sheetOnlyDistricts.length,
@@ -335,6 +369,7 @@ if (manifest.counts.pathRoutes === 0 || manifest.counts.pathEntrances === 0
   throw new Error('Unexpected PATH network counts');
 }
 if (manifest.counts.cityMarkers !== 3) throw new Error('Unexpected provincial city marker count');
+if (manifest.counts.basemapMasks !== 1 || manifest.counts.basemapMaskLabels !== 1) throw new Error('Unexpected basemap mask count');
 if (manifest.counts.sheetDistricts !== 36 || manifest.counts.sheetOnlyDistricts !== 4) {
   throw new Error('Unexpected Sheet district coverage');
 }
@@ -356,6 +391,8 @@ const outputs = [
   ['path-interaction.geojson', pathNetwork.interaction],
   ['path-label.geojson', pathNetwork.label],
   ['city-markers.geojson', cityMarkers],
+  ['basemap-masks.geojson', basemapMaskPolygons],
+  ['basemap-mask-labels.geojson', basemapMaskLabels],
   ['map-data-manifest.json', manifest],
 ];
 const calibrationSummary = `${manifest.calibration.rootMeanSquareErrorMetres} m control RMS${manifest.calibration.validationRootMeanSquareErrorMetres === null ? '' : `, ${manifest.calibration.validationRootMeanSquareErrorMetres} m validation RMS`}`;

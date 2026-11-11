@@ -134,6 +134,8 @@ export function App() {
         pathInteraction={data.pathInteraction}
         pathLabel={data.pathLabel}
         cityMarkers={data.cityMarkers}
+        basemapMasks={data.basemapMasks}
+        basemapMaskLabels={data.basemapMaskLabels}
         pathBounds={data.manifest.pathNetwork.bounds}
         chronicleBounds={data.manifest.bounds}
         layerVisibility={layerVisibility}

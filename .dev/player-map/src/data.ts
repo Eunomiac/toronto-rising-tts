@@ -2,6 +2,8 @@ import type { Position } from 'geojson';
 import type {
   DistrictFeatureCollection,
   CityMarkerCollection,
+  BasemapMaskCollection,
+  BasemapMaskLabelCollection,
   MapLabelCollection,
   MapLayerId,
   MapLayerVisibility,
@@ -30,6 +32,7 @@ const PATH_ENTRANCE_KEYS = ['key', 'kind', 'name', 'osmId'].sort();
 const PATH_INTERACTION_KEYS = ['key', 'osmId'].sort();
 const PATH_LABEL_KEYS = ['key', 'kind', 'name'].sort();
 const CITY_MARKER_KEYS = ['key', 'name'].sort();
+const BASEMAP_MASK_KEYS = ['key', 'name'].sort();
 const MAP_LAYER_IDS: MapLayerId[] = ['districts', 'regions', 'orientation', 'path', 'sites'];
 export const DEFAULT_LAYER_VISIBILITY: MapLayerVisibility = {
   districts: true,
@@ -234,13 +237,42 @@ function parseCityMarkers(value: unknown): CityMarkerCollection {
   return value as CityMarkerCollection;
 }
 
+function parseBasemapMasks(value: unknown): BasemapMaskCollection {
+  const collection = record(value, 'Basemap mask collection');
+  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features) || collection.features.length === 0) throw new Error('Invalid basemap mask FeatureCollection');
+  for (const rawFeature of collection.features) {
+    const feature = record(rawFeature, 'Basemap mask');
+    const properties = record(feature.properties, 'Basemap mask properties');
+    const geometry = record(feature.geometry, 'Basemap mask geometry');
+    exactKeys(properties, BASEMAP_MASK_KEYS, 'Basemap mask');
+    nonEmptyString(properties.key, 'Basemap mask key');
+    nonEmptyString(properties.name, 'Basemap mask name');
+    if (geometry.type !== 'Polygon') throw new Error('Invalid basemap mask geometry');
+    validateMultiPolygon([geometry.coordinates], String(properties.key));
+  }
+  return value as BasemapMaskCollection;
+}
+
+function parseBasemapMaskLabels(value: unknown): BasemapMaskLabelCollection {
+  const collection = record(value, 'Basemap mask label collection');
+  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features) || collection.features.length === 0) throw new Error('Invalid basemap mask label FeatureCollection');
+  for (const rawFeature of collection.features) {
+    const feature = record(rawFeature, 'Basemap mask label');
+    const properties = record(feature.properties, 'Basemap mask label properties');
+    const geometry = record(feature.geometry, 'Basemap mask label geometry');
+    exactKeys(properties, BASEMAP_MASK_KEYS, 'Basemap mask label');
+    if (geometry.type !== 'Point' || !finitePosition(geometry.coordinates)) throw new Error('Invalid basemap mask label');
+  }
+  return value as BasemapMaskLabelCollection;
+}
+
 function parseManifest(value: unknown): MapDataManifest {
   const manifest = record(value, 'Map manifest');
   const counts = record(manifest.counts, 'Manifest counts');
   const sheet = record(manifest.sheet, 'Manifest Sheet provenance');
   const pathNetwork = record(manifest.pathNetwork, 'PATH provenance');
-  if (manifest.schemaVersion !== 6
-    || !['districts', 'regions', 'sites', 'labels', 'pathRoutes', 'pathEntrances', 'pathInteractionCorridors', 'pathLabels', 'cityMarkers', 'sheetDistricts', 'sheetSites', 'sheetOnlyDistricts'].every((key) => Number.isInteger(counts[key]))
+  if (manifest.schemaVersion !== 7
+    || !['districts', 'regions', 'sites', 'labels', 'pathRoutes', 'pathEntrances', 'pathInteractionCorridors', 'pathLabels', 'cityMarkers', 'basemapMasks', 'basemapMaskLabels', 'sheetDistricts', 'sheetSites', 'sheetOnlyDistricts'].every((key) => Number.isInteger(counts[key]))
     || !Array.isArray(sheet.publicDistrictFields)
     || !Array.isArray(sheet.publicSiteFields)
     || !Array.isArray(sheet.sheetOnlyDistricts)
@@ -285,7 +317,8 @@ function validatePathProvenance(
 
 export async function loadPublicMapData(): Promise<PublicMapData> {
   const [districtValue, regionValue, siteValue, labelValue, pathDistrictValue, pathRouteValue,
-    pathEntranceValue, pathInteractionValue, pathLabelValue, cityMarkerValue, manifestValue] = await Promise.all([
+    pathEntranceValue, pathInteractionValue, pathLabelValue, cityMarkerValue, basemapMaskValue,
+    basemapMaskLabelValue, manifestValue] = await Promise.all([
     loadJson(`${GENERATED_ROOT}/districts.geojson`),
     loadJson(`${GENERATED_ROOT}/regions.geojson`),
     loadJson(`${GENERATED_ROOT}/sites.geojson`),
@@ -296,6 +329,8 @@ export async function loadPublicMapData(): Promise<PublicMapData> {
     loadJson(`${GENERATED_ROOT}/path-interaction.geojson`),
     loadJson(`${GENERATED_ROOT}/path-label.geojson`),
     loadJson(`${GENERATED_ROOT}/city-markers.geojson`),
+    loadJson(`${GENERATED_ROOT}/basemap-masks.geojson`),
+    loadJson(`${GENERATED_ROOT}/basemap-mask-labels.geojson`),
     loadJson(`${GENERATED_ROOT}/map-data-manifest.json`),
   ]);
   const districts = parseDistricts(districtValue);
@@ -308,6 +343,8 @@ export async function loadPublicMapData(): Promise<PublicMapData> {
   const pathInteraction = parsePathInteraction(pathInteractionValue);
   const pathLabel = parsePathLabel(pathLabelValue);
   const cityMarkers = parseCityMarkers(cityMarkerValue);
+  const basemapMasks = parseBasemapMasks(basemapMaskValue);
+  const basemapMaskLabels = parseBasemapMaskLabels(basemapMaskLabelValue);
   const manifest = parseManifest(manifestValue);
   if (districts.features.length !== manifest.counts.districts) throw new Error('District manifest count does not match the map data');
   if (regions.features.length !== manifest.counts.regions) throw new Error('Region manifest count does not match the map data');
@@ -318,10 +355,12 @@ export async function loadPublicMapData(): Promise<PublicMapData> {
     || pathInteraction.features.length !== manifest.counts.pathInteractionCorridors
     || pathLabel.features.length !== manifest.counts.pathLabels) throw new Error('PATH manifest counts do not match the map data');
   if (cityMarkers.features.length !== manifest.counts.cityMarkers) throw new Error('City marker manifest count does not match the map data');
+  if (basemapMasks.features.length !== manifest.counts.basemapMasks
+    || basemapMaskLabels.features.length !== manifest.counts.basemapMaskLabels) throw new Error('Basemap mask manifest counts do not match the map data');
   validatePathProvenance(pathRoutes, pathEntrances, pathLabel, manifest);
   return {
     districts, regions, sites, labels, pathDistrict, pathRoutes, pathEntrances,
-    pathInteraction, pathLabel, cityMarkers, manifest,
+    pathInteraction, pathLabel, cityMarkers, basemapMasks, basemapMaskLabels, manifest,
   };
 }
 

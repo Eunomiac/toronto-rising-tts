@@ -68,8 +68,24 @@ const mapData = {
       properties: { key: 'Toronto', name: 'Toronto' },
     }],
   },
+  basemapMasks: {
+    type: 'FeatureCollection' as const,
+    features: [{
+      type: 'Feature' as const,
+      geometry: { type: 'Polygon' as const, coordinates: [[[-79.42, 43.67], [-79.41, 43.67], [-79.41, 43.68], [-79.42, 43.67]]] },
+      properties: { key: 'GiovanniEstate', name: 'Giovanni Estate' },
+    }],
+  },
+  basemapMaskLabels: {
+    type: 'FeatureCollection' as const,
+    features: [{
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [-79.415, 43.675] },
+      properties: { key: 'GiovanniEstate', name: 'Giovanni Estate' },
+    }],
+  },
   manifest: {
-    schemaVersion: 6,
+    schemaVersion: 7,
     counts: {
       districts: 1,
       regions: 0,
@@ -80,6 +96,8 @@ const mapData = {
       pathInteractionCorridors: 0,
       pathLabels: 0,
       cityMarkers: 1,
+      basemapMasks: 1,
+      basemapMaskLabels: 1,
       sheetDistricts: 1,
       sheetSites: 0,
       sheetOnlyDistricts: 0,

@@ -79,6 +79,12 @@ Montréal. **Return to Toronto** restores the normal chronicle view. The marker
 list and coordinates live in `data/provincial-cities.json`; the generated
 GeoJSON must not be edited directly.
 
+Rare fictional changes to the real basemap use small reviewed masks in
+`data/basemap-masks.json`. Their editable coordinates stay in the original SVG
+artboard space and pass through the same calibration as Districts. The first
+mask removes the unwanted residential detail from the Giovanni Estate and adds
+one deliberate estate label; generated mask GeoJSON must not be edited.
+
 ## Visual calibration
 
 Open `/?calibrate=1` to replace the district panel with the author-only visual

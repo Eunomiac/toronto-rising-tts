@@ -228,6 +228,8 @@ public/generated/path-entrances.geojson
 public/generated/path-interaction.geojson
 public/generated/path-label.geojson
 public/generated/city-markers.geojson
+public/generated/basemap-masks.geojson
+public/generated/basemap-mask-labels.geojson
 public/generated/map-data-manifest.json
 ```
 

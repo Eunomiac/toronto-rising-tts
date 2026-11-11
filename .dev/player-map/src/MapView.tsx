@@ -17,6 +17,8 @@ import { labelsForViewport } from './viewport-labels';
 import type {
   DistrictFeatureCollection,
   CityMarkerCollection,
+  BasemapMaskCollection,
+  BasemapMaskLabelCollection,
   MapLabelCollection,
   MapLayerVisibility,
   PathEntranceCollection,
@@ -36,6 +38,8 @@ const PATH_ENTRANCE_SOURCE_ID = 'path-entrances';
 const PATH_INTERACTION_SOURCE_ID = 'path-interaction';
 const PATH_LABEL_SOURCE_ID = 'path-label';
 const CITY_MARKER_SOURCE_ID = 'province-cities';
+const BASEMAP_MASK_SOURCE_ID = 'basemap-masks';
+const BASEMAP_MASK_LABEL_SOURCE_ID = 'basemap-mask-labels';
 const FILL_LAYER_ID = 'district-fills';
 const SELECTED_GLOW_LAYER_ID = 'district-selected-glow';
 const LINE_LAYER_ID = 'district-lines';
@@ -53,6 +57,9 @@ const CITY_MARKER_LABEL_LAYER_ID = 'province-city-labels';
 const ORIENTATION_STREET_CASING_LAYER_ID = 'orientation-street-casing';
 const ORIENTATION_STREET_LINE_LAYER_ID = 'orientation-street-lines';
 const ORIENTATION_STREET_LABEL_LAYER_ID = 'orientation-street-labels';
+const BASEMAP_MASK_FILL_LAYER_ID = 'basemap-mask-fills';
+const BASEMAP_MASK_LINE_LAYER_ID = 'basemap-mask-lines';
+const BASEMAP_MASK_LABEL_LAYER_ID = 'basemap-mask-labels';
 const ORIENTATION_STREET_NAMES = [
   'Avenue Road', 'Bathurst Street', 'Bay Street', 'Bloor Street East', 'Bloor Street West',
   'Broadview Avenue', 'Carlton Street', 'College Street', 'Danforth Avenue', 'Don Valley Parkway',
@@ -79,6 +86,8 @@ interface MapViewProps {
   pathInteraction: PathInteractionCollection;
   pathLabel: PathLabelCollection;
   cityMarkers: CityMarkerCollection;
+  basemapMasks: BasemapMaskCollection;
+  basemapMaskLabels: BasemapMaskLabelCollection;
   pathBounds: { south: number; west: number; north: number; east: number };
   chronicleBounds: [[number, number], [number, number]];
   layerVisibility: MapLayerVisibility;
@@ -152,6 +161,8 @@ export function MapView({
   pathInteraction,
   pathLabel,
   cityMarkers,
+  basemapMasks,
+  basemapMaskLabels,
   pathBounds,
   chronicleBounds,
   layerVisibility,
@@ -171,6 +182,8 @@ export function MapView({
   const pathInteractionRef = useRef(pathInteraction);
   const pathLabelRef = useRef(pathLabel);
   const cityMarkersRef = useRef(cityMarkers);
+  const basemapMasksRef = useRef(basemapMasks);
+  const basemapMaskLabelsRef = useRef(basemapMaskLabels);
   const layerVisibilityRef = useRef(layerVisibility);
   const onSelectRef = useRef(onSelect);
   const onMapReadyRef = useRef(onMapReady);
@@ -187,6 +200,8 @@ export function MapView({
   pathInteractionRef.current = pathInteraction;
   pathLabelRef.current = pathLabel;
   cityMarkersRef.current = cityMarkers;
+  basemapMasksRef.current = basemapMasks;
+  basemapMaskLabelsRef.current = basemapMaskLabels;
   layerVisibilityRef.current = layerVisibility;
   onSelectRef.current = onSelect;
   onMapReadyRef.current = onMapReady;
@@ -239,6 +254,22 @@ export function MapView({
       map.addSource(PATH_INTERACTION_SOURCE_ID, { type: 'geojson', data: pathInteractionRef.current });
       map.addSource(PATH_LABEL_SOURCE_ID, { type: 'geojson', data: pathLabelRef.current });
       map.addSource(CITY_MARKER_SOURCE_ID, { type: 'geojson', data: cityMarkersRef.current });
+      map.addSource(BASEMAP_MASK_SOURCE_ID, { type: 'geojson', data: basemapMasksRef.current });
+      map.addSource(BASEMAP_MASK_LABEL_SOURCE_ID, { type: 'geojson', data: basemapMaskLabelsRef.current });
+      map.addLayer({
+        id: BASEMAP_MASK_FILL_LAYER_ID,
+        type: 'fill',
+        source: BASEMAP_MASK_SOURCE_ID,
+        minzoom: 10,
+        paint: { 'fill-color': '#160c0e', 'fill-opacity': 0.97 },
+      });
+      map.addLayer({
+        id: BASEMAP_MASK_LINE_LAYER_ID,
+        type: 'line',
+        source: BASEMAP_MASK_SOURCE_ID,
+        minzoom: 10,
+        paint: { 'line-color': '#5a252b', 'line-width': 1.4, 'line-opacity': 0.9 },
+      });
       map.addLayer({
         id: FILL_LAYER_ID,
         type: 'fill',
@@ -496,6 +527,20 @@ export function MapView({
         },
       });
       map.addLayer({
+        id: BASEMAP_MASK_LABEL_LAYER_ID,
+        type: 'symbol',
+        source: BASEMAP_MASK_LABEL_SOURCE_ID,
+        minzoom: 11,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 14, 14],
+          'text-transform': 'uppercase',
+          'text-letter-spacing': 0.12,
+        },
+        paint: { 'text-color': '#c77a78', 'text-halo-color': '#14080a', 'text-halo-width': 2 },
+      });
+      map.addLayer({
         id: CITY_MARKER_CIRCLE_LAYER_ID,
         type: 'circle',
         source: CITY_MARKER_SOURCE_ID,
@@ -613,6 +658,13 @@ export function MapView({
     if (!map?.isStyleLoaded()) return;
     (map.getSource(CITY_MARKER_SOURCE_ID) as GeoJSONSource | undefined)?.setData(cityMarkers);
   }, [cityMarkers]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    (map.getSource(BASEMAP_MASK_SOURCE_ID) as GeoJSONSource | undefined)?.setData(basemapMasks);
+    (map.getSource(BASEMAP_MASK_LABEL_SOURCE_ID) as GeoJSONSource | undefined)?.setData(basemapMaskLabels);
+  }, [basemapMaskLabels, basemapMasks]);
 
   useEffect(() => {
     const map = mapRef.current;

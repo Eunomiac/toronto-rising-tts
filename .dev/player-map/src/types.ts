@@ -78,6 +78,11 @@ export interface CityMarkerProperties {
   name: string;
 }
 
+export interface BasemapMaskProperties {
+  key: string;
+  name: string;
+}
+
 export type DistrictFeatureCollection = FeatureCollection<MultiPolygon, DistrictFeatureProperties>;
 export type RegionFeatureCollection = FeatureCollection<MultiPolygon, RegionFeatureProperties>;
 export type PublicSiteCollection = FeatureCollection<Point, PublicSiteProperties>;
@@ -87,6 +92,8 @@ export type PathEntranceCollection = FeatureCollection<Point, PathEntranceProper
 export type PathInteractionCollection = FeatureCollection<Polygon | MultiPolygon, PathInteractionProperties>;
 export type PathLabelCollection = FeatureCollection<Point, PathLabelProperties>;
 export type CityMarkerCollection = FeatureCollection<Point, CityMarkerProperties>;
+export type BasemapMaskCollection = FeatureCollection<Polygon, BasemapMaskProperties>;
+export type BasemapMaskLabelCollection = FeatureCollection<Point, BasemapMaskProperties>;
 
 export type MapLayerId = 'districts' | 'regions' | 'sites' | 'path' | 'orientation';
 
@@ -110,6 +117,8 @@ export interface MapDataManifest {
     pathInteractionCorridors: number;
     pathLabels: number;
     cityMarkers: number;
+    basemapMasks: number;
+    basemapMaskLabels: number;
     sheetDistricts: number;
     sheetSites: number;
     sheetOnlyDistricts: number;
@@ -182,5 +191,7 @@ export interface PublicMapData {
   pathInteraction: PathInteractionCollection;
   pathLabel: PathLabelCollection;
   cityMarkers: CityMarkerCollection;
+  basemapMasks: BasemapMaskCollection;
+  basemapMaskLabels: BasemapMaskLabelCollection;
   manifest: MapDataManifest;
 }
