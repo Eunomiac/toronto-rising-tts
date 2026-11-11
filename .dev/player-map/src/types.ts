@@ -30,9 +30,16 @@ export interface PublicSiteProperties {
   districtKey: string;
 }
 
+export interface MapLabelProperties {
+  key: string;
+  name: string;
+  kind: MapFeatureKind;
+}
+
 export type DistrictFeatureCollection = FeatureCollection<MultiPolygon, DistrictFeatureProperties>;
 export type RegionFeatureCollection = FeatureCollection<MultiPolygon, RegionFeatureProperties>;
 export type PublicSiteCollection = FeatureCollection<Point, PublicSiteProperties>;
+export type MapLabelCollection = FeatureCollection<Point, MapLabelProperties>;
 
 export type MapLayerId = 'districts' | 'regions' | 'sites';
 
@@ -48,6 +55,7 @@ export interface MapDataManifest {
     districts: number;
     regions: number;
     sites: number;
+    labels: number;
     sheetDistricts: number;
     sheetSites: number;
     sheetOnlyDistricts: number;
@@ -101,5 +109,6 @@ export interface PublicMapData {
   districts: DistrictFeatureCollection;
   regions: RegionFeatureCollection;
   sites: PublicSiteCollection;
+  labels: MapLabelCollection;
   manifest: MapDataManifest;
 }

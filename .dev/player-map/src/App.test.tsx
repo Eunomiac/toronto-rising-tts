@@ -41,9 +41,17 @@ const mapData = {
   districts: { type: 'FeatureCollection' as const, features: [feature] },
   regions: { type: 'FeatureCollection' as const, features: [] },
   sites: { type: 'FeatureCollection' as const, features: [] },
+  labels: {
+    type: 'FeatureCollection' as const,
+    features: [{
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [-79.395, 43.605] },
+      properties: { key: 'Rosedale', name: 'Rosedale', kind: 'district' as const },
+    }],
+  },
   manifest: {
-    schemaVersion: 3,
-    counts: { districts: 1, regions: 0, sites: 0, sheetDistricts: 1, sheetSites: 0, sheetOnlyDistricts: 0 },
+    schemaVersion: 4,
+    counts: { districts: 1, regions: 0, sites: 0, labels: 1, sheetDistricts: 1, sheetSites: 0, sheetOnlyDistricts: 0 },
     bounds: [[-79.4, 43.6], [-79.39, 43.61]] as [[number, number], [number, number]],
     sheet: {
       spreadsheetId: 'test',

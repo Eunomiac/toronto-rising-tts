@@ -1,6 +1,6 @@
 import type { Position } from 'geojson';
-import type { FeatureCollection, MultiPolygon } from 'geojson';
-import type { MapFeatureProperties } from './types';
+import type { FeatureCollection, MultiPolygon, Point } from 'geojson';
+import type { MapFeatureProperties, MapLabelProperties } from './types';
 
 const EARTH_RADIUS_METRES = 6_378_137;
 const DEG_TO_RAD = Math.PI / 180;
@@ -90,6 +90,45 @@ export function applyVisualCalibration<T extends MapFeatureProperties>(
         )),
       },
     })),
+  };
+}
+
+export function applyVisualCalibrationToLabels(
+  collection: FeatureCollection<Point, MapLabelProperties>,
+  bounds: [[number, number], [number, number]],
+  calibration: VisualCalibration,
+): FeatureCollection<Point, MapLabelProperties> {
+  if (
+    calibration.horizontalScale === 1
+    && calibration.verticalScale === 1
+    && calibration.offsetEastMetres === 0
+    && calibration.offsetNorthMetres === 0
+  ) return collection;
+
+  const west = longitudeToMetres(bounds[0][0]);
+  const east = longitudeToMetres(bounds[1][0]);
+  const south = latitudeToMetres(bounds[0][1]);
+  const north = latitudeToMetres(bounds[1][1]);
+  const anchorX = anchorValue(west, east, calibration.horizontalAnchor);
+  const anchorY = anchorValue(south, north, calibration.verticalAnchor);
+
+  return {
+    ...collection,
+    features: collection.features.map((feature) => {
+      const [longitude, latitude] = feature.geometry.coordinates;
+      const sourceX = longitudeToMetres(longitude!);
+      const sourceY = latitudeToMetres(latitude!);
+      return {
+        ...feature,
+        geometry: {
+          ...feature.geometry,
+          coordinates: [
+            metresToLongitude(anchorX + (sourceX - anchorX) * calibration.horizontalScale + calibration.offsetEastMetres),
+            metresToLatitude(anchorY + (sourceY - anchorY) * calibration.verticalScale + calibration.offsetNorthMetres),
+          ],
+        },
+      };
+    }),
   };
 }
 

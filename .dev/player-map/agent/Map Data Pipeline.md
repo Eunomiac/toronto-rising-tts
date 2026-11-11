@@ -201,10 +201,18 @@ The public package contains:
 public/generated/districts.geojson
 public/generated/regions.geojson
 public/generated/sites.geojson
+public/generated/labels.geojson
 public/generated/map-data-manifest.json
 ```
 
 Each geographical feature needs a stable exact key. Other content should be present only when required for rendering or a player-facing panel. Keep large prose or frequently changing data separate from geometry if doing so improves caching and updates.
+
+The generator derives exactly one in-feature label point for every district
+and region after normalization and calibration. Labels use this point source,
+not the multipart polygon sources, so MapLibre cannot repeat one name across
+several polygon parts or internal tiles. These generated points are a stable
+fallback; a later viewport-aware refinement may move a displayed label while a
+feature is only partly onscreen.
 
 The manifest records:
 

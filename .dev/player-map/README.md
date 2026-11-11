@@ -34,6 +34,11 @@ empty until individual player-visible sites and their allowed fields are
 reviewed. Generated district, region, site, and provenance files must not be
 edited by hand.
 
+`public/generated/labels.geojson` supplies one deliberate point for each
+district and region. Map labels render from those points rather than directly
+from multipart polygons, preventing the same name from appearing once per
+visible polygon or map tile.
+
 The local development server also shows a **Debug notes** control. It lets the
 author pin numbered feedback directly to a map location or interface surface.
 Notes persist in `agent/debug-notes.json` for the next agent session. The

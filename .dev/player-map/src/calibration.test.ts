@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyVisualCalibration, DEFAULT_VISUAL_CALIBRATION } from './calibration';
-import type { MapFeatureCollection } from './types';
+import { applyVisualCalibration, applyVisualCalibrationToLabels, DEFAULT_VISUAL_CALIBRATION } from './calibration';
+import type { MapFeatureCollection, MapLabelCollection } from './types';
 
 const collection: MapFeatureCollection = {
   type: 'FeatureCollection',
@@ -18,6 +18,15 @@ const collection: MapFeatureCollection = {
       type: 'MultiPolygon',
       coordinates: [[[[-80, 43], [-79, 43], [-79, 44], [-80, 44], [-80, 43]]]],
     },
+  }],
+};
+
+const labels: MapLabelCollection = {
+  type: 'FeatureCollection',
+  features: [{
+    type: 'Feature',
+    properties: { key: 'Test', name: 'Test', kind: 'district' },
+    geometry: { type: 'Point', coordinates: [-79, 43] },
   }],
 };
 
@@ -49,5 +58,15 @@ describe('visual calibration', () => {
 
     expect(point[0]!).toBeGreaterThan(-80);
     expect(point[1]!).toBeGreaterThan(43);
+  });
+
+  it('keeps dedicated label points aligned during live calibration', () => {
+    const result = applyVisualCalibrationToLabels(labels, [[-80, 43], [-79, 44]], {
+      ...DEFAULT_VISUAL_CALIBRATION,
+      horizontalScale: 0.5,
+    });
+
+    expect(result.features[0]!.geometry.coordinates[0]).toBeCloseTo(-79.5, 8);
+    expect(result.features[0]!.geometry.coordinates[1]).toBeCloseTo(43, 8);
   });
 });

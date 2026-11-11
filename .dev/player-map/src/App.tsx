@@ -4,6 +4,7 @@ import { DebugNotesSlot } from '#debug-notes';
 import { CalibrationPanel } from './CalibrationPanel';
 import {
   applyVisualCalibration,
+  applyVisualCalibrationToLabels,
   DEFAULT_VISUAL_CALIBRATION,
   type VisualCalibration,
 } from './calibration';
@@ -74,6 +75,12 @@ export function App() {
       ? applyVisualCalibration(data.districts, data.manifest.bounds, visualCalibration)
       : data.districts;
   }, [calibrationMode, data, visualCalibration]);
+  const calibratedLabels = useMemo(() => {
+    if (!data) return null;
+    return calibrationMode
+      ? applyVisualCalibrationToLabels(data.labels, data.manifest.bounds, visualCalibration)
+      : data.labels;
+  }, [calibrationMode, data, visualCalibration]);
 
   const selectDistrict = useCallback((key: string) => {
     const nextKey = selectedKey === key ? null : key;
@@ -105,6 +112,7 @@ export function App() {
         districts={calibratedDistricts ?? data.districts}
         regions={data.regions}
         sites={data.sites}
+        labels={calibratedLabels ?? data.labels}
         layerVisibility={layerVisibility}
         selectedKey={validSelectedKey}
         onSelect={selectDistrict}

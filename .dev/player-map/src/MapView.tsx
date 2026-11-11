@@ -14,6 +14,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { featureBounds } from './data';
 import type {
   DistrictFeatureCollection,
+  MapLabelCollection,
   MapLayerVisibility,
   PublicSiteCollection,
   RegionFeatureCollection,
@@ -22,6 +23,7 @@ import type {
 const SOURCE_ID = 'districts';
 const REGION_SOURCE_ID = 'regions';
 const SITE_SOURCE_ID = 'sites';
+const LABEL_SOURCE_ID = 'map-labels';
 const FILL_LAYER_ID = 'district-fills';
 const LINE_LAYER_ID = 'district-lines';
 const LABEL_LAYER_ID = 'district-labels';
@@ -38,6 +40,7 @@ interface MapViewProps {
   districts: DistrictFeatureCollection;
   regions: RegionFeatureCollection;
   sites: PublicSiteCollection;
+  labels: MapLabelCollection;
   layerVisibility: MapLayerVisibility;
   selectedKey: string | null;
   onSelect: (key: string) => void;
@@ -63,12 +66,13 @@ function mapVisibility(visible: boolean) {
   return visible ? 'visible' as const : 'none' as const;
 }
 
-export function MapView({ districts, regions, sites, layerVisibility, selectedKey, onSelect, onMapReady }: MapViewProps) {
+export function MapView({ districts, regions, sites, labels, layerVisibility, selectedKey, onSelect, onMapReady }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const districtsRef = useRef(districts);
   const regionsRef = useRef(regions);
   const sitesRef = useRef(sites);
+  const labelsRef = useRef(labels);
   const layerVisibilityRef = useRef(layerVisibility);
   const onSelectRef = useRef(onSelect);
   const onMapReadyRef = useRef(onMapReady);
@@ -78,6 +82,7 @@ export function MapView({ districts, regions, sites, layerVisibility, selectedKe
   districtsRef.current = districts;
   regionsRef.current = regions;
   sitesRef.current = sites;
+  labelsRef.current = labels;
   layerVisibilityRef.current = layerVisibility;
   onSelectRef.current = onSelect;
   onMapReadyRef.current = onMapReady;
@@ -106,6 +111,7 @@ export function MapView({ districts, regions, sites, layerVisibility, selectedKe
       map.addSource(SOURCE_ID, { type: 'geojson', data: districtsRef.current, promoteId: 'key' });
       map.addSource(REGION_SOURCE_ID, { type: 'geojson', data: regionsRef.current, promoteId: 'key' });
       map.addSource(SITE_SOURCE_ID, { type: 'geojson', data: sitesRef.current, promoteId: 'key' });
+      map.addSource(LABEL_SOURCE_ID, { type: 'geojson', data: labelsRef.current, promoteId: 'key' });
       map.addLayer({
         id: FILL_LAYER_ID,
         type: 'fill',
@@ -148,8 +154,9 @@ export function MapView({ districts, regions, sites, layerVisibility, selectedKe
       map.addLayer({
         id: LABEL_LAYER_ID,
         type: 'symbol',
-        source: SOURCE_ID,
+        source: LABEL_SOURCE_ID,
         minzoom: 11.25,
+        filter: ['==', ['get', 'kind'], 'district'],
         layout: {
           visibility: mapVisibility(layerVisibilityRef.current.districts),
           'text-field': ['get', 'name'],
@@ -202,8 +209,9 @@ export function MapView({ districts, regions, sites, layerVisibility, selectedKe
       map.addLayer({
         id: REGION_LABEL_LAYER_ID,
         type: 'symbol',
-        source: REGION_SOURCE_ID,
+        source: LABEL_SOURCE_ID,
         minzoom: 10.5,
+        filter: ['==', ['get', 'kind'], 'region'],
         layout: {
           visibility: mapVisibility(layerVisibilityRef.current.regions),
           'text-field': ['get', 'name'],
@@ -285,6 +293,12 @@ export function MapView({ districts, regions, sites, layerVisibility, selectedKe
     if (!map?.isStyleLoaded()) return;
     (map.getSource(SITE_SOURCE_ID) as GeoJSONSource | undefined)?.setData(sites);
   }, [sites]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    (map.getSource(LABEL_SOURCE_ID) as GeoJSONSource | undefined)?.setData(labels);
+  }, [labels]);
 
   useEffect(() => {
     const map = mapRef.current;

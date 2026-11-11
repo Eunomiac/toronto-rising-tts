@@ -1,6 +1,7 @@
 import type { Position } from 'geojson';
 import type {
   DistrictFeatureCollection,
+  MapLabelCollection,
   MapLayerId,
   MapLayerVisibility,
   MapDataManifest,
@@ -16,6 +17,7 @@ const DISTRICT_PROPERTY_KEYS = [
 ].sort();
 const REGION_PROPERTY_KEYS = ['fillRule', 'key', 'kind', 'name', 'sourceElement', 'sourceRingCount'].sort();
 const SITE_PROPERTY_KEYS = ['districtKey', 'key', 'name'].sort();
+const LABEL_PROPERTY_KEYS = ['key', 'kind', 'name'].sort();
 const MAP_LAYER_IDS: MapLayerId[] = ['districts', 'regions', 'sites'];
 export const DEFAULT_LAYER_VISIBILITY: MapLayerVisibility = {
   districts: true,
@@ -102,12 +104,32 @@ function parseSites(value: unknown): PublicSiteCollection {
   return value as PublicSiteCollection;
 }
 
+function parseLabels(value: unknown): MapLabelCollection {
+  const collection = record(value, 'Label collection');
+  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) throw new Error('Invalid label FeatureCollection');
+  const keys = new Set<string>();
+  for (const rawFeature of collection.features) {
+    const feature = record(rawFeature, 'Label feature');
+    const properties = record(feature.properties, 'Label properties');
+    const geometry = record(feature.geometry, 'Label geometry');
+    exactKeys(properties, LABEL_PROPERTY_KEYS, `${String(properties.key)} label`);
+    nonEmptyString(properties.key, 'Label key');
+    nonEmptyString(properties.name, 'Label name');
+    if (feature.type !== 'Feature' || geometry.type !== 'Point' || !finitePosition(geometry.coordinates)
+      || !['district', 'region'].includes(String(properties.kind)) || keys.has(properties.key)) {
+      throw new Error('Invalid or duplicate label feature');
+    }
+    keys.add(properties.key);
+  }
+  return value as MapLabelCollection;
+}
+
 function parseManifest(value: unknown): MapDataManifest {
   const manifest = record(value, 'Map manifest');
   const counts = record(manifest.counts, 'Manifest counts');
   const sheet = record(manifest.sheet, 'Manifest Sheet provenance');
-  if (manifest.schemaVersion !== 3
-    || !['districts', 'regions', 'sites', 'sheetDistricts', 'sheetSites', 'sheetOnlyDistricts'].every((key) => Number.isInteger(counts[key]))
+  if (manifest.schemaVersion !== 4
+    || !['districts', 'regions', 'sites', 'labels', 'sheetDistricts', 'sheetSites', 'sheetOnlyDistricts'].every((key) => Number.isInteger(counts[key]))
     || !Array.isArray(sheet.publicDistrictFields)
     || !Array.isArray(sheet.publicSiteFields)
     || !Array.isArray(sheet.sheetOnlyDistricts)) {
@@ -117,20 +139,23 @@ function parseManifest(value: unknown): MapDataManifest {
 }
 
 export async function loadPublicMapData(): Promise<PublicMapData> {
-  const [districtValue, regionValue, siteValue, manifestValue] = await Promise.all([
+  const [districtValue, regionValue, siteValue, labelValue, manifestValue] = await Promise.all([
     loadJson(`${GENERATED_ROOT}/districts.geojson`),
     loadJson(`${GENERATED_ROOT}/regions.geojson`),
     loadJson(`${GENERATED_ROOT}/sites.geojson`),
+    loadJson(`${GENERATED_ROOT}/labels.geojson`),
     loadJson(`${GENERATED_ROOT}/map-data-manifest.json`),
   ]);
   const districts = parseDistricts(districtValue);
   const regions = parseRegions(regionValue);
   const sites = parseSites(siteValue);
+  const labels = parseLabels(labelValue);
   const manifest = parseManifest(manifestValue);
   if (districts.features.length !== manifest.counts.districts) throw new Error('District manifest count does not match the map data');
   if (regions.features.length !== manifest.counts.regions) throw new Error('Region manifest count does not match the map data');
   if (sites.features.length !== manifest.counts.sites) throw new Error('Site manifest count does not match the map data');
-  return { districts, regions, sites, manifest };
+  if (labels.features.length !== manifest.counts.labels) throw new Error('Label manifest count does not match the map data');
+  return { districts, regions, sites, labels, manifest };
 }
 
 export function featureBounds(coordinates: Position[][][]): [[number, number], [number, number]] {

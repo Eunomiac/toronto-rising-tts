@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
+import pointOnFeature from '@turf/point-on-feature';
 import { normalizeDistrictCollection } from './lib/normalize-districts.mjs';
 import { emptyPublicSites, joinDistrictFacts, projectDistrictRows, validatePublicDataPolicy } from './lib/public-data.mjs';
 import {
@@ -132,6 +133,29 @@ function validatePolygonCollection(collection, kind) {
   }
 }
 
+function buildLabelCollection(collections) {
+  const features = collections.flatMap((collection) => collection.features).map((feature) => {
+    const point = pointOnFeature(feature);
+    const coordinates = point.geometry.coordinates.map(roundCoordinate);
+    if (coordinates.length < 2 || !coordinates.every(Number.isFinite)
+      || coordinates[0] < -79.46 || coordinates[0] > -79.32
+      || coordinates[1] < 43.60 || coordinates[1] > 43.72) {
+      throw new Error(`${feature.properties.key}: invalid label point`);
+    }
+    return {
+      type: 'Feature',
+      id: feature.properties.key,
+      properties: {
+        key: feature.properties.key,
+        name: feature.properties.name,
+        kind: feature.properties.kind,
+      },
+      geometry: { type: 'Point', coordinates },
+    };
+  });
+  return { type: 'FeatureCollection', features };
+}
+
 function buildCollection(groupId, kind, expectedNames) {
   const group = groups.get(groupId);
   if (!group) throw new Error(`Missing SVG group: ${groupId}`);
@@ -182,6 +206,7 @@ const regions = transformCollection(baseRegions, visualTransform);
 const sites = emptyPublicSites(publicDataPolicy);
 validatePolygonCollection(districts, 'district');
 validatePolygonCollection(regions, 'region');
+const labels = buildLabelCollection([districts, regions]);
 const bounds = collectionBounds([districts, regions]);
 const residualsFor = (points) => points.map((control) => {
   const projected = lngLatToMercator(visualTransform(transform.project(control.source)));
@@ -197,7 +222,7 @@ const rootMeanSquareError = (items) => items.length === 0
   ? null
   : Math.sqrt(items.reduce((sum, item) => sum + item.metres ** 2, 0) / items.length);
 const manifest = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   source: {
     svg: 'data/source/toronto-rising-map.svg',
     sha256: createHash('sha256').update(svgText).digest('hex'),
@@ -208,6 +233,7 @@ const manifest = {
     districts: districts.features.length,
     regions: regions.features.length,
     sites: sites.features.length,
+    labels: labels.features.length,
     sheetDistricts: sheetDistrictRows.length,
     sheetSites: sheetSiteRows.length,
     sheetOnlyDistricts: publicDataPolicy.sheetOnlyDistricts.length,
@@ -247,7 +273,9 @@ const manifest = {
   },
 };
 
-if (manifest.counts.districts !== 32 || manifest.counts.regions !== 3) throw new Error('Unexpected feature counts');
+if (manifest.counts.districts !== 32 || manifest.counts.regions !== 3 || manifest.counts.labels !== 35) {
+  throw new Error('Unexpected feature counts');
+}
 if (manifest.counts.sheetDistricts !== 36 || manifest.counts.sheetOnlyDistricts !== 4) {
   throw new Error('Unexpected Sheet district coverage');
 }
@@ -262,6 +290,7 @@ const outputs = [
   ['districts.geojson', districts],
   ['regions.geojson', regions],
   ['sites.geojson', sites],
+  ['labels.geojson', labels],
   ['map-data-manifest.json', manifest],
 ];
 const calibrationSummary = `${manifest.calibration.rootMeanSquareErrorMetres} m control RMS${manifest.calibration.validationRootMeanSquareErrorMetres === null ? '' : `, ${manifest.calibration.validationRootMeanSquareErrorMetres} m validation RMS`}`;
