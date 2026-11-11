@@ -26,15 +26,15 @@
   <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />
 
 
-  <Panel class="condition_container" ignoreLayout="true" rectAlignment="UpperLeft" width="700" height="300" pivot = "0.5 0.5" />
-  <Panel class="condition_slot_1" position = "1100 900 0" />
-  <Panel class="condition_slot_2" position = "1100 540 0" />
-  <Panel class="condition_slot_3" position = "1100 180 0" />
-  <Panel class="condition_slot_4" position = "1100 -180 0" />
-  <Panel class="condition_slot_5" position = "1825 900 0" />
-  <Panel class="condition_slot_6" position = "1825 540 0" />
-  <Panel class="condition_slot_7" position = "1825 180 0" />
-  <Panel class="condition_slot_8" position = "1825 -180 0" />
+  <Panel class="condition_container" ignoreLayout="true" rectAlignment="UpperLeft" width="700" height="300" />
+  <Panel class="condition_container condition_slot_1" offsetXY = "1550 100" />
+  <Panel class="condition_container condition_slot_2" offsetXY = "1550 -260" />
+  <Panel class="condition_container condition_slot_3" offsetXY = "1550 -620" />
+  <Panel class="condition_container condition_slot_4" offsetXY = "1550 -980" />
+  <Panel class="condition_container condition_slot_5" offsetXY = "2275 100" />
+  <Panel class="condition_container condition_slot_6" offsetXY = "2275 -260" />
+  <Panel class="condition_container condition_slot_7" offsetXY = "2275 -620" />
+  <Panel class="condition_container condition_slot_8" offsetXY = "2275 -980" />
 
   <Image class="condition_container_background" width="700" height="345" preserveAspect="true" raycastTarget="false" />
   <Text class="condition_container_title" fontSize="32" fontStyle="Bold" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -12" />

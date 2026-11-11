@@ -26,7 +26,7 @@ D.XML = [=[
   <Panel class="page_raised page_top" />
 
   <Panel class="dyscrasia_container"
-    ignoreLayout="true" position="-1250 -550 0" pivot="0.5 0.5" width="900" height="608" offsetXY="80 -400"
+    ignoreLayout="true" position="-1250 -550 0" pivot="0.5 0.5" width="900" height="608"
   />
 
   <Image class="dyscrasia_background" image="bg_condition_dyscrasia" width="900" height="608" preserveAspect="true" />
@@ -40,10 +40,10 @@ D.XML = [=[
   />
 
   <Panel class="resonance_container"
-    ignoreLayout="true" position="450 -1100 0" pivot="0.5 0.5" width="600" height="200"
+    ignoreLayout="true" position="0 -975 0" pivot="0.5 0.5" width="500" height="175"
   />
 
-  <Image class="resonance_tag" width="600" height="200" preserveAspect="true" />
+  <Image class="resonance_tag" width="500" height="175" preserveAspect="true" />
 
   <Text class="xp_text" fontSize="82" fontStyle="Bold" color="#c5c799" rectAlignment="LowerCenter" alignment="LowerCenter" offsetXY="-67 125" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
 

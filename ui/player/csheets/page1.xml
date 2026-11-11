@@ -32,12 +32,13 @@ UISet("f10182", "resonance_tag", {
 
 
 
-  UISet("f10182", "dyscrasia_container", {
-  rectAlignment="LowerLeft",
-      position="-1250 -550 0",
+  UISet("21d213", "dyscrasia_container", {
+      position="",
+      rectAlignment="LowerLeft",
       pivot="0.5 0.5",
       color="",
-      scale = "1 1 1"
+      scale = "1 1 1",
+      offsetXY = "80 -400"
   })
   UISet("f10182", "dyscrasia_container_background", {
 
