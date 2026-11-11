@@ -2671,6 +2671,10 @@ function M.SetTableTo(tableKey, opts)
       elseif ScatterMode.isActive() ~= true then
         enterOpts.translateFromStandard = true
       end
+      -- Parent scene Apply / setLiveTable own Conditions.reconcileHostedForSession afterward.
+      if opts.skipConditionReconcile == true then
+        enterOpts.skipConditionReconcile = true
+      end
       ScatterMode.enter(enterOpts)
     end
     if opts.skipTransitionBlindfold == true then

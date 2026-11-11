@@ -91,6 +91,17 @@ chrome, then `Sync.npcs` reaches reconciler Step Five once. Step Three defers it
 layout when Step Five is enabled, so the old enter + seat commit + Step Five triple application is
 gone. This is confirmed waste removal, not yet proof that the client-disconnect incident is fixed.
 
+Live dashboard world flushes no longer call the blocking external-message API. Seats pushes use a
+thin NPC-condition view (labels and base ratings only); the rich derive path is reserved for a
+mid-session full snapshot. While a blindfold transition is active, coalesced world flushes keep
+their dirty marks and retry after the cover instead of competing with fade Wait callbacks.
+
+Scene Apply and live table switches into Scatter also skip the NPC-condition reconcile inside
+`ScatterMode.enter`'s `Sync.npcs`, because the hosted-condition pass that follows already runs
+`NC.reconcileForSession` once. That session reconcile only forces `onHostedEnter` for NPCs that
+just became present, so already-present cast members do not pay a full condition derive under the
+cover.
+
 ## 3. Spotlight transitions
 
 ### Previous work and delay

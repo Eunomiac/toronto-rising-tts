@@ -863,7 +863,12 @@ function ScatterMode.enter(opts)
     applyScatterWorldChrome(true)
     local Sync = require("core.sync")
     -- Sync.npcs owns the single physical Scatter layout through reconciler Step Five.
-    Sync.npcs({ reason = "scatter_enter" })
+    -- Scene Apply / live table switch run hosted reconcile right after SetTableTo, which already
+    -- calls NC.reconcileForSession — skip the duplicate pass under the cover.
+    Sync.npcs({
+        reason = "scatter_enter",
+        skipConditionReconcile = opts.skipConditionReconcile == true,
+    })
 end
 
 function ScatterMode.leave()
