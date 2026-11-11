@@ -16,7 +16,8 @@
     "test:debug-notes:browser": "playwright test --config playwright.debug.config.ts",
     "check": "npm run data:check && npm run typecheck && npm run test && npm run build && npm run test:browser && npm run test:debug-notes:browser",
     "deploy:dry-run": "npm run build && wrangler deploy --dry-run",
-    "deploy": "npm run check && wrangler deploy"
+    "publish": "wrangler deploy",
+    "deploy": "npm run check && npm run publish"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

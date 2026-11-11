@@ -84,10 +84,10 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [ ] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
 - [x] Add key, schema, topology, bounds, privacy, and count validation for the current surface-district, region, and empty-site package.
 - [ ] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing.
-- [ ] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
-- [ ] Add Player Map checks and its production Vite build before TTS save bundling.
-- [ ] Add Cloudflare publication as FULL's final stage so failed builds never publish.
-- [ ] Add a separate `player-map:deploy` command for intentional map-only releases and troubleshooting.
+- [x] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
+- [x] Add Player Map checks and its production Vite build before TTS save bundling.
+- [x] Add Cloudflare publication as FULL's final stage so failed builds never publish; allow an explicit offline skip without skipping validation.
+- [x] Add a separate `player-map:deploy` command for intentional map-only releases and troubleshooting.
 
 ## Phase 3 — First Useful Release
 

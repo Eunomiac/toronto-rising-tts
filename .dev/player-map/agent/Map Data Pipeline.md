@@ -307,4 +307,11 @@ Publication is part of the existing TTS FULL pipeline:
 
 A failed FULL build must not publish a partial or newer map-data snapshot. Deployment is the terminal external side effect and should be atomic. If the generated public data and application build are unchanged, the deployment step may report that there is nothing new to publish.
 
-Provide a separate `player-map:deploy` command for intentional map-only publication and troubleshooting, but the author's regular successful FULL run is the normal release route. Do not fetch raw Sheet rows in each player's browser merely to make updates immediate.
+This order is implemented in `.dev/scripts/run_export_build.js` and protected
+by a focused ordering test. `npm run player-map:deploy` is the intentional
+map-only release and troubleshooting command. `npm run player-map:publish` is
+the unchecked terminal action used only after FULL has already passed the map
+checks. `TR_SKIP_PLAYER_MAP_PUBLISH=1` is an explicit offline/CI escape hatch;
+it leaves generation and all checks in place and skips only publication. The
+author's regular successful FULL run remains the normal release route. Do not
+fetch raw Sheet rows in each player's browser merely to make updates immediate.

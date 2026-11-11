@@ -22,10 +22,14 @@ Status: the build import contract targets the Named, Generic, and Function Calls
 - `npm run exports:build -- --check`: run preflight against the live exports or an explicit snapshot without generating files.
 - `npm run exports:test`: test the export contracts and verify pending edits and kept NPCs in an isolated stats import.
 - `npm run exports:verify-lua`: execute the generated modules through `lib.npcs_data` and check identities, PC exclusion, Garou flags, generic figure counts, art associations, site skyboxes and weather.
-- `npm run build:full`: existing backup/silence wrapper, then pending stat write-back, one validated snapshot, metadata/stats generation, other tooling, artwork/cloud jobs, and finally URL-dependent skybox/location generation. Every later importer inherits the same snapshot. New skybox files are joined after cloud sync.
+- `npm run build:full`: existing backup/silence wrapper, then pending stat write-back, one validated snapshot, metadata/stats generation, other tooling, artwork/cloud jobs, URL-dependent skybox/location generation, Player Map validation, save bundling, and session-start generation. Every later importer inherits the same snapshot. New skybox files are joined after cloud sync. Cloudflare publication of the already-validated Player Map is the final step and does not run if anything earlier fails.
 - Dashboard `npm run dev` starts a fresh server, validates one batch and refreshes its character/Compulsion caches. `/api/chronicle-exports` serves weather/location detail from that batch; browser gviz reads have been removed. Refresh failures stop startup instead of using a stale file. NPC stats still refresh during the build.
 
 For explicit offline replay, set `TR_EXPORT_SNAPSHOT` to the JSON written by `npm run exports:fetch`, or use `TR_EXPORT_CSV_DIR` with ten files named `EXPORT_<ID>.csv`. These private snapshots are ignored. A normal run fetches current data rather than loading the last cache. In this proxy-managed cloud session, live Node fetches required `NODE_USE_ENV_PROXY=1`.
+
+Set `TR_SKIP_PLAYER_MAP_PUBLISH=1` only for an intentional offline or CI FULL
+diagnostic. It still generates, validates, builds, and browser-tests the Player
+Map; it skips only the terminal Cloudflare publication.
 
 
 ## Location and transport

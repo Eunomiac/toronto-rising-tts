@@ -82,6 +82,12 @@ npm run deploy
 
 `npm run deploy` reruns data validation, type checking, unit tests, the
 production build, and the desktop/mobile browser test before publishing.
+From the repository root, `npm run player-map:deploy` performs the same
+intentional map-only release. The normal `npm run build:full` path consumes its
+single temporary Sheet snapshot, validates and builds the map before TTS save
+bundling, and calls the unchecked `publish` command only as FULL's final step.
+`TR_SKIP_PLAYER_MAP_PUBLISH=1` skips only that last external action for an
+intentional offline diagnostic.
 
 To exercise the already-deployed application rather than a local preview:
 
