@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
 const { loadPublicMapDataMock } = vi.hoisted(() => ({
@@ -80,6 +80,8 @@ describe('App district selection', () => {
     loadPublicMapDataMock.mockResolvedValue(mapData);
   });
 
+  afterEach(() => cleanup());
+
   it('deselects a district when the same map feature is clicked again', async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -92,5 +94,17 @@ describe('App district selection', () => {
     await user.click(mapDistrict);
     await waitFor(() => expect(screen.queryByTestId('selected-district')).not.toBeInTheDocument());
     expect(window.location.search).toBe('');
+  });
+
+  it('stores visible overlays in the shareable URL', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const regions = await screen.findByRole('checkbox', { name: 'Regions' });
+
+    await user.click(regions);
+    expect(window.location.search).toBe('?layers=districts%2Cregions');
+
+    await user.click(screen.getByRole('checkbox', { name: 'Districts' }));
+    expect(window.location.search).toBe('?layers=regions');
   });
 });

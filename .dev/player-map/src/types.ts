@@ -34,6 +34,14 @@ export type DistrictFeatureCollection = FeatureCollection<MultiPolygon, District
 export type RegionFeatureCollection = FeatureCollection<MultiPolygon, RegionFeatureProperties>;
 export type PublicSiteCollection = FeatureCollection<Point, PublicSiteProperties>;
 
+export type MapLayerId = 'districts' | 'regions' | 'sites';
+
+export interface MapLayerVisibility {
+  districts: boolean;
+  regions: boolean;
+  sites: boolean;
+}
+
 export interface MapDataManifest {
   schemaVersion: number;
   counts: {

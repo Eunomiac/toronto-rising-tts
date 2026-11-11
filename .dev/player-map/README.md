@@ -40,6 +40,12 @@ Notes persist in `agent/debug-notes.json` for the next agent session. The
 controls, comments, JSON data, and API do not exist in production builds. See
 [`agent/Debug Notes.md`](agent/Debug%20Notes.md) for the shared workflow.
 
+The **Map layers** control toggles districts and the three broad region
+overlays. Revealed sites will use the same control, but it remains disabled
+while the reviewed public site collection is empty. Non-default layer choices
+are encoded in the `layers` URL parameter so a shared link restores the same
+view.
+
 ## Visual calibration
 
 Open `/?calibrate=1` to replace the district panel with the author-only visual

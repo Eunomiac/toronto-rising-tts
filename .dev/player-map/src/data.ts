@@ -1,6 +1,8 @@
 import type { Position } from 'geojson';
 import type {
   DistrictFeatureCollection,
+  MapLayerId,
+  MapLayerVisibility,
   MapDataManifest,
   PublicMapData,
   PublicSiteCollection,
@@ -14,6 +16,12 @@ const DISTRICT_PROPERTY_KEYS = [
 ].sort();
 const REGION_PROPERTY_KEYS = ['fillRule', 'key', 'kind', 'name', 'sourceElement', 'sourceRingCount'].sort();
 const SITE_PROPERTY_KEYS = ['districtKey', 'key', 'name'].sort();
+const MAP_LAYER_IDS: MapLayerId[] = ['districts', 'regions', 'sites'];
+export const DEFAULT_LAYER_VISIBILITY: MapLayerVisibility = {
+  districts: true,
+  regions: false,
+  sites: false,
+};
 
 async function loadJson(path: string): Promise<unknown> {
   const response = await fetch(path);
@@ -147,5 +155,20 @@ export function updateDistrictInUrl(key: string | null): string {
   const url = new URL(window.location.href);
   if (key) url.searchParams.set('district', key);
   else url.searchParams.delete('district');
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+export function layerVisibilityFromUrl(search: string): MapLayerVisibility {
+  const rawLayers = new URLSearchParams(search).get('layers');
+  if (rawLayers === null) return { ...DEFAULT_LAYER_VISIBILITY };
+  const visible = new Set(rawLayers.split(',').filter((value): value is MapLayerId => MAP_LAYER_IDS.includes(value as MapLayerId)));
+  return Object.fromEntries(MAP_LAYER_IDS.map((layer) => [layer, visible.has(layer)])) as unknown as MapLayerVisibility;
+}
+
+export function updateLayersInUrl(visibility: MapLayerVisibility): string {
+  const url = new URL(window.location.href);
+  const isDefault = MAP_LAYER_IDS.every((layer) => visibility[layer] === DEFAULT_LAYER_VISIBILITY[layer]);
+  if (isDefault) url.searchParams.delete('layers');
+  else url.searchParams.set('layers', MAP_LAYER_IDS.filter((layer) => visibility[layer]).join(','));
   return `${url.pathname}${url.search}${url.hash}`;
 }

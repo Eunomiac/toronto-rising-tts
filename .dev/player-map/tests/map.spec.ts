@@ -50,6 +50,10 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
 
   await page.goto('/');
   await expect(page.getByLabel('Choose a district')).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Map layers' })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'Districts' })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Regions' })).not.toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Sites (none revealed)' })).toBeDisabled();
   await expect(page.getByRole('button', { name: /Debug notes/ })).toHaveCount(0);
   const canvas = page.locator('.maplibregl-canvas');
   await expect(canvas).toBeVisible({ timeout: 30_000 });
@@ -87,6 +91,12 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
   await expect(page.getByTestId('selected-district')).toContainText('Melancholic');
   await expect(page).toHaveURL(/district=Rosedale/);
+
+  await page.getByRole('checkbox', { name: 'Regions' }).check();
+  await expect(page).toHaveURL(/layers=districts%2Cregions/);
+  await page.reload();
+  await expect(page.getByRole('checkbox', { name: 'Regions' })).toBeChecked();
+  await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
 
   expect(consoleErrors).toEqual([]);
   expect(failedRequests).toEqual([]);

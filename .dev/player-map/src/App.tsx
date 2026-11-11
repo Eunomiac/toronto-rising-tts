@@ -8,9 +8,16 @@ import {
   type VisualCalibration,
 } from './calibration';
 import { DistrictPanel } from './DistrictPanel';
+import { LayerControls } from './LayerControls';
 import { MapView } from './MapView';
-import { loadPublicMapData, selectedDistrictFromUrl, updateDistrictInUrl } from './data';
-import type { PublicMapData } from './types';
+import {
+  layerVisibilityFromUrl,
+  loadPublicMapData,
+  selectedDistrictFromUrl,
+  updateDistrictInUrl,
+  updateLayersInUrl,
+} from './data';
+import type { MapLayerId, PublicMapData } from './types';
 
 const CALIBRATION_STORAGE_PREFIX = 'toronto-rising-map-visual-calibration';
 
@@ -28,6 +35,7 @@ export function App() {
   const [data, setData] = useState<PublicMapData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(() => selectedDistrictFromUrl(window.location.search));
+  const [layerVisibility, setLayerVisibility] = useState(() => layerVisibilityFromUrl(window.location.search));
   const [visualCalibration, setVisualCalibration] = useState(DEFAULT_VISUAL_CALIBRATION);
   const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
   const [map, setMap] = useState<Map | null>(null);
@@ -76,6 +84,13 @@ export function App() {
     setSelectedKey(null);
     window.history.replaceState(null, '', updateDistrictInUrl(null));
   }, []);
+  const setLayerVisible = useCallback((layer: MapLayerId, visible: boolean) => {
+    setLayerVisibility((current) => {
+      const next = { ...current, [layer]: visible };
+      window.history.replaceState(null, '', updateLayersInUrl(next));
+      return next;
+    });
+  }, []);
 
   if (error) {
     return <main className="app app--error"><h1>Toronto Rising</h1><p>Map data could not be loaded.</p><pre>{error}</pre></main>;
@@ -88,10 +103,20 @@ export function App() {
     <main className="app">
       <MapView
         districts={calibratedDistricts ?? data.districts}
+        regions={data.regions}
+        sites={data.sites}
+        layerVisibility={layerVisibility}
         selectedKey={validSelectedKey}
         onSelect={selectDistrict}
         onMapReady={setMap}
       />
+      {!calibrationMode ? (
+        <LayerControls
+          visibility={layerVisibility}
+          siteCount={data.sites.features.length}
+          onChange={setLayerVisible}
+        />
+      ) : null}
       {calibrationMode ? (
         <CalibrationPanel
           value={visualCalibration}
