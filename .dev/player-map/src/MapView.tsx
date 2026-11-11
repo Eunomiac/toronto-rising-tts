@@ -42,10 +42,27 @@ interface MapViewProps {
   regions: RegionFeatureCollection;
   sites: PublicSiteCollection;
   labels: MapLabelCollection;
+  chronicleBounds: [[number, number], [number, number]];
   layerVisibility: MapLayerVisibility;
   selectedKey: string | null;
   onSelect: (key: string) => void;
   onMapReady?: (map: Map | null) => void;
+}
+
+function positionBoundaryShade(
+  map: Map,
+  bounds: [[number, number], [number, number]],
+  element: HTMLDivElement,
+) {
+  const northWest = map.project([bounds[0][0], bounds[1][1]]);
+  const southEast = map.project([bounds[1][0], bounds[0][1]]);
+  const width = map.getContainer().clientWidth;
+  const height = map.getContainer().clientHeight;
+  const clamp = (value: number, maximum: number) => Math.max(0, Math.min(maximum, value));
+  element.style.setProperty('--chronicle-west', `${clamp(northWest.x, width)}px`);
+  element.style.setProperty('--chronicle-east', `${clamp(southEast.x, width)}px`);
+  element.style.setProperty('--chronicle-north', `${clamp(northWest.y, height)}px`);
+  element.style.setProperty('--chronicle-south', `${clamp(southEast.y, height)}px`);
 }
 
 function districtKey(feature: MapGeoJSONFeature | undefined): string | null {
@@ -67,8 +84,19 @@ function mapVisibility(visible: boolean) {
   return visible ? 'visible' as const : 'none' as const;
 }
 
-export function MapView({ districts, regions, sites, labels, layerVisibility, selectedKey, onSelect, onMapReady }: MapViewProps) {
+export function MapView({
+  districts,
+  regions,
+  sites,
+  labels,
+  chronicleBounds,
+  layerVisibility,
+  selectedKey,
+  onSelect,
+  onMapReady,
+}: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const boundaryShadeRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const districtsRef = useRef(districts);
   const regionsRef = useRef(regions);
@@ -107,6 +135,14 @@ export function MapView({ districts, regions, sites, labels, layerVisibility, se
     onMapReadyRef.current?.(map);
     map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
     map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
+    let boundaryFrame: number | null = null;
+    const updateBoundaryShade = () => {
+      if (boundaryFrame !== null) return;
+      boundaryFrame = window.requestAnimationFrame(() => {
+        boundaryFrame = null;
+        if (boundaryShadeRef.current) positionBoundaryShade(map, chronicleBounds, boundaryShadeRef.current);
+      });
+    };
 
     const onLoad = () => {
       map.addSource(SOURCE_ID, { type: 'geojson', data: districtsRef.current, promoteId: 'key' });
@@ -262,6 +298,7 @@ export function MapView({ districts, regions, sites, labels, layerVisibility, se
         focusDistrict(map, districtsRef.current, selectedRef.current);
       }
       setStatus('Street map ready. Select a shaded district for details.');
+      updateBoundaryShade();
     };
 
     const onMouseMove = (event: MapMouseEvent) => {
@@ -285,7 +322,10 @@ export function MapView({ districts, regions, sites, labels, layerVisibility, se
     map.on('mousemove', onMouseMove);
     map.on('click', onClick);
     map.on('error', onError);
+    map.on('move', updateBoundaryShade);
+    map.on('resize', updateBoundaryShade);
     return () => {
+      if (boundaryFrame !== null) window.cancelAnimationFrame(boundaryFrame);
       onMapReadyRef.current?.(null);
       map.remove();
       mapRef.current = null;
@@ -348,6 +388,12 @@ export function MapView({ districts, regions, sites, labels, layerVisibility, se
   return (
     <section className="map-surface" data-note-surface="map" aria-label="Interactive map of Toronto Rising districts">
       <div ref={containerRef} className="map-surface__canvas" />
+      <div ref={boundaryShadeRef} className="chronicle-boundary-shade" aria-hidden="true">
+        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--north" />
+        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--south" />
+        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--west" />
+        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--east" />
+      </div>
       <p className="map-surface__status" role="status">{status}</p>
     </section>
   );

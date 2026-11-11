@@ -113,6 +113,7 @@ export function App() {
         regions={data.regions}
         sites={data.sites}
         labels={calibratedLabels ?? data.labels}
+        chronicleBounds={data.manifest.bounds}
         layerVisibility={layerVisibility}
         selectedKey={validSelectedKey}
         onSelect={selectDistrict}

@@ -105,6 +105,51 @@ select,
   }
 }
 
+.chronicle-boundary-shade {
+  --chronicle-west: 0px;
+  --chronicle-east: 100%;
+  --chronicle-north: 0px;
+  --chronicle-south: 100%;
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  &__panel {
+    position: absolute;
+    background: rgba(#030304, 0.48);
+    backdrop-filter: blur(2.5px) brightness(0.5) saturate(0.55);
+
+    &--north {
+      inset: 0 0 auto;
+      height: var(--chronicle-north);
+      border-bottom: 1px solid rgba($blood-bright, 0.24);
+    }
+
+    &--south {
+      inset: var(--chronicle-south) 0 0;
+      border-top: 1px solid rgba($blood-bright, 0.24);
+    }
+
+    &--west {
+      top: var(--chronicle-north);
+      right: calc(100% - var(--chronicle-west));
+      bottom: calc(100% - var(--chronicle-south));
+      left: 0;
+      border-right: 1px solid rgba($blood-bright, 0.24);
+    }
+
+    &--east {
+      top: var(--chronicle-north);
+      right: 0;
+      bottom: calc(100% - var(--chronicle-south));
+      left: var(--chronicle-east);
+      border-left: 1px solid rgba($blood-bright, 0.24);
+    }
+  }
+}
+
 .district-panel {
   position: absolute;
   z-index: 5;
@@ -429,4 +474,8 @@ select,
   *,
   *::before,
   *::after { scroll-behavior: auto !important; }
+}
+
+@supports not ((backdrop-filter: blur(1px))) {
+  .chronicle-boundary-shade__panel { background: rgba(#030304, 0.72); }
 }
