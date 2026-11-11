@@ -1,0 +1,326 @@
+<!--
+  DEBUG.dumpObjectXmlToFile
+  os.time=1794350021.88267
+  guid=21d213
+  name=Fomórach - p.1
+  note=Runtime UI from object.UI.getXml(); editor source may differ.
+-->
+<Defaults>
+  <InputField class="player_desire" ignoreLayout="true" width="87%" color="#000000" textColor="#fce5c1" height="50" fontSize="30" fontStyle="Bold" rectAlignment="UpperCenter" offsetXY="0 -447" placeholder="Enter your Desire ..." />
+  <InputField class="player_desire_unset" color="#440000" fontStyle="Italic" textColor="#555555" />
+  <Image preserveAspect="true" />
+  <Image class="dot" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
+  <Image class="dot_standard" height="63" width="63" />
+  <Image class="dot_small" />
+  <Image class="dot_large" height="113" width="113" />
+  <Image class="box" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
+  <Image class="box_standard" height="80" width="80" />
+  <Panel class="page_raised page_top" />
+  <Panel class="dyscrasia_container" ignoreLayout="true" position="-1250 -550 0" pivot="0.5 0.5" width="900" height="608" offsetXY="80 -400" />
+  <Image class="dyscrasia_background" image="bg_condition_dyscrasia" width="900" height="608" preserveAspect="true" />
+  <Text class="dyscrasia_title" fontSize="48" fontStyle="Bold" color="#FFFFFF" outline="#000000" outlineSize="1 1" alignment="UpperCenter" offsetXY="0 -165" />
+  <Text class="dyscrasia_description" fontSize="32" color="#FFFFFF" fontStyle="Bold" outline="#000000" outlineSize="1 1" alignment="UpperCenter" width="800" offsetXY="0 -240" />
+  <Panel class="resonance_container" ignoreLayout="true" position="0 -975 0" pivot="0.5 0.5" width="500" height="175" />
+  <Image class="resonance_tag" width="500" height="175" preserveAspect="true" />
+  <Text class="xp_text" fontSize="82" fontStyle="Bold" color="#c5c799" rectAlignment="LowerCenter" alignment="LowerCenter" offsetXY="-67 125" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
+  <Panel class="page_root" active="true" rectAlignment="MiddleCenter" width="1545" height="2000" scale="0.1 0.1 0.1" position="0 0 -13" rotation="0 0 180" pivot="0.5 0.5" />
+  <Panel class="padded_border" padding="50 50 140 100" />
+  <VerticalLayout class="vertical_section_container" spacing="10" height="100%" width="100%" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" padding="40 40 0 0" />
+  <Image class="divider_image" preserveAspect="true" minWidth="1445" />
+  <Image class="divider_image_small" preserveAspect="true" minWidth="1445" />
+  <HorizontalLayout class="box_column_container" spacing="10" childForceExpandWidth="true" childForceExpandHeight="false" width="1500" />
+  <VerticalLayout class="box_column" minWidth="200" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperLeft" spacing="15" />
+  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="#000000" flexibleHeight="0" outline="#cb995c" outlineSize="2 -2" spacing="5" padding="10 10 5 5" />
+  <HorizontalLayout class="box_text_title_bar" preferredHeight="20" minHeight="20" flexibleHeight="0" childForceExpandWidth="true" padding="0 0 0 0" childAlignment="MiddleLeft" />
+  <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
+  <Text class="box_text_title_text" resizeTextForBestFit="true" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="MiddleLeft" color="#FFFFFF" resizeTextMinSize="14" resizeTextMaxSize="24" fontStyle="Bold" flexibleWidth="1" />
+  <Text class="flaw_title" color="#FF0000" />
+  <Panel class="box_text_panel_title_dotline" ignoreLayout="true" rectAlignment="MiddleRight" width="120" height="24" />
+  <Image class="box_text_title_dot" height="40" width="40" offsetXY="-5 10" rectAlignment="MiddleRight" active="true" />
+  <Image class="dot_1" offsetXY="10 0" />
+  <Image class="dot_2" offsetXY="-10 0" />
+  <Image class="dot_3" offsetXY="-30 0" />
+  <Image class="dot_4" offsetXY="-50 0" />
+  <Image class="dot_5" offsetXY="-70 0" />
+  <Image class="dot_6" offsetXY="-90 0" />
+  <Panel class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
+  <VerticalLayout class="box_text_panel_body" padding="0 0 0 0" spacing="0" childForceExpandHeight="false" color="#000000" />
+  <Text class="box_text" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="24" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#DDDDDD" />
+  <Text class="flavor_text" fontStyle="BoldAndItalic" color="#FFFFFF" />
+  <HorizontalLayout class="four_column_text" spacing="20" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" />
+  <VerticalLayout class="quarter_column" flexibleHeight="0" />
+  <Button class="page_navigation" width="100" height="2000" ignoreLayout="true" />
+  <Button class="page_back" rectAlignment="UpperLeft" onClick="onPageBack" color="clear" />
+  <Button class="page_forward" rectAlignment="UpperRight" onClick="onPageForward" color="clear" />
+  <Button class="page_inner_left" rectAlignment="UpperLeft" onClick="onPageInnerClick" color="clear" />
+  <Button class="page_inner_right" rectAlignment="UpperRight" onClick="onPageInnerClick" color="clear" />
+  <VerticalLayout class="vertical_project_container" width="75%" spacing="15" rectAlignment="UpperLeft" childAlignment="UpperLeft" childForceExpandHeight="false" padding="0 50 130 150" />
+  <Panel class="project_container" minHeight="150" preferredHeight="150" flexibleHeight="0" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize="2 -2" scale="0.9" />
+  <HorizontalLayout class="project_header_container" height="30" width="100%" outline="#cb995c" outlineSize="2 -2" color="rgba(0, 0, 0, 1)" rectAlignment="UpperLeft" childAlignment="UpperLeft" childForceExpandWidth="false" padding="10 10 0 0" spacing="10" />
+  <GridLayout class="project_header_dotline" cellSize="20 20" spacing="2" startCorner="UpperLeft" startAxis="Horizontal" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleLeft" childForceExpandWidth="false" childForceExpandHeight="false" />
+  <Image class="project_scope_dot" image="dot_yellow" minHeight="120" minWidth="120" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
+  <Text class="project_goal_text" color="#FFFFFF" fontStyle="Bold" fontSize="27" alignment="MiddleLeft" offsetXY="10 0" preferredWidth="1000" />
+  <Panel class="project_result_container" ignoreLayout="true" height="50" width="100" rectAlignment="UpperRight" offsetXY="10 10" color="rgba(0.2, 0.2, 0.2, 1)" outline="#cb995c" outlineSize="2 -2" />
+  <Image class="project_result_image" rectAlignment="MiddleCenter" width="90" scale="2 2" preserveAspect="true" />
+  <Text class="project_result_margin" color="#FFFFFF" fontStyle="Bold" fontSize="40" alignment="MiddleRight" horizontalOverflow="wrap" width="100" />
+  <GridLayout class="project_stake_container" color="rgba(1, 0, 0, 0)" rectAlignment="LowerLeft" cellSize="557 30" height="100" width="557" spacing="0" startCorner="UpperLeft" startAxis="Horizontal" childAlignment="UpperLeft" padding="0 0 0 0" constraint="FixedColumnCount" constraintCount="1" offsetXY="5 20" />
+  <HorizontalLayout class="project_stake_container" spacing="15" color="rgba(1, 0, 1, 0)" childForceExpandWidth="false" childForceExpandHeight="true" padding="5 0 0 0" childAlignment="MiddleLeft" />
+  <Text class="project_stakes_label" color="rgba(0, 0, 0, 0)" fontSize="0" active="false" />
+  <GridLayout class="project_stake_dotline" color="rgba(0, 1, 0, 0)" cellSize="25 25" spacing="2" startCorner="UpperLeft" startAxis="Horizontal" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleLeft" childForceExpandWidth="false" childForceExpandHeight="false" scale="0.75" preferredWidth="0" flexibleWidth="0" minWidth="0" padding="0 0 0 0" />
+  <Panel class="project_stake_spacer" flexibleWidth="1" />
+  <Image class="project_stake_dot" image="dot_white" minHeight="120" minWidth="12" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
+  <Image class="project_stake_dot_other" image="dot_grey" />
+  <Image class="project_stake_dot_coterie" image="dot_yellow" />
+  <Text class="project_stake_label" color="#FFFFFF" fontStyle="Bold" fontSize="22" alignment="MiddleLeft" flexibleWidth="0" horizontalOverflow="overflow" />
+  <Text class="project_stake_label_other" color="#AAAAAA" fontStyle="Italic" />
+  <Text class="project_stake_label_coterie" color="#FFDD00" />
+  <Image class="project_die" ignoreLayout="true" rectAlignment="MiddleRight" width="500" preserveAspect="true" offsetXY="0 -10" />
+  <HorizontalLayout class="project_date_container" ignoreLayout="true" height="30" width="550" rectAlignment="LowerRight" offsetXY="10 -10" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize="2 -2" spacing="0" />
+  <Text class="project_date_text" color="#FFFFFF" fontStyle="Bold" fontSize="20" alignment="MiddleCenter" preferredWidth="1000" />
+  <Text class="project_increment_text" fontStyle="Italic" fontSize="18" color="#999999" alignment="MiddleCenter" preferredWidth="1000" />
+  <Text class="project_date_start_text" fontStyle="Italic" color="#999999" />
+  <HorizontalLayout class="project_stake_container" active="false" />
+  <Image class="project_stake_dot" active="false" />
+  <Image class="project_scope_dot" active="false" />
+</Defaults>
+<Panel id="paper_root" class="page_root" active="true">
+  <Panel id="pageRaised" class="page_raised page_top">
+    <Panel id="dyscrasia_container" class="dyscrasia_container" active="true">
+      <Image id="db_dyscrasia_container_background" class="dyscrasia_background" />
+      <Text id="dyscrasia_title" class="dyscrasia_title" text="Cold Feet" />
+      <Text id="dyscrasia_description" class="dyscrasia_description" text="You have cold feet." />
+    </Panel>
+    <Panel id="resonance_container" class="resonance_container" active="true">
+      <Image id="resonance_tag" class="resonance_tag" image="resonance_acutelyIschemic" />
+    </Panel>
+  </Panel>
+  <Button id="pageInner" class="page_navigation page_inner_right" active="true" />
+  <InputField id="player_desire" class="player_desire player_desire_unset" onValueChanged="onDesireChanged" onEndEdit="onDesireEndEdit" text="" />
+  <Panel id="attributes_panel">
+    <Image id="dot_strength_1" class="dot dot_standard" offsetXY="285 -668" active="true" image="dot_yellow" />
+    <Image id="dot_strength_2" class="dot dot_standard" offsetXY="319 -668" active="true" image="dot_yellow" />
+    <Image id="dot_strength_3" class="dot dot_standard" offsetXY="353 -668" active="true" image="dot_yellow" />
+    <Image id="dot_strength_4" class="dot dot_standard" offsetXY="387 -668" active="false" />
+    <Image id="dot_strength_5" class="dot dot_standard" offsetXY="421 -668" active="false" />
+    <Image id="dot_dexterity_1" class="dot dot_standard" offsetXY="285 -745" active="true" image="dot_yellow" />
+    <Image id="dot_dexterity_2" class="dot dot_standard" offsetXY="319 -745" active="false" />
+    <Image id="dot_dexterity_3" class="dot dot_standard" offsetXY="353 -745" active="false" />
+    <Image id="dot_dexterity_4" class="dot dot_standard" offsetXY="387 -745" active="false" />
+    <Image id="dot_dexterity_5" class="dot dot_standard" offsetXY="421 -745" active="false" />
+    <Image id="dot_stamina_1" class="dot dot_standard" offsetXY="285 -822" active="true" image="dot_yellow" />
+    <Image id="dot_stamina_2" class="dot dot_standard" offsetXY="319 -822" active="true" image="dot_yellow" />
+    <Image id="dot_stamina_3" class="dot dot_standard" offsetXY="353 -822" active="true" image="dot_yellow" />
+    <Image id="dot_stamina_4" class="dot dot_standard" offsetXY="387 -822" active="false" />
+    <Image id="dot_stamina_5" class="dot dot_standard" offsetXY="421 -822" active="false" />
+    <Image id="dot_charisma_1" class="dot dot_standard" offsetXY="782 -668" active="true" image="dot_yellow" />
+    <Image id="dot_charisma_2" class="dot dot_standard" offsetXY="816 -668" active="true" image="dot_yellow" />
+    <Image id="dot_charisma_3" class="dot dot_standard" offsetXY="850 -668" active="false" />
+    <Image id="dot_charisma_4" class="dot dot_standard" offsetXY="884 -668" active="false" />
+    <Image id="dot_charisma_5" class="dot dot_standard" offsetXY="918 -668" active="false" />
+    <Image id="dot_manipulation_1" class="dot dot_standard" offsetXY="782 -745" active="true" image="dot_yellow" />
+    <Image id="dot_manipulation_2" class="dot dot_standard" offsetXY="816 -745" active="true" image="dot_yellow" />
+    <Image id="dot_manipulation_3" class="dot dot_standard" offsetXY="850 -745" active="false" />
+    <Image id="dot_manipulation_4" class="dot dot_standard" offsetXY="884 -745" active="false" />
+    <Image id="dot_manipulation_5" class="dot dot_standard" offsetXY="918 -745" active="false" />
+    <Image id="dot_composure_1" class="dot dot_standard" offsetXY="782 -822" active="true" image="dot_yellow" />
+    <Image id="dot_composure_2" class="dot dot_standard" offsetXY="816 -822" active="true" image="dot_yellow" />
+    <Image id="dot_composure_3" class="dot dot_standard" offsetXY="850 -822" active="true" image="dot_yellow" />
+    <Image id="dot_composure_4" class="dot dot_standard" offsetXY="884 -822" active="false" />
+    <Image id="dot_composure_5" class="dot dot_standard" offsetXY="918 -822" active="false" />
+    <Image id="dot_intelligence_1" class="dot dot_standard" offsetXY="1279 -668" active="true" image="dot_yellow" />
+    <Image id="dot_intelligence_2" class="dot dot_standard" offsetXY="1313 -668" active="true" image="dot_yellow" />
+    <Image id="dot_intelligence_3" class="dot dot_standard" offsetXY="1347 -668" active="false" />
+    <Image id="dot_intelligence_4" class="dot dot_standard" offsetXY="1381 -668" active="false" />
+    <Image id="dot_intelligence_5" class="dot dot_standard" offsetXY="1415 -668" active="false" />
+    <Image id="dot_wits_1" class="dot dot_standard" offsetXY="1279 -745" active="true" image="dot_yellow" />
+    <Image id="dot_wits_2" class="dot dot_standard" offsetXY="1313 -745" active="true" image="dot_yellow" />
+    <Image id="dot_wits_3" class="dot dot_standard" offsetXY="1347 -745" active="true" image="dot_yellow" />
+    <Image id="dot_wits_4" class="dot dot_standard" offsetXY="1381 -745" active="true" image="dot_yellow" />
+    <Image id="dot_wits_5" class="dot dot_standard" offsetXY="1415 -745" active="false" />
+    <Image id="dot_resolve_1" class="dot dot_standard" offsetXY="1279 -822" active="true" image="dot_yellow" />
+    <Image id="dot_resolve_2" class="dot dot_standard" offsetXY="1313 -822" active="true" image="dot_yellow" />
+    <Image id="dot_resolve_3" class="dot dot_standard" offsetXY="1347 -822" active="false" />
+    <Image id="dot_resolve_4" class="dot dot_standard" offsetXY="1381 -822" active="false" />
+    <Image id="dot_resolve_5" class="dot dot_standard" offsetXY="1415 -822" active="false" />
+  </Panel>
+  <Panel id="skills_panel">
+    <Image id="dot_athletics_1" class="dot dot_standard" offsetXY="285 -940" active="true" image="dot_yellow" />
+    <Image id="dot_athletics_2" class="dot dot_standard" offsetXY="319 -940" active="true" image="dot_yellow" />
+    <Image id="dot_athletics_3" class="dot dot_standard" offsetXY="353 -940" active="false" />
+    <Image id="dot_athletics_4" class="dot dot_standard" offsetXY="387 -940" active="false" />
+    <Image id="dot_athletics_5" class="dot dot_standard" offsetXY="421 -940" active="false" />
+    <Image id="dot_brawl_1" class="dot dot_standard" offsetXY="285 -1019" active="true" image="dot_yellow" />
+    <Image id="dot_brawl_2" class="dot dot_standard" offsetXY="319 -1019" active="true" image="dot_yellow" />
+    <Image id="dot_brawl_3" class="dot dot_standard" offsetXY="353 -1019" active="false" />
+    <Image id="dot_brawl_4" class="dot dot_standard" offsetXY="387 -1019" active="false" />
+    <Image id="dot_brawl_5" class="dot dot_standard" offsetXY="421 -1019" active="false" />
+    <Image id="dot_craft_1" class="dot dot_standard" offsetXY="285 -1098" active="false" />
+    <Image id="dot_craft_2" class="dot dot_standard" offsetXY="319 -1098" active="false" />
+    <Image id="dot_craft_3" class="dot dot_standard" offsetXY="353 -1098" active="false" />
+    <Image id="dot_craft_4" class="dot dot_standard" offsetXY="387 -1098" active="false" />
+    <Image id="dot_craft_5" class="dot dot_standard" offsetXY="421 -1098" active="false" />
+    <Image id="dot_drive_1" class="dot dot_standard" offsetXY="285 -1177" active="false" />
+    <Image id="dot_drive_2" class="dot dot_standard" offsetXY="319 -1177" active="false" />
+    <Image id="dot_drive_3" class="dot dot_standard" offsetXY="353 -1177" active="false" />
+    <Image id="dot_drive_4" class="dot dot_standard" offsetXY="387 -1177" active="false" />
+    <Image id="dot_drive_5" class="dot dot_standard" offsetXY="421 -1177" active="false" />
+    <Image id="dot_firearms_1" class="dot dot_standard" offsetXY="285 -1256" active="false" />
+    <Image id="dot_firearms_2" class="dot dot_standard" offsetXY="319 -1256" active="false" />
+    <Image id="dot_firearms_3" class="dot dot_standard" offsetXY="353 -1256" active="false" />
+    <Image id="dot_firearms_4" class="dot dot_standard" offsetXY="387 -1256" active="false" />
+    <Image id="dot_firearms_5" class="dot dot_standard" offsetXY="421 -1256" active="false" />
+    <Image id="dot_larceny_1" class="dot dot_standard" offsetXY="285 -1335" active="false" />
+    <Image id="dot_larceny_2" class="dot dot_standard" offsetXY="319 -1335" active="false" />
+    <Image id="dot_larceny_3" class="dot dot_standard" offsetXY="353 -1335" active="false" />
+    <Image id="dot_larceny_4" class="dot dot_standard" offsetXY="387 -1335" active="false" />
+    <Image id="dot_larceny_5" class="dot dot_standard" offsetXY="421 -1335" active="false" />
+    <Image id="dot_melee_1" class="dot dot_standard" offsetXY="285 -1414" active="false" />
+    <Image id="dot_melee_2" class="dot dot_standard" offsetXY="319 -1414" active="false" />
+    <Image id="dot_melee_3" class="dot dot_standard" offsetXY="353 -1414" active="false" />
+    <Image id="dot_melee_4" class="dot dot_standard" offsetXY="387 -1414" active="false" />
+    <Image id="dot_melee_5" class="dot dot_standard" offsetXY="421 -1414" active="false" />
+    <Image id="dot_stealth_1" class="dot dot_standard" offsetXY="285 -1493" active="true" image="dot_yellow" />
+    <Image id="dot_stealth_2" class="dot dot_standard" offsetXY="319 -1493" active="false" />
+    <Image id="dot_stealth_3" class="dot dot_standard" offsetXY="353 -1493" active="false" />
+    <Image id="dot_stealth_4" class="dot dot_standard" offsetXY="387 -1493" active="false" />
+    <Image id="dot_stealth_5" class="dot dot_standard" offsetXY="421 -1493" active="false" />
+    <Image id="dot_survival_1" class="dot dot_standard" offsetXY="285 -1572" active="true" image="dot_yellow" />
+    <Image id="dot_survival_2" class="dot dot_standard" offsetXY="319 -1572" active="false" />
+    <Image id="dot_survival_3" class="dot dot_standard" offsetXY="353 -1572" active="false" />
+    <Image id="dot_survival_4" class="dot dot_standard" offsetXY="387 -1572" active="false" />
+    <Image id="dot_survival_5" class="dot dot_standard" offsetXY="421 -1572" active="false" />
+    <Image id="dot_animalKen_1" class="dot dot_standard" offsetXY="782 -940" active="true" image="dot_yellow" />
+    <Image id="dot_animalKen_2" class="dot dot_standard" offsetXY="816 -940" active="false" />
+    <Image id="dot_animalKen_3" class="dot dot_standard" offsetXY="850 -940" active="false" />
+    <Image id="dot_animalKen_4" class="dot dot_standard" offsetXY="884 -940" active="false" />
+    <Image id="dot_animalKen_5" class="dot dot_standard" offsetXY="918 -940" active="false" />
+    <Image id="dot_etiquette_1" class="dot dot_standard" offsetXY="782 -1019" active="true" image="dot_yellow" />
+    <Image id="dot_etiquette_2" class="dot dot_standard" offsetXY="816 -1019" active="false" />
+    <Image id="dot_etiquette_3" class="dot dot_standard" offsetXY="850 -1019" active="false" />
+    <Image id="dot_etiquette_4" class="dot dot_standard" offsetXY="884 -1019" active="false" />
+    <Image id="dot_etiquette_5" class="dot dot_standard" offsetXY="918 -1019" active="false" />
+    <Image id="dot_insight_1" class="dot dot_standard" offsetXY="782 -1098" active="true" image="dot_yellow" />
+    <Image id="dot_insight_2" class="dot dot_standard" offsetXY="816 -1098" active="true" image="dot_yellow" />
+    <Image id="dot_insight_3" class="dot dot_standard" offsetXY="850 -1098" active="false" />
+    <Image id="dot_insight_4" class="dot dot_standard" offsetXY="884 -1098" active="false" />
+    <Image id="dot_insight_5" class="dot dot_standard" offsetXY="918 -1098" active="false" />
+    <Image id="dot_intimidation_1" class="dot dot_standard" offsetXY="782 -1177" active="true" image="dot_yellow" />
+    <Image id="dot_intimidation_2" class="dot dot_standard" offsetXY="816 -1177" active="true" image="dot_yellow" />
+    <Image id="dot_intimidation_3" class="dot dot_standard" offsetXY="850 -1177" active="true" image="dot_yellow" />
+    <Image id="dot_intimidation_4" class="dot dot_standard" offsetXY="884 -1177" active="false" />
+    <Image id="dot_intimidation_5" class="dot dot_standard" offsetXY="918 -1177" active="false" />
+    <Image id="dot_leadership_1" class="dot dot_standard" offsetXY="782 -1256" active="true" image="dot_yellow" />
+    <Image id="dot_leadership_2" class="dot dot_standard" offsetXY="816 -1256" active="false" />
+    <Image id="dot_leadership_3" class="dot dot_standard" offsetXY="850 -1256" active="false" />
+    <Image id="dot_leadership_4" class="dot dot_standard" offsetXY="884 -1256" active="false" />
+    <Image id="dot_leadership_5" class="dot dot_standard" offsetXY="918 -1256" active="false" />
+    <Image id="dot_performance_1" class="dot dot_standard" offsetXY="782 -1335" active="false" />
+    <Image id="dot_performance_2" class="dot dot_standard" offsetXY="816 -1335" active="false" />
+    <Image id="dot_performance_3" class="dot dot_standard" offsetXY="850 -1335" active="false" />
+    <Image id="dot_performance_4" class="dot dot_standard" offsetXY="884 -1335" active="false" />
+    <Image id="dot_performance_5" class="dot dot_standard" offsetXY="918 -1335" active="false" />
+    <Image id="dot_persuasion_1" class="dot dot_standard" offsetXY="782 -1414" active="false" />
+    <Image id="dot_persuasion_2" class="dot dot_standard" offsetXY="816 -1414" active="false" />
+    <Image id="dot_persuasion_3" class="dot dot_standard" offsetXY="850 -1414" active="false" />
+    <Image id="dot_persuasion_4" class="dot dot_standard" offsetXY="884 -1414" active="false" />
+    <Image id="dot_persuasion_5" class="dot dot_standard" offsetXY="918 -1414" active="false" />
+    <Image id="dot_streetwise_1" class="dot dot_standard" offsetXY="782 -1493" active="true" image="dot_yellow" />
+    <Image id="dot_streetwise_2" class="dot dot_standard" offsetXY="816 -1493" active="true" image="dot_yellow" />
+    <Image id="dot_streetwise_3" class="dot dot_standard" offsetXY="850 -1493" active="false" />
+    <Image id="dot_streetwise_4" class="dot dot_standard" offsetXY="884 -1493" active="false" />
+    <Image id="dot_streetwise_5" class="dot dot_standard" offsetXY="918 -1493" active="false" />
+    <Image id="dot_subterfuge_1" class="dot dot_standard" offsetXY="782 -1572" active="true" image="dot_yellow" />
+    <Image id="dot_subterfuge_2" class="dot dot_standard" offsetXY="816 -1572" active="true" image="dot_yellow" />
+    <Image id="dot_subterfuge_3" class="dot dot_standard" offsetXY="850 -1572" active="false" />
+    <Image id="dot_subterfuge_4" class="dot dot_standard" offsetXY="884 -1572" active="false" />
+    <Image id="dot_subterfuge_5" class="dot dot_standard" offsetXY="918 -1572" active="false" />
+    <Image id="dot_academics_1" class="dot dot_standard" offsetXY="1279 -940" active="true" image="dot_yellow" />
+    <Image id="dot_academics_2" class="dot dot_standard" offsetXY="1313 -940" active="false" />
+    <Image id="dot_academics_3" class="dot dot_standard" offsetXY="1347 -940" active="false" />
+    <Image id="dot_academics_4" class="dot dot_standard" offsetXY="1381 -940" active="false" />
+    <Image id="dot_academics_5" class="dot dot_standard" offsetXY="1415 -940" active="false" />
+    <Image id="dot_awareness_1" class="dot dot_standard" offsetXY="1279 -1019" active="true" image="dot_yellow" />
+    <Image id="dot_awareness_2" class="dot dot_standard" offsetXY="1313 -1019" active="true" image="dot_yellow" />
+    <Image id="dot_awareness_3" class="dot dot_standard" offsetXY="1347 -1019" active="true" image="dot_yellow" />
+    <Image id="dot_awareness_4" class="dot dot_standard" offsetXY="1381 -1019" active="false" />
+    <Image id="dot_awareness_5" class="dot dot_standard" offsetXY="1415 -1019" active="false" />
+    <Image id="dot_finance_1" class="dot dot_standard" offsetXY="1279 -1098" active="false" />
+    <Image id="dot_finance_2" class="dot dot_standard" offsetXY="1313 -1098" active="false" />
+    <Image id="dot_finance_3" class="dot dot_standard" offsetXY="1347 -1098" active="false" />
+    <Image id="dot_finance_4" class="dot dot_standard" offsetXY="1381 -1098" active="false" />
+    <Image id="dot_finance_5" class="dot dot_standard" offsetXY="1415 -1098" active="false" />
+    <Image id="dot_investigation_1" class="dot dot_standard" offsetXY="1279 -1177" active="true" image="dot_yellow" />
+    <Image id="dot_investigation_2" class="dot dot_standard" offsetXY="1313 -1177" active="true" image="dot_yellow" />
+    <Image id="dot_investigation_3" class="dot dot_standard" offsetXY="1347 -1177" active="false" />
+    <Image id="dot_investigation_4" class="dot dot_standard" offsetXY="1381 -1177" active="false" />
+    <Image id="dot_investigation_5" class="dot dot_standard" offsetXY="1415 -1177" active="false" />
+    <Image id="dot_medicine_1" class="dot dot_standard" offsetXY="1279 -1256" active="false" />
+    <Image id="dot_medicine_2" class="dot dot_standard" offsetXY="1313 -1256" active="false" />
+    <Image id="dot_medicine_3" class="dot dot_standard" offsetXY="1347 -1256" active="false" />
+    <Image id="dot_medicine_4" class="dot dot_standard" offsetXY="1381 -1256" active="false" />
+    <Image id="dot_medicine_5" class="dot dot_standard" offsetXY="1415 -1256" active="false" />
+    <Image id="dot_occult_1" class="dot dot_standard" offsetXY="1279 -1335" active="false" />
+    <Image id="dot_occult_2" class="dot dot_standard" offsetXY="1313 -1335" active="false" />
+    <Image id="dot_occult_3" class="dot dot_standard" offsetXY="1347 -1335" active="false" />
+    <Image id="dot_occult_4" class="dot dot_standard" offsetXY="1381 -1335" active="false" />
+    <Image id="dot_occult_5" class="dot dot_standard" offsetXY="1415 -1335" active="false" />
+    <Image id="dot_politics_1" class="dot dot_standard" offsetXY="1279 -1414" active="true" image="dot_yellow" />
+    <Image id="dot_politics_2" class="dot dot_standard" offsetXY="1313 -1414" active="true" image="dot_yellow" />
+    <Image id="dot_politics_3" class="dot dot_standard" offsetXY="1347 -1414" active="true" image="dot_yellow" />
+    <Image id="dot_politics_4" class="dot dot_standard" offsetXY="1381 -1414" active="false" />
+    <Image id="dot_politics_5" class="dot dot_standard" offsetXY="1415 -1414" active="false" />
+    <Image id="dot_science_1" class="dot dot_standard" offsetXY="1279 -1493" active="false" />
+    <Image id="dot_science_2" class="dot dot_standard" offsetXY="1313 -1493" active="false" />
+    <Image id="dot_science_3" class="dot dot_standard" offsetXY="1347 -1493" active="false" />
+    <Image id="dot_science_4" class="dot dot_standard" offsetXY="1381 -1493" active="false" />
+    <Image id="dot_science_5" class="dot dot_standard" offsetXY="1415 -1493" active="false" />
+    <Image id="dot_technology_1" class="dot dot_standard" offsetXY="1279 -1572" active="true" image="dot_yellow" />
+    <Image id="dot_technology_2" class="dot dot_standard" offsetXY="1313 -1572" active="false" />
+    <Image id="dot_technology_3" class="dot dot_standard" offsetXY="1347 -1572" active="false" />
+    <Image id="dot_technology_4" class="dot dot_standard" offsetXY="1381 -1572" active="false" />
+    <Image id="dot_technology_5" class="dot dot_standard" offsetXY="1415 -1572" active="false" />
+  </Panel>
+  <Panel id="trackers_panel">
+    <Image id="box_health_1" class="box box_standard" offsetXY="110 -1730.5" active="true" image="box_white" />
+    <Image id="box_health_2" class="box box_standard" offsetXY="152 -1730.5" active="true" image="box_white" />
+    <Image id="box_health_3" class="box box_standard" offsetXY="194 -1730.5" active="true" image="box_white" />
+    <Image id="box_health_4" class="box box_standard" offsetXY="236 -1730.5" active="true" image="box_white" />
+    <Image id="box_health_5" class="box box_standard" offsetXY="278 -1730.5" active="true" image="box_white" />
+    <Image id="box_health_6" class="box box_standard" offsetXY="320 -1730.5" active="true" image="box_white" />
+    <Image id="box_health_7" class="box box_standard" offsetXY="362 -1730.5" active="false" />
+    <Image id="box_health_8" class="box box_standard" offsetXY="404 -1730.5" active="false" />
+    <Image id="box_health_9" class="box box_standard" offsetXY="446 -1730.5" active="false" />
+    <Image id="box_health_10" class="box box_standard" offsetXY="488 -1730.5" active="false" />
+    <Image id="box_willpower_1" class="box box_standard" offsetXY="994 -1730.5" active="true" image="box_white" />
+    <Image id="box_willpower_2" class="box box_standard" offsetXY="1036 -1730.5" active="true" image="box_white" />
+    <Image id="box_willpower_3" class="box box_standard" offsetXY="1078 -1730.5" active="true" image="box_white" />
+    <Image id="box_willpower_4" class="box box_standard" offsetXY="1120 -1730.5" active="true" image="box_white" />
+    <Image id="box_willpower_5" class="box box_standard" offsetXY="1162 -1730.5" active="true" image="box_white" />
+    <Image id="box_willpower_6" class="box box_standard" offsetXY="1204 -1730.5" active="false" />
+    <Image id="box_willpower_7" class="box box_standard" offsetXY="1246 -1730.5" active="false" />
+    <Image id="box_willpower_8" class="box box_standard" offsetXY="1288 -1730.5" active="false" />
+    <Image id="box_willpower_9" class="box box_standard" offsetXY="1330 -1730.5" active="false" />
+    <Image id="box_willpower_10" class="box box_standard" offsetXY="1372 -1730.5" active="false" />
+    <Image id="box_humanity_1" class="box box_standard" offsetXY="110 -1873" active="true" image="box_white" />
+    <Image id="box_humanity_2" class="box box_standard" offsetXY="152 -1873" active="true" image="box_white" />
+    <Image id="box_humanity_3" class="box box_standard" offsetXY="194 -1873" active="true" image="box_white" />
+    <Image id="box_humanity_4" class="box box_standard" offsetXY="236 -1873" active="true" image="box_white" />
+    <Image id="box_humanity_5" class="box box_standard" offsetXY="278 -1873" active="true" image="box_white" />
+    <Image id="box_humanity_6" class="box box_standard" offsetXY="320 -1873" active="true" image="box_white" />
+    <Image id="box_humanity_7" class="box box_standard" offsetXY="362 -1873" active="false" />
+    <Image id="box_humanity_8" class="box box_standard" offsetXY="404 -1873" active="false" />
+    <Image id="box_humanity_9" class="box box_standard" offsetXY="446 -1873" active="false" />
+    <Image id="box_humanity_10" class="box box_standard" offsetXY="488 -1873" active="false" />
+    <Image id="dot_bloodPotency_1" class="dot dot_large" offsetXY="1033 -1822" active="true" image="dot_red" />
+    <Image id="dot_bloodPotency_2" class="dot dot_large" offsetXY="1101 -1822" active="true" image="dot_red" />
+    <Image id="dot_bloodPotency_3" class="dot dot_large" offsetXY="1169 -1822" active="false" />
+    <Image id="dot_bloodPotency_4" class="dot dot_large" offsetXY="1237 -1822" active="false" />
+    <Image id="dot_bloodPotency_5" class="dot dot_large" offsetXY="1305 -1822" active="false" />
+    <Text id="xp_text" class="xp_text" text="5" />
+  </Panel>
+</Panel>
