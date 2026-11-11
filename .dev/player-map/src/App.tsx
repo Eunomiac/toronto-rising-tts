@@ -51,6 +51,17 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (!selectedKey) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setSelectedKey(null);
+      window.history.replaceState(null, '', updateDistrictInUrl(null));
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedKey]);
+
+  useEffect(() => {
     const revision = data?.manifest.calibration.revision;
     if (!calibrationMode || revision === undefined || calibrationStorageRevision === revision) return;
     window.localStorage.removeItem(CALIBRATION_STORAGE_PREFIX);
@@ -100,10 +111,13 @@ export function App() {
   }, []);
 
   if (error) {
-    return <main className="app app--error"><h1>Toronto Rising</h1><p>Map data could not be loaded.</p><pre>{error}</pre></main>;
+    return <main className="app app--error" role="alert"><h1>Toronto Rising</h1><p>Map data could not be loaded.</p><pre>{error}</pre></main>;
   }
   if (!data) {
-    return <main className="app app--loading"><div className="loading-mark" aria-hidden="true">TR</div><p>Opening the city…</p></main>;
+    return <main className="app app--loading" aria-busy="true" aria-live="polite"><div className="loading-mark" aria-hidden="true">TR</div><p>Opening the city…</p></main>;
+  }
+  if (data.districts.features.length === 0) {
+    return <main className="app app--empty"><h1>Toronto Rising</h1><p>No districts are available in this map release.</p></main>;
   }
 
   return (

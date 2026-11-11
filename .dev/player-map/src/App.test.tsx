@@ -85,6 +85,7 @@ const mapData = {
 describe('App district selection', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', '/');
+    loadPublicMapDataMock.mockReset();
     loadPublicMapDataMock.mockResolvedValue(mapData);
   });
 
@@ -114,5 +115,36 @@ describe('App district selection', () => {
 
     await user.click(screen.getByRole('checkbox', { name: 'Districts' }));
     expect(window.location.search).toBe('?layers=regions');
+  });
+
+  it('shows loading, empty, and failed-data states clearly', async () => {
+    const { unmount } = render(<App />);
+    expect(screen.getByText('Opening the city…')).toBeVisible();
+    unmount();
+
+    loadPublicMapDataMock.mockResolvedValueOnce({
+      ...mapData,
+      districts: { type: 'FeatureCollection', features: [] },
+      labels: { type: 'FeatureCollection', features: [] },
+      manifest: { ...mapData.manifest, counts: { ...mapData.manifest.counts, districts: 0, labels: 0 } },
+    });
+    render(<App />);
+    expect(await screen.findByText('No districts are available in this map release.')).toBeVisible();
+    cleanup();
+
+    loadPublicMapDataMock.mockRejectedValueOnce(new Error('broken fixture'));
+    render(<App />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Map data could not be loaded.');
+  });
+
+  it('closes selected district details with Escape', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: 'Select Rosedale on map' }));
+    expect(screen.getByTestId('selected-district')).toBeVisible();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByTestId('selected-district')).not.toBeInTheDocument();
+    expect(window.location.search).toBe('');
   });
 });

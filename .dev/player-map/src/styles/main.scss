@@ -35,6 +35,7 @@ select,
   isolation: isolate;
 
   &--loading,
+  &--empty,
   &--error {
     display: grid;
     place-content: center;

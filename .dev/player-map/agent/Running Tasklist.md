@@ -96,7 +96,7 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Add layer controls for districts and regions, with an honest disabled state while no sites are revealed.
 - [ ] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
 - [x] Add shareable URL state for district selection and visible district, region, and site overlays.
-- [ ] Add loading, empty, error, keyboard, touch, and reduced-motion behavior.
+- [x] Add loading, empty, error, keyboard, touch, and reduced-motion behavior, including Escape-to-close and real mobile browser coverage.
 - [x] Add the development-only Debug notes toggle with Add note and Show notes controls, matching the Storyteller Dashboard workflow.
 - [x] Anchor map pins by longitude/latitude and interface pins by stable surface plus normalized coordinates.
 - [x] Persist numbered notes, reproduction context, comments, and agent replies through a tracked `agent/` file and development-only API.
