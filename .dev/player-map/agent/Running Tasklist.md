@@ -113,7 +113,7 @@ and data ownership during implementation.
 
 - [ ] De-emphasize the basemap outside the established square chronicle setting boundary with a pointer-transparent CSS overlay using `backdrop-filter` blur and brightness. Prefer an inverse rectangular mask or four screen-space panels whose projected edges follow the map while panning and zooming. Provide a simple dimmed-overlay fallback and verify the blur on supported phones.
 - [ ] Explore a very distant provincial-scale zoom level where story-relevant cities such as Montreal and Kingston appear as simple point markers rather than detailed playable map areas.
-- [ ] Replace or supplement the selected-district opacity treatment with a less obscuring edge treatment, such as an outline glow that leaves streets and labels readable.
+- [x] Replace the heavy selected-district wash with a restrained tint and bright blurred edge treatment that leaves streets and labels readable.
 - [ ] Add a custom orientation-street layer with bold white labels driven by an explicit allow list of the major streets used to help players locate themselves. Keep its routes and labels independent of the basemap's automatic road-label selection so their styling, repetition, and zoom visibility remain under app control.
 - [ ] Support rare fictional basemap changes with small custom polygon masks rather than a general-purpose basemap editor. The only currently known case is the comparatively barren Giovanni Estate in Wychwood: cover the unwanted building and house detail at an appropriate layer depth, then add replacement geometry or a label only if needed.
 - [x] Stop repeated District and Region names with generated one-point-per-feature label sources rather than automatic labels from tiled multipart polygons.

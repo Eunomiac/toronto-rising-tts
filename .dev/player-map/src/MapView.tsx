@@ -25,6 +25,7 @@ const REGION_SOURCE_ID = 'regions';
 const SITE_SOURCE_ID = 'sites';
 const LABEL_SOURCE_ID = 'map-labels';
 const FILL_LAYER_ID = 'district-fills';
+const SELECTED_GLOW_LAYER_ID = 'district-selected-glow';
 const LINE_LAYER_ID = 'district-lines';
 const LABEL_LAYER_ID = 'district-labels';
 const REGION_FILL_LAYER_ID = 'region-fills';
@@ -125,9 +126,25 @@ export function MapView({ districts, regions, sites, labels, layerVisibility, se
           ],
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.58,
-            ['boolean', ['feature-state', 'hovered'], false], 0.42,
-            0.24,
+            ['boolean', ['feature-state', 'selected'], false], 0.2,
+            ['boolean', ['feature-state', 'hovered'], false], 0.34,
+            0.18,
+          ],
+        },
+        layout: { visibility: mapVisibility(layerVisibilityRef.current.districts) },
+      });
+      map.addLayer({
+        id: SELECTED_GLOW_LAYER_ID,
+        type: 'line',
+        source: SOURCE_ID,
+        paint: {
+          'line-color': '#ff4f59',
+          'line-width': 8,
+          'line-blur': 5,
+          'line-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false], 0.9,
+            0,
           ],
         },
         layout: { visibility: mapVisibility(layerVisibilityRef.current.districts) },
@@ -303,7 +320,7 @@ export function MapView({ districts, regions, sites, labels, layerVisibility, se
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
-    for (const layer of [FILL_LAYER_ID, LINE_LAYER_ID, LABEL_LAYER_ID]) {
+    for (const layer of [FILL_LAYER_ID, SELECTED_GLOW_LAYER_ID, LINE_LAYER_ID, LABEL_LAYER_ID]) {
       map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.districts));
     }
     for (const layer of [REGION_FILL_LAYER_ID, REGION_LINE_LAYER_ID, REGION_LABEL_LAYER_ID]) {
