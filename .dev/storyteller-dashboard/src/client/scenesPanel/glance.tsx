@@ -12,7 +12,7 @@ import {
 import { SEAT_ACCENT } from "../pcSheet/layout";
 import { DISTRICT_MAP_HEIGHT, DISTRICT_MAP_SRC, DISTRICT_MAP_WIDTH, districtPin } from "./districtMap";
 import { Icon, type IconName } from "./icons";
-import { groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./roster";
+import { assignNpcRosterGroup, groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./roster";
 import { SceneNotes } from "./sceneNotes";
 import {
   INTENSITIES,
@@ -974,10 +974,12 @@ export const MasonryRoster = (): ReactElement => {
   const { catalogs, raw: rawCatalogs, error } = useSceneCatalogs();
   const overrides = useNpcOverrides();
   const memoriamCatalog = useMemoriamCatalog();
-  const phase = useWorldState().phase;
+  const world = useWorldState();
+  const phase = world.phase;
   const [configuring, setConfiguring] = useState<NpcConfigTarget | null>(null);
   const [keptStats, setKeptStats] = useState<KeptMember | null>(null);
-  const tableGenerics = useWorldState().seats?.generics;
+  const tableGenerics = world.seats?.generics;
+  const preloadedKeys = world.seats?.preloaded ?? [];
   const draftGenerics = useContext(SceneGenericsContext);
   const inScene = draftGenerics ?? tableGenerics ?? [];
   const send = useScenesCommand();
@@ -987,11 +989,13 @@ export const MasonryRoster = (): ReactElement => {
   const [tierPick, setTierPick] = useState<{ member: RosterMember; label: string; at: Point; tiers: readonly NpcTier[] } | null>(null);
   const [genericCatalog, setGenericCatalog] = useState<readonly GenericEntry[] | null>(null);
   const [genericError, setGenericError] = useState<string | null>(null);
-  const [open, setOpen] = useState<string | null>("beesHive");
+  const [open, setOpen] = useState<string | null>(null);
   const layout = useRosterLayout();
   const [draft, setDraft] = useState<{ name: string; color: string } | null>(null);
   const [editing, setEditing] = useState<{ key: string; at: Point } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [memberGroups, setMemberGroups] = useState<Readonly<Record<string, string>>>({});
+  const [rosterError, setRosterError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = usePersistentState<"main" | "generic" | "memoriam">("tr-dashboard:roster-tab", "main", ["main", "generic", "memoriam"]);
   const [memYears, setMemYears] = useState<ReadonlySet<MemoriamYear>>(() => new Set());
@@ -1001,10 +1005,10 @@ export const MasonryRoster = (): ReactElement => {
   const previewFigurine = (characterKey: string | null, token?: HTMLElement): void =>
     setPreview(characterKey && token ? { characterKey, token } : null);
   useEffect(() => {
-    if (view === "generic" && !genericCatalog) {
+    if ((view === "generic" || preloadedKeys.length > 0) && !genericCatalog) {
       loadGenericCatalog().then(setGenericCatalog, (reason: unknown) => setGenericError(reason instanceof Error ? reason.message : String(reason)));
     }
-  }, [view, genericCatalog]);
+  }, [view, genericCatalog, preloadedKeys.length]);
   const fileGroup = (categoryId: string | null) => (groupKey: string): void => {
     const assigned = { ...layout.assigned };
     if (categoryId) {
@@ -1058,7 +1062,8 @@ export const MasonryRoster = (): ReactElement => {
     const byNpc = new Map(eligible.map(npc => [npc.characterKey, npc]));
     for (const npc of eligible) {
       const groupNpc = byNpc.get(npc.variantOfUnique ?? "") ?? npc;
-      for (const key of groupNpc.pickerGroups.length ? groupNpc.pickerGroups : ["catalogUngrouped"]) {
+      const assignedGroup = memberGroups[groupNpc.characterKey];
+      for (const key of assignedGroup ? [assignedGroup] : groupNpc.pickerGroups.length ? groupNpc.pickerGroups : ["catalogUngrouped"]) {
         byKey.set(key, [...(byKey.get(key) ?? []), { characterKey: npc.characterKey, name: npc.fullName }]);
       }
     }
@@ -1066,7 +1071,7 @@ export const MasonryRoster = (): ReactElement => {
       const label = catalogs.pickerGroupLabels[key] ?? (key === "catalogUngrouped" ? "Ungrouped" : key);
       return { key, label, labelWidth: groupLabelWidth(label), members: sortNamedVariants(members, npcKey => byNpc.get(npcKey)?.variantOfUnique) };
     });
-  }, [catalogs]);
+  }, [catalogs, memberGroups]);
   const spawnedKey = [...inScene.map((npc) => npc.characterKey), ...Object.keys(queuedGenerics)].join(",");
   const spawned = useMemo(() => new Set(spawnedKey.split(",")), [spawnedKey]);
   const genGroups = useMemo(
@@ -1231,6 +1236,25 @@ export const MasonryRoster = (): ReactElement => {
     });
   };
   const ownColor = (characterKey: string): string | undefined => overrides[characterKey]?.color;
+  const assignMemberToGroup = (characterKey: string, groupKey: string): void => {
+    if (!catalogs || groupKey === "catalogUngrouped") {
+      return;
+    }
+    const npc = catalogs.namedNpcs.find((row) => row.characterKey === characterKey);
+    const canonicalKey = npc?.variantOfUnique ?? characterKey;
+    const previous = memberGroups[canonicalKey];
+    setMemberGroups((current) => ({ ...current, [canonicalKey]: groupKey }));
+    setRosterError(null);
+    void assignNpcRosterGroup(canonicalKey, groupKey).catch((reason: unknown) => {
+      setMemberGroups((current) => {
+        const next = { ...current };
+        if (previous) next[canonicalKey] = previous;
+        else delete next[canonicalKey];
+        return next;
+      });
+      setRosterError(reason instanceof Error ? reason.message : String(reason));
+    });
+  };
   const toggleFilter = <T,>(current: ReadonlySet<T>, value: T): ReadonlySet<T> => {
     const next = new Set(current);
     if (next.has(value)) {
@@ -1277,7 +1301,22 @@ export const MasonryRoster = (): ReactElement => {
         const tinted = color ? " tinted" : "";
         const stackDrag = group.generic !== true;
         return group.key === open ? (
-          <div key={group.key} className={`lab-group open${tinted}`} style={style}>
+          <div
+            key={group.key}
+            className={`lab-group open${tinted}`}
+            style={style}
+            onDragOver={view === "main" && group.key !== "catalogUngrouped" ? (event) => {
+              if (event.dataTransfer.types.includes(NPC_DRAG_TYPE)) event.preventDefault();
+            } : undefined}
+            onDrop={view === "main" && group.key !== "catalogUngrouped" ? (event) => {
+              const characterKey = event.dataTransfer.getData(NPC_DRAG_TYPE);
+              if (characterKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                assignMemberToGroup(characterKey, group.key);
+              }
+            } : undefined}
+          >
             <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
             <span className="lab-group-tokens">{leaderFirst(group).map((npc) => openToken(group, npc))}</span>
           </div>
@@ -1295,6 +1334,17 @@ export const MasonryRoster = (): ReactElement => {
               setDragging(true);
             } : undefined}
             onDragEnd={() => setDragging(false)}
+            onDragOver={view === "main" && group.key !== "catalogUngrouped" ? (event) => {
+              if (event.dataTransfer.types.includes(NPC_DRAG_TYPE)) event.preventDefault();
+            } : undefined}
+            onDrop={view === "main" && group.key !== "catalogUngrouped" ? (event) => {
+              const characterKey = event.dataTransfer.getData(NPC_DRAG_TYPE);
+              if (characterKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                assignMemberToGroup(characterKey, group.key);
+              }
+            } : undefined}
             onClick={() => setOpen(group.key)}
             title={view === "main" ? group.members.map((npc) => npc.name).join(", ") : `${group.label} (${group.members.length})`}
           >
@@ -1408,10 +1458,37 @@ export const MasonryRoster = (): ReactElement => {
   const editingGroup = editing
     ? (view === "memoriam" ? memoriamGroups : groups).find((group) => group.key === editing.key)
     : undefined;
+  const namedByKey = new Map(catalogs?.namedNpcs.map((npc) => [npc.characterKey, npc.fullName]) ?? []);
+  const genericByKey = new Map(genericCatalog?.map((npc) => [npc.key, npc.label]) ?? []);
+  const memoriamNameByKey = new Map(memoriamCatalog.map((npc) => [npc.key, npc.label]));
+  const preloadedMembers = preloadedKeys.map((characterKey) => ({
+    characterKey,
+    name: overrides[characterKey]?.name ?? namedByKey.get(characterKey) ?? genericByKey.get(characterKey) ?? memoriamNameByKey.get(characterKey) ?? characterKey
+  }));
 
   return (
     <div className="lab-mroster" ref={rosterRef}>
       {preview && rosterRef.current && <FigurinePreview characterKey={preview.characterKey} token={preview.token} panel={rosterRef.current} />}
+      {preloadedMembers.length > 0 && (
+        <section className="lab-cat lab-preloaded">
+          <div className="lab-cat-head unsorted">
+            <span className="lab-cat-name">Preloaded offstage</span>
+            <span className="lab-cat-count">{preloadedMembers.length}</span>
+          </div>
+          <div className="lab-search-results">
+            {preloadedMembers.map((npc) => (
+              <RosterToken
+                key={npc.characterKey}
+                characterKey={npc.characterKey}
+                name={npc.name}
+                className="lab-group-head"
+                color={ownColor(npc.characterKey)}
+                onConfigure={configure}
+              />
+            ))}
+          </div>
+        </section>
+      )}
       <div className="lab-mroster-head">
         <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Catalog</button>
         <button type="button" className={`lab-btn${view === "generic" ? " primary" : ""}`} onClick={() => setView("generic")}>Generic</button>
@@ -1448,6 +1525,7 @@ export const MasonryRoster = (): ReactElement => {
       )}
       {error && <p className="lab-note">{error}</p>}
       {view === "generic" && genericError && <p className="lab-note">{genericError}</p>}
+      {rosterError && <p className="lab-note">{rosterError}</p>}
       <div className="lab-mroster-body">
         {view === "generic" && genericInScene.length > 0 && (
           <section className="lab-cat">
@@ -1638,7 +1716,13 @@ export const MasonryRoster = (): ReactElement => {
       )}
       {configuring && <NpcConfigModal target={configuring} onClose={() => setConfiguring(null)} />}
       {keptStats && (
-        <NpcStatsModal statsKey={keptStatsKey(keptStats.id)} label={keptStats.name} generic={false} onClose={() => setKeptStats(null)} />
+        <NpcStatsModal
+          statsKey={keptStatsKey(keptStats.id)}
+          label={keptStats.name}
+          generic={false}
+          onDelete={async () => saveNpcStats(keptStatsKey(keptStats.id), {})}
+          onClose={() => setKeptStats(null)}
+        />
       )}
       {tierPick && (
         <TierPicker

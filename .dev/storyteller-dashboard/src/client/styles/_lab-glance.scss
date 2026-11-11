@@ -1023,6 +1023,18 @@ $lab-live: #4caf6a;
   }
 }
 
+.lab-preloaded {
+  flex: 0 0 auto;
+  max-height: 132px;
+  padding: 4px;
+  border: 1px solid #5b536e;
+  background: #191720;
+
+  .lab-search-results {
+    overflow-y: auto;
+  }
+}
+
 // A category header is also where groups are dropped.
 .lab-cat-head {
   position: relative;

@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-LiveSessionPins-1111. All 18 notes from the first live multiplayer session are implemented and cleared. The roster now starts closed, shows offstage preloads above every tab, permanently deletes kept characters with confirmation, and lets an ungrouped catalog NPC be dropped into exactly one group. The 1920×1080 browser smoke exercises all four behaviors, the full Scenes drag-and-drop suite, and reports no browser exceptions. The connected-client fixes cover disconnected hands, card ownership and orientation, camera initialization, Pink's Tarot button, Purple's companion toggle, Red's stuck Rolls reference, reliable queued dice-bag clicks and quick Rouse right-clicks, Scatter height/Prince props, Refresh UI overlays, reference-image layering, and the Casa Loma transition burst. Those in-game changes still need Save & Play and live-client verification.
+
 - ✔️ During Intermission, **Scene ▸** sits beside **Play ▸** and opens the scene library so scenes can be edited and prepared between sessions. Play, End Scene, and Memoriam stay disabled until Play, so nothing lands on the table early.
 
 - ✔️ Green scene cards stay ended when an earlier TTS write-back arrives after the hold. The editor saves an **Offstage preload** list separately from placements and sends it through Preload. Verified the hold, delayed reply, roster drag, search and save in the 1920×1080 browser smoke. The hidden figurine reuse needs Save & Play under TOR-762.

@@ -163,6 +163,8 @@ export type SeatsSlice = {
   readonly seats: readonly SeatRow[];
   readonly stage: readonly StageNpc[];
   readonly generics: readonly GenericNpc[];
+  /** NPC packages parked offstage by the explicit scene preload action. */
+  readonly preloaded?: readonly string[];
   /** Trackers of the scene's NPCs by characterKey (live pushes only; drafts have none). */
   readonly trackers?: Readonly<Record<string, NpcTrackerRecord>>;
   readonly npcConditions?: Readonly<Record<string, NpcConditionView>>;
@@ -398,11 +400,12 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
       return { ...(data as Omit<SoundscapeSlice, "lanes">), lanes: asList<SoundLane>(data.lanes) };
     case "seats":
       return {
-        ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "trackers" | "scatter" | "spotlightOrder" | "personalDue">),
+        ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "preloaded" | "trackers" | "scatter" | "spotlightOrder" | "personalDue">),
         seats: asList<SeatRow>(data.seats),
         personalDue: asList<PersonalDue>(data.personalDue),
         stage: asList<StageNpc>(data.stage),
         generics: asList<GenericNpc>(data.generics),
+        preloaded: asList<string>(data.preloaded),
         trackers:
           data.trackers !== null && typeof data.trackers === "object" && !Array.isArray(data.trackers)
             ? (data.trackers as Record<string, NpcTrackerRecord>)

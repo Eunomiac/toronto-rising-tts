@@ -18,6 +18,7 @@ import { parseSceneDeckPatch } from "../shared/sceneDeck.js";
 import { normalizeNpcStatsFile, parseNpcStatsPatch, type NpcStatsFile } from "../shared/npcStats.js";
 import { editedNamedKeys, markPending, PENDING_FILE_NAME } from "./npcStatsPending.js";
 import { createSceneDeckStore } from "./sceneDeckStore.js";
+import { parseNpcRoster, type NpcRoster } from "../shared/npcRoster.js";
 import { normalizeSceneLibrary, parseSceneLibraryPatch, type SceneLibrary } from "../shared/sceneLibrary.js";
 import { normalizeRollChronicle, parseRollChroniclePatch, type RollChronicle } from "../shared/rollChronicle.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
@@ -69,7 +70,15 @@ const dashboardBackupDir = resolveDashboardBackupDir(repoRoot).then((backupDir) 
   }
   return backupDir;
 });
-const sceneDeck = dashboardBackupDir.then((backupDir) => createSceneDeckStore({ dataDir: path.join(dashboardRoot, "data"), backupDir }));
+const npcRoster = dashboardBackupDir.then((backupDir) => createDataFileStore<NpcRoster>({
+  filePath: path.join(dashboardRoot, "data", "npc-roster.json"),
+  backupDir,
+  backupPrefix: "npc-roster",
+  normalize: parseNpcRoster
+}));
+const sceneDeck = Promise.all([dashboardBackupDir, npcRoster]).then(([backupDir, rosterStore]) =>
+  createSceneDeckStore({ dataDir: path.join(dashboardRoot, "data"), backupDir, rosterStore })
+);
 const sceneLibrary = dashboardBackupDir.then((backupDir) => createDataFileStore<SceneLibrary>({
   filePath: path.join(dashboardRoot, "data", "scene-library.json"),
   backupDir,
@@ -426,10 +435,34 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
   if (request.method === "GET" && pathname === "/api/scene-catalogs") {
     const base = JSON.parse(await readFile(sceneCatalogsPath, "utf8")) as { namedNpcs: { characterKey: string; pickerGroups: string[] }[]; pcs: unknown[] };
     const byKey = new Map(base.namedNpcs.map(row => [row.characterKey, row]));
+    const roster = await (await npcRoster).get();
     const characters = Object.entries(characterDefinitions()).map(([characterKey, row]) => ({
-      characterKey, ...row, pickerGroups: byKey.get(characterKey)?.pickerGroups ?? byKey.get(row.canonicalKey ?? "")?.pickerGroups ?? []
+      characterKey,
+      ...row,
+      pickerGroups: roster.members[row.canonicalKey ?? characterKey]
+        ?? roster.members[characterKey]
+        ?? byKey.get(characterKey)?.pickerGroups
+        ?? byKey.get(row.canonicalKey ?? "")?.pickerGroups
+        ?? []
     }));
     sendJson(response, 200, { ...base, namedNpcs: characters.filter(row => !row.isPC), pcs: characters.filter(row => row.isPC) });
+    return;
+  }
+
+  if (request.method === "PUT" && pathname === "/api/npc-roster/member") {
+    const body = await readRequestJson(request);
+    const characterKey = typeof body === "object" && body !== null ? (body as { characterKey?: unknown }).characterKey : undefined;
+    const groupKey = typeof body === "object" && body !== null ? (body as { groupKey?: unknown }).groupKey : undefined;
+    if (typeof characterKey !== "string" || characterKey.trim() === "" || typeof groupKey !== "string" || groupKey.trim() === "") {
+      sendJson(response, 400, { error: "Roster assignment needs a character key and group key." });
+      return;
+    }
+    const store = await npcRoster;
+    const current = await store.get();
+    const key = characterKey.trim();
+    const group = groupKey.trim();
+    const next = await store.patch({ members: { ...current.members, [key]: [group] } });
+    sendJson(response, 200, { characterKey: key, pickerGroups: next.members[key] });
     return;
   }
 

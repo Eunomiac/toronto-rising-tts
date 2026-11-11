@@ -36,7 +36,7 @@ describe("applyWorldEvent", () => {
 
   it("turns Lua empty tables into empty lists", () => {
     const state = applyWorldEvent({}, { topic: "seats", data: { seats: {}, stage: {}, spotlightOrder: {}, generics: {}, scatter: {}, trackers: [] } });
-    expect(state.seats).toEqual({ seats: [], stage: [], spotlightOrder: [], generics: [], scatter: [], trackers: {}, npcConditions: {}, personalDue: [] });
+    expect(state.seats).toEqual({ seats: [], stage: [], spotlightOrder: [], generics: [], preloaded: [], scatter: [], trackers: {}, npcConditions: {}, personalDue: [] });
     const sound = applyWorldEvent({}, { topic: "soundscape", data: { lanes: {} } });
     expect(sound.soundscape?.lanes).toEqual([]);
   });

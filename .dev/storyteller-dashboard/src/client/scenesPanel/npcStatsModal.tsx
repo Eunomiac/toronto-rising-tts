@@ -106,10 +106,12 @@ const blankPower = (category: DraftCategory): DraftPower => ({
  * for a generic type (`generic`). Clicking off (or Escape) saves to `data/npc-stats.json` under `statsKey`;
  * incomplete pools, nameless attacks and powers, and empty power categories are dropped then.
  */
-export const NpcStatsModal = ({ statsKey, label, generic, onClose }: {
+export const NpcStatsModal = ({ statsKey, label, generic, onDelete, onClose }: {
   statsKey: string;
   label: string;
   generic: boolean;
+  /** Kept characters only: permanently remove the saved character and its custom stats. */
+  onDelete?: () => Promise<void>;
   /** Shown when this NPC has no block of its own (a Memoriam variant's linked NPC). Saving writes it here. */
   onClose: () => void;
 }): ReactElement => {
@@ -124,15 +126,16 @@ export const NpcStatsModal = ({ statsKey, label, generic, onClose }: {
       </div>
     </Overlay>
   ) : (
-    <StatsEditor statsKey={statsKey} label={label} generic={generic} saved={saved} onClose={onClose} />
+    <StatsEditor statsKey={statsKey} label={label} generic={generic} saved={saved} {...(onDelete ? { onDelete } : {})} onClose={onClose} />
   );
 };
 
-const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
+const StatsEditor = ({ statsKey, label, generic, saved, onDelete, onClose }: {
   statsKey: string;
   label: string;
   generic: boolean;
   saved: NpcStats;
+  onDelete?: () => Promise<void>;
   onClose: () => void;
 }): ReactElement => {
   const slots: readonly NpcStatSlot[] = generic ? NPC_TIERS : ["named"];
@@ -141,6 +144,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
   const [showKinds, setShowKinds] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [deleteArmed, setDeleteArmed] = useState(false);
   const draft = drafts.get(slot) ?? toDraft(undefined);
   const update = (patch: Partial<DraftBlock>): void =>
     setDrafts((current) => new Map(current).set(slot, { ...draft, ...patch }));
@@ -183,6 +187,20 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
   const filled = (key: NpcStatSlot): boolean => {
     const block = drafts.get(key);
     return block !== undefined && normalizeStatBlock(block) !== null;
+  };
+  const removeKeptCharacter = (): void => {
+    if (!onDelete || busy) return;
+    if (!deleteArmed) {
+      setDeleteArmed(true);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    void onDelete().then(onClose, (reason: unknown) => {
+      setBusy(false);
+      setDeleteArmed(false);
+      setError(reason instanceof Error ? reason.message : String(reason));
+    });
   };
 
   return (
@@ -228,6 +246,16 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
                 </button>
               ))}
             </div>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              className={`npc-stats-delete${deleteArmed ? " armed" : ""}`}
+              disabled={busy}
+              onClick={removeKeptCharacter}
+            >
+              {deleteArmed ? "Click again: permanently delete" : "Delete kept character"}
+            </button>
           )}
         </div>
         {(showKinds || draft.kind === undefined) && (

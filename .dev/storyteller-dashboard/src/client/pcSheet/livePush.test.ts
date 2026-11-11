@@ -46,10 +46,13 @@ describe("mergeSeatPush", () => {
   });
 
   it("keeps conditions already on the seat when a push leaves them out", () => {
-    const current = live();
-    current.seats[1] = {
-      ...current.seats[1]!,
-      personalCards: [{ id: "pc-1", title: "Late", displayType: "general", displayOnSheet: true, removalTrigger: "Manual", triggerLabel: "Manual" }]
+    const original = live();
+    const current = {
+      ...original,
+      seats: original.seats.map((seat, index) => index === 1 ? {
+        ...seat,
+        personalCards: [{ id: "pc-1", title: "Late", displayType: "general", displayOnSheet: true, removalTrigger: "Manual", triggerLabel: "Manual" }]
+      } : seat)
     };
     const { personalCards: _omit, ...slim } = { ...emptySeat("Pink"), hunger: 4, personalCards: undefined };
     void _omit;

@@ -324,6 +324,10 @@ local function buildSeats(opts)
   mark("generics", t, #generics)
 
   t = os.clock()
+  local preloaded = require("core.npcs").dashboardPreloadedKeys()
+  mark("preloaded", t, #preloaded)
+
+  t = os.clock()
   local scatter = {}
   local pack = S.getStateVal("sessionScene", "scatterPlacements")
   if type(pack) == "table" then
@@ -378,6 +382,7 @@ local function buildSeats(opts)
     seats = seats,
     stage = stage,
     generics = generics,
+    preloaded = preloaded,
     scatter = scatter,
     trackers = trackers,
     npcConditions = npcConditions,

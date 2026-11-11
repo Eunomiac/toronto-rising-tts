@@ -10,6 +10,11 @@ import os from "node:os";
 const catalogs = JSON.parse(
   fs.readFileSync(new URL("../data/scene-catalogs.json", import.meta.url)),
 );
+const genericCatalog = JSON.parse(
+  fs.readFileSync(new URL("../data/generic-npcs.json", import.meta.url)),
+);
+const keptFigurine = genericCatalog.npcs.find((entry) => entry.catalog === true);
+assert(keptFigurine, "The fixture needs a catalog generic for kept-character deletion");
 const npc = catalogs.namedNpcs.find((n) => n.pickerGroups.length).characterKey;
 const pc =
   catalogs.pcs.find((n) => n.characterKey === "aishe") ?? catalogs.pcs[0];
@@ -150,6 +155,11 @@ const preloadScene = {
 const greenScene = { ...preloadScene, key: "departing_verification", title: "Departing verification", status: "ongoing" };
 const offstageNpc = catalogs.namedNpcs.find((entry) => entry.characterKey !== npc && entry.filename);
 assert(offstageNpc, "The fixture needs a second NPC with figurine art");
+const catalogNpcByKey = new Map(catalogs.namedNpcs.map((entry) => [entry.characterKey, entry]));
+const ungroupedNpc = catalogs.namedNpcs.find((entry) => entry.catalog === true
+  && (catalogNpcByKey.get(entry.variantOfUnique) ?? entry).pickerGroups.length === 0);
+assert(ungroupedNpc, "The fixture needs an ungrouped catalog NPC");
+world.seats.preloaded = [offstageNpc.characterKey];
 world.scene.departedKey = greenScene.key;
 const output = path.join(os.tmpdir(), "toronto-rising-dnd-smoke");
 fs.mkdirSync(output, { recursive: true });
@@ -192,9 +202,8 @@ try {
   let releaseWriteBack;
   const waitForHold = new Promise((resolve) => { releaseWriteBack = resolve; });
   let returnedStaleRow = false;
-  await page.route("**/api/npc-stats", (route) =>
-    route.fulfill({
-      json: {
+  let keptDeleteBody = null;
+  let statsFile = {
         [npc]: {
           named: {
             kind: "mortal",
@@ -211,9 +220,27 @@ try {
             notes: "",
           },
         },
-      },
-    }),
-  );
+        "kept:browsersmoke": {
+          kept: { name: "Browser Kept", figurineKey: keptFigurine.key, label: keptFigurine.label },
+          named: {
+            kind: "mortal", difficultyStrong: 3, difficultyWeak: 5, health: 5, willpower: 5,
+            physical: 3, social: 3, mental: 3, exceptional: [], attacks: [], powers: [], notes: ""
+          }
+        }
+  };
+  await page.route("**/api/npc-stats", (route) => {
+    if (route.request().method() === "PUT") {
+      const patch = route.request().postDataJSON();
+      if (patch["kept:browsersmoke"] !== undefined) keptDeleteBody = patch["kept:browsersmoke"];
+      statsFile = { ...statsFile, ...patch };
+    }
+    return route.fulfill({ json: statsFile });
+  });
+  let rosterAssignment = null;
+  await page.route("**/api/npc-roster/member", (route) => {
+    rosterAssignment = route.request().postDataJSON();
+    return route.fulfill({ json: { ...rosterAssignment, pickerGroups: [rosterAssignment.groupKey] } });
+  });
   await page.route("**/api/tts/execute-lua", async (route) => {
     const { script } = route.request().postDataJSON();
     commands.push(script);
@@ -449,6 +476,42 @@ try {
   assert.equal(rollsBefore(), countBefore);
   console.log("PASS Escape cancels captured stage gesture");
   await page.locator(".lab-dock-rail").click();
+
+  assert.equal(await page.locator(".lab-group.open").count(), 0, "a roster group started open");
+  const preloadedBox = page.locator(".lab-preloaded");
+  await preloadedBox.getByText("Preloaded offstage").waitFor();
+  assert.equal(await preloadedBox.locator(`[data-tr-dnd-roster="${offstageNpc.characterKey}"]`).count(), 1, "preloaded offstage NPC was not shown");
+  console.log("PASS roster starts closed and shows preloaded offstage NPCs above every catalog tab");
+
+  const ungroupedGroup = page.locator(`.lab-group[title*="${ungroupedNpc.fullName}"]`).first();
+  await ungroupedGroup.click();
+  const ungroupedToken = page.locator(`.lab-group.open [data-tr-dnd-roster="${ungroupedNpc.characterKey}"]`);
+  await ungroupedToken.waitFor();
+  const assignmentTarget = page.locator('.lab-group[draggable="true"]:not(.open)').first();
+  const assignmentGroupLabel = (await assignmentTarget.locator(".lab-group-label").textContent()).trim();
+  const assignmentResponse = page.waitForResponse((response) => response.url().endsWith("/api/npc-roster/member"));
+  await assignmentTarget.evaluate((target, characterKey) => {
+    const transfer = new DataTransfer();
+    transfer.setData("application/x-tr-npc", characterKey);
+    target.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+    target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+  }, ungroupedNpc.characterKey);
+  await assignmentResponse;
+  assert.equal(rosterAssignment?.characterKey, ungroupedNpc.variantOfUnique ?? ungroupedNpc.characterKey, "roster assignment used the wrong NPC key");
+  assert.equal(typeof rosterAssignment?.groupKey, "string");
+  assert.notEqual(rosterAssignment.groupKey, "catalogUngrouped");
+  console.log(`PASS dropping an ungrouped NPC into ${assignmentGroupLabel} saves one exclusive roster membership`);
+
+  await page.getByRole("button", { name: "Generic", exact: true }).click();
+  const keptToken = page.getByText("Browser Kept", { exact: true }).locator("..");
+  await keptToken.click({ button: "right" });
+  const deleteKept = page.getByRole("button", { name: "Delete kept character" });
+  await deleteKept.click();
+  await page.getByRole("button", { name: "Click again: permanently delete" }).click();
+  await page.waitForFunction(() => document.querySelector(".lab-modal.npc-stats") === null);
+  assert.deepEqual(keptDeleteBody, {}, "kept-character deletion did not erase the full saved record");
+  console.log("PASS deleting a kept generic requires confirmation and erases its custom stats");
+  await page.getByRole("button", { name: "Catalog", exact: true }).click();
 
   // Roster browsing: the open group is foregrounded, its compact tokens wrap instead of overflowing.
   const rosterGroups = page.locator('.lab-group[draggable="true"]');
