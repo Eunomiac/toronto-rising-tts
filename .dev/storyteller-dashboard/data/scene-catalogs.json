@@ -108,7 +108,9 @@
       "catalog": true,
       "filename": "npc_ahmadAlMasri.webp",
       "variantOfUnique": "",
-      "pickerGroups": []
+      "pickerGroups": [
+        "civilian"
+      ]
     },
     {
       "characterKey": "alexandra",
@@ -148,7 +150,9 @@
       "catalog": true,
       "filename": "npc_anast.webp",
       "variantOfUnique": "",
-      "pickerGroups": []
+      "pickerGroups": [
+        "aapilu"
+      ]
     },
     {
       "characterKey": "anitaMorris",
@@ -180,7 +184,7 @@
       "filename": "npc_averyInnis.webp",
       "variantOfUnique": "",
       "pickerGroups": [
-        "petitioners"
+        "deepSix"
       ]
     },
     {

@@ -146,7 +146,7 @@ local Art = {
   },
   ahmadAlMasri = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/18176455601011732424/B06E3307DD3B076B6BCFBE6FCDB8C22E38DBC7F7/", back = FIGURINE_BACK },
-    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/13846072926626142594/F6CF0838FF6B7298878939C50A67EB65B2ACF222/", back = "https://steamusercontent-a.akamaihd.net/ugc/16297092705759178379/8AC7EB85E20EADBB727FC7BCEBB9FE0E51ED24A3/" },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/15547686249227724429/FA210790666B79EA02089DE52BBF74A6C214D4AB/", back = "https://steamusercontent-a.akamaihd.net/ugc/16297092705759178379/8AC7EB85E20EADBB727FC7BCEBB9FE0E51ED24A3/" },
   },
   aishe = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/16971061568121248423/3AD050C1806E6B0EB73CC95D11BCE91515224151/", back = FIGURINE_BACK },
@@ -166,7 +166,7 @@ local Art = {
   },
   anast = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/14144010159214627371/3CFA8E61B1800B4280EA0CFC89BC6963EA65E72D/", back = FIGURINE_BACK },
-    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/17862893542288454680/F170D5984DF37D84D70CEF511A00C80D2020B67B/", back = "https://steamusercontent-a.akamaihd.net/ugc/17806370737254890439/0A01A5F20606F1262F3F91DE8A56B7B69451F16F/" },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/16092418404984113061/48A09E3796C1A38329B3E721E230FA2504CE322A/", back = "https://steamusercontent-a.akamaihd.net/ugc/17806370737254890439/0A01A5F20606F1262F3F91DE8A56B7B69451F16F/" },
   },
   andreiStrandza = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/11276111184942404020/C23687B7115FD3FB719120555548F43D98C04368/", back = FIGURINE_BACK },
@@ -212,7 +212,7 @@ local Art = {
   },
   averyInnis = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/10229963829857063553/E6ADADC2B1B55760E84BBC6AE87DE99A159280A1/", back = FIGURINE_BACK },
-    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/15612113556764112973/BF963BC3F2E3F27D0BFCD1B046AFC195BDED1669/", back = "https://steamusercontent-a.akamaihd.net/ugc/14751588297842908738/CB765E923A83F187B73F4D07B811EFEA8743FDEC/" },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/10025770463462722122/F172250CADC1306E21E26154C406FDBD282DFA89/", back = "https://steamusercontent-a.akamaihd.net/ugc/14751588297842908738/CB765E923A83F187B73F4D07B811EFEA8743FDEC/" },
   },
   bacchusGiovanni = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/10601845337896570789/73FACDF9FFC48358C3E7EF0783F9A570BAB00A2F/", back = FIGURINE_BACK },

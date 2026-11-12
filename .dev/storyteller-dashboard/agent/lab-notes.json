@@ -1,3 +1,24 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "sketch": "scenes",
+      "x": 637,
+      "y": 167,
+      "text": "Add a button to the debug panel above \"Refresh UI\" called \"Prepare Onboarding\", which is meant to place the game in a state where a player can safely connect in the middle of an active session. When clicked, this button should drop the blindfold, destroy all emitter objects, exit the current scene (without ending it, so it can be returned to) and destroy all NPC objects loaded for that scene, as well as all NPC objects in hte preload pool, then display the three-step onboarding menu that appears after loading the game during intermission.  Once the player connects, it should be possible to proceed through those three steps again, return to the scene that was left as normal, and continue playing.",
+      "status": "open",
+      "createdAt": "2026-11-12T14:53:17.403Z",
+      "updatedAt": "2026-11-12T14:53:17.403Z"
+    },
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 243,
+      "y": 516,
+      "text": "After updating the scale of NPCs in the roster, the scale is not being applied to their figurines in-game.",
+      "status": "open",
+      "createdAt": "2026-11-12T14:57:40.019Z",
+      "updatedAt": "2026-11-12T14:57:40.019Z"
+    }
+  ]
 }
