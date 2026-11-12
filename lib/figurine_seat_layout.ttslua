@@ -1172,11 +1172,13 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
     end
     if deferredStorageHide ~= nil then
         local bag = deferredStorageHide
+        -- putObject absorption for a full discipline hand can take longer than one short settle;
+        -- keep the bag available until the park-after-absorb wait has had time to finish.
         U.await(function()
             if U.isGameObject(bag) then
                 O.hideObject(bag)
             end
-        end, 0.75)
+        end, 2.0)
     end
 end
 

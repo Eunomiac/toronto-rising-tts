@@ -119,9 +119,9 @@ Nothing comes off the sheet until you confirm it. A resonance, and its dyscrasia
 
 #### 🟡 TOR-763 — Disconnected player's hand is stored safely while the seat is hidden
 
-> **Agent-assessment note:** Ownership reclaim, fail-closed park, and the debug reset sequence are deterministic in code. You still need to watch real TTS hand and container physics on cold load and during a connected table change.
+> **Agent-assessment note:** Absorb-then-park and deal-on-any-table-height restore are covered in code. You still need to watch real TTS hand and container physics on cold load and when flipping Assume Connected.
 
-**How to verify:** Save & Play, then load a fresh copy of save 9001 (or any save where every PC is disconnected and discipline cards were in hand). After the readiness gate finishes, no discipline cards should be on the floor. Each seat's discipline cards should be inside that seat's personal storage container with the temporary `HeldCard` tag, and the empty hand zones should be parked with the rest of the pile.
+**How to verify:** Save & Play, then load a fresh copy of save 9001 (or any save where every PC is disconnected and discipline cards were in hand), with **Assume Connected** off and no clients. After the readiness gate finishes, the console should not show “Hand park aborted … still loose after stash”. Each seat's discipline cards should be inside that seat's personal storage with `HeldCard`, and the empty hand zones should park with the pile. Then turn **Assume Connected** on: seat piles return and `HeldCard` cards should deal back into each hand (tag removed). Turn Assume Connected off again and confirm they stash and park cleanly without abort spam.
 
 With at least one seat connected, open the Storyteller debug panel and click **Reset Discipline Hands** (directly under **Sort Master Decks**). Loose discipline cards should move into the owning containers with `HeldCard`, then only connected seats should be redealt those cards (tag removed) sitting at hand-zone rotation + 180° yaw. Disconnected seats should keep `HeldCard` cards in storage.
 

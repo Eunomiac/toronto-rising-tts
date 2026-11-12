@@ -300,8 +300,9 @@ function PC.applyConnectionCheckpoint()
     U.reconcileAllDisciplineCardHomes()
     return changed
   end
+  -- Pile park owns the HeldCard stash + absorb-then-park hand path. Do not pre-stash here:
+  -- a second putObject while absorption is in flight races and false-aborts the hand park.
   for i = 1, #changed do
-    U.reconcileDisciplineCardsForColor(changed[i], { forceStorage = true })
     FSL.setOccupantPileVisible(changed[i], false)
   end
   relayoutAfterOccupancyChange()
