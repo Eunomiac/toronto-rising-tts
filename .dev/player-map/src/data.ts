@@ -239,7 +239,7 @@ function parseCityMarkers(value: unknown): CityMarkerCollection {
 
 function parseBasemapMasks(value: unknown): BasemapMaskCollection {
   const collection = record(value, 'Basemap mask collection');
-  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features) || collection.features.length === 0) throw new Error('Invalid basemap mask FeatureCollection');
+  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) throw new Error('Invalid basemap mask FeatureCollection');
   for (const rawFeature of collection.features) {
     const feature = record(rawFeature, 'Basemap mask');
     const properties = record(feature.properties, 'Basemap mask properties');
@@ -255,7 +255,7 @@ function parseBasemapMasks(value: unknown): BasemapMaskCollection {
 
 function parseBasemapMaskLabels(value: unknown): BasemapMaskLabelCollection {
   const collection = record(value, 'Basemap mask label collection');
-  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features) || collection.features.length === 0) throw new Error('Invalid basemap mask label FeatureCollection');
+  if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) throw new Error('Invalid basemap mask label FeatureCollection');
   for (const rawFeature of collection.features) {
     const feature = record(rawFeature, 'Basemap mask label');
     const properties = record(feature.properties, 'Basemap mask label properties');
