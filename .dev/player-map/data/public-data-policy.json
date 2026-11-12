@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "districtFields": [
+    "Key",
+    "Name",
+    "Hunting Difficulty",
+    "Resonance Plus",
+    "Resonance Minus"
+  ],
+  "sheetOnlyDistricts": [
+    {
+      "key": "PATH",
+      "geometryKind": "network",
+      "reason": "Generated separately from the reviewed OpenStreetMap underground pedestrian snapshot."
+    },
+    {
+      "key": "Sewers",
+      "geometryKind": "none",
+      "reason": "Narrative network district with no approved public surface geometry."
+    },
+    {
+      "key": "Streets",
+      "geometryKind": "none",
+      "reason": "Travel district that applies across roads rather than owning a surface polygon."
+    },
+    {
+      "key": "Subway",
+      "geometryKind": "none",
+      "reason": "Narrative transit network with no approved public geometry snapshot."
+    }
+  ],
+  "siteFields": [],
+  "publicSiteKeys": []
+}

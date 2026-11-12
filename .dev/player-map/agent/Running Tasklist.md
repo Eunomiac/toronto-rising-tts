@@ -18,7 +18,11 @@ shift, and 11-metre northward shift anchored at the west and north edges. The
 panel now starts from a fresh identity baseline for any further refinement.
 The runtime geometry is canonicalized, expanded by the reviewed one-pixel
 tolerance, and cut in the explicit Illustrator top-to-bottom priority order.
-The latest generated diagnostic reports zero remaining district overlap.
+The latest generated diagnostic reports zero remaining district overlap. PATH
+is now generated from a dated, broad downtown OpenStreetMap extraction with
+1,517 route ways and 329 entrance or vertical-connection nodes. It is available
+as an optional selectable gold network layer with one intentional label and
+Sheet-backed District facts.
 
 ## Decisions Recorded
 
@@ -37,7 +41,7 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Use Cloudflare Workers Free as the first public host; begin with static assets while preserving the option to add a Worker API and D1 later.
 - [x] Use OpenFreeMap as the initial basemap/tile provider and verify Toronto coverage, attribution, reliability, and style customization during the first spike.
 - [x] Treat phone-sized screens as a primary supported surface alongside desktop and tablets.
-- [ ] Decide whether the first release needs cross-device/shared state or Storyteller-controlled reveals. Same-browser persistence can use local storage without a server.
+- [x] Keep the first release stateless and free of Storyteller-controlled reveals. Same-browser author tooling may use local storage; shared campaign state remains a later feature decision.
 - [x] Use Cloudflare's generated `workers.dev` address initially; a paid custom domain remains an optional later upgrade.
 - [x] Do not ship the original illustrated map as a raster overlay unless a later need emerges.
 - [x] Publish updated player-safe data through the existing TTS FULL build pipeline using its single validated Sheet snapshot.
@@ -51,7 +55,7 @@ The latest generated diagnostic reports zero remaining district overlap.
 - [x] Confirm mixed explicit `evenodd` and default nonzero fill rules are valid and must be preserved.
 - [x] Inspect the corrected export: 32 geographical district features, three region features, no transforms, and no blank or duplicate IDs.
 - [x] Copy the approved SVG into the Player Map's tracked `data/source` directory when implementation begins.
-- [ ] Record the four non-geographical Sheet district exceptions in a reviewed coverage manifest.
+- [x] Record `PATH`, `Sewers`, `Streets`, and `Subway` as the four reviewed non-geographical Sheet district exceptions in the public-data policy.
 
 ## Phase 1 — Technical Spikes
 
@@ -74,36 +78,36 @@ The latest generated diagnostic reports zero remaining district overlap.
 
 ## Phase 2 — Data Pipeline
 
-- [ ] Reuse the production Sheet loader and exact export contract.
-- [ ] Define and review the first player-safe district field allowlist.
-- [ ] Create a typed public-data schema and fail on unexpected fields.
-- [ ] Join Sheet facts to geometry by exact key.
-- [ ] Generate districts, regions, sites, and provenance manifest outputs.
-- [ ] Add the broad downtown PATH extraction rules, bounds, optional false-positive exclusions, and OpenStreetMap provenance to the build pipeline.
-- [ ] Generate PATH route, entrance/vertical-connection, interaction-corridor, and single-label-point outputs.
-- [ ] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
-- [ ] Add key, schema, topology, bounds, privacy, and count validation.
-- [ ] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing.
-- [ ] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
-- [ ] Add Player Map checks and its production Vite build before TTS save bundling.
-- [ ] Add Cloudflare publication as FULL's final stage so failed builds never publish.
-- [ ] Add a separate `player-map:deploy` command for intentional map-only releases and troubleshooting.
+- [x] Reuse the production Sheet loader and exact export contract.
+- [x] Define and review the first player-safe district field allowlist: key, name, hunting difficulty, positive resonance, and negative resonance.
+- [x] Create a typed public-data schema and fail on unexpected fields in both the generator and browser loader.
+- [x] Join Sheet facts to geometry by exact key, requiring all 32 surface districts and the four reviewed Sheet-only exceptions.
+- [x] Generate districts, regions, sites, and provenance manifest outputs. Sites are intentionally an empty collection until individual public sites and fields are reviewed.
+- [x] Add the broad downtown PATH extraction rules, bounds, optional false-positive exclusions, and OpenStreetMap provenance to the build pipeline.
+- [x] Generate PATH route, entrance/vertical-connection, interaction-corridor, and single-label-point outputs.
+- [x] Give PATH network geometry dedicated validity, bounds, provenance, and non-empty checks instead of surface-polygon topology checks.
+- [x] Add key, schema, topology, bounds, privacy, and count validation for the current surface-district, region, and empty-site package.
+- [x] Add visual diagnostics for gaps, removed overlaps, boundary movement, and georeferencing. The generated interactive review map overlays every diagnostic class on OpenFreeMap and includes whole-city, downtown, and island views.
+- [x] Add Player Map data generation to FULL using the existing `TR_EXPORT_SNAPSHOT` rather than a second Sheet fetch.
+- [x] Add Player Map checks and its production Vite build before TTS save bundling.
+- [x] Add Cloudflare publication as FULL's final stage so failed builds never publish; allow an explicit offline skip without skipping validation.
+- [x] Add a separate `player-map:deploy` command for intentional map-only releases and troubleshooting.
 
 ## Phase 3 — First Useful Release
 
-- [ ] Build the full-screen map shell and responsive controls.
-- [ ] Add district selection and player-safe district details.
-- [ ] Add layer controls for districts, regions, and revealed sites.
-- [ ] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
-- [ ] Add shareable URL state for selection and visible overlays.
-- [ ] Add loading, empty, error, keyboard, touch, and reduced-motion behavior.
+- [x] Build the full-screen map shell and responsive controls.
+- [x] Add district selection and player-safe district details, including Sheet-backed hunting difficulty and resonance.
+- [x] Add layer controls for districts and regions, with an honest disabled state while no sites are revealed.
+- [x] Add a toggleable PATH layer with selectable tunnel routes, entrance markers at closer zooms, and one intentional map label.
+- [x] Add shareable URL state for district selection and visible district, region, and site overlays.
+- [x] Add loading, empty, error, keyboard, touch, and reduced-motion behavior, including Escape-to-close and real mobile browser coverage.
 - [x] Add the development-only Debug notes toggle with Add note and Show notes controls, matching the Storyteller Dashboard workflow.
 - [x] Anchor map pins by longitude/latitude and interface pins by stable surface plus normalized coordinates.
 - [x] Persist numbered notes, reproduction context, comments, and agent replies through a tracked `agent/` file and development-only API.
 - [x] Exclude debug-note controls, API routes, data, and comments from every production build and Cloudflare deployment.
 - [x] Document the one-pass agent workflow for replying to, preserving unresolved, and clearing resolved pins.
-- [ ] Add unit, component, and Playwright coverage for the release path.
-- [ ] Deploy to the selected host and verify the public address on desktop and the supported smaller viewport.
+- [x] Add unit, component, and Playwright coverage for the current release path on desktop and a Pixel 7-sized viewport.
+- [x] Deploy the Phase 1 release to Cloudflare and verify the public address on desktop and the supported smaller viewport. Later slices still require their own deployment verification.
 
 ## Map Presentation Backlog — Captured, Not Scheduled
 
@@ -111,12 +115,13 @@ These are accepted presentation directions, but they are not yet scheduled into
 a release phase. Verify their visual behavior, mobile performance, accessibility,
 and data ownership during implementation.
 
-- [ ] De-emphasize the basemap outside the established square chronicle setting boundary with a pointer-transparent CSS overlay using `backdrop-filter` blur and brightness. Prefer an inverse rectangular mask or four screen-space panels whose projected edges follow the map while panning and zooming. Provide a simple dimmed-overlay fallback and verify the blur on supported phones.
-- [ ] Explore a very distant provincial-scale zoom level where story-relevant cities such as Montreal and Kingston appear as simple point markers rather than detailed playable map areas.
-- [ ] Replace or supplement the selected-district opacity treatment with a less obscuring edge treatment, such as an outline glow that leaves streets and labels readable.
-- [ ] Add a custom orientation-street layer with bold white labels driven by an explicit allow list of the major streets used to help players locate themselves. Keep its routes and labels independent of the basemap's automatic road-label selection so their styling, repetition, and zoom visibility remain under app control.
-- [ ] Support rare fictional basemap changes with small custom polygon masks rather than a general-purpose basemap editor. The only currently known case is the comparatively barren Giovanni Estate in Wychwood: cover the unwanted building and house detail at an appropriate layer depth, then add replacement geometry or a label only if needed.
-- [ ] Guarantee exactly one visible label per District at every zoom level with a dedicated one-point-per-District label source. Recalculate each point from the largest part of the District intersecting the visible map viewport so a partially visible District keeps its label onscreen; choose a valid interior point, throttle recalculation while the map moves, finalize it when movement stops, and retain a fixed preferred anchor as a fallback. Verify the approach on mobile rather than relying on automatic labels from tiled multipart polygons.
+- [x] De-emphasize the basemap outside the established rectangular chronicle boundary with four pointer-transparent projected panels using blur, brightness, and a simple dimmed fallback. Keep their edges aligned while panning and zooming, and verify interaction on phones.
+- [x] Add a deliberate province view where Toronto, Kingston, and Montréal appear as simple point markers rather than detailed playable areas, with a one-click return to the chronicle map.
+- [x] Replace the heavy selected-district wash with a restrained tint and bright blurred edge treatment that leaves streets and labels readable.
+- [x] Add a custom orientation-street layer with bold white labels driven by an explicit allow list of the major streets used to help players locate themselves. Its routes and deliberately sparse labels are independent of the basemap's automatic road-label selection and are controlled by the app's own styling, repetition, zoom, layer toggle, and shareable URL state.
+- [x] Support rare fictional basemap changes with small calibrated polygon masks rather than a general-purpose basemap editor. The first tracked mask suppresses residential detail in the comparatively barren Giovanni Estate in northern Wychwood and adds one deliberate estate label.
+- [x] Stop repeated District and Region names with generated one-point-per-feature label sources rather than automatic labels from tiled multipart polygons.
+- [x] Keep a partly visible District's single label onscreen by recalculating from the largest intersection with the visible viewport; choose a valid on-surface point, throttle while the map moves, finalize on movement end, and retain the generated point as a fallback. Verify the dynamic approach on mobile.
 
 ## Later Features — Not Yet Designed
 

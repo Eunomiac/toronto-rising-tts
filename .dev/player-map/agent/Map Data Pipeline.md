@@ -18,7 +18,7 @@ Verification:
 - inspect the generated diagnostic map over the live basemap before accepting geometry changes
 
 Status:
-- current for the Phase 1 geometry and runtime-normalization pipeline; Sheet projection, full visual diagnostics, and FULL-build integration remain Phase 2 work
+- current for surface geometry, PATH extraction, runtime normalization, the first player-safe Sheet projection, and FULL-build integration; full visual diagnostics remain Phase 2 work
 
 ## Principle: One Owner Per Fact
 
@@ -58,7 +58,7 @@ The district export deliberately includes four non-geographical runtime district
 
 The importer must call the existing validated loader in `.dev/scripts/lib/sheet_exports.js`. It must not duplicate the Google URL, CSV parser, header rules, or value normalization. During FULL, it must consume the exact temporary snapshot supplied through `TR_EXPORT_SNAPSHOT`; it must not make a second live Sheet request. That keeps the Player Map, TTS, and the Storyteller Dashboard on one coherent build snapshot.
 
-## Planned Build Stages
+## Build Stages
 
 ```text
 canonical SVG --------------------> parse and normalize geometry ---+
@@ -68,7 +68,7 @@ Toronto Rising EXPORT_* -> validated shared Sheet loader -> public join -> valid
 reviewed public-field allowlist -----------------------------------+
 ```
 
-The build should perform these stages:
+The build performs these stages; only the richer visual diagnostics remain planned:
 
 1. Load and validate the existing Sheet export snapshot.
 2. Project Sheet rows to an explicit player-safe schema. Unexpected fields never pass through automatically.
@@ -77,7 +77,8 @@ The build should perform these stages:
 5. Georeference SVG coordinates to longitude/latitude using reviewed ground-control points.
 6. Join geometry to public district data by exact key.
 7. Validate keys, geometry, bounds, properties, and privacy rules.
-8. Write generated public assets and diagnostic artifacts.
+8. Convert the checked-in, dated OpenStreetMap PATH snapshot into separately validated route, entrance, interaction, and label outputs.
+9. Write generated public assets and diagnostic artifacts.
 
 ## Geometry Normalization
 
@@ -117,8 +118,15 @@ writes `data/diagnostics/normalization.json`, including each district's source,
 expanded, and final area plus the overlap removed. It fails if the manifest is
 incomplete or duplicated, a district becomes empty, or more than 0.01 square
 metres of pairwise overlap remains. The normalized geometry is the geometry
-written to `public/generated/districts.geojson`. The richer visual gap and
-boundary-movement diagnostics listed above remain Phase 2 work.
+written to `public/generated/districts.geojson`.
+
+`data/diagnostics/map-visual-diagnostics.geojson` records the source and final
+boundaries, area added and removed by normalization, each sequential overlap
+cut, remaining enclosed gaps and overlaps, and control/validation
+georeferencing residuals. `npm run diagnostics:view` opens the generated
+interactive review map over OpenFreeMap with whole-city, downtown, and island
+presets. The viewer and GeoJSON are checked for staleness by `data:check` and
+must not be hand-edited.
 
 ## PATH Network District
 
@@ -152,6 +160,18 @@ PATH joins the Sheet district record by its exact key like any other District,
 but it is exempt from surface-polygon topology and coverage checks. Its network
 geometry receives route validity, bounds, provenance, and non-empty checks
 instead.
+
+This is implemented by `scripts/fetch-path-osm.mjs`,
+`scripts/lib/path-network.mjs`, and `data/path-network.json`. `npm run
+path:refresh` is the explicit network update command. It stores the complete
+dated Overpass response in `data/source/osm-path-snapshot.json`; ordinary builds
+consume that snapshot without making a network request. The current checked-in
+snapshot contains 1,517 route ways and 329 entrance or vertical-connection
+nodes. The public projection strips the raw tags down to the exact fields the
+map needs, clips routes to the reviewed catchment, derives a wider selectable
+corridor for each route, and records the query hash plus every included OSM
+element ID in the manifest. Both generation and browser loading fail on empty,
+malformed, out-of-bounds, count-mismatched, or provenance-mismatched data.
 
 ## Georeferencing
 
@@ -195,18 +215,36 @@ browser-local corrections are not applied a second time.
 
 ## Public Output
 
-The exact filenames can be settled during implementation, but the public package should contain the equivalent of:
+The public package contains:
 
 ```text
 public/generated/districts.geojson
 public/generated/regions.geojson
 public/generated/sites.geojson
+public/generated/labels.geojson
+public/generated/path-district.json
+public/generated/path-routes.geojson
+public/generated/path-entrances.geojson
+public/generated/path-interaction.geojson
+public/generated/path-label.geojson
+public/generated/city-markers.geojson
+public/generated/basemap-masks.geojson
+public/generated/basemap-mask-labels.geojson
 public/generated/map-data-manifest.json
 ```
 
 Each geographical feature needs a stable exact key. Other content should be present only when required for rendering or a player-facing panel. Keep large prose or frequently changing data separate from geometry if doing so improves caching and updates.
 
-The manifest should record:
+The generator derives exactly one in-feature label point for every district
+and region after normalization and calibration. Labels use this point source,
+not the multipart polygon sources, so MapLibre cannot repeat one name across
+several polygon parts or internal tiles. These generated points are the stable
+fallback. At runtime, districts are clipped to the viewport and the single
+label is placed in the largest visible polygon, with work throttled while the
+map moves and finalized on movement end. Region labels retain their generated
+anchors.
+
+The manifest records:
 
 - schema version
 - source export package names
@@ -221,16 +259,49 @@ The original illustrated map is not a planned runtime raster layer. Its reusable
 
 ## Public Field Allowlist
 
-The first public district projection should be reviewed field by field. Likely candidates from the current contract are:
+`data/public-data-policy.json` is the reviewed privacy boundary. The first public district projection contains only:
 
 - `Key`
 - `Name`
 - `Hunting Difficulty`
 - `Resonance Plus`
 - `Resonance Minus`
-- selected aspect and condition fields once their player visibility is confirmed
+
+The public property names are `key`, `name`, `huntingDifficulty`,
+`resonancePlus`, and `resonanceMinus`. The generator constructs these objects
+field by field and the browser validates the exact property set again at load
+time. A new Sheet column therefore cannot enter the site accidentally.
+
+The same policy records the four reviewed Sheet-only districts: `PATH`,
+`Sewers`, `Streets`, and `Subway`. They are required in the validated Sheet
+snapshot but are deliberately exempt from the 32 surface-polygon join. PATH
+will receive its separately generated network geometry; the other three are
+runtime abstractions without Player Map geometry.
+
+No site is public yet. `sites.geojson` is intentionally generated as an empty
+feature collection, and the policy's site allowlist is empty. The sites export
+contains room-level and unrevealed chronicle data without a sufficiently clear
+player-visibility flag, so publishing it wholesale would violate the privacy
+boundary. Adding a site later requires both an explicit reviewed key and an
+explicit field projection; changing the allowlist alone fails the build.
 
 Domain-control values, aspects, conditions, sites, and future NPC-activity fields must not be assumed public merely because they exist in a link-viewable Sheet. Add them only through an explicit decision. New Sheet columns do not automatically enter the Player Map.
+
+## Sheet Snapshot Modes
+
+`npm run data:build` always calls the production loader in
+`.dev/scripts/lib/sheet_exports.js` and validates the exact shared export
+contract. It chooses the snapshot in this order:
+
+1. `TR_EXPORT_SNAPSHOT`, when the FULL pipeline supplies its temporary shared snapshot.
+2. The validated Storyteller Dashboard snapshot cache, when it exists during local development.
+3. A fresh production Sheet fetch, when neither shared source is available.
+
+Use `npm run data:refresh` to force a fresh fetch while developing the Player
+Map. The manifest records the snapshot mode, workbook ID, fetch time, export
+names, source-row hash, safe fields, row counts, and reviewed Sheet-only
+exceptions. Player browsers still load only generated files and never contact
+Google Sheets.
 
 If some rows or values change visibility during play, a static public file is insufficient. Those values must be served through an authenticated API that returns only what the current player is allowed to know.
 
@@ -266,4 +337,11 @@ Publication is part of the existing TTS FULL pipeline:
 
 A failed FULL build must not publish a partial or newer map-data snapshot. Deployment is the terminal external side effect and should be atomic. If the generated public data and application build are unchanged, the deployment step may report that there is nothing new to publish.
 
-Provide a separate `player-map:deploy` command for intentional map-only publication and troubleshooting, but the author's regular successful FULL run is the normal release route. Do not fetch raw Sheet rows in each player's browser merely to make updates immediate.
+This order is implemented in `.dev/scripts/run_export_build.js` and protected
+by a focused ordering test. `npm run player-map:deploy` is the intentional
+map-only release and troubleshooting command. `npm run player-map:publish` is
+the unchecked terminal action used only after FULL has already passed the map
+checks. `TR_SKIP_PLAYER_MAP_PUBLISH=1` is an explicit offline/CI escape hatch;
+it leaves generation and all checks in place and skips only publication. The
+author's regular successful FULL run remains the normal release route. Do not
+fetch raw Sheet rows in each player's browser merely to make updates immediate.

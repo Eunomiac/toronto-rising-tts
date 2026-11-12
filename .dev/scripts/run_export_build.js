@@ -9,6 +9,31 @@ function run(script, env, args = []) {
   if (child.error) throw child.error;
   if (child.status !== 0) throw new Error(`${script} failed (${child.status})`);
 }
+function runNpm(script, env) {
+  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+  const child = spawnSync(npmCommand, ["run", script], { cwd: root, env, stdio: "inherit" });
+  if (child.error) throw child.error;
+  if (child.status !== 0) throw new Error(`${script} failed (${child.status})`);
+}
+function runFullPipeline(env, actions = { run, runNpm }) {
+  // Generate from the same temporary Sheet snapshot before any consumer can
+  // fetch a newer one independently.
+  actions.runNpm("player-map:data:build", env);
+  actions.runNpm("build:tooling-after-exports", env);
+  // This includes data freshness, type, unit, production-boundary, and real
+  // desktop/mobile browser checks, and leaves the verified dist ready to ship.
+  actions.runNpm("player-map:check", env);
+  // Inject scripts into the main save first so session-start copies those object scripts into 9001.
+  actions.run(".tools/tts-save/bundle-into-save.js", env);
+  actions.run(".tools/tts-save/build-session-start.js", env, ["--full"]);
+  // Publication is deliberately the final external side effect. The escape
+  // hatch is for CI/offline diagnosis, not the author's normal FULL workflow.
+  if (env.TR_SKIP_PLAYER_MAP_PUBLISH === "1") {
+    console.log("[player-map] Publication skipped by TR_SKIP_PLAYER_MAP_PUBLISH=1.");
+  } else {
+    actions.runNpm("player-map:publish", env);
+  }
+}
 async function main() {
   const full = process.argv.includes("--full");
   const check = process.argv.includes("--check");
@@ -35,15 +60,10 @@ async function main() {
     run(".dev/storyteller-dashboard/scripts/npc-stats/import.ts", env);
     console.log(full ? "[exports] All exports validated; asset joins follow cloud sync:" : "[exports] All exports generated successfully:", counts);
     if (full) {
-      // This fixed command needs npm's platform shell launcher; pass no argument
-      // array with shell:true (Node DEP0190), and never interpolate input here.
-      const child = spawnSync("npm run build:tooling-after-exports", { cwd: root, env, stdio: "inherit", shell: true });
-      if (child.error) throw child.error;
-      if (child.status !== 0) throw new Error(`Remaining FULL tooling failed (${child.status})`);
-      // Inject scripts into the main save first so session-start copies those object scripts into 9001.
-      run(".tools/tts-save/bundle-into-save.js", env);
-      run(".tools/tts-save/build-session-start.js", env, ["--full"]);
+      runFullPipeline(env);
     }
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
-main().catch(e => { console.error(e); process.exitCode = 1; });
+if (require.main === module) main().catch(e => { console.error(e); process.exitCode = 1; });
+
+module.exports = { runFullPipeline };
