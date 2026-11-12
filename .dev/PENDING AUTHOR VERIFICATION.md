@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-776 — Clear Complications board texts on load; seat circle two units farther out
+
+> **Agent-assessment note:** Empty XML defaults and the no-game refresh path are covered in code. You still need Save & Play to confirm the board texts stay blank on a fresh load and that wood-table seats sit two units farther from the centre.
+
+**How to verify:** Save & Play on a save with no live Deck of Complications game. The three numbers on the Complications board (original margin, complications total, adjusted margin) should be blank, not leftover sample values. Switch to a wood table such as Table A and check that player figurines and their seat piles sit about two units farther from the table centre than before. Scatter seating should look unchanged.
+
 #### 🟡 TOR-774 — Debug disconnect parks seats; sheets clickable; discipline facing; Compulsion deck lock
 
 > **Agent-assessment note:** Connection checkpoint wiring and ClickableSeatControls order are covered in code. You still need Save & Play to confirm pile hide, sheet clicks, card facing, and Compulsion deck lock in TTS.

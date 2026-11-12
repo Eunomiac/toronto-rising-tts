@@ -51,9 +51,9 @@
 
 <Panel id="complicationsDisplayContainer" class="complicationsDisplayContainer" >
   <HorizontalLayout id="complicationsDisplay" class="complicationsDisplay" >
-    <Text id="text_originalMargin" class="complicationsDisplayText redText" text="−6" />
-    <Text id="text_complicationsTotal" class="complicationsDisplayText bigText goldText" text="+9" />
-    <Text id="text_adjustedMargin" class="complicationsDisplayText goldText" text="+3" />
+    <Text id="text_originalMargin" class="complicationsDisplayText redText" text="" />
+    <Text id="text_complicationsTotal" class="complicationsDisplayText bigText goldText" text="" />
+    <Text id="text_adjustedMargin" class="complicationsDisplayText goldText" text="" />
   </HorizontalLayout>
 
 </Panel>

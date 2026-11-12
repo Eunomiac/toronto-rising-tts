@@ -2290,9 +2290,39 @@ C.Tables = {
   }
 }
 
+--- Non-Scatter wood/facing tables: push slot-1 figurine 2 world units farther from `centerPoint`
+--- so the seating circle sits slightly farther out. Leave `CameraAuthoringReferenceFigurinePosition`
+--- at the Table A dump baseline; camera XZ offset then tracks each table's moved reference.
+local NON_SCATTER_FIGURINE_OUTWARD = 2
+
+local function pushReferenceFigurineOutward(tableCfg, distance)
+  local rf = tableCfg.referenceFigurine
+  local cp = tableCfg.centerPoint
+  if type(rf) ~= "table" or type(rf.position) ~= "table" or type(cp) ~= "table" then
+    return
+  end
+  local dx = (rf.position.x or 0) - (cp.x or 0)
+  local dz = (rf.position.z or 0) - (cp.z or 0)
+  local radius = math.sqrt(dx * dx + dz * dz)
+  if radius < 1e-6 then
+    return
+  end
+  local scale = (radius + distance) / radius
+  rf.position = Vector({
+    x = (cp.x or 0) + dx * scale,
+    y = rf.position.y,
+    z = (cp.z or 0) + dz * scale,
+  })
+end
+
 for _, _tableCfg in pairs(C.Tables) do
-  if type(_tableCfg) == "table" and _tableCfg.referenceFigurine == nil and type(_tableCfg.referenceHand) == "table" then
-    _tableCfg.referenceFigurine = referenceFigurineFromHand(_tableCfg.referenceHand)
+  if type(_tableCfg) == "table" then
+    if _tableCfg.referenceFigurine == nil and type(_tableCfg.referenceHand) == "table" then
+      _tableCfg.referenceFigurine = referenceFigurineFromHand(_tableCfg.referenceHand)
+    end
+    if _tableCfg.shape ~= C.TableShapes.SCATTER then
+      pushReferenceFigurineOutward(_tableCfg, NON_SCATTER_FIGURINE_OUTWARD)
+    end
   end
 end
 

@@ -65,13 +65,24 @@ local function refreshHighlight(g,guid)
         elseif guid==g.selected then visible.highlightOn({0,1,1}) else visible.highlightOff() end
     end
 end
+local function clearBoardDisplayTexts(b)
+    if not b then return end
+    for _,id in ipairs({'text_originalMargin','text_complicationsTotal','text_adjustedMargin'}) do
+        b.UI.setAttribute(id,'text','')
+    end
+end
+
 function D.refresh()
     local g=game()
     UI.setAttributes('complicationsToggle',{active=g and 'true' or 'false',text=g and g.hidden and 'Show cards' or 'Hide cards'})
-    if not g then return end
+    local b=board()
+    if not g then
+        clearBoardDisplayTexts(b)
+        return
+    end
     local discard=obj(g.pileGuids and g.pileGuids.discard)
     if discard and not g.hidden and not discard.hasTag('masterDeck') then discard.setLock(false) end
-    local b=board(); if not b then return end
+    if not b then return end
     local total,margin=Model.totals(g)
     b.UI.setAttribute('text_originalMargin','text',signed(g.target.result.margin))
     b.UI.setAttribute('text_complicationsTotal','text',signed(total))
