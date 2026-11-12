@@ -1212,7 +1212,7 @@ export const MasonryRoster = (): ReactElement => {
     const namedGroupCurrent = namedNpc
       ? (memberGroups[namedCanonical ?? namedNpc.characterKey] ?? namedNpc.pickerGroups[0] ?? "")
       : "";
-    const namedGroupOptions = namedNpc ? rosterGroupOptions() : [];
+    const namedGroupOptions = namedNpc ? rosterGroupOptions(namedGroupCurrent) : [];
     setConfiguring({
       characterKey,
       at,
@@ -1221,7 +1221,7 @@ export const MasonryRoster = (): ReactElement => {
       stats: generic
         ? { key: genericStatsKey(generic.key), label: generic.label, tiered: true }
         : { key: characterKey, label: namedNpc?.fullName ?? characterKey, tiered: false },
-      ...(namedNpc && namedGroupOptions.length > 0 && namedGroupCurrent !== ""
+      ...(namedNpc && namedGroupOptions.length > 0
         ? {
           rosterGroup: {
             current: namedGroupCurrent,
@@ -1271,22 +1271,37 @@ export const MasonryRoster = (): ReactElement => {
       setRosterError(reason instanceof Error ? reason.message : String(reason));
     });
   };
-  /** Permanent group choices for the token config popup (every Main roster group, any category). */
-  const rosterGroupOptions = (): readonly { readonly value: string; readonly label: string }[] => {
+  /**
+   * Permanent group choices for the token config popup: every Catalog-tab roster group (any category), never
+   * Generic or Memoriam bins. Ungrouped tokens get a blank "Ungrouped" choice so the select can show their
+   * current state without picking the first real group by accident.
+   */
+  const rosterGroupOptions = (currentGroup: string): readonly { readonly value: string; readonly label: string }[] => {
     const labels = new Map<string, string>();
+    if (catalogs) {
+      for (const [key, label] of Object.entries(catalogs.pickerGroupLabels)) {
+        if (key !== "catalogUngrouped" && !key.startsWith("generic:")) {
+          labels.set(key, layout.groupLabels[key] ?? label);
+        }
+      }
+    }
     for (const [key, label] of Object.entries(layout.groupLabels)) {
-      if (!key.startsWith("generic:")) {
+      if (key !== "catalogUngrouped" && !key.startsWith("generic:")) {
         labels.set(key, label);
       }
     }
     for (const group of mainGroups) {
-      if (!group.key.startsWith("generic:") && group.key !== "catalogUngrouped") {
+      if (group.key !== "catalogUngrouped" && !group.key.startsWith("generic:")) {
         labels.set(group.key, layout.groupLabels[group.key] ?? group.label);
       }
     }
-    return [...labels.entries()]
+    const options = [...labels.entries()]
       .map(([value, label]) => ({ value, label }))
       .sort((a, b) => a.label.localeCompare(b.label));
+    if (currentGroup === "" || currentGroup === "catalogUngrouped") {
+      return [{ value: "", label: "Ungrouped" }, ...options];
+    }
+    return options;
   };
   const toggleFilter = <T,>(current: ReadonlySet<T>, value: T): ReadonlySet<T> => {
     const next = new Set(current);

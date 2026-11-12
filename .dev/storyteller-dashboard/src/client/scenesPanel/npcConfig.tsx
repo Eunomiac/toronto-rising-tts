@@ -51,7 +51,7 @@ export type NpcConfigTarget = {
       readonly unkeep: (keptId: string) => Promise<void>;
     };
   };
-  /** Named-NPC roster group move (permanent). Omit for generics / ungrouped-only tokens. */
+  /** Named Catalog NPC roster group move (permanent). Options are every Catalog-tab group. */
   readonly rosterGroup?: {
     readonly current: string;
     readonly options: readonly { readonly value: string; readonly label: string }[];
@@ -253,11 +253,14 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
           />
         </label>
         {target.rosterGroup && target.rosterGroup.options.length > 0 && (
-          <label className="lab-group-edit-row" title="Permanent roster group (same as dragging the token onto a group).">
+          <label
+            className="lab-group-edit-row"
+            title="Permanent Catalog roster group (any category). Same as dragging the token onto a group."
+          >
             <span>Group</span>
             <select className="lab-select" value={rosterGroupKey} onChange={(event) => setRosterGroupKey(event.target.value)}>
               {target.rosterGroup.options.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
+                <option key={option.value === "" ? "__ungrouped__" : option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
           </label>
