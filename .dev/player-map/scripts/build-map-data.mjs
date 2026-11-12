@@ -86,6 +86,7 @@ const cityMarkers = {
     geometry: { type: 'Point', coordinates: city.coordinates },
   })),
 };
+const basemapMaskImagesConfig = Array.isArray(basemapMasks?.images) ? basemapMasks.images : [];
 if (basemapMasks?.schemaVersion !== 1 || !Array.isArray(basemapMasks.masks)
   || !basemapMasks.masks.every((mask) => (
     mask && Object.keys(mask).sort().join(',') === 'key,name,sourceLabelPoint,sourcePolygon'
@@ -94,7 +95,13 @@ if (basemapMasks?.schemaVersion !== 1 || !Array.isArray(basemapMasks.masks)
     && Array.isArray(mask.sourcePolygon) && mask.sourcePolygon.length >= 4
     && mask.sourcePolygon.every((position) => Array.isArray(position) && position.length === 2 && position.every(Number.isFinite))
     && JSON.stringify(mask.sourcePolygon[0]) === JSON.stringify(mask.sourcePolygon.at(-1))
-  )) || new Set(basemapMasks.masks.map((mask) => mask.key)).size !== basemapMasks.masks.length) {
+  )) || new Set(basemapMasks.masks.map((mask) => mask.key)).size !== basemapMasks.masks.length
+  || !basemapMaskImagesConfig.every((image) => (
+    image && Object.keys(image).sort().join(',') === 'imageFile,key,name,sourceBounds'
+    && typeof image.key === 'string' && image.key && typeof image.name === 'string' && image.name
+    && typeof image.imageFile === 'string' && image.imageFile
+    && Array.isArray(image.sourceBounds) && image.sourceBounds.length === 4 && image.sourceBounds.every(Number.isFinite)
+  )) || new Set(basemapMaskImagesConfig.map((image) => image.key)).size !== basemapMaskImagesConfig.length) {
   throw new Error('Invalid basemap mask configuration');
 }
 const sheetDistrictRows = dataOf(sheetSnapshot, 'LOCATIONS_DISTRICTS');
@@ -198,13 +205,17 @@ function buildLabelCollection(collections) {
   return { type: 'FeatureCollection', features };
 }
 
+function collectShapeElements(node, into = []) {
+  for (const element of node.path ?? []) into.push({ ...element, element: 'path' });
+  for (const element of node.polygon ?? []) into.push({ ...element, element: 'polygon' });
+  for (const child of node.g ?? []) collectShapeElements(child, into);
+  return into;
+}
+
 function buildCollection(groupId, kind, expectedNames) {
   const group = groups.get(groupId);
   if (!group) throw new Error(`Missing SVG group: ${groupId}`);
-  const elements = [
-    ...(group.path ?? []).map((element) => ({ ...element, element: 'path' })),
-    ...(group.polygon ?? []).map((element) => ({ ...element, element: 'polygon' })),
-  ];
+  const elements = collectShapeElements(group);
   const ids = elements.map(({ id }) => id);
   const missing = Object.keys(expectedNames).filter((id) => !ids.includes(id));
   const unexpected = ids.filter((id) => !Object.hasOwn(expectedNames, id));
@@ -232,8 +243,54 @@ function buildCollection(groupId, kind, expectedNames) {
   return { type: 'FeatureCollection', features };
 }
 
+function buildRegionCollection(expectedNames) {
+  const group = groups.get('REGIONS');
+  if (!group) throw new Error('Missing SVG group: REGIONS');
+  const regionGroups = group.g ?? [];
+  const features = [];
+  for (const regionGroup of regionGroups) {
+    const key = regionGroup.id;
+    if (!key || !Object.hasOwn(expectedNames, key)) {
+      throw new Error(`Unexpected region group: ${key ?? '(missing id)'}`);
+    }
+    const shapes = collectShapeElements(regionGroup);
+    let fillElements = shapes.filter((element) => (
+      typeof element.id === 'string' && (element.id === key || element.id === `Fill_${key}` || element.id.startsWith(`Fill_${key}_`))
+    ));
+    if (fillElements.length === 0) {
+      fillElements = shapes.filter((element) => typeof element.id !== 'string' || !String(element.id).startsWith('Labels_'));
+    }
+    if (fillElements.length === 0) throw new Error(`No fill geometry for region ${key}`);
+    const rings = fillElements.flatMap((element) => (
+      element.element === 'path' ? pathToRings(element.d) : polygonPointsToRings(element.points)
+    ));
+    const coordinates = ringsToMultiPolygon(rings, project);
+    if (coordinates.length === 0) throw new Error(`No usable geometry for region ${key}`);
+    features.push({
+      type: 'Feature',
+      id: key,
+      properties: {
+        key,
+        name: expectedNames[key],
+        kind: 'region',
+        sourceElement: fillElements[0].element,
+        fillRule: fillElements[0]['fill-rule'] ?? 'nonzero',
+        sourceRingCount: rings.length,
+      },
+      geometry: { type: 'MultiPolygon', coordinates },
+    });
+  }
+  const ids = features.map((feature) => feature.properties.key);
+  const missing = Object.keys(expectedNames).filter((id) => !ids.includes(id));
+  const unexpected = ids.filter((id) => !Object.hasOwn(expectedNames, id));
+  if (missing.length || unexpected.length) {
+    throw new Error(`REGIONS key mismatch. Missing: ${missing.join(', ') || 'none'}. Unexpected: ${unexpected.join(', ') || 'none'}.`);
+  }
+  return { type: 'FeatureCollection', features };
+}
+
 const baseDistricts = buildCollection('DISTRICTS', 'district', names.districts);
-const baseRegions = buildCollection('REGIONS', 'region', names.regions);
+const baseRegions = buildRegionCollection(names.regions);
 const baseBounds = collectionBounds([baseDistricts, baseRegions]);
 const visualTransform = calibration.visualCalibration
   ? createVisualCalibrationTransform(baseBounds, calibration.visualCalibration)
@@ -257,6 +314,19 @@ const basemapMaskLabels = {
     geometry: { type: 'Point', coordinates: projectSourcePoint(mask.sourceLabelPoint) },
   })),
 };
+const basemapMaskImages = basemapMaskImagesConfig.map((image) => {
+  const [minX, minY, maxX, maxY] = image.sourceBounds;
+  const topLeft = projectSourcePoint([minX, minY]);
+  const topRight = projectSourcePoint([maxX, minY]);
+  const bottomRight = projectSourcePoint([maxX, maxY]);
+  const bottomLeft = projectSourcePoint([minX, maxY]);
+  return {
+    key: image.key,
+    name: image.name,
+    url: `/generated/${image.imageFile}`,
+    coordinates: [topLeft, topRight, bottomRight, bottomLeft],
+  };
+});
 const unnormalizedDistricts = transformCollection(baseDistricts, visualTransform);
 const { collection: normalizedDistricts, diagnostics: normalizationDiagnostics, visualDiagnostics } = normalizeDistrictCollection(
   unnormalizedDistricts,
@@ -321,10 +391,12 @@ const manifest = {
     cityMarkers: cityMarkers.features.length,
     basemapMasks: basemapMaskPolygons.features.length,
     basemapMaskLabels: basemapMaskLabels.features.length,
+    basemapMaskImages: basemapMaskImages.length,
     sheetDistricts: sheetDistrictRows.length,
     sheetSites: sheetSiteRows.length,
     sheetOnlyDistricts: publicDataPolicy.sheetOnlyDistricts.length,
   },
+  basemapMaskImages,
   bounds,
   sheet: {
     spreadsheetId: sheetContract.spreadsheetId,
@@ -361,7 +433,7 @@ const manifest = {
   pathNetwork: pathNetwork.provenance,
 };
 
-if (manifest.counts.districts !== 32 || manifest.counts.regions !== 3 || manifest.counts.labels !== 35) {
+if (manifest.counts.districts !== 32 || manifest.counts.regions !== 4 || manifest.counts.labels !== 36) {
   throw new Error('Unexpected feature counts');
 }
 if (manifest.counts.pathRoutes === 0 || manifest.counts.pathEntrances === 0

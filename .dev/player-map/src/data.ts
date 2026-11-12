@@ -33,13 +33,12 @@ const PATH_INTERACTION_KEYS = ['key', 'osmId'].sort();
 const PATH_LABEL_KEYS = ['key', 'kind', 'name'].sort();
 const CITY_MARKER_KEYS = ['key', 'name'].sort();
 const BASEMAP_MASK_KEYS = ['key', 'name'].sort();
-const MAP_LAYER_IDS: MapLayerId[] = ['districts', 'regions', 'orientation', 'path', 'sites'];
+const MAP_LAYER_IDS: MapLayerId[] = ['districts', 'regions', 'path', 'sites'];
 export const DEFAULT_LAYER_VISIBILITY: MapLayerVisibility = {
   districts: true,
   regions: false,
   sites: false,
   path: false,
-  orientation: true,
 };
 
 async function loadJson(path: string): Promise<unknown> {

@@ -1,4 +1,12 @@
 {
   "schemaVersion": 1,
-  "masks": []
+  "masks": [],
+  "images": [
+    {
+      "key": "GiovanniEstate",
+      "name": "Giovanni Estate",
+      "imageFile": "basemap-mask-giovanni-estate.svg",
+      "sourceBounds": [0, 0, 4318, 5400]
+    }
+  ]
 }

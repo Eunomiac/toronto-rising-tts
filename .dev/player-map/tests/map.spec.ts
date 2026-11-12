@@ -29,6 +29,10 @@ async function prepareNetwork(page: Page, testInfo: TestInfo) {
   await page.route('https://tiles.openfreemap.org/**', relayThroughTestRunner);
 }
 
+async function openMapLayers(page: Page) {
+  await page.getByRole('button', { name: /Map Layers/i }).click();
+}
+
 test('loads the real map and supports pointer and keyboard-friendly selection', async ({ page }, testInfo) => {
   test.setTimeout(60_000);
   const consoleErrors: string[] = [];
@@ -50,28 +54,19 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   });
 
   await page.goto('/');
-  await expect(page.getByLabel('Choose a district')).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Map layers' })).toBeVisible();
-  await expect(page.getByRole('checkbox', { name: 'Districts' })).toBeChecked();
-  await expect(page.getByRole('checkbox', { name: 'Regions' })).not.toBeChecked();
-  await expect(page.getByRole('checkbox', { name: 'Orientation streets' })).toBeChecked();
-  await expect(page.getByRole('checkbox', { name: 'PATH' })).not.toBeChecked();
-  await expect(page.getByRole('checkbox', { name: 'Sites (none revealed)' })).toBeDisabled();
+  await expect(page.getByRole('navigation', { name: 'Map menus' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Map Layers/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Domains/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Sites/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Debug notes/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Province view' })).toHaveCount(0);
   const canvas = page.locator('.maplibregl-canvas');
   await expect(canvas).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
 
-  const provinceView = page.getByRole('button', { name: 'Province view' });
-  await provinceView.click();
-  await expect(page.getByRole('button', { name: 'Return to Toronto' })).toBeVisible();
-  await page.getByRole('button', { name: 'Return to Toronto' }).click();
-  await expect(provinceView).toBeVisible();
-
   if (testInfo.project.name === 'desktop-chromium') {
-    // Focus a compact, simple district first so the pointer check does not
-    // depend on one arbitrary viewport percentage continuing to cross a shape.
-    await page.getByLabel('Choose a district').selectOption('YongeDundasHospital');
+    await openMapLayers(page);
+    await page.getByRole('button', { name: 'Hospital District' }).click();
     await page.getByRole('button', { name: 'Close district details' }).click();
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
@@ -94,28 +89,27 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
     await expect(page.getByTestId('selected-district')).toBeVisible();
   }
 
-  await page.getByLabel('Choose a district').selectOption('Rosedale');
+  await openMapLayers(page);
+  await page.getByRole('button', { name: 'Rosedale' }).click();
   await expect(page.getByTestId('selected-district')).toContainText('Rosedale');
   await expect(page.getByTestId('selected-district')).toContainText('Hunting difficulty6');
   await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
   await expect(page.getByTestId('selected-district')).toContainText('Melancholic');
   await expect(page).toHaveURL(/district=Rosedale/);
 
-  await page.getByRole('checkbox', { name: 'PATH' }).check();
-  await page.getByLabel('Choose a district').selectOption('PATH');
+  await page.getByRole('button', { name: 'P.A.T.H.' }).click();
   await expect(page.getByTestId('selected-district')).toContainText('P.A.T.H.');
   await expect(page.getByTestId('selected-district')).toContainText('Hunting difficulty4');
   await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
   await expect(page.getByTestId('selected-district')).toContainText('Choleric');
   await expect(page).toHaveURL(/district=PATH/);
+  await expect(page.locator('.map-surface__path-legend-label')).toContainText('P.A.T.H.');
 
-  await page.getByRole('checkbox', { name: 'Regions' }).check();
-  await expect(page).toHaveURL(/layers=districts%2Cregions%2Corientation%2Cpath/);
+  await page.getByRole('button', { name: 'The Rack' }).click();
+  await expect(page).toHaveURL(/layers=districts%2Cregions/);
   await page.reload();
-  await expect(page.getByRole('checkbox', { name: 'Regions' })).toBeChecked();
-  await expect(page.getByRole('checkbox', { name: 'Orientation streets' })).toBeChecked();
-  await expect(page.getByRole('checkbox', { name: 'PATH' })).toBeChecked();
   await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
+  await expect(page).toHaveURL(/layers=districts%2Cregions/);
 
   expect(consoleErrors).toEqual([]);
   expect(failedRequests).toEqual([]);
@@ -137,8 +131,9 @@ test('visual calibration mode updates and remembers exact adjustments', async ({
   await expect(page.getByTestId('calibration-result')).toContainText('"offsetEastMetres": -12');
 
   await page.reload();
+  await expect(page.getByRole('heading', { name: 'Visual calibration' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
   await expect(page.getByLabel('Horizontal scale', { exact: true })).toHaveValue('0.9975');
   await expect(page.getByLabel('East / west shift (m)', { exact: true })).toHaveValue('-12');
-  await expect(page.getByRole('heading', { name: 'Visual calibration' })).toBeVisible();
   expect(consoleErrors).toEqual([]);
 });

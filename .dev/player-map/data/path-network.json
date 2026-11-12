@@ -13,7 +13,8 @@
     "pedestrian",
     "steps",
     "elevator",
-    "escalator"
+    "escalator",
+    "path"
   ],
   "interactionWidthMetres": 10,
   "labelPoint": [-79.3828, 43.6487],

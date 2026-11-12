@@ -5,6 +5,7 @@ import {
   NavigationControl,
   setWorkerUrl,
   type ErrorEvent as MapLibreErrorEvent,
+  type ExpressionSpecification,
   type FilterSpecification,
   type GeoJSONSource,
   type MapGeoJSONFeature,
@@ -13,6 +14,12 @@ import {
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { featureBounds } from './data';
+import {
+  orientationDisplayNameExpression,
+  PRIMARY_STREET_NAMES,
+  SECONDARY_STREET_NAMES,
+  type OrientationStreetCategory,
+} from './orientation-streets';
 import { labelsForViewport } from './viewport-labels';
 import type {
   DistrictFeatureCollection,
@@ -27,6 +34,7 @@ import type {
   PathRouteCollection,
   PublicSiteCollection,
   RegionFeatureCollection,
+  RegionVisibility,
 } from './types';
 
 const SOURCE_ID = 'districts';
@@ -54,27 +62,35 @@ const PATH_INTERACTION_LAYER_ID = 'path-interaction-corridors';
 const PATH_LABEL_LAYER_ID = 'path-label';
 const CITY_MARKER_CIRCLE_LAYER_ID = 'province-city-markers';
 const CITY_MARKER_LABEL_LAYER_ID = 'province-city-labels';
+const PRIMARY_STREET_CASING_LAYER_ID = 'primary-street-casing';
+const PRIMARY_STREET_LINE_LAYER_ID = 'primary-street-lines';
+const PRIMARY_STREET_LABEL_LAYER_ID = 'primary-street-labels';
 const ORIENTATION_STREET_CASING_LAYER_ID = 'orientation-street-casing';
 const ORIENTATION_STREET_LINE_LAYER_ID = 'orientation-street-lines';
 const ORIENTATION_STREET_LABEL_LAYER_ID = 'orientation-street-labels';
 const BASEMAP_MASK_FILL_LAYER_ID = 'basemap-mask-fills';
 const BASEMAP_MASK_LINE_LAYER_ID = 'basemap-mask-lines';
 const BASEMAP_MASK_LABEL_LAYER_ID = 'basemap-mask-labels';
-const ORIENTATION_STREET_NAMES = [
-  'Avenue Road', 'Bathurst Street', 'Bay Street', 'Bloor Street East', 'Bloor Street West',
-  'Broadview Avenue', 'Carlton Street', 'College Street', 'Danforth Avenue', 'Don Valley Parkway',
-  'Dufferin Street', 'Dundas Street East', 'Dundas Street West', 'Frederick G. Gardiner Expressway',
-  'Gardiner Expressway', 'King Street East', 'King Street West', 'Lake Shore Boulevard',
-  'Lake Shore Boulevard East', 'Lake Shore Boulevard West', 'Parliament Street', 'Queen Street East',
-  'Queen Street West', 'Sherbourne Street', 'Spadina Avenue', 'St Clair Avenue East',
-  'St Clair Avenue West', 'St. Clair Avenue East', 'St. Clair Avenue West', 'University Avenue',
-  'Yonge Street',
-];
 const PLAY_BOUNDS: [[number, number], [number, number]] = [[-80.2, 43.0], [-72.7, 46.2]];
 const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [-79.34, 43.70]];
-const PROVINCE_VIEW_BOUNDS: [[number, number], [number, number]] = [[-79.65, 43.35], [-73.2, 45.75]];
+const CITY_SHADE_MIN_ZOOM = 10;
+const BASEMAP_LABEL_LAYER_IDS = [
+  'highway_name_other',
+  'highway_name_motorway',
+  'place_suburb',
+  'place_village',
+  'place_town',
+  'place_city',
+  'place_city_large',
+];
 
 setWorkerUrl(mapWorkerUrl);
+
+export interface BasemapMaskImage {
+  key: string;
+  url: string;
+  coordinates: [[number, number], [number, number], [number, number], [number, number]];
+}
 
 interface MapViewProps {
   districts: DistrictFeatureCollection;
@@ -91,6 +107,7 @@ interface MapViewProps {
   pathBounds: { south: number; west: number; north: number; east: number };
   chronicleBounds: [[number, number], [number, number]];
   layerVisibility: MapLayerVisibility;
+  regionVisibility: RegionVisibility;
   selectedKey: string | null;
   onSelect: (key: string) => void;
   onMapReady?: (map: Map | null) => void;
@@ -133,7 +150,7 @@ function focusDistrict(map: Map, districts: DistrictFeatureCollection, key: stri
   const feature = districts.features.find((candidate) => candidate.properties.key === key);
   if (!feature) return;
   map.fitBounds(featureBounds(feature.geometry.coordinates), {
-    padding: { top: 116, right: 52, bottom: 260, left: 52 },
+    padding: { top: 116, right: 52, bottom: 260, left: 120 },
     maxZoom: 14.5,
     duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 850,
   });
@@ -141,7 +158,7 @@ function focusDistrict(map: Map, districts: DistrictFeatureCollection, key: stri
 
 function focusPath(map: Map, bounds: MapViewProps['pathBounds']) {
   map.fitBounds([[bounds.west, bounds.south], [bounds.east, bounds.north]], {
-    padding: { top: 116, right: 52, bottom: 260, left: 52 },
+    padding: { top: 116, right: 52, bottom: 260, left: 120 },
     maxZoom: 14,
     duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 850,
   });
@@ -149,6 +166,96 @@ function focusPath(map: Map, bounds: MapViewProps['pathBounds']) {
 
 function mapVisibility(visible: boolean) {
   return visible ? 'visible' as const : 'none' as const;
+}
+
+function nameFilter(names: string[]): FilterSpecification {
+  return ['match', ['get', 'name'], names, true, false];
+}
+
+function hideBasemapLabels(map: Map) {
+  for (const layerId of BASEMAP_LABEL_LAYER_IDS) {
+    if (map.getLayer(layerId)) map.setLayoutProperty(layerId, 'visibility', 'none');
+  }
+}
+
+function addStreetLayers(
+  map: Map,
+  category: OrientationStreetCategory,
+  names: string[],
+  ids: { casing: string; line: string; label: string },
+  style: {
+    minzoom: number;
+    casingWidth: ExpressionSpecification;
+    lineWidth: ExpressionSpecification;
+    lineColor: string;
+    lineOpacity: number;
+    textSize: ExpressionSpecification;
+  },
+) {
+  if (names.length === 0) return;
+  const filter = nameFilter(names);
+  map.addLayer({
+    id: ids.casing,
+    type: 'line',
+    source: 'openmaptiles',
+    'source-layer': 'transportation_name',
+    minzoom: style.minzoom,
+    filter,
+    layout: { visibility: 'visible', 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': '#14080a',
+      'line-width': style.casingWidth,
+      'line-opacity': 0.88,
+    },
+  });
+  map.addLayer({
+    id: ids.line,
+    type: 'line',
+    source: 'openmaptiles',
+    'source-layer': 'transportation_name',
+    minzoom: style.minzoom,
+    filter,
+    layout: { visibility: 'visible', 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': style.lineColor,
+      'line-width': style.lineWidth,
+      'line-opacity': style.lineOpacity,
+    },
+  });
+  map.addLayer({
+    id: ids.label,
+    type: 'symbol',
+    source: 'openmaptiles',
+    'source-layer': 'transportation_name',
+    minzoom: style.minzoom,
+    filter,
+    layout: {
+      visibility: 'visible',
+      'symbol-placement': 'line',
+      'symbol-spacing': 420,
+      'text-field': orientationDisplayNameExpression(category) as ExpressionSpecification,
+      'text-font': ['Noto Sans Bold'],
+      'text-size': style.textSize,
+      'text-letter-spacing': 0.08,
+      'text-max-angle': 28,
+      'text-padding': 2,
+      'text-optional': true,
+      'text-allow-overlap': false,
+      'text-ignore-placement': false,
+    },
+    paint: {
+      'text-color': '#ffffff',
+      'text-halo-color': '#14080a',
+      'text-halo-width': 2.5,
+      'text-opacity': style.lineOpacity,
+    },
+  });
+}
+
+function regionFilter(visibility: RegionVisibility): FilterSpecification {
+  const enabled = Object.entries(visibility).filter(([, visible]) => visible).map(([key]) => key);
+  if (enabled.length === 0) return ['==', ['get', 'key'], '__none__'];
+  return ['match', ['get', 'key'], enabled, true, false];
 }
 
 export function MapView({
@@ -166,6 +273,7 @@ export function MapView({
   pathBounds,
   chronicleBounds,
   layerVisibility,
+  regionVisibility,
   selectedKey,
   onSelect,
   onMapReady,
@@ -185,12 +293,13 @@ export function MapView({
   const basemapMasksRef = useRef(basemapMasks);
   const basemapMaskLabelsRef = useRef(basemapMaskLabels);
   const layerVisibilityRef = useRef(layerVisibility);
+  const regionVisibilityRef = useRef(regionVisibility);
   const onSelectRef = useRef(onSelect);
   const onMapReadyRef = useRef(onMapReady);
   const hoveredRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const [status, setStatus] = useState('Loading street map…');
-  const [provinceView, setProvinceView] = useState(false);
+  const [distantView, setDistantView] = useState(false);
   districtsRef.current = districts;
   regionsRef.current = regions;
   sitesRef.current = sites;
@@ -203,6 +312,7 @@ export function MapView({
   basemapMasksRef.current = basemapMasks;
   basemapMaskLabelsRef.current = basemapMaskLabels;
   layerVisibilityRef.current = layerVisibility;
+  regionVisibilityRef.current = regionVisibility;
   onSelectRef.current = onSelect;
   onMapReadyRef.current = onMapReady;
 
@@ -232,6 +342,7 @@ export function MapView({
       boundaryFrame = window.requestAnimationFrame(() => {
         boundaryFrame = null;
         if (boundaryShadeRef.current) positionBoundaryShade(map, chronicleBounds, boundaryShadeRef.current);
+        setDistantView(map.getZoom() < CITY_SHADE_MIN_ZOOM);
       });
     };
     const finalizeViewportLabels = () => {
@@ -245,6 +356,7 @@ export function MapView({
     };
 
     const onLoad = () => {
+      hideBasemapLabels(map);
       map.addSource(SOURCE_ID, { type: 'geojson', data: districtsRef.current, promoteId: 'key' });
       map.addSource(REGION_SOURCE_ID, { type: 'geojson', data: regionsRef.current, promoteId: 'key' });
       map.addSource(SITE_SOURCE_ID, { type: 'geojson', data: sitesRef.current, promoteId: 'key' });
@@ -256,6 +368,7 @@ export function MapView({
       map.addSource(CITY_MARKER_SOURCE_ID, { type: 'geojson', data: cityMarkersRef.current });
       map.addSource(BASEMAP_MASK_SOURCE_ID, { type: 'geojson', data: basemapMasksRef.current });
       map.addSource(BASEMAP_MASK_LABEL_SOURCE_ID, { type: 'geojson', data: basemapMaskLabelsRef.current });
+
       map.addLayer({
         id: BASEMAP_MASK_FILL_LAYER_ID,
         type: 'fill',
@@ -326,79 +439,41 @@ export function MapView({
         layout: { visibility: mapVisibility(layerVisibilityRef.current.districts) },
       });
       map.addLayer({
-        id: LABEL_LAYER_ID,
-        type: 'symbol',
-        source: LABEL_SOURCE_ID,
-        minzoom: 11.25,
-        filter: ['==', ['get', 'kind'], 'district'],
-        layout: {
-          visibility: mapVisibility(layerVisibilityRef.current.districts),
-          'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 11.25, 10, 14, 13],
-          'text-transform': 'uppercase',
-          'text-letter-spacing': 0.12,
-          'text-max-width': 10,
-        },
-        paint: {
-          'text-color': '#f0d9d5',
-          'text-halo-color': '#14080a',
-          'text-halo-width': 1.5,
-        },
-      });
-      map.addLayer({
         id: REGION_FILL_LAYER_ID,
         type: 'fill',
         source: REGION_SOURCE_ID,
+        filter: regionFilter(regionVisibilityRef.current),
         layout: { visibility: mapVisibility(layerVisibilityRef.current.regions) },
         paint: {
           'fill-color': [
             'match', ['get', 'key'],
-            'AnarchFreeZone', '#8753b8',
-            'TheRack', '#b39135',
-            'TheBarrens', '#6f2028',
+            'AnarchFreeZone', '#c22933',
+            'TheRack', '#ff0def',
+            'TheBarrens', '#2e1700',
+            'UniversityOfToronto', '#06fbff',
             '#8e343b',
           ],
-          'fill-opacity': 0.2,
+          'fill-opacity': 0.22,
         },
       });
       map.addLayer({
         id: REGION_LINE_LAYER_ID,
         type: 'line',
         source: REGION_SOURCE_ID,
+        filter: regionFilter(regionVisibilityRef.current),
         layout: { visibility: mapVisibility(layerVisibilityRef.current.regions) },
         paint: {
           'line-color': [
             'match', ['get', 'key'],
-            'AnarchFreeZone', '#c58af5',
-            'TheRack', '#e6c45d',
-            'TheBarrens', '#dc6069',
+            'AnarchFreeZone', '#ff5a63',
+            'TheRack', '#ff7ef5',
+            'TheBarrens', '#a56a3a',
+            'UniversityOfToronto', '#7ff6ff',
             '#d9878d',
           ],
           'line-width': 2.2,
           'line-dasharray': [2, 1.5],
           'line-opacity': 0.92,
-        },
-      });
-      map.addLayer({
-        id: REGION_LABEL_LAYER_ID,
-        type: 'symbol',
-        source: LABEL_SOURCE_ID,
-        minzoom: 10.5,
-        filter: ['==', ['get', 'kind'], 'region'],
-        layout: {
-          visibility: mapVisibility(layerVisibilityRef.current.regions),
-          'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 10.5, 11, 14, 15],
-          'text-transform': 'uppercase',
-          'text-letter-spacing': 0.16,
-          'text-max-width': 12,
-        },
-        paint: {
-          'text-color': '#f4d878',
-          'text-halo-color': '#14080a',
-          'text-halo-width': 2,
         },
       });
       map.addLayer({
@@ -446,24 +521,6 @@ export function MapView({
         },
       });
       map.addLayer({
-        id: PATH_LABEL_LAYER_ID,
-        type: 'symbol',
-        source: PATH_LABEL_SOURCE_ID,
-        minzoom: 11.5,
-        layout: {
-          visibility: mapVisibility(layerVisibilityRef.current.path),
-          'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 11.5, 13, 15, 18],
-          'text-letter-spacing': 0.2,
-        },
-        paint: {
-          'text-color': '#f4e09a',
-          'text-halo-color': '#14080a',
-          'text-halo-width': 2,
-        },
-      });
-      map.addLayer({
         id: PATH_INTERACTION_LAYER_ID,
         type: 'fill',
         source: PATH_INTERACTION_SOURCE_ID,
@@ -471,59 +528,95 @@ export function MapView({
         layout: { visibility: mapVisibility(layerVisibilityRef.current.path) },
         paint: { 'fill-color': '#ffffff', 'fill-opacity': 0.001 },
       });
-      const orientationFilter: FilterSpecification = [
-        'match', ['get', 'name'], ORIENTATION_STREET_NAMES, true, false,
-      ];
+      // Keep the unused path-label source registered; the visible legend is HTML.
       map.addLayer({
-        id: ORIENTATION_STREET_CASING_LAYER_ID,
-        type: 'line',
-        source: 'openmaptiles',
-        'source-layer': 'transportation_name',
-        minzoom: 10.5,
-        filter: orientationFilter,
-        layout: { visibility: mapVisibility(layerVisibilityRef.current.orientation), 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': '#14080a',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 10.5, 3.8, 15, 7],
-          'line-opacity': 0.9,
-        },
-      });
-      map.addLayer({
-        id: ORIENTATION_STREET_LINE_LAYER_ID,
-        type: 'line',
-        source: 'openmaptiles',
-        'source-layer': 'transportation_name',
-        minzoom: 10.5,
-        filter: orientationFilter,
-        layout: { visibility: mapVisibility(layerVisibilityRef.current.orientation), 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': '#f5efeb',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 10.5, 1.3, 15, 3.4],
-          'line-opacity': 0.95,
-        },
-      });
-      map.addLayer({
-        id: ORIENTATION_STREET_LABEL_LAYER_ID,
+        id: PATH_LABEL_LAYER_ID,
         type: 'symbol',
-        source: 'openmaptiles',
-        'source-layer': 'transportation_name',
-        minzoom: 10.5,
-        filter: orientationFilter,
+        source: PATH_LABEL_SOURCE_ID,
+        layout: { visibility: 'none' },
+      });
+
+      addStreetLayers(map, 'primary', PRIMARY_STREET_NAMES, {
+        casing: PRIMARY_STREET_CASING_LAYER_ID,
+        line: PRIMARY_STREET_LINE_LAYER_ID,
+        label: PRIMARY_STREET_LABEL_LAYER_ID,
+      }, {
+        minzoom: 10.2,
+        casingWidth: ['interpolate', ['linear'], ['zoom'], 10.2, 4.2, 15, 8],
+        lineWidth: ['interpolate', ['linear'], ['zoom'], 10.2, 1.6, 15, 3.8],
+        lineColor: '#f5efeb',
+        lineOpacity: 0.96,
+        textSize: ['interpolate', ['linear'], ['zoom'], 10.2, 11, 15, 16],
+      });
+      addStreetLayers(map, 'orientation', SECONDARY_STREET_NAMES, {
+        casing: ORIENTATION_STREET_CASING_LAYER_ID,
+        line: ORIENTATION_STREET_LINE_LAYER_ID,
+        label: ORIENTATION_STREET_LABEL_LAYER_ID,
+      }, {
+        minzoom: 11.1,
+        casingWidth: ['interpolate', ['linear'], ['zoom'], 11.1, 3.2, 15, 6],
+        lineWidth: ['interpolate', ['linear'], ['zoom'], 11.1, 1.05, 15, 2.6],
+        lineColor: '#d8d0cb',
+        lineOpacity: 0.78,
+        textSize: ['interpolate', ['linear'], ['zoom'], 11.1, 10, 15, 14],
+      });
+
+      map.addLayer({
+        id: LABEL_LAYER_ID,
+        type: 'symbol',
+        source: LABEL_SOURCE_ID,
+        minzoom: 11.25,
+        filter: ['==', ['get', 'kind'], 'district'],
         layout: {
-          visibility: mapVisibility(layerVisibilityRef.current.orientation),
-          'symbol-placement': 'line',
-          'symbol-spacing': 800,
+          visibility: mapVisibility(layerVisibilityRef.current.districts),
           'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Bold'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 10.5, 11, 15, 15],
-          'text-letter-spacing': 0.08,
-          'text-max-angle': 30,
-          'text-padding': 4,
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11.25, 10, 14, 13],
+          'text-transform': 'uppercase',
+          'text-letter-spacing': 0.12,
+          'text-max-width': 10,
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'text-optional': false,
         },
         paint: {
-          'text-color': '#ffffff',
+          'text-color': '#f0d9d5',
           'text-halo-color': '#14080a',
-          'text-halo-width': 2.5,
+          'text-halo-width': 1.5,
+        },
+      });
+      map.addLayer({
+        id: REGION_LABEL_LAYER_ID,
+        type: 'symbol',
+        source: LABEL_SOURCE_ID,
+        minzoom: 10.5,
+        filter: ['all',
+          ['==', ['get', 'kind'], 'region'],
+          regionFilter(regionVisibilityRef.current),
+        ] as FilterSpecification,
+        layout: {
+          visibility: mapVisibility(layerVisibilityRef.current.regions),
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Regular'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10.5, 12, 14, 18],
+          'text-transform': 'uppercase',
+          'text-letter-spacing': 0.18,
+          'text-max-width': 12,
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': [
+            'match', ['get', 'key'],
+            'AnarchFreeZone', '#ff5a63',
+            'TheRack', '#ff7ef5',
+            'TheBarrens', '#c48a55',
+            'UniversityOfToronto', '#7ff6ff',
+            '#f4d878',
+          ],
+          'text-halo-color': '#14080a',
+          'text-halo-width': 2,
+          'text-opacity': 0.88,
         },
       });
       map.addLayer({
@@ -609,6 +702,7 @@ export function MapView({
     map.on('move', updateBoundaryShade);
     map.on('move', queueViewportLabels);
     map.on('moveend', finalizeViewportLabels);
+    map.on('zoom', updateBoundaryShade);
     map.on('resize', updateBoundaryShade);
     return () => {
       if (boundaryFrame !== null) window.cancelAnimationFrame(boundaryFrame);
@@ -622,8 +716,7 @@ export function MapView({
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
-    const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
-    source?.setData(districts);
+    (map.getSource(SOURCE_ID) as GeoJSONSource | undefined)?.setData(districts);
   }, [districts]);
 
   useEffect(() => {
@@ -676,11 +769,8 @@ export function MapView({
       map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.regions));
     }
     map.setLayoutProperty(SITE_LAYER_ID, 'visibility', mapVisibility(layerVisibility.sites));
-    for (const layer of [PATH_ROUTE_LAYER_ID, PATH_ENTRANCE_LAYER_ID, PATH_INTERACTION_LAYER_ID, PATH_LABEL_LAYER_ID]) {
+    for (const layer of [PATH_ROUTE_LAYER_ID, PATH_ENTRANCE_LAYER_ID, PATH_INTERACTION_LAYER_ID]) {
       map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.path));
-    }
-    for (const layer of [ORIENTATION_STREET_CASING_LAYER_ID, ORIENTATION_STREET_LINE_LAYER_ID, ORIENTATION_STREET_LABEL_LAYER_ID]) {
-      map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.orientation));
     }
     if ((!layerVisibility.districts || !layerVisibility.path) && hoveredRef.current) {
       if (hoveredRef.current !== 'PATH') {
@@ -690,6 +780,15 @@ export function MapView({
       map.getCanvas().style.cursor = '';
     }
   }, [layerVisibility]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    const filter = regionFilter(regionVisibility);
+    map.setFilter(REGION_FILL_LAYER_ID, filter);
+    map.setFilter(REGION_LINE_LAYER_ID, filter);
+    map.setFilter(REGION_LABEL_LAYER_ID, ['all', ['==', ['get', 'kind'], 'region'], filter] as FilterSpecification);
+  }, [regionVisibility]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -706,32 +805,28 @@ export function MapView({
       map.setFeatureState({ source: SOURCE_ID, id: selectedKey }, { selected: true });
       focusDistrict(map, districtsRef.current, selectedKey);
     }
-  }, [selectedKey]);
-
-  const toggleProvinceView = () => {
-    const map = mapRef.current;
-    if (!map) return;
-    const nextProvinceView = !provinceView;
-    setProvinceView(nextProvinceView);
-    map.fitBounds(nextProvinceView ? PROVINCE_VIEW_BOUNDS : INITIAL_BOUNDS, {
-      padding: 44,
-      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900,
-    });
-  };
+  }, [pathBounds, selectedKey]);
 
   return (
     <section className="map-surface" data-note-surface="map" aria-label="Interactive map of Toronto Rising districts">
       <div ref={containerRef} className="map-surface__canvas" />
-      <div ref={boundaryShadeRef} className={`chronicle-boundary-shade${provinceView ? ' chronicle-boundary-shade--province' : ''}`} aria-hidden="true">
+      <div
+        ref={boundaryShadeRef}
+        className={`chronicle-boundary-shade${distantView ? ' chronicle-boundary-shade--distant' : ''}`}
+        aria-hidden="true"
+      >
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--north" />
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--south" />
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--west" />
         <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--east" />
       </div>
+      {layerVisibility.path ? (
+        <div className="map-surface__path-legend" aria-hidden="true" data-gsap="path-legend">
+          <span className="map-surface__path-legend-line" />
+          <span className="map-surface__path-legend-label">P.A.T.H.</span>
+        </div>
+      ) : null}
       <p className="map-surface__status" role="status">{status}</p>
-      <button type="button" className="map-surface__province-view" onClick={toggleProvinceView}>
-        {provinceView ? 'Return to Toronto' : 'Province view'}
-      </button>
     </section>
   );
 }

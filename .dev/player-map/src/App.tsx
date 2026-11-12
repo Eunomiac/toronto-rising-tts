@@ -9,8 +9,10 @@ import {
   type VisualCalibration,
 } from './calibration';
 import { DistrictPanel } from './DistrictPanel';
-import { LayerControls } from './LayerControls';
-import { MapView } from './MapView';
+import { BasemapMaskOverlay } from './BasemapMaskOverlay';
+import { GsapSandboxOverlay } from './GsapSandboxOverlay';
+import { IconRail } from './IconRail';
+import { MapView, type BasemapMaskImage } from './MapView';
 import {
   layerVisibilityFromUrl,
   loadPublicMapData,
@@ -18,7 +20,8 @@ import {
   updateDistrictInUrl,
   updateLayersInUrl,
 } from './data';
-import type { MapLayerId, PublicMapData } from './types';
+import { runGsapEffectsMain } from './gsap-effects';
+import type { PublicMapData, RegionVisibility } from './types';
 
 const CALIBRATION_STORAGE_PREFIX = 'toronto-rising-map-visual-calibration';
 
@@ -32,11 +35,16 @@ function loadVisualCalibration(revision: number): VisualCalibration {
   }
 }
 
+function defaultRegionVisibility(data: PublicMapData): RegionVisibility {
+  return Object.fromEntries(data.regions.features.map((feature) => [feature.properties.key, false]));
+}
+
 export function App() {
   const [data, setData] = useState<PublicMapData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(() => selectedDistrictFromUrl(window.location.search));
   const [layerVisibility, setLayerVisibility] = useState(() => layerVisibilityFromUrl(window.location.search));
+  const [regionVisibility, setRegionVisibility] = useState<RegionVisibility>({});
   const [visualCalibration, setVisualCalibration] = useState(DEFAULT_VISUAL_CALIBRATION);
   const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
   const [map, setMap] = useState<Map | null>(null);
@@ -45,7 +53,11 @@ export function App() {
   useEffect(() => {
     let active = true;
     loadPublicMapData()
-      .then((value) => { if (active) setData(value); })
+      .then((value) => {
+        if (!active) return;
+        setData(value);
+        setRegionVisibility(defaultRegionVisibility(value));
+      })
       .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : String(reason)); });
     return () => { active = false; };
   }, []);
@@ -75,6 +87,11 @@ export function App() {
     window.localStorage.setItem(`${CALIBRATION_STORAGE_PREFIX}-${revision}`, JSON.stringify(visualCalibration));
   }, [calibrationMode, calibrationStorageRevision, data, visualCalibration]);
 
+  useEffect(() => {
+    if (!data) return;
+    runGsapEffectsMain();
+  }, [data, map, selectedKey, layerVisibility, regionVisibility]);
+
   const validSelectedKey = useMemo(() => {
     if (!data || !selectedKey) return null;
     return data.districts.features.some((feature) => feature.properties.key === selectedKey) || data.pathDistrict.key === selectedKey
@@ -95,19 +112,42 @@ export function App() {
       : data.labels;
   }, [calibrationMode, data, visualCalibration]);
 
+  const basemapMaskImages = useMemo<BasemapMaskImage[]>(() => {
+    const images = data?.manifest.basemapMaskImages;
+    if (!images) return [];
+    return images.map((image) => ({
+      key: image.key,
+      url: image.url,
+      coordinates: image.coordinates,
+    }));
+  }, [data]);
+
   const selectDistrict = useCallback((key: string) => {
     const nextKey = selectedKey === key ? null : key;
     setSelectedKey(nextKey);
     window.history.replaceState(null, '', updateDistrictInUrl(nextKey));
+    if (nextKey === 'PATH') {
+      setLayerVisibility((layers) => {
+        if (layers.path) return layers;
+        const updated = { ...layers, path: true };
+        window.history.replaceState(null, '', updateLayersInUrl(updated));
+        return updated;
+      });
+    }
   }, [selectedKey]);
   const clearDistrict = useCallback(() => {
     setSelectedKey(null);
     window.history.replaceState(null, '', updateDistrictInUrl(null));
   }, []);
-  const setLayerVisible = useCallback((layer: MapLayerId, visible: boolean) => {
-    setLayerVisibility((current) => {
-      const next = { ...current, [layer]: visible };
-      window.history.replaceState(null, '', updateLayersInUrl(next));
+  const toggleRegion = useCallback((key: string) => {
+    setRegionVisibility((current) => {
+      const next = { ...current, [key]: !current[key] };
+      const anyVisible = Object.values(next).some(Boolean);
+      setLayerVisibility((layers) => {
+        const updated = { ...layers, regions: anyVisible, districts: layers.districts };
+        window.history.replaceState(null, '', updateLayersInUrl(updated));
+        return updated;
+      });
       return next;
     });
   }, []);
@@ -139,16 +179,25 @@ export function App() {
         pathBounds={data.manifest.pathNetwork.bounds}
         chronicleBounds={data.manifest.bounds}
         layerVisibility={layerVisibility}
+        regionVisibility={regionVisibility}
         selectedKey={validSelectedKey}
         onSelect={selectDistrict}
         onMapReady={setMap}
       />
+      <BasemapMaskOverlay map={map} images={basemapMaskImages} />
       {!calibrationMode ? (
-        <LayerControls
-          visibility={layerVisibility}
-          siteCount={data.sites.features.length}
-          onChange={setLayerVisible}
-        />
+        <>
+          <GsapSandboxOverlay map={map} districts={calibratedDistricts ?? data.districts} />
+          <IconRail
+            regions={data.regions.features.map((feature) => feature.properties)}
+            districts={data.districts.features.map((feature) => feature.properties)}
+            pathDistrict={data.pathDistrict}
+            regionVisibility={regionVisibility}
+            selectedDistrictKey={validSelectedKey}
+            onToggleRegion={toggleRegion}
+            onSelectDistrict={selectDistrict}
+          />
+        </>
       ) : null}
       {calibrationMode ? (
         <CalibrationPanel
@@ -164,7 +213,6 @@ export function App() {
           districts={data.districts.features}
           pathDistrict={data.pathDistrict}
           selectedKey={validSelectedKey}
-          onSelect={selectDistrict}
           onClear={clearDistrict}
         />
       )}

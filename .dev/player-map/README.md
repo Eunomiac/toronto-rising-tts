@@ -63,26 +63,25 @@ Notes persist in `agent/debug-notes.json` for the next agent session. The
 controls, comments, JSON data, and API do not exist in production builds. See
 [`agent/Debug Notes.md`](agent/Debug%20Notes.md) for the shared workflow.
 
-The **Map layers** control toggles districts, the three broad region overlays,
-the custom orientation-street layer, and the optional gold PATH network. The
-orientation layer draws only the explicit major-street allowlist in
-`src/MapView.tsx` as bold white routes with deliberately sparse labels; it does
-not rely on the basemap's automatic road-label choices. PATH routes are selectable as a District;
-entrance and vertical-connection markers appear at closer zooms. Revealed sites
-will use the same control, but it remains disabled while the reviewed public
-site collection is empty. Non-default layer choices are encoded in the
-`layers` URL parameter so a shared link restores the same view.
+The left **icon rail** opens Map Layers, Domains, and Sites. Map Layers lists
+the four region overlays and the selectable districts (including PATH; Sewers
+and Subway stay disabled until implemented). Orientation streets are always on
+and follow `data/orientation-streets.json` (Primary first, then Orientation),
+not the basemap's automatic road labels. PATH uses a fixed yellow legend over
+the lake when that layer is on. Revealed sites will later fill the Sites menu;
+Domains stays empty for now. Non-default layer choices use the `layers` URL
+parameter so a shared link restores the same view.
 
-**Province view** zooms out from the playable Toronto rectangle and replaces
-local detail with three deliberate orientation markers: Toronto, Kingston, and
-Montréal. **Return to Toronto** restores the normal chronicle view. The marker
-list and coordinates live in `data/provincial-cities.json`; the generated
-GeoJSON must not be edited directly.
+Zooming out seamlessly shows provincial city markers (Toronto, Kingston,
+Montréal) from `data/provincial-cities.json` and hides the chronicle-edge
+blur; there is no separate Province button.
 
-Rare fictional changes to the real basemap use small reviewed masks in
-`data/basemap-masks.json`. Their editable coordinates stay in the original SVG
-artboard space and pass through the same calibration as Districts. The mask
-list is currently empty; generated mask GeoJSON must not be edited.
+Rare fictional basemap changes use reviewed masks in `data/basemap-masks.json`
+(polygon masks and georeferenced image overlays such as Giovanni Estate).
+Generated mask GeoJSON must not be edited by hand.
+
+Author GSAP experiments live in `src/gsap-effects.ts`, with a small projected
+SVG sandbox for four neighboring districts. See `agent/GSAP Effects.md`.
 
 ## Visual calibration
 

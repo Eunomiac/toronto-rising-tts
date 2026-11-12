@@ -1,4 +1,33 @@
 {
-  "nextId": 7,
-  "notes": []
+  "nextId": 24,
+  "notes": [
+    {
+      "id": 16,
+      "anchor": {
+        "kind": "map",
+        "longitude": -79.38505280478176,
+        "latitude": 43.64535510696638
+      },
+      "text": "P.A.T.H. segments are extremely fragmented and discontinuous, with many stray fragments, likely because the full network isn't being captured for painting. See \"P.A.T.H. Display Bugs.jpg\" in the player map dev folder for more details.",
+      "context": {
+        "url": "/?layers=orientation%2Cpath",
+        "viewport": {
+          "width": 1920,
+          "height": 1065
+        },
+        "selectedDistrict": null,
+        "map": {
+          "center": [
+            -79.38258768562787,
+            43.64678990451216
+          ],
+          "zoom": 12.67954195532234
+        }
+      },
+      "status": "open",
+      "reply": "I widened the Overpass query (extra highway and underground filters) and left the reviewed downtown catchment in place, but a live Overpass refresh failed today with a 502 capacity timeout, so the checked-in snapshot was not replaced. Please re-run `npm run path:refresh` from `.dev/player-map` when Overpass is responsive, then we can cull obvious stray fragments with `excludedWayIds`. Remaining gaps may still come from incomplete OSM indoor tagging.",
+      "createdAt": "2026-11-12T10:05:09.342Z",
+      "updatedAt": "2026-11-12T12:30:00.000Z"
+    }
+  ]
 }

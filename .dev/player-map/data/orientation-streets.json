@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "streets": [
+    {
+      "category": "primary",
+      "displayName": "Yonge Street",
+      "matchNames": ["Yonge Street"]
+    },
+    {
+      "category": "primary",
+      "displayName": "Don Valley Parkway",
+      "matchNames": ["Don Valley Parkway"]
+    },
+    {
+      "category": "primary",
+      "displayName": "Gardiner Expressway",
+      "matchNames": ["Gardiner Expressway", "Frederick G. Gardiner Expressway"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "St. Clair West",
+      "matchNames": ["St. Clair Avenue West", "St Clair Avenue West"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "St. Clair East",
+      "matchNames": ["St. Clair Avenue East", "St Clair Avenue East"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Bloor West",
+      "matchNames": ["Bloor Street West"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Bloor East",
+      "matchNames": ["Bloor Street East"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Dundas West",
+      "matchNames": ["Dundas Street West"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Dundas East",
+      "matchNames": ["Dundas Street East"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Front West",
+      "matchNames": ["Front Street West"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Front East",
+      "matchNames": ["Front Street East"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Spadina",
+      "matchNames": ["Spadina Avenue", "Spadina Road"]
+    },
+    {
+      "category": "orientation",
+      "displayName": "Ossington",
+      "matchNames": ["Ossington Avenue"]
+    }
+  ]
+}

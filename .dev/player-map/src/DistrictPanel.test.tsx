@@ -22,18 +22,19 @@ const districts: DistrictFeatureCollection['features'] = [{
 }];
 
 describe('DistrictPanel', () => {
-  it('allows keyboard-friendly district selection', async () => {
-    const onSelect = vi.fn();
-    render(<DistrictPanel districts={districts} selectedKey={null} onSelect={onSelect} onClear={vi.fn()} />);
-    await userEvent.selectOptions(screen.getByLabelText('Choose a district'), 'Rosedale');
-    expect(onSelect).toHaveBeenCalledWith('Rosedale');
+  it('hides itself when nothing is selected', () => {
+    const { container } = render(<DistrictPanel districts={districts} selectedKey={null} onClear={vi.fn()} />);
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it('shows the selected district details', () => {
-    render(<DistrictPanel districts={districts} selectedKey="Rosedale" onSelect={vi.fn()} onClear={vi.fn()} />);
+  it('shows the selected district details', async () => {
+    const onClear = vi.fn();
+    render(<DistrictPanel districts={districts} selectedKey="Rosedale" onClear={onClear} />);
     expect(screen.getByTestId('selected-district')).toHaveTextContent('Rosedale');
     expect(screen.getByTestId('selected-district')).toHaveTextContent('Hunting difficulty6');
     expect(screen.getByTestId('selected-district')).toHaveTextContent('Phlegmatic');
     expect(screen.getByTestId('selected-district')).toHaveTextContent('Melancholic');
+    await userEvent.click(screen.getByRole('button', { name: 'Close district details' }));
+    expect(onClear).toHaveBeenCalled();
   });
 });

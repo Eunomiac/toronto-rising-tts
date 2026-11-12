@@ -95,15 +95,17 @@ export type CityMarkerCollection = FeatureCollection<Point, CityMarkerProperties
 export type BasemapMaskCollection = FeatureCollection<Polygon, BasemapMaskProperties>;
 export type BasemapMaskLabelCollection = FeatureCollection<Point, BasemapMaskProperties>;
 
-export type MapLayerId = 'districts' | 'regions' | 'sites' | 'path' | 'orientation';
+export type MapLayerId = 'districts' | 'regions' | 'sites' | 'path';
 
 export interface MapLayerVisibility {
   districts: boolean;
   regions: boolean;
   sites: boolean;
   path: boolean;
-  orientation: boolean;
 }
+
+/** Per-region overlay toggles for the Map Layers rail. */
+export type RegionVisibility = Record<string, boolean>;
 
 export interface MapDataManifest {
   schemaVersion: number;
@@ -119,6 +121,7 @@ export interface MapDataManifest {
     cityMarkers: number;
     basemapMasks: number;
     basemapMaskLabels: number;
+    basemapMaskImages?: number;
     sheetDistricts: number;
     sheetSites: number;
     sheetOnlyDistricts: number;
@@ -178,6 +181,12 @@ export interface MapDataManifest {
     attribution: string;
     licenseUrl: string;
   };
+  basemapMaskImages?: Array<{
+    key: string;
+    name: string;
+    url: string;
+    coordinates: [[number, number], [number, number], [number, number], [number, number]];
+  }>;
 }
 
 export interface PublicMapData {

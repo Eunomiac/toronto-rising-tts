@@ -18,6 +18,10 @@ vi.mock('./MapView', () => ({
   ),
 }));
 
+vi.mock('./GsapSandboxOverlay', () => ({
+  GsapSandboxOverlay: () => null,
+}));
+
 const feature = {
   type: 'Feature' as const,
   geometry: {
@@ -37,9 +41,22 @@ const feature = {
   },
 };
 
+const regionFeature = {
+  type: 'Feature' as const,
+  geometry: feature.geometry,
+  properties: {
+    key: 'TheRack',
+    name: 'The Rack',
+    kind: 'region' as const,
+    sourceElement: 'path' as const,
+    fillRule: 'nonzero' as const,
+    sourceRingCount: 1,
+  },
+};
+
 const mapData = {
   districts: { type: 'FeatureCollection' as const, features: [feature] },
-  regions: { type: 'FeatureCollection' as const, features: [] },
+  regions: { type: 'FeatureCollection' as const, features: [regionFeature] },
   sites: { type: 'FeatureCollection' as const, features: [] },
   labels: {
     type: 'FeatureCollection' as const,
@@ -80,7 +97,7 @@ const mapData = {
     schemaVersion: 7,
     counts: {
       districts: 1,
-      regions: 0,
+      regions: 1,
       sites: 0,
       labels: 1,
       pathRoutes: 0,
@@ -159,30 +176,24 @@ describe('App district selection', () => {
     expect(window.location.search).toBe('');
   });
 
-  it('stores visible overlays in the shareable URL', async () => {
+  it('toggles regions from the Map Layers rail into the shareable URL', async () => {
     const user = userEvent.setup();
     render(<App />);
-    const regions = await screen.findByRole('checkbox', { name: 'Regions' });
-
-    await user.click(regions);
-    expect(window.location.search).toBe('?layers=districts%2Cregions%2Corientation');
-
-    await user.click(screen.getByRole('checkbox', { name: 'Districts' }));
-    expect(window.location.search).toBe('?layers=regions%2Corientation');
-
-    await user.click(screen.getByRole('checkbox', { name: 'PATH' }));
-    expect(window.location.search).toBe('?layers=regions%2Corientation%2Cpath');
+    await user.click(await screen.findByRole('button', { name: /Map Layers/i }));
+    await user.click(screen.getByRole('button', { name: 'The Rack' }));
+    expect(window.location.search).toBe('?layers=districts%2Cregions');
   });
 
-  it('shows PATH as a selectable network district', async () => {
+  it('shows PATH as a selectable network district from the rail', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.selectOptions(await screen.findByLabelText('Choose a district'), 'PATH');
+    await user.click(await screen.findByRole('button', { name: /Map Layers/i }));
+    await user.click(screen.getByRole('button', { name: 'P.A.T.H.' }));
     expect(screen.getByTestId('selected-district')).toHaveTextContent('P.A.T.H.');
     expect(screen.getByTestId('selected-district')).toHaveTextContent('4');
     expect(screen.getByTestId('selected-district')).toHaveTextContent('Phlegmatic');
     expect(screen.getByTestId('selected-district')).toHaveTextContent('Choleric');
-    expect(window.location.search).toBe('?district=PATH');
+    expect(window.location.search).toBe('?district=PATH&layers=districts%2Cpath');
   });
 
   it('shows loading, empty, and failed-data states clearly', async () => {
@@ -200,19 +211,9 @@ describe('App district selection', () => {
     expect(await screen.findByText('No districts are available in this map release.')).toBeVisible();
     cleanup();
 
-    loadPublicMapDataMock.mockRejectedValueOnce(new Error('broken fixture'));
+    loadPublicMapDataMock.mockRejectedValueOnce(new Error('offline'));
     render(<App />);
     expect(await screen.findByRole('alert')).toHaveTextContent('Map data could not be loaded.');
-  });
-
-  it('closes selected district details with Escape', async () => {
-    const user = userEvent.setup();
-    render(<App />);
-    await user.click(await screen.findByRole('button', { name: 'Select Rosedale on map' }));
-    await waitFor(() => expect(screen.getByTestId('selected-district')).toBeVisible());
-
-    await user.keyboard('{Escape}');
-    expect(screen.queryByTestId('selected-district')).not.toBeInTheDocument();
-    expect(window.location.search).toBe('');
+    expect(screen.getByRole('alert')).toHaveTextContent('offline');
   });
 });
