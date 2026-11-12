@@ -451,7 +451,8 @@ const PRINCES_COURT_SECTIONS = {
 
 const PRINCES_COURT_TRAIT_OPTS = {
   visibilityMode: "active",
-  pinBlanksToColumn3: true,
+  // Match CSHEET: spread blank slots across columns so filled rows do not all bake into column 3.
+  pinBlanksToColumn3: false,
   fixedDotSlots: MAX_TITLE_DOTS,
   templateKeyBySection: {
     bg: "princes_court/partials/bg_block",

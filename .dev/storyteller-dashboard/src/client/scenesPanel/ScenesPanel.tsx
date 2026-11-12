@@ -45,7 +45,7 @@ import type { SceneCatalogs } from "./catalogs";
 import { Box, IdleBoard, Overlay, WideBoard, type LiveBoard } from "./sketch";
 import { useLiveSheet } from "../pcSheet/useLiveSheet";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
-import { useSceneLibrary, useSceneLibraryStatus } from "../sceneLibrary";
+import { sceneLibrarySnapshot, useSceneLibrary, useSceneLibraryStatus } from "../sceneLibrary";
 import { DraftPanels } from "./DraftPanels";
 import { deckScenes } from "./sceneStatus";
 import { useLibraryActions } from "./useLibraryActions";
@@ -80,6 +80,7 @@ import {
   weatherAxes
 } from "./liveScene";
 import { useTtsNotice } from "./notices";
+import { markScenePreloaded, usePreloadCompletion } from "./scenePreload";
 import {
   addToQueue,
   commandKind,
@@ -400,6 +401,20 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const deckError = useSceneDeckStatus().error;
   const library = useLibraryActions({ scene, present, sendBatch: commands.sendAll, removeFromDeck: liveScenes.remove });
   const libraryError = useSceneLibraryStatus().error;
+  usePreloadCompletion(useCallback((text) => {
+    // Prefer sceneKey on the notice payload; fall back to matching the title in the message.
+    const titleMatch = / for [“"](.+?)[”"]\.?$/.exec(text) ?? / for "(.+?)"\.?$/.exec(text);
+    if (titleMatch?.[1]) {
+      const matchedTitle = titleMatch[1];
+      const row = sceneLibrarySnapshot().scenes.find((entry) => entry.title === matchedTitle)
+        ?? sceneDeckSnapshot().previews.find((entry) => entry.title === matchedTitle);
+      if (row) {
+        markScenePreloaded(row.key);
+      }
+    }
+    library.clearNotice();
+    ttsNotice.dismiss();
+  }, [library, ttsNotice]));
   const presentNow = present ?? new Date();
   const stageTokens = useMemo(
     () => (seats ? liveTokens(seats.stage, catalogs, seats.generics).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })) : []),
@@ -688,7 +703,13 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             ) : phase?.phase === "Spotlight" ? (
               <div className="scenes-spotlight-stage"><SpotlightCarousel live={spotlightView(seats)} /></div>
             ) : scene?.liveKey === undefined && !inMemoriam ? (
-              <IdleBoard w={STAGE_W - 12} h={STAGE_H - 10} seats={board.seats} {...(board.sheet ? { liveSheet: board.sheet } : {})} />
+              <IdleBoard
+                w={STAGE_W - 12}
+                h={STAGE_H - 10}
+                seats={board.seats}
+                phase={phase?.phase}
+                {...(board.sheet ? { liveSheet: board.sheet } : {})}
+              />
             ) : (
               <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} />
             )}

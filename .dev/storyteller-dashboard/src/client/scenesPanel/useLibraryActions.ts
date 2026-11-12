@@ -236,6 +236,7 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       ...(row.preloadNpcKeys?.length ? { preloadNpcKeys: row.preloadNpcKeys } : {})
     }]);
     setNotice(`Preloading the NPC figurines and lights for “${row.title}” in the background…`);
+    // Completion (and red-text clear) is handled when TTS pushes the preload finished notice.
   };
 
   const prepare = (location: LabLocation, districtName: string, siteName: string): void => {

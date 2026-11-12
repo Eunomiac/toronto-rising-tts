@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1112c. Seven Scenes pins from 2026-11-12: Court blank packing across columns; roster Group + y-level Delta; red deck text until preloaded; preload notices clear on completion; Intermission reminders; hunt site resonance for bare Plus cells (GEDiningHall). Pending Save & Play under **TOR-777**.
+
 - ✔️ SD-ScenesPins-1112b. Two follow-up Scenes pins from 2026-11-12 are implemented and cleared: Complications board margin/total texts clear on load when no game is live, and non-Scatter table figurine references sit two world units farther from the table centre. Pending Save & Play under **TOR-776**.
 
 - ✔️ SD-ScenesPins-1112. Five Scenes pins from 2026-11-12 are implemented and cleared. Hunt roll has a hunt-only district→site override (small label + Reset; never touches skybox/location cards) and stays available in Downtime. TTS-side: Assume Connected / simulated disconnect now parks seats; discipline cards snap to hand+180 on seat moves; character sheets stay clickable after load/unhide; Complications locks the player's Compulsion deck while live. Pending Save & Play under **TOR-774**.

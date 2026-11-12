@@ -14,7 +14,9 @@ local TRAIT = require("lib.trait_sheet_xml")
 
 local PRINCES_COURT_TRAIT_OPTS = {
   visibilityMode = "active",
-  pinBlanksToColumn3 = true,
+  -- Distribute blank slots across columns (same as CSHEET). Pinning blanks to column 3 made
+  -- filled Haven/Coterie rows stack on the far right after bake-time packing.
+  pinBlanksToColumn3 = false,
   fixedDotSlots = TRAIT.MAX_TITLE_DOTS,
   templateKeyBySection = {
     bg = "princes_court/partials/bg_block",

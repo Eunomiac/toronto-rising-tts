@@ -67,6 +67,7 @@ import { TokenBadges } from "./tierBadge";
 import { TierPicker } from "./tierPicker";
 import { loadGenericCatalog, type GenericEntry } from "./genericCatalog";
 import { NpcLevelBadge } from "./npcTrackers";
+import { usePreloadedScenes } from "./scenePreload";
 
 type NpcOverrides = ReturnType<typeof useNpcOverrides>;
 
@@ -1206,14 +1207,29 @@ export const MasonryRoster = (): ReactElement => {
         await saveNpcStats(keptStatsKey(keptId), {});
       }
     } : undefined;
+    const namedNpc = named;
+    const namedCanonical = namedNpc ? (namedNpc.variantOfUnique ?? namedNpc.characterKey) : undefined;
+    const namedGroupCurrent = namedNpc
+      ? (memberGroups[namedCanonical ?? namedNpc.characterKey] ?? namedNpc.pickerGroups[0] ?? "")
+      : "";
+    const namedGroupOptions = namedNpc ? rosterGroupOptions() : [];
     setConfiguring({
       characterKey,
       at,
-      defaultName: named?.fullName ?? generic?.label ?? characterKey,
+      defaultName: namedNpc?.fullName ?? generic?.label ?? characterKey,
       defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING,
       stats: generic
         ? { key: genericStatsKey(generic.key), label: generic.label, tiered: true }
-        : { key: characterKey, label: named?.fullName ?? characterKey, tiered: false },
+        : { key: characterKey, label: namedNpc?.fullName ?? characterKey, tiered: false },
+      ...(namedNpc && namedGroupOptions.length > 0 && namedGroupCurrent !== ""
+        ? {
+          rosterGroup: {
+            current: namedGroupCurrent,
+            options: namedGroupOptions,
+            assign: (nextGroup: string) => assignMemberToGroup(namedCanonical ?? namedNpc.characterKey, nextGroup)
+          }
+        }
+        : {}),
       ...(spawnedNpc && generic && send
         ? {
           inScene: {
@@ -1254,6 +1270,23 @@ export const MasonryRoster = (): ReactElement => {
       });
       setRosterError(reason instanceof Error ? reason.message : String(reason));
     });
+  };
+  /** Permanent group choices for the token config popup (every Main roster group, any category). */
+  const rosterGroupOptions = (): readonly { readonly value: string; readonly label: string }[] => {
+    const labels = new Map<string, string>();
+    for (const [key, label] of Object.entries(layout.groupLabels)) {
+      if (!key.startsWith("generic:")) {
+        labels.set(key, label);
+      }
+    }
+    for (const group of mainGroups) {
+      if (!group.key.startsWith("generic:") && group.key !== "catalogUngrouped") {
+        labels.set(group.key, layout.groupLabels[group.key] ?? group.label);
+      }
+    }
+    return [...labels.entries()]
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   };
   const toggleFilter = <T,>(current: ReadonlySet<T>, value: T): ReadonlySet<T> => {
     const next = new Set(current);
@@ -3358,22 +3391,23 @@ const useHoldToConfirm = (onHold: () => void): {
  * A live scene on the deck: ongoing (green) or a new scene or template (gold). Click plays it, right-click opens
  * its preview, and holding the left button fills it red, then ends it (ongoing) or takes it off the deck.
  */
-const DeckChip = ({ scene, onPlay, onEdit, onHold }: {
+const DeckChip = ({ scene, onPlay, onEdit, onHold, preloaded }: {
   scene: DeckScene;
   onPlay: (at: Point) => void;
   onEdit: () => void;
   onHold: () => void;
+  preloaded: boolean;
 }): ReactElement => {
   const hold = useHoldToConfirm(onHold);
   const ongoing = scene.status === "ongoing";
   return (
     <button
       type="button"
-      className={`lab-phase-deck ${ongoing ? "ongoing" : "fresh"}${hold.holding ? " holding" : ""}`}
+      className={`lab-phase-deck ${ongoing ? "ongoing" : "fresh"}${hold.holding ? " holding" : ""}${preloaded ? "" : " not-preloaded"}`}
       style={{ "--hold-ms": `${HOLD_FILL_MS}ms` } as CSSProperties}
       title={ongoing
-        ? `Go back to ${scene.title} at its own time. Hold to end it; right-click to edit it. Drag onto the stage or Active scene to play.`
-        : `Start ${scene.title}. Hold to take it off the deck; right-click to edit it. Drag onto the stage or Active scene to play.`}
+        ? `Go back to ${scene.title} at its own time. Hold to end it; right-click to edit it. Drag onto the stage or Active scene to play.${preloaded ? "" : " Not preloaded."}`
+        : `Start ${scene.title}. Hold to take it off the deck; right-click to edit it. Drag onto the stage or Active scene to play.${preloaded ? "" : " Not preloaded."}`}
       data-tr-dnd-deck={scene.key}
       data-tr-dnd-deck-status={ongoing ? "ongoing" : "new"}
       draggable
@@ -3442,6 +3476,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   const inMemoriam = phase === "Play" && subPhase === "Memoriam";
   // Intermission has no scene on the table; the library is still editable there, between sessions.
   const showSceneLibrary = phase === "Intermission" || (phase === "Play" && !inMemoriam);
+  const preloadedKeys = usePreloadedScenes();
   return (
     <div className="lab-phase">
       <div className="lab-phase-top">
@@ -3531,6 +3566,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
           <DeckChip
             key={scene.key}
             scene={scene}
+            preloaded={preloadedKeys.has(scene.key)}
             onPlay={(at) => entry.enter(scene.key, at, (clock, edit) => onSwitch(scene.key, clock, edit))}
             onEdit={() => onEdit(scene.key)}
             onHold={() => (scene.status === "ongoing" ? onEndDeckScene(scene.key) : onRemoveFromDeck(scene.key))}
@@ -3632,6 +3668,7 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
   const [archive, setArchive] = useState(false);
   const words = search.toLowerCase().split(/\s+/).filter(Boolean);
   const onDeck = (key: string): boolean => scenes.live.some((scene) => scene.key === key);
+  const preloadedKeys = usePreloadedScenes();
   const archived = library.filter((entry) => entry.status === "ended").length;
   const rows = library
     .filter((entry) => (entry.status === "ended") === archive)
@@ -3696,7 +3733,7 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
             return (
               <li key={entry.key} className={onTable ? "live" : onDeck(entry.key) ? "prep" : undefined}>
                 {!archive && <DeckStar entry={entry} onDeck={onDeck(entry.key)} actions={actions} />}
-                <span className="lab-advance-name">
+                <span className={`lab-advance-name${onDeck(entry.key) && !preloadedKeys.has(entry.key) ? " not-preloaded" : ""}`}>
                   {renaming === entry.key && actions ? (
                     <input
                       className="lab-select"

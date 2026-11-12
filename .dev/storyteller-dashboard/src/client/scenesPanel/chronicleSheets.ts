@@ -33,12 +33,24 @@ export type ChronicleLocations = {
   readonly sites: readonly SheetSite[];
 };
 
-/** "phlegmatic +" / "melancholic -" → typed entries; blanks dropped. */
-const resonances = (...cells: readonly (string | undefined)[]): readonly Resonance[] =>
-  cells.flatMap((cell) => {
-    const match = /^(\w+)\s*([+-])$/.exec((cell ?? "").trim());
-    return match?.[1] && match[2] ? [{ type: match[1].toLowerCase(), up: match[2] === "+" }] : [];
-  });
+/**
+ * Parse one sheet resonance cell. The Plus / Minus columns already encode direction, so a bare
+ * type like `ischemic` in Resonance Plus means up (GEDiningHall). An explicit `+` / `-` still wins.
+ */
+const parseResonanceCell = (cell: string | undefined, defaultUp: boolean): readonly Resonance[] => {
+  const match = /^(\w+)\s*([+-])?\s*$/.exec((cell ?? "").trim());
+  if (!match?.[1]) {
+    return [];
+  }
+  const sign = match[2];
+  return [{ type: match[1].toLowerCase(), up: sign === undefined ? defaultUp : sign === "+" }];
+};
+
+/** Resonance Plus / Minus columns → typed entries; blanks dropped. */
+const resonances = (plus: string | undefined, minus: string | undefined): readonly Resonance[] => [
+  ...parseResonanceCell(plus, true),
+  ...parseResonanceCell(minus, false)
+];
 
 /** The export lowercases a leading article ("the Annex"); titles read better capitalised. */
 const titleCase = (name: string): string => name.charAt(0).toUpperCase() + name.slice(1);

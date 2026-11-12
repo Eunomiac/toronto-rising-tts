@@ -1,5 +1,11 @@
 import { useState, type ReactElement } from "react";
-import { CARD_SCALE_RANGE, parseNpcOverride, SEATED_Y_RANGE, type NpcOverride } from "../../shared/npcOverride";
+import {
+  CARD_SCALE_RANGE,
+  parseNpcOverride,
+  SEATED_Y_RANGE,
+  Y_LEVEL_DELTA_RANGE,
+  type NpcOverride
+} from "../../shared/npcOverride";
 import { isNpcTier, keptStatsKey, NPC_TIERS, type NpcTier } from "../../shared/npcStats";
 import { TIER_LABELS } from "../npcTierBadges";
 import { openHeadshotEditor } from "../headshots/headshotEditor";
@@ -45,6 +51,12 @@ export type NpcConfigTarget = {
       readonly unkeep: (keptId: string) => Promise<void>;
     };
   };
+  /** Named-NPC roster group move (permanent). Omit for generics / ungrouped-only tokens. */
+  readonly rosterGroup?: {
+    readonly current: string;
+    readonly options: readonly { readonly value: string; readonly label: string }[];
+    readonly assign: (groupKey: string) => void;
+  };
 };
 
 const numberOrUndefined = (text: string): number | string | undefined => {
@@ -67,6 +79,8 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   const [color, setColor] = useState<string | null>(saved.color ?? null);
   const [cardScale, setCardScale] = useState(saved.cardScale === undefined ? "" : String(saved.cardScale));
   const [seatedY, setSeatedY] = useState(saved.seatedY === undefined ? "" : String(saved.seatedY));
+  const [yLevelDelta, setYLevelDelta] = useState(saved.yLevelDelta === undefined ? "" : String(saved.yLevelDelta));
+  const [rosterGroupKey, setRosterGroupKey] = useState(target.rosterGroup?.current ?? "");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
@@ -104,12 +118,14 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   const draft = (): NpcOverride | string => {
     const scale = numberOrUndefined(cardScale);
     const y = numberOrUndefined(seatedY);
+    const delta = numberOrUndefined(yLevelDelta);
     const overrideName = inScene ? saved.name : name;
     return parseNpcOverride({
       name: overrideName === undefined || overrideName.trim() === target.defaultName ? undefined : overrideName,
       color: color === target.defaultColor ? undefined : color,
       cardScale: scale === DEFAULT_CARD_SCALE ? undefined : scale,
-      seatedY: y === DEFAULT_SEATED_Y ? undefined : y
+      seatedY: y === DEFAULT_SEATED_Y ? undefined : y,
+      yLevelDelta: delta === 0 ? undefined : delta
     });
   };
 
@@ -124,6 +140,9 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
     }
     if (inScene && name.trim() !== "" && name.trim() !== inScene.name) {
       inScene.rename(name.trim(), keptId);
+    }
+    if (target.rosterGroup && rosterGroupKey !== "" && rosterGroupKey !== target.rosterGroup.current) {
+      target.rosterGroup.assign(rosterGroupKey);
     }
     if (JSON.stringify(next) === JSON.stringify(saved)) {
       onClose();
@@ -219,6 +238,30 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
             onChange={(event) => setSeatedY(event.target.value)}
           />
         </label>
+        <label
+          className="lab-group-edit-row"
+          title={`Added to every world placement Y (stage, scatter, seat). ${Y_LEVEL_DELTA_RANGE[0]} to ${Y_LEVEL_DELTA_RANGE[1]}; blank or 0 means no shift.`}
+        >
+          <span>y-level Delta</span>
+          <input
+            className="lab-select"
+            type="number"
+            step="any"
+            placeholder="0"
+            value={yLevelDelta}
+            onChange={(event) => setYLevelDelta(event.target.value)}
+          />
+        </label>
+        {target.rosterGroup && target.rosterGroup.options.length > 0 && (
+          <label className="lab-group-edit-row" title="Permanent roster group (same as dragging the token onto a group).">
+            <span>Group</span>
+            <select className="lab-select" value={rosterGroupKey} onChange={(event) => setRosterGroupKey(event.target.value)}>
+              {target.rosterGroup.options.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+        )}
         {error && <p className="lab-note">{error}</p>}
         <p className="lab-npc-config-hint">
           {inScene ? "Name renames them in this scene (queued for Send). " : ""}

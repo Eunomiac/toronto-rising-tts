@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-777 — Scenes pins: Court packing, y-level Delta, preload notices, hunt resonance
+
+> **Agent-assessment note:** Resonance parsing and Court blank packing are covered by unit checks / rebuild. You still need Save & Play for Court layout and figurine Y delta, and a dashboard pass for Group / Delta fields, red preload text, clearing notices, and Intermission reminders.
+
+**How to verify:** Save & Play after a Full or Court XML rebuild. Open the Prince's Court reference: Coterie Backgrounds and Haven Merits should fill across the three columns instead of stacking on the far right. In the Storyteller Dashboard roster, open a named NPC token: set **Group** and **y-level Delta**, click off to save, run `npm run npc-art` (or your usual override draw), Save & Play, and place that NPC — their figurine should sit higher/lower by the delta. Put a scene on the deck without preloading: its title should be red until Preload finishes; both preload banners should clear when TTS finishes. In Intermission with no scene, dismiss the two pulsing reminders. On Hunt, pick Wychwood + Dining Hall and confirm Ischemic appears in the odds bar.
+
 #### 🟡 TOR-776 — Clear Complications board texts on load; seat circle two units farther out
 
 > **Agent-assessment note:** Empty XML defaults and the no-game refresh path are covered in code. You still need Save & Play to confirm the board texts stay blank on a fresh load and that wood-table seats sit two units farther from the centre.

@@ -577,15 +577,75 @@ export type StageEnv = {
 /** An edit stays drawn until TTS pushes the stage back, or this long if it never does (TTS refused it). */
 const OPTIMISTIC_MS = 6000;
 
+const INTERMISSION_REMINDER_KEY = "tr.dashboard.intermissionRemindersDismissed";
+
+type IntermissionReminders = { readonly recorder: boolean; readonly scenesPreloaded: boolean };
+
+const readIntermissionReminders = (): IntermissionReminders => {
+  try {
+    const raw = sessionStorage.getItem(INTERMISSION_REMINDER_KEY);
+    if (!raw) {
+      return { recorder: true, scenesPreloaded: true };
+    }
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) {
+      return { recorder: true, scenesPreloaded: true };
+    }
+    const row = parsed as Record<string, unknown>;
+    return {
+      recorder: row.recorder !== false,
+      scenesPreloaded: row.scenesPreloaded !== false
+    };
+  } catch {
+    return { recorder: true, scenesPreloaded: true };
+  }
+};
+
 /** The stage with no scene on the table: seats stay along the bottom (trackers, sheets, and DnD to slide-out bins; no chair swaps). */
-export const IdleBoard = ({ w, h, seats, liveSheet }: { w: number; h: number; seats: readonly SeatSketch[]; liveSheet?: LiveSheetAccess }): ReactElement => (
-  <div className="lab-board wide idle" style={{ width: w, height: h }}>
-    <span className="lab-board-idle">(No Active Scene)</span>
-    <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
-      <Seats seats={seats} {...(liveSheet ? { liveSheet } : {})} />
+export const IdleBoard = ({
+  w,
+  h,
+  seats,
+  liveSheet,
+  phase
+}: {
+  w: number;
+  h: number;
+  seats: readonly SeatSketch[];
+  liveSheet?: LiveSheetAccess;
+  phase?: string;
+}): ReactElement => {
+  const [reminders, setReminders] = useState(readIntermissionReminders);
+  const dismiss = (key: keyof IntermissionReminders): void => {
+    const next = { ...reminders, [key]: false };
+    setReminders(next);
+    sessionStorage.setItem(INTERMISSION_REMINDER_KEY, JSON.stringify(next));
+  };
+  const showReminders = phase === "Intermission" && (reminders.recorder || reminders.scenesPreloaded);
+  return (
+    <div className="lab-board wide idle" style={{ width: w, height: h }}>
+      {showReminders ? (
+        <div className="lab-intermission-reminders">
+          {reminders.recorder && (
+            <button type="button" className="lab-intermission-reminder" onClick={() => dismiss("recorder")}>
+              Ensure session recorder is connected
+            </button>
+          )}
+          {reminders.scenesPreloaded && (
+            <button type="button" className="lab-intermission-reminder" onClick={() => dismiss("scenesPreloaded")}>
+              Ensure scenes are preloaded.
+            </button>
+          )}
+        </div>
+      ) : (
+        <span className="lab-board-idle">(No Active Scene)</span>
+      )}
+      <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
+        <Seats seats={seats} {...(liveSheet ? { liveSheet } : {})} />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoard }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);

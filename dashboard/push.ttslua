@@ -91,11 +91,20 @@ end
 --- Show a refusal or failure on the dashboard (scene Play blocked by dice on the table, a transition that
 --- failed under the blindfold). Callers still alert in TTS.
 --- @param text string
-function DashPush.notice(text)
+--- @param extra table|nil optional fields merged into the notice payload (e.g. `{ sceneKey = "…" }`)
+function DashPush.notice(text, extra)
   if type(text) ~= "string" or text == "" then
     error("DashPush.notice: text must be a non-empty string", 2)
   end
-  emit({ topic = "notice", json = JSON.encode({ text = text }) })
+  local payload = { text = text }
+  if type(extra) == "table" then
+    for key, value in pairs(extra) do
+      if key ~= "text" then
+        payload[key] = value
+      end
+    end
+  end
+  emit({ topic = "notice", json = JSON.encode(payload) })
 end
 
 --- Marks within this window share one flush, so a burst of syncs emits each slice at most once.

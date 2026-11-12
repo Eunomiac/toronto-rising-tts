@@ -970,10 +970,11 @@ function FSL.computeSlotFrames(tableCfg, facingBounds, opts)
             local figOff = FSL.lookupOffset(occ.occupantKey, "SEAT_FIGURE")
             local override = occ.characterKey ~= nil and NpcOverrides[occ.characterKey] or nil
             local seatY = override and tonumber(override.seatedY) or (figOff and tonumber(figOff.defaultY))
-            if seatY ~= nil then
+            local deltaY = override and tonumber(override.yLevelDelta) or 0
+            if seatY ~= nil or (deltaY ~= nil and deltaY ~= 0) then
                 packed.frame.position = Vector({
                     x = packed.frame.position.x,
-                    y = seatY,
+                    y = (seatY or packed.frame.position.y) + (deltaY or 0),
                     z = packed.frame.position.z,
                 })
             end

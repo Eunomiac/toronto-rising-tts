@@ -1,14 +1,16 @@
 /**
  * Per-NPC overrides set from the roster's token configuration window. `name` and `color` are drawn into the
  * spotlight token art; `name`, `cardScale` (Custom Figurine card scale, the npcs_data `figurine.scale` that
- * defaults to 53) and `seatedY` (world Y at a table seat, default -52.89) reach TTS through generated
- * `lib/npc_overrides.ttslua`. Unset fields keep the defaults.
+ * defaults to 53), `seatedY` (world Y at a table seat, default -52.89) and `yLevelDelta` (added to
+ * every world placement Y) reach TTS through generated `lib/npc_overrides.ttslua`. Unset fields keep the defaults.
  */
 export type NpcOverride = {
   readonly name?: string;
   readonly color?: string;
   readonly cardScale?: number;
   readonly seatedY?: number;
+  /** Added to stage / scatter / seat figurine world Y whenever this NPC is placed. Default 0 (omit). */
+  readonly yLevelDelta?: number;
 };
 
 export type NpcOverrideFile = { readonly overrides: Readonly<Record<string, NpcOverride>> };
@@ -17,6 +19,7 @@ export const NPC_OVERRIDE_KEY_PATTERN = /^[A-Za-z0-9_]{1,80}$/;
 export const NPC_NAME_MAX = 60;
 export const CARD_SCALE_RANGE = [1, 500] as const;
 export const SEATED_Y_RANGE = [-120, 20] as const;
+export const Y_LEVEL_DELTA_RANGE = [-40, 40] as const;
 
 const COLOR_PATTERN = /^#[0-9a-f]{6}$/;
 
@@ -31,10 +34,10 @@ const round = (value: number): number => Math.round(value * 1000) / 1000;
  */
 export const parseNpcOverride = (value: unknown): NpcOverride | string => {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return "Expected an object with name, color, cardScale or seatedY.";
+    return "Expected an object with name, color, cardScale, seatedY or yLevelDelta.";
   }
   const raw = value as Record<string, unknown>;
-  const out: { name?: string; color?: string; cardScale?: number; seatedY?: number } = {};
+  const out: { name?: string; color?: string; cardScale?: number; seatedY?: number; yLevelDelta?: number } = {};
   if (raw.name !== undefined && raw.name !== null) {
     if (typeof raw.name !== "string" || raw.name.trim().length > NPC_NAME_MAX) {
       return `name must be text of at most ${NPC_NAME_MAX} characters.`;
@@ -61,6 +64,15 @@ export const parseNpcOverride = (value: unknown): NpcOverride | string => {
       return `seatedY must be a number from ${SEATED_Y_RANGE[0]} to ${SEATED_Y_RANGE[1]}.`;
     }
     out.seatedY = round(raw.seatedY);
+  }
+  if (raw.yLevelDelta !== undefined && raw.yLevelDelta !== null) {
+    if (!inRange(raw.yLevelDelta, Y_LEVEL_DELTA_RANGE)) {
+      return `yLevelDelta must be a number from ${Y_LEVEL_DELTA_RANGE[0]} to ${Y_LEVEL_DELTA_RANGE[1]}.`;
+    }
+    const delta = round(raw.yLevelDelta);
+    if (delta !== 0) {
+      out.yLevelDelta = delta;
+    }
   }
   return out;
 };

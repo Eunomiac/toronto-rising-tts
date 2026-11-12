@@ -462,7 +462,7 @@ local function applyCommand(cmd)
     if type(cmd.sessionScene) ~= "table" then
       return "preloadScene needs the scene body from the dashboard."
     end
-    return require("core.npcs").preloadSceneNpcs(cmd.sessionScene, cmd.title, cmd.preloadNpcKeys)
+    return require("core.npcs").preloadSceneNpcs(cmd.sessionScene, cmd.title, cmd.preloadNpcKeys, cmd.key)
   end
   if op == "setSceneStatus" then
     return require("dashboard.scene_library").setStatus(cmd)

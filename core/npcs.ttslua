@@ -1653,6 +1653,28 @@ end
 --- Place figurine at gameboard `placements` world pose (STAGE_BOARD u,v,yaw).
 --- @param figurine Object
 --- @param placement table `{ u, v, yaw? }`
+--- Additive world-Y from dashboard token config (`yLevelDelta` in lib/npc_overrides).
+--- @param characterKey string|nil
+--- @return number
+local function figurineYLevelDelta(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return 0
+    end
+    local overrides = DATA.overrides
+    local row = type(overrides) == "table" and overrides[characterKey] or nil
+    return tonumber(row and row.yLevelDelta) or 0
+end
+
+--- @param figurine Object
+--- @return string|nil
+local function characterKeyFromFigurineNotes(figurine)
+    if figurine == nil or figurine.getGMNotes == nil then
+        return nil
+    end
+    local notes = tostring(figurine.getGMNotes() or "")
+    return notes:match("^npcInstance:(.+)$") or notes:match("npcInstance:([%w_]+)")
+end
+
 function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
     if not U.isGameObject(figurine) or type(placement) ~= "table" then
         return
@@ -1670,6 +1692,10 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
     local pos = Gameboard.worldFromUv(u, v, {
         groundLevel = groundLevel,
     })
+    local deltaY = figurineYLevelDelta(characterKeyFromFigurineNotes(figurine))
+    if deltaY ~= 0 then
+        pos = Vector({ x = pos.x, y = pos.y + deltaY, z = pos.z })
+    end
     figurine.setPosition(pos)
     local relYaw = Gameboard.placementBoardRelYawDeg(u, v)
     local yawDeg = relYaw
@@ -1775,7 +1801,7 @@ function NPCS.moveNpcToScatterPose(npcName, pose, opts)
     local srcPos = pose.position
     local pos = Vector({
         x = tonumber(srcPos and (srcPos.x or srcPos[1])) or 0,
-        y = floorY,
+        y = floorY + figurineYLevelDelta(npcName),
         z = tonumber(srcPos and (srcPos.z or srcPos[3])) or 0,
     })
     local rot = Vector(pose.rotation)
@@ -3280,7 +3306,7 @@ end
 --- @param sceneTitle string|nil
 --- @param preloadNpcKeys string[]|nil Extra cast members with no scene placement.
 --- @return string|nil error
-function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
+function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys, sceneKey)
     if U.Type(sessionScene) ~= "table" then
         return "Preload needs a scene body."
     end
@@ -3434,7 +3460,11 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
         releaseHolds()
         require("core.stage_tokens").reconcileFromState()
         LoadTrace.mark("stage tokens")
-        require("dashboard.push").notice("Preloaded " .. tostring(#keys) .. " NPC package(s) for " .. preloadLabel .. ".")
+        local noticeExtra = type(sceneKey) == "string" and sceneKey ~= "" and { sceneKey = sceneKey } or nil
+        require("dashboard.push").notice(
+            "Preloaded " .. tostring(#keys) .. " NPC package(s) for " .. preloadLabel .. ".",
+            noticeExtra
+        )
     end
     U.chain(steps, {
         maxWait = NPC_PREWARM_MAX_WAIT_SEC + 5,
@@ -3444,8 +3474,10 @@ function NPCS.preloadSceneNpcs(sessionScene, sceneTitle, preloadNpcKeys)
             if not ok then
                 Pool.disable("preload sequence " .. tostring(detail))
                 require("core.stage_tokens").reconcileFromState()
+                local failExtra = type(sceneKey) == "string" and sceneKey ~= "" and { sceneKey = sceneKey } or nil
                 require("dashboard.push").notice(
-                    "NPC preload did not finish; ordinary on-demand spawning is still available."
+                    "NPC preload did not finish; ordinary on-demand spawning is still available.",
+                    failExtra
                 )
             end
             if LoadTrace.currentId() == preloadTraceId then
