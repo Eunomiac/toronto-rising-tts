@@ -9,10 +9,10 @@
     CSHEET_DICE_DRAWER_*, …), layout must not place it from SeatRoleOffsets. Layout moves
     anchors, then re-applies ObjectPositions on/off (TarotToggle / DiceDrawer).
     Occupancy hide (unoccupied PC / unused NPC pile) stashes Y=-200 and records in-session Y on
-    seatLayout.absentPileY. A disconnected PC's hand cards are temporarily tagged `HeldCard` and
-    stored in their personal container before the now-empty hand zone is parked.
-    so restore can lift table-height roles without flattening feature-hide Y
-    (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513.
+    seatLayout.absentPileY. A disconnected PC's hand cards (every loose owned `DisciplineCard`,
+    plus remaining in-hand cards) are temporarily tagged `HeldCard` and stored in their personal
+    container before the now-empty hand zone is parked, so restore can lift table-height roles
+    without flattening feature-hide Y (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513 / TOR-763.
     `isRandomSeating` tables (Table B) seat each PC in the chair drawn once per session on
     Intermission → Play (`seatLayout.sessionChairs`), with seated NPCs packed after them.
 ]]
@@ -1036,8 +1036,14 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             local defaultY = tonumber(offset.defaultY) or world.y
             local livePos = Vector(obj.getPosition())
             local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY, world.y)
-            -- Never park a hand zone. A target under the table drops the cards (TOR-763).
-            -- An older stash may still record a hidden Y; seat the hand at table height instead.
+            -- During the startup "assume connected" window, leave already-parked hands parked so
+            -- HeldCards are not dealt onto the table only to be re-stashed at the end-of-gate checkpoint.
+            local PC = require("core.player_connection")
+            if PC.isStartupAssumingConnected() and liveYIsHidden(livePos.y) then
+                return
+            end
+            -- Occupancy park owns hidden-Y hands. An older stash may still record a hidden Y for an
+            -- occupied seat; seat that hand at table height instead of following the stash Y.
             if liveYIsHidden(y) then
                 y = defaultY
             end
@@ -1102,6 +1108,10 @@ end
 --- @param visible boolean
 function FSL.setOccupantPileVisible(occupantKey, visible)
     local tag = occupantKey .. "Object"
+    local storageGuid = nil
+    if isPlayerSeatKey(occupantKey) and G ~= nil and type(G.GetPlayerStorageContainerGUID) == "function" then
+        storageGuid = G.GetPlayerStorageContainerGUID(occupantKey)
+    end
     -- HandTrigger objects are not taggable in the save, so they do not appear in the
     -- `<Color>Object` scan below. Park a disconnected PC's hand explicitly after its cards have
     -- been moved into that PC's storage container by `U.movePlayerHand`.
@@ -1118,6 +1128,7 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
             }), Vector(r))
         end
     end
+    local deferredStorageHide = nil
     local objs = getObjectsWithTag(tag) or {}
     for i = 1, #objs do
         local obj = objs[i]
@@ -1127,6 +1138,8 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
             local isPooledFig = obj.hasTag ~= nil and obj.hasTag("npc_figurine")
             local roleKey = readSatelliteRoleKey(obj)
             local stashKey = occupancyStashKey(obj, roleKey)
+            local objGuid = obj.getGUID and obj.getGUID() or nil
+            local isStorageContainer = storageGuid ~= nil and objGuid == storageGuid
             if visible then
                 if roleKey == "SEAT_CHAIR" then
                     -- Chair hide is owned by table/scatter layout, not occupancy restore.
@@ -1146,11 +1159,24 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
                     if p ~= nil and not liveYIsHidden(p.y) then
                         captureOccupantPileY(occupantKey, stashKey, p.y)
                     end
-                    O.hideObject(obj)
-                    reconcileCsheetOverlay(obj, roleKey, false)
+                    -- putObject absorption is not synchronous; hide the storage bag after a settle.
+                    if isStorageContainer then
+                        deferredStorageHide = obj
+                    else
+                        O.hideObject(obj)
+                        reconcileCsheetOverlay(obj, roleKey, false)
+                    end
                 end
             end
         end
+    end
+    if deferredStorageHide ~= nil then
+        local bag = deferredStorageHide
+        U.await(function()
+            if U.isGameObject(bag) then
+                O.hideObject(bag)
+            end
+        end, 0.75)
     end
 end
 

@@ -8,7 +8,8 @@
   - Connect (incl. late join): clear the flag and seat the PC at once.
   - Mid-session disconnect: darken the seat only (effective presence false).
   - Connection checkpoint (under blindfold cover / end of startup): a PC still disconnected becomes
-    an unoccupied seat — no chair, satellites parked. The hand zone stays on the table (TOR-763).
+    an unoccupied seat — no chair, satellites parked. Hand cards get `HeldCard` and go into that
+    PC's storage container; the empty hand zone parks with the pile (TOR-763).
 
   Debug connection mode (`debug.assumeConnected`): "Assume Connected" reads per-seat
   `debug.simulatedConnection[color]` (default connected) instead of Steam.
@@ -25,6 +26,11 @@ local U = require("lib.util")
 --- `PC.finishStartupConnectionAssumption` runs at the end of the startup readiness gate.
 local startupAssumesAllConnected = true
 
+--- True while load still treats every PC as connected for seating / layout.
+--- @return boolean
+function PC.isStartupAssumingConnected()
+  return startupAssumesAllConnected == true
+end
 --- True in the Debug panel's "Assume Connected" mode; false in "By Connection Status".
 --- @return boolean
 function PC.isAssumeConnectedMode()
@@ -291,19 +297,21 @@ function PC.applyConnectionCheckpoint()
   local FSL = require("lib.figurine_seat_layout")
   local changed = markDisconnectedSeatsUnoccupied()
   if #changed == 0 then
+    U.reconcileAllDisciplineCardHomes()
     return changed
   end
   for i = 1, #changed do
+    U.reconcileDisciplineCardsForColor(changed[i], { forceStorage = true })
     FSL.setOccupantPileVisible(changed[i], false)
   end
   relayoutAfterOccupancyChange()
+  U.reconcileAllDisciplineCardHomes()
   for i = 1, #changed do
     require("core.sync").player(changed[i])
   end
   announceDashboardSeats()
   return changed
 end
-
 --- Commit seat occupancy once after session-start joins. The caller performs one full sync.
 function PC.prepareSessionStartSeats()
   startupAssumesAllConnected = false

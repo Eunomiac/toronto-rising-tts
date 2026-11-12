@@ -7646,3 +7646,8 @@ function HUD_sortMasterDecks(player)
     if not requireStorytellerForMutation(player, "HUD_sortMasterDecks") then return end
     DEBUG.SortMasterDecks()
 end
+
+function HUD_resetDisciplineHands(player)
+    if not requireStorytellerForMutation(player, "HUD_resetDisciplineHands") then return end
+    DEBUG.ResetDisciplineHands()
+end

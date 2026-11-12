@@ -37,6 +37,12 @@ function DEBUG.SortMasterDecks()
     return require("core.complications_decks").sortMasters()
 end
 
+--- Stash every loose DisciplineCard into owning storage (`HeldCard`), wait for absorption, then
+--- deal those tagged cards back only to connected seats and snap facing to hand+180° yaw.
+function DEBUG.ResetDisciplineHands()
+    U.resetDisciplineHands()
+end
+
 --- Keep debug-side hunger writes aligned with runtime sync behavior.
 --- @param color string
 --- @param value number

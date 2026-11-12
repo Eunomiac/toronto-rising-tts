@@ -156,6 +156,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_phaseSessionStartQuick` | B+C | Yes | Quick Transition: Intermission→Play skips Music C + `playAttribute(0)`. Phase Advance, Play subphase and session number/title are Storyteller Dashboard ops (`dashboard/scenes.ttslua`). |
 | `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` / `HUD_genericNpcImportLabelChanged` | B+C / A | Yes | TOR-560 label modal Confirm/Cancel + InputField stash; clicker ST-gated |
 | `HUD_phaseDeferSetXml` / `HUD_phaseRefreshXml` / `HUD_phaseArmJoinXml` / `HUD_phaseRestoreJoinAssets` / `HUD_phaseRestoreJoinHud` / `HUD_phaseRestoreJoinEmitters` | A/B + C (remount / spawn) | Yes | TOR-428 defer; TOR-439 Arm + staged restore (assets → HUD → emitters); NPC figurines are no longer pooled (TOR-707) |
+| `HUD_resetDisciplineHands` | B+C | Yes | Storyteller Debug (under Sort Master Decks): `DEBUG.ResetDisciplineHands` / `U.resetDisciplineHands` — stash loose `DisciplineCard`s with `HeldCard`, wait for absorption, redeal to connected seats only, snap facing hand+180° (TOR-763) |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |
 | `HUD_toggleOverlayAlpha` | A | Yes | debug: Full↔Min child-image alpha + panel `raycastTarget` on `overlay_globalBlindfold_panel` |

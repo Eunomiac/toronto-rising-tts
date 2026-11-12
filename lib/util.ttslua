@@ -2677,9 +2677,17 @@ end
 local HELD_CARD_TAG = "HeldCard"
 --- Backward-compatible read for saves made by the earlier parking implementation.
 local LEGACY_STASHED_HAND_CARD_TAG = "StashedHandCard"
+--- Permanent tag on PC discipline power cards (with `<Color>Card` ownership).
+local DISCIPLINE_CARD_TAG = "DisciplineCard"
 
 --- Wait after an unparked hand zone is posed before dealing its stashed cards back.
 local HAND_DEAL_SETTLE_SECONDS = 0.5
+--- Wait for `putObject` absorption / deal settle in reset and park follow-ups.
+local HAND_STORAGE_ABSORB_SECONDS = 0.75
+local HAND_STORAGE_ABSORB_MAX_WAIT = 8
+
+--- Pending deal-back waits keyed by seat color (cancel when that seat parks again).
+local pendingHandDealCancel = {}
 
 --- @param y number
 --- @return boolean
@@ -2687,6 +2695,18 @@ local function isParkedHandY(y)
 	return y <= C.HIDDEN_OBJECT_WORLD_Y + 5
 end
 
+--- @param color string
+local function cancelPendingHandDeal(color)
+	local entry = pendingHandDealCancel[color]
+	if entry == nil then
+		return
+	end
+	pendingHandDealCancel[color] = nil
+	entry.cancelled = true
+	if entry.waitId ~= nil then
+		U.cancel(entry.waitId)
+	end
+end
 --- @param color string
 --- @param required boolean error when the seat has no storage container
 --- @return Object|nil
@@ -2699,19 +2719,170 @@ local function resolvePlayerStorageContainer(color, required)
 	return container
 end
 
---- Tag each in-hand card and put it into the player's storage container.
+--- @param obj Object
+--- @return string|nil seat color from a permanent `<Color>Card` tag
+local function ownerColorFromCardTags(obj)
+	if obj == nil or obj.getTags == nil then
+		return nil
+	end
+	local tags = obj.getTags() or {}
+	local playerColors = C.PlayerColors or {}
+	for i = 1, #tags do
+		local tag = tags[i]
+		for c = 1, #playerColors do
+			local color = playerColors[c]
+			if tag == (tostring(color) .. "Card") then
+				return color
+			end
+		end
+	end
+	return nil
+end
+
+--- @param container Object
+--- @param guid string
+--- @return boolean
+local function containerHasGuid(container, guid)
+	if container == nil or type(guid) ~= "string" or guid == "" or container.getObjects == nil then
+		return false
+	end
+	local contents = container.getObjects() or {}
+	for i = 1, #contents do
+		if contents[i].guid == guid then
+			return true
+		end
+	end
+	return false
+end
+
+--- Loose world `DisciplineCard` objects (TTS omits bag contents from `getObjectsWithTag`).
+--- @param colorFilter string|nil when set, only that seat's `<Color>Card` owners
+--- @return Object[] cards
+--- @return table guid → owner color
+local function listLooseDisciplineCards(colorFilter)
+	local found = getObjectsWithTag(DISCIPLINE_CARD_TAG) or {}
+	local cards = {}
+	local owners = {}
+	for i = 1, #found do
+		local obj = found[i]
+		if U.isGameObject(obj) and isHandCardLikeObject(obj) then
+			local owner = ownerColorFromCardTags(obj)
+			if owner ~= nil and (colorFilter == nil or owner == colorFilter) then
+				cards[#cards + 1] = obj
+				local guid = obj.getGUID and obj.getGUID() or nil
+				if type(guid) == "string" and guid ~= "" then
+					owners[guid] = owner
+				end
+			end
+		end
+	end
+	return cards, owners
+end
+
+--- Tag each card `HeldCard` and put it into the owning seat's storage container.
 --- @param color string
 --- @param cards Object[]
+--- @return string[] guids submitted to putObject
 local function stashHandCardsInStorage(color, cards)
+	local guids = {}
 	if #cards == 0 then
-		return
+		return guids
 	end
 	local container = resolvePlayerStorageContainer(color, true)
 	for i = 1, #cards do
 		local card = cards[i]
-		card.addTag(HELD_CARD_TAG)
-		container.putObject(card)
+		if U.isGameObject(card) then
+			card.addTag(HELD_CARD_TAG)
+			local guid = card.getGUID and card.getGUID() or nil
+			if type(guid) == "string" and guid ~= "" then
+				guids[#guids + 1] = guid
+			end
+			container.putObject(card)
+		end
 	end
+	return guids
+end
+
+--- Stash every loose `DisciplineCard` owned by `color` into that seat's storage (`HeldCard`).
+--- @param color string
+--- @return string[] guids
+function U.stashOwnedDisciplineCards(color)
+	if type(color) ~= "string" or color == "" then
+		error("U.stashOwnedDisciplineCards: color required")
+	end
+	local cards = listLooseDisciplineCards(color)
+	local guids = stashHandCardsInStorage(color, cards)
+	if #guids > 0 then
+		print(
+			"Discipline cards: stashed "
+				.. tostring(#guids)
+				.. " for "
+				.. tostring(color)
+				.. " into storage ("
+				.. HELD_CARD_TAG
+				.. ")."
+		)
+	end
+	return guids
+end
+
+--- Stash every loose world `DisciplineCard`+`<Color>Card` into the owning storage.
+--- @return table `{ total = number, byColor = { [color] = string[] guids } }`
+function U.stashAllWorldDisciplineCards()
+	local cards, owners = listLooseDisciplineCards(nil)
+	local byColor = {}
+	local total = 0
+	for i = 1, #cards do
+		local card = cards[i]
+		local guid = card.getGUID and card.getGUID() or nil
+		local color = type(guid) == "string" and owners[guid] or ownerColorFromCardTags(card)
+		if color ~= nil then
+			local bucket = byColor[color]
+			if bucket == nil then
+				bucket = {}
+				byColor[color] = bucket
+			end
+			bucket[#bucket + 1] = card
+		end
+	end
+	local guidByColor = {}
+	for color, list in pairs(byColor) do
+		local guids = stashHandCardsInStorage(color, list)
+		guidByColor[color] = guids
+		total = total + #guids
+	end
+	if total > 0 then
+		print("Discipline cards: stashed " .. tostring(total) .. " loose card(s) into player storage.")
+	end
+	return { total = total, byColor = guidByColor }
+end
+
+--- @param entries table[] `{ guid = string, color = string }`
+--- @return boolean
+local function allStashGuidsAbsorbed(entries)
+	for i = 1, #entries do
+		local entry = entries[i]
+		local container = resolvePlayerStorageContainer(entry.color, false)
+		if container == nil or not containerHasGuid(container, entry.guid) then
+			return false
+		end
+	end
+	return true
+end
+--- Snap a dealt card to the hand zone facing (+180° yaw).
+--- @param card Object
+--- @param zoneRot Vector|table
+local function snapCardToHandFacing(card, zoneRot)
+	if card == nil or card.setRotation == nil or zoneRot == nil then
+		return
+	end
+	local rot = Vector(zoneRot)
+	if rot.add ~= nil then
+		rot = rot:add(Vector(0, 180, 0))
+	else
+		rot = Vector({ x = rot.x, y = (rot.y or 0) + 180, z = rot.z })
+	end
+	card.setRotation(rot)
 end
 
 --- Deal every `HeldCard` card in the player's storage container into the hand.
@@ -2720,7 +2891,11 @@ end
 --- @param color string
 --- @param zonePos Vector
 --- @param zoneRot Vector
-local function dealStashedHandCards(color, zonePos, zoneRot)
+--- @param opts table|nil `{ snapFacing = boolean }`
+local function dealStashedHandCards(color, zonePos, zoneRot, opts)
+	opts = type(opts) == "table" and opts or {}
+	local snapFacing = opts.snapFacing == true
+	cancelPendingHandDeal(color)
 	local container = resolvePlayerStorageContainer(color, false)
 	if container == nil then
 		return
@@ -2740,8 +2915,16 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 	if #guids == 0 then
 		return
 	end
+	local cancelToken = { cancelled = false, waitId = nil }
+	pendingHandDealCancel[color] = cancelToken
 	-- The zone needs a moment to settle at its new pose; cards dealt in the same frame land rotated.
-	U.await(function()
+	cancelToken.waitId = U.await(function()
+		if cancelToken.cancelled then
+			return
+		end
+		if pendingHandDealCancel[color] == cancelToken then
+			pendingHandDealCancel[color] = nil
+		end
 		for i = 1, #guids do
 			container.takeObject({
 				guid = guids[i],
@@ -2749,13 +2932,153 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 				rotation = { x = 0, y = zoneRot.y + 180, z = 0 },
 				smooth = false,
 				callback_function = function(card)
+					if cancelToken.cancelled then
+						return
+					end
 					card.removeTag(HELD_CARD_TAG)
 					card.removeTag(LEGACY_STASHED_HAND_CARD_TAG)
 					card.deal(1, color)
+					if snapFacing then
+						snapCardToHandFacing(card, zoneRot)
+					end
 				end,
 			})
 		end
 	end, HAND_DEAL_SETTLE_SECONDS)
+end
+
+--- Move loose owned discipline cards to storage when the seat is unoccupied / hand parked;
+--- otherwise leave cards already in that hand alone and deal strays into the hand.
+--- @param color string
+--- @param opts table|nil `{ forceStorage = boolean }`
+--- @return number corrected count
+function U.reconcileDisciplineCardsForColor(color, opts)
+	opts = type(opts) == "table" and opts or {}
+	if type(color) ~= "string" or color == "" then
+		error("U.reconcileDisciplineCardsForColor: color required")
+	end
+	local forceStorage = opts.forceStorage == true
+	local PC = require("core.player_connection")
+	local hz = U.getHandZone(color)
+	local handPos = hz ~= nil and hz.getPosition and hz.getPosition() or nil
+	local handParked = handPos ~= nil and isParkedHandY(handPos.y)
+	local unoccupied = PC.isSeatUnoccupied(color) == true
+	if forceStorage or unoccupied or handParked then
+		local guids = U.stashOwnedDisciplineCards(color)
+		return #guids
+	end
+	local cards = listLooseDisciplineCards(color)
+	local handCards = collectHandCards(hz, color)
+	local inHand = {}
+	for h = 1, #handCards do
+		local guid = handCards[h].getGUID and handCards[h].getGUID() or nil
+		if type(guid) == "string" and guid ~= "" then
+			inHand[guid] = true
+		end
+	end
+	local corrected = 0
+	for i = 1, #cards do
+		local card = cards[i]
+		local guid = card.getGUID and card.getGUID() or nil
+		if type(guid) ~= "string" or guid == "" or inHand[guid] ~= true then
+			card.deal(1, color)
+			corrected = corrected + 1
+		end
+	end
+	if corrected > 0 then
+		print(
+			"Discipline cards: dealt "
+				.. tostring(corrected)
+				.. " stray card(s) into "
+				.. tostring(color)
+				.. " hand."
+		)
+	end
+	return corrected
+end
+--- Reconcile every PC seat's discipline cards to hand or storage from occupancy.
+--- @return number total corrections
+function U.reconcileAllDisciplineCardHomes()
+	local total = 0
+	for _, color in ipairs(C.PlayerColors or {}) do
+		total = total + U.reconcileDisciplineCardsForColor(color)
+	end
+	return total
+end
+
+--- Debug / recovery: stash every loose DisciplineCard into owning storage (`HeldCard`), wait for
+--- absorption, then deal `HeldCard`s back only to connected seats and snap facing to hand+180° yaw.
+--- @param opts table|nil `{ onComplete = fun(ok, detail) }`
+function U.resetDisciplineHands(opts)
+	opts = type(opts) == "table" and opts or {}
+	local PC = require("core.player_connection")
+	local absorbEntries = {}
+	U.chain({
+		function()
+			local result = U.stashAllWorldDisciplineCards()
+			absorbEntries = {}
+			for color, guids in pairs(result.byColor or {}) do
+				for i = 1, #guids do
+					absorbEntries[#absorbEntries + 1] = { guid = guids[i], color = color }
+				end
+			end
+			if #absorbEntries == 0 then
+				return 0
+			end
+			return HAND_STORAGE_ABSORB_SECONDS
+		end,
+		function()
+			if #absorbEntries == 0 then
+				return 0
+			end
+			return function()
+				return allStashGuidsAbsorbed(absorbEntries)
+			end
+		end,
+		function()
+			if #absorbEntries > 0 and not allStashGuidsAbsorbed(absorbEntries) then
+				U.AlertGM(
+					"Reset Discipline Hands: timed out waiting for storage absorption ("
+						.. tostring(#absorbEntries)
+						.. " card(s))."
+				)
+			end
+			for _, color in ipairs(C.PlayerColors or {}) do
+				if PC.isSeatConnected(color) then
+					local hz = U.getHandZone(color)
+					if hz ~= nil then
+						local pos = Vector(hz.getPosition())
+						local rot = Vector(hz.getRotation())
+						dealStashedHandCards(color, pos, rot, { snapFacing = true })
+					end
+				end
+			end
+			-- Allow deal callbacks to finish, then snap again in case deal reoriented cards.
+			return HAND_DEAL_SETTLE_SECONDS + 0.35
+		end,
+		function()
+			for _, color in ipairs(C.PlayerColors or {}) do
+				if PC.isSeatConnected(color) then
+					local hz = U.getHandZone(color)
+					if hz ~= nil then
+						local zoneRot = Vector(hz.getRotation())
+						local handCards = collectHandCards(hz, color)
+						for i = 1, #handCards do
+							local card = handCards[i]
+							if card.hasTag ~= nil and card.hasTag(DISCIPLINE_CARD_TAG) then
+								snapCardToHandFacing(card, zoneRot)
+							end
+						end
+					end
+				end
+			end
+			print("Discipline cards: reset complete (connected seats redealt; others stay HeldCard in storage).")
+			return 0
+		end,
+	}, {
+		maxWait = HAND_STORAGE_ABSORB_MAX_WAIT,
+		onComplete = opts.onComplete,
+	})
 end
 
 --- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
@@ -2768,10 +3091,9 @@ end
 --- smooth-moving a hand zone or its cards breaks the hand (Hand Lab). Never lock the cards: a
 --- locked card leaves the hand.
 ---
---- Parking: a target at `C.HIDDEN_OBJECT_WORLD_Y` first tags the in-hand cards `HeldCard` and
---- puts them into the player's storage container (`G.GetPlayerStorageContainerGUID`), then moves
---- the empty zone. Moving a parked zone up to the table deals those tagged cards (only those)
---- back into the hand after `HAND_DEAL_SETTLE_SECONDS` (the only wait here).
+--- Parking: first stashes every loose owned `DisciplineCard` plus remaining in-hand cards with
+--- `HeldCard` into the player's storage container, then moves the empty zone. Moving a parked
+--- zone up to the table deals those tagged cards (only those) back after `HAND_DEAL_SETTLE_SECONDS`.
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
@@ -2796,18 +3118,38 @@ function U.movePlayerHand(playerRef, position, rotation)
 		rotation = Vector(hz.getRotation()),
 		cards = {},
 	}
-	local cards = collectHandCards(hz, color)
 
 	if isParkedHandY(targetPos.y) then
-		stashHandCardsInStorage(color, cards)
+		cancelPendingHandDeal(color)
+		local disciplineGuids = U.stashOwnedDisciplineCards(color)
+		local cards = collectHandCards(hz, color)
+		local otherGuids = stashHandCardsInStorage(color, cards)
 		hzBefore.cards = cards
+		local stillDiscipline = listLooseDisciplineCards(color)
+		local stillHand = collectHandCards(hz, color)
+		if #stillDiscipline > 0 or #stillHand > 0 then
+			U.AlertGM(
+				"Hand park aborted for "
+					.. tostring(color)
+					.. ": "
+					.. tostring(#stillDiscipline + #stillHand)
+					.. " card(s) still loose after stash (discipline="
+					.. tostring(#disciplineGuids)
+					.. " other="
+					.. tostring(#otherGuids)
+					.. "). Hand zone left on the table."
+			)
+			return hzBefore
+		end
 		poseObjectWithHand(hz, targetPos, targetRot)
 		return hzBefore
 	end
 
+	local cards = collectHandCards(hz, color)
+
 	if isParkedHandY(hzBefore.position.y) then
 		poseObjectWithHand(hz, targetPos, targetRot)
-		dealStashedHandCards(color, targetPos, targetRot)
+		dealStashedHandCards(color, targetPos, targetRot, { snapFacing = true })
 		return hzBefore
 	end
 

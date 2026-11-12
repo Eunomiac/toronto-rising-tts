@@ -148,7 +148,10 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `U.getZoneBounds(zone)` | Get bounding box of zone | Zone size check |
 | `U.isInside(zone, pos, ignoreY)` | Check if position is inside zone | Containment test |
 | `U.getHandZone(color)` | Get player's hand zone | Access hand zone |
-| `U.movePlayerHand(playerRef, position, rotation)` | Sole writer: always-instant rigid move (no smooth option, no waits) of Hand Zone + every card in that hand. Seat occupancy does not park the zone (TOR-763). A target at Y −200 still parks the zone alone and puts in-hand cards in the player's storage container tagged `StashedHandCard`; moving a parked zone back to the table deals only those cards back (native `card.deal`, 0.5 s after the zone is posed). That path is only for a zone already under the table from an older session. Cards are never locked. Do not `setPosition` the zone first. | Table/Scatter layout |
+| `U.movePlayerHand(playerRef, position, rotation)` | Sole writer: always-instant rigid move of Hand Zone + in-hand cards. Parking (Y −200) first stashes every loose owned `DisciplineCard` plus remaining in-hand cards into that PC's storage with `HeldCard`, then parks the empty zone (aborts and leaves the zone up if cards remain loose). Unparking deals only `HeldCard` / legacy `StashedHandCard` back (native `card.deal`, snap facing hand+180°). Cards are never locked. Do not `setPosition` the zone first. | Table/Scatter layout / occupancy park |
+| `U.stashOwnedDisciplineCards(color)` / `U.stashAllWorldDisciplineCards()` | Put loose `DisciplineCard`+`<Color>Card` objects into the owning storage with `HeldCard`. | Occupancy park, debug reset |
+| `U.reconcileDisciplineCardsForColor` / `U.reconcileAllDisciplineCardHomes` | World rule: owned discipline cards live in that color's hand or storage; move strays by occupancy. | Connection checkpoint |
+| `U.resetDisciplineHands` / `DEBUG.ResetDisciplineHands` | Debug: stash all loose discipline cards, wait for absorption, redeal `HeldCard`s to connected seats only, snap facing. HUD: **Reset Discipline Hands** under Sort Master Decks. | Storyteller Debug |
 
 ### 1.7 String & Data Utilities
 

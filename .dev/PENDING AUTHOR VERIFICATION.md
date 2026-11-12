@@ -107,11 +107,13 @@ Nothing comes off the sheet until you confirm it. A resonance, and its dyscrasia
 
 #### 🟡 TOR-763 — Disconnected player's hand is stored safely while the seat is hidden
 
-> **Agent-assessment note:** The ownership filter and temporary-card lifecycle are deterministic in code. You still need to watch the real TTS hand and container physics during a connected table change.
+> **Agent-assessment note:** Ownership reclaim, fail-closed park, and the debug reset sequence are deterministic in code. You still need to watch real TTS hand and container physics on cold load and during a connected table change.
 
-**How to verify:** Save & Play. Put several discipline cards in every player's hand, plus one unrelated card in Red's personal storage container. Disconnect Red, then apply a scene or change tables. Red's hand cards should receive the temporary `HeldCard` tag and move into Red's storage container before the empty hand zone, container, chair, sheet, and bags are hidden. The connected players should retain only their own cards; none should move into another player's overlapping hand zone, and every card should keep its original upright orientation.
+**How to verify:** Save & Play, then load a fresh copy of save 9001 (or any save where every PC is disconnected and discipline cards were in hand). After the readiness gate finishes, no discipline cards should be on the floor. Each seat's discipline cards should be inside that seat's personal storage container with the temporary `HeldCard` tag, and the empty hand zones should be parked with the rest of the pile.
 
-Reconnect Red. Red's hand zone should return beside the new chair, and only the cards marked `HeldCard` should be dealt back and lose that tag. The unrelated card that Red deliberately stored should remain in the container.
+With at least one seat connected, open the Storyteller debug panel and click **Reset Discipline Hands** (directly under **Sort Master Decks**). Loose discipline cards should move into the owning containers with `HeldCard`, then only connected seats should be redealt those cards (tag removed) sitting at hand-zone rotation + 180° yaw. Disconnected seats should keep `HeldCard` cards in storage.
+
+Mid-session: put several discipline cards in every player's hand, plus one unrelated card in Red's personal storage container. Disconnect Red, then apply a scene or change tables. Red's hand cards should receive `HeldCard` and move into Red's storage before the empty hand zone, container, chair, sheet, and bags are hidden. Reconnect Red: only `HeldCard` cards deal back and lose that tag; the unrelated stored card stays in the container.
 
 #### 🟡 TOR-762 — Preload NPCs for a later entrance
 

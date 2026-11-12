@@ -54,7 +54,7 @@ Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visib
 - Spotlight phase seat figurines (`SEAT_FIGURE_*`) — stay at seats; active visibility via `O.applyActiveVisibility` / `O.restoreObject` from `C.HiddenObjects` (never `O.hideObject` park, never blanket PC hide lists)
 - Scatter `THE_FLOOR` / `TABLE_PLINTH` — visibility-only via `C.HideFromPcSeatsAndSpectators` while Scatter is active (stay at playfield Y)
 - `BOTTOM_FOG` / `TOP_FOG` — AssetBundle Looping Effect 2 on / Effect 1 off (`Scenes.applyFogEmitterLooping`); never `setState` or `O.hideObject` for BOTTOM_FOG (authored at y ≈ −350)
-- Player hand zones (disconnected PC) — leave the zone and the cards in it on the table when the rest of the pile is parked (TOR-763). Never `O.hideObject` the zone (the tag makes it drop its cards) and never move it to `y = -200` (that scatters the hand). Seat layout may still `U.movePlayerHand` an occupied hand at table height. A zone already under the table from an older session is brought back by that move, which deals any `StashedHandCard` cards out of storage. Cards are never locked (a locked card leaves the hand)
+- Player hand zones (disconnected PC) — never `O.hideObject` the zone (the tag drops cards). Park via `U.movePlayerHand` to Y −200 only after stashing loose owned `DisciplineCard`s and remaining in-hand cards into that PC's storage with `HeldCard` (TOR-763). Storage bags hide after a short settle. Unpark deals only `HeldCard` / legacy `StashedHandCard` back. Cards are never locked (a locked card leaves the hand)
 
 New exceptions must be added to `docs/solutions/lua-hide-restore-policy.md`.
 
