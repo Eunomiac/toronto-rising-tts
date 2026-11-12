@@ -81,9 +81,8 @@ GeoJSON must not be edited directly.
 
 Rare fictional changes to the real basemap use small reviewed masks in
 `data/basemap-masks.json`. Their editable coordinates stay in the original SVG
-artboard space and pass through the same calibration as Districts. The first
-mask removes the unwanted residential detail from the Giovanni Estate and adds
-one deliberate estate label; generated mask GeoJSON must not be edited.
+artboard space and pass through the same calibration as Districts. The mask
+list is currently empty; generated mask GeoJSON must not be edited.
 
 ## Visual calibration
 

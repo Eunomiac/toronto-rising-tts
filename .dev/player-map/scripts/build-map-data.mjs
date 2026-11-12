@@ -87,7 +87,7 @@ const cityMarkers = {
   })),
 };
 if (basemapMasks?.schemaVersion !== 1 || !Array.isArray(basemapMasks.masks)
-  || basemapMasks.masks.length === 0 || !basemapMasks.masks.every((mask) => (
+  || !basemapMasks.masks.every((mask) => (
     mask && Object.keys(mask).sort().join(',') === 'key,name,sourceLabelPoint,sourcePolygon'
     && typeof mask.key === 'string' && mask.key && typeof mask.name === 'string' && mask.name
     && Array.isArray(mask.sourceLabelPoint) && mask.sourceLabelPoint.length === 2 && mask.sourceLabelPoint.every(Number.isFinite)
@@ -369,7 +369,10 @@ if (manifest.counts.pathRoutes === 0 || manifest.counts.pathEntrances === 0
   throw new Error('Unexpected PATH network counts');
 }
 if (manifest.counts.cityMarkers !== 3) throw new Error('Unexpected provincial city marker count');
-if (manifest.counts.basemapMasks !== 1 || manifest.counts.basemapMaskLabels !== 1) throw new Error('Unexpected basemap mask count');
+if (manifest.counts.basemapMasks !== basemapMasks.masks.length
+  || manifest.counts.basemapMaskLabels !== basemapMasks.masks.length) {
+  throw new Error('Unexpected basemap mask count');
+}
 if (manifest.counts.sheetDistricts !== 36 || manifest.counts.sheetOnlyDistricts !== 4) {
   throw new Error('Unexpected Sheet district coverage');
 }

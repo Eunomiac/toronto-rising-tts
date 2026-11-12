@@ -1,14 +1,4 @@
 {
   "schemaVersion": 1,
-  "masks": [
-    {
-      "key": "GiovanniEstate",
-      "name": "Giovanni Estate",
-      "sourcePolygon": [
-        [170, 1070], [430, 1010], [670, 1060], [780, 1160], [720, 1290],
-        [570, 1360], [300, 1370], [110, 1300], [60, 1180], [170, 1070]
-      ],
-      "sourceLabelPoint": [430, 1210]
-    }
-  ]
+  "masks": []
 }
