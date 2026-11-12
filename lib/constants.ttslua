@@ -612,9 +612,15 @@ G.assertGuidRefList(C.LockedObjects, "C.LockedObjects")
 -- These props stay physically locked but must accept clicks whenever restored to play.
 C.ClickableSeatControls = {}
 for _, color in ipairs(C.PlayerColors) do
-  C.ClickableSeatControls[G.GUIDS["SIGNAL_CANDLE_" .. string.upper(color)]] = true
+  local upper = string.upper(color)
+  C.ClickableSeatControls[G.GUIDS["SIGNAL_CANDLE_" .. upper]] = true
   for _, guid in pairs(G.GetAllPlayerDiceBagGUIDs(color)) do
     C.ClickableSeatControls[guid] = true
+  end
+  C.ClickableSeatControls[G.GUIDS["CSHEET_BASE_" .. upper]] = true
+  C.ClickableSeatControls[G.GUIDS["CSHEET_BASE_BACK_" .. upper]] = true
+  for page = 1, 8 do
+    C.ClickableSeatControls[G.GUIDS["CSHEET_PAGE_" .. tostring(page) .. "_" .. upper]] = true
   end
 end
 C.ClickableSeatControls[G.GUIDS.TAROT_BUTTON_PINK] = true

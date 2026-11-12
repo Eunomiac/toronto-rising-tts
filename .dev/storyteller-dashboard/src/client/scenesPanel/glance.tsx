@@ -349,7 +349,7 @@ const ResonanceTags = ({ list }: { list: readonly Resonance[] }): ReactElement =
  * first, then the generic sites. Unique sites belonging to other Districts are left out. Picking a Site is the
  * confirmation.
  */
-const LocationPicker = ({ data, location, onPick, onClose, heading = "Change location" }: {
+export const LocationPicker = ({ data, location, onPick, onClose, heading = "Change location" }: {
   data: ChronicleLocations;
   /** The current location, marked on the map and in the grid; none for a scene with no place yet. */
   location: LabLocation | undefined;
@@ -1846,7 +1846,8 @@ export type HuntPc = { readonly color: string; readonly name: string };
 export type HuntConfirm = { readonly color: string; readonly flavor: string | null; readonly intensity: Intensity; readonly margin: number };
 
 export const HuntRoller = ({ location, pcs, onConfirm }: {
-  location: LabLocation;
+  /** Live scene place from TTS (null in Downtime / no location). Hunt override never writes this back. */
+  location: LabLocation | null;
   pcs: readonly HuntPc[];
   onConfirm: (hunt: HuntConfirm) => void;
 }): ReactElement => {
@@ -1860,6 +1861,9 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
   const [result, setResult] = useState<HuntResult | null>(null);
   const [barW, setBarW] = useState(0);
   const [fontReady, setFontReady] = useState(false);
+  /** Dashboard-only place for odds; never sent as a live location op. */
+  const [huntOverride, setHuntOverride] = useState<LabLocation | null>(null);
+  const [pickingHuntPlace, setPickingHuntPlace] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
   const marginRef = useRef<HTMLSpanElement>(null);
   const frame = useRef<number | null>(null);
@@ -1904,8 +1908,20 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
     box.addEventListener("wheel", onWheel, { passive: false });
     return () => box.removeEventListener("wheel", onWheel);
   }, []);
+  // Drop a stale override when the live scene place changes to the same keys.
+  useEffect(() => {
+    if (
+      huntOverride
+      && location
+      && huntOverride.districtKey === location.districtKey
+      && huntOverride.siteKey === location.siteKey
+    ) {
+      setHuntOverride(null);
+    }
+  }, [location, huntOverride]);
 
-  const found = data ? resolveLocation(data, location) : null;
+  const effectiveLocation = huntOverride ?? location;
+  const found = data && effectiveLocation ? resolveLocation(data, effectiveLocation) : null;
   const { modifiers, unknown } = netModifiers(found && typeof found !== "string" ? [...found.district.resonances, ...found.site.resonances] : []);
   const flavors = eligibleFlavors(modifiers);
   const seeking = target !== null && flavors.includes(target) ? target : null;
@@ -1913,6 +1929,12 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
   const intensity = intensityOdds(margin, outcome);
   const settled = result !== null;
   const measured = fontReady && barW > 0;
+  const huntPlaceLabel = found && typeof found !== "string"
+    ? `${found.district.name} · ${siteLabel(found.site)}`
+    : effectiveLocation
+      ? `${effectiveLocation.districtKey} / ${effectiveLocation.siteKey}`
+      : "No location (Downtime)";
+  const huntPlaceOverridden = huntOverride !== null;
 
   const spin = (): void => {
     if (settled) {
@@ -1972,120 +1994,158 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
   };
   const pcOptions = pcs.map((pc) => ({ value: pc.color, label: pc.name, accent: SEAT_ACCENT[pc.color] }));
   return (
-    <div className="lab-hunt">
-      <span
-        ref={marginRef}
-        className="lab-hunt-successes"
-        tabIndex={0}
-        title="Margin on the hunt roll (successes over the difficulty). Hover and spin the mouse wheel to change it."
-        onKeyDown={(event) => {
-          if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-            event.preventDefault();
-            setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + (event.key === "ArrowUp" ? 1 : -1))));
-            reset();
-          }
-        }}
-      >
-        +{margin}
-      </span>
-      <button
-        type="button"
-        className={`lab-hunt-crit ${outcome}`}
-        title={`${OUTCOME_LABEL[outcome]} (click for ${OUTCOME_LABEL[OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic"].toLowerCase()})`}
-        onClick={() => {
-          setOutcome(OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic");
-          reset();
-        }}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <polygon points="12,2.6 14.8,8.7 21.4,9.4 16.5,13.9 17.8,20.5 12,17.2 6.2,20.5 7.5,13.9 2.6,9.4 9.2,8.7" />
-        </svg>
-      </button>
-      <div className={`lab-hunt-bars${settled ? " settled" : ""}`}>
-        <div ref={barRef} className="lab-hunt-bar">
-          {flavors.map((flavor, index) => {
-            const won = result?.flavor === flavor;
-            const name = FLAVOR_LABEL[flavor];
-            const sought = flavor === seeking;
-            return (
-              <span
-                key={flavor}
-                className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${sought ? " sought" : ""}${won ? " won" : ""}`}
-                style={{
-                  ...segmentFlex(odds[flavor], won, settled, measured ? textWidth(name, FLAVOR_FONT) + WINNER_PAD : 0, barW),
-                  "--hunter": sought && hunterPc ? SEAT_ACCENT[hunterPc.color] : undefined
-                } as CSSProperties}
-                title={settled ? undefined : `${name} ${percent(odds[flavor])}: ${sought && hunterPc ? `sought by ${hunterPc.name}; click to clear` : "click to pick the PC hunting for it"}`}
-                onClick={(event) => pickFlavor(event, flavor)}
-                onContextMenu={(event) => pickFlavor(event, flavor)}
-              >
-                {measured && (won ? name : settled ? "" : segmentText(name, odds[flavor] * barW))}
-              </span>
-            );
-          })}
-          {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.flavor * 100}%` }} />}
-        </div>
-        <div className="lab-hunt-bar intensity">
-          {INTENSITIES.map((key) => {
-            const won = result?.intensity === key;
-            return (
-              <span
-                key={key}
-                className={`lab-hunt-seg ${key}${won ? " won" : ""}`}
-                style={segmentFlex(intensity[key], won, settled, measured ? textWidth(INTENSITY_LABEL[key], INTENSITY_FONT) + WINNER_PAD : 0, barW)}
-                title={`${INTENSITY_LABEL[key]} ${percent(intensity[key])}`}
-              >
-                {won ? INTENSITY_LABEL[key] : ""}
-              </span>
-            );
-          })}
-          {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.intensity * 100}%` }} />}
-        </div>
-      </div>
-      {settled ? (
-        <span className="lab-hunt-acts">
+    <div className="lab-hunt-wrap">
+      <div className="lab-hunt-place">
+        <button
+          type="button"
+          className={`lab-hunt-place-label${huntPlaceOverridden ? " overridden" : ""}`}
+          title="Hunt-only location for resonance odds (does not change the scene skybox or location cards)"
+          onClick={() => setPickingHuntPlace(true)}
+        >
+          {huntPlaceLabel}
+        </button>
+        {huntPlaceOverridden && (
           <button
             type="button"
-            className="lab-hunt-act broadcast"
-            title={hunterPc
-              ? `Broadcast ${hunterPc.name}'s resonance in TTS and reset the hunt bar`
-              : "Pick the hunting PC, broadcast their resonance in TTS and reset the hunt bar"}
-            onClick={(event) => {
-              if (hunterPc) {
-                confirm(hunterPc.color);
-              } else {
-                setPcRing({ at: canvasPoint(event), seek: null });
-              }
+            className="lab-hunt-place-reset"
+            title={location ? "Reset hunt odds to the scene location" : "Clear hunt location override"}
+            onClick={() => {
+              setHuntOverride(null);
+              reset();
             }}
           >
-            <Icon name="broadcast" />
+            Reset
           </button>
-          <button type="button" className="lab-hunt-act cancel" title="Ignore this result and reset the hunt bar" onClick={clearAll}>
-            <Icon name="cancel" />
-          </button>
-        </span>
-      ) : (
-        <button type="button" className="lab-hunt-act roll" title="Roll for resonance" disabled={spinning} onClick={spin}>
-          <Icon name="reroll" />
-        </button>
-      )}
-      {pcRing && (
-        <RingMenu
-          at={pcRing.at}
-          options={pcOptions}
-          current={hunter}
-          onPick={(color) => {
-            if (pcRing.seek === null) {
-              confirm(color);
-              return;
+        )}
+      </div>
+      <div className="lab-hunt">
+        <span
+          ref={marginRef}
+          className="lab-hunt-successes"
+          tabIndex={0}
+          title="Margin on the hunt roll (successes over the difficulty). Hover and spin the mouse wheel to change it."
+          onKeyDown={(event) => {
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+              event.preventDefault();
+              setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + (event.key === "ArrowUp" ? 1 : -1))));
+              reset();
             }
-            setTarget(pcRing.seek);
-            setHunter(color);
           }}
-          onClose={() => setPcRing(null)}
+        >
+          +{margin}
+        </span>
+        <button
+          type="button"
+          className={`lab-hunt-crit ${outcome}`}
+          title={`${OUTCOME_LABEL[outcome]} (click for ${OUTCOME_LABEL[OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic"].toLowerCase()})`}
+          onClick={() => {
+            setOutcome(OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic");
+            reset();
+          }}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <polygon points="12,2.6 14.8,8.7 21.4,9.4 16.5,13.9 17.8,20.5 12,17.2 6.2,20.5 7.5,13.9 2.6,9.4 9.2,8.7" />
+          </svg>
+        </button>
+        <div className={`lab-hunt-bars${settled ? " settled" : ""}`}>
+          <div ref={barRef} className="lab-hunt-bar">
+            {flavors.map((flavor, index) => {
+              const won = result?.flavor === flavor;
+              const name = FLAVOR_LABEL[flavor];
+              const sought = flavor === seeking;
+              return (
+                <span
+                  key={flavor}
+                  className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${sought ? " sought" : ""}${won ? " won" : ""}`}
+                  style={{
+                    ...segmentFlex(odds[flavor], won, settled, measured ? textWidth(name, FLAVOR_FONT) + WINNER_PAD : 0, barW),
+                    "--hunter": sought && hunterPc ? SEAT_ACCENT[hunterPc.color] : undefined
+                  } as CSSProperties}
+                  title={settled ? undefined : `${name} ${percent(odds[flavor])}: ${sought && hunterPc ? `sought by ${hunterPc.name}; click to clear` : "click to pick the PC hunting for it"}`}
+                  onClick={(event) => pickFlavor(event, flavor)}
+                  onContextMenu={(event) => pickFlavor(event, flavor)}
+                >
+                  {measured && (won ? name : settled ? "" : segmentText(name, odds[flavor] * barW))}
+                </span>
+              );
+            })}
+            {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.flavor * 100}%` }} />}
+          </div>
+          <div className="lab-hunt-bar intensity">
+            {INTENSITIES.map((key) => {
+              const won = result?.intensity === key;
+              return (
+                <span
+                  key={key}
+                  className={`lab-hunt-seg ${key}${won ? " won" : ""}`}
+                  style={segmentFlex(intensity[key], won, settled, measured ? textWidth(INTENSITY_LABEL[key], INTENSITY_FONT) + WINNER_PAD : 0, barW)}
+                  title={`${INTENSITY_LABEL[key]} ${percent(intensity[key])}`}
+                >
+                  {won ? INTENSITY_LABEL[key] : ""}
+                </span>
+              );
+            })}
+            {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.intensity * 100}%` }} />}
+          </div>
+        </div>
+        {settled ? (
+          <span className="lab-hunt-acts">
+            <button
+              type="button"
+              className="lab-hunt-act broadcast"
+              title={hunterPc
+                ? `Broadcast ${hunterPc.name}'s resonance in TTS and reset the hunt bar`
+                : "Pick the hunting PC, broadcast their resonance in TTS and reset the hunt bar"}
+              onClick={(event) => {
+                if (hunterPc) {
+                  confirm(hunterPc.color);
+                } else {
+                  setPcRing({ at: canvasPoint(event), seek: null });
+                }
+              }}
+            >
+              <Icon name="broadcast" />
+            </button>
+            <button type="button" className="lab-hunt-act cancel" title="Ignore this result and reset the hunt bar" onClick={clearAll}>
+              <Icon name="cancel" />
+            </button>
+          </span>
+        ) : (
+          <button type="button" className="lab-hunt-act roll" title="Roll for resonance" disabled={spinning} onClick={spin}>
+            <Icon name="reroll" />
+          </button>
+        )}
+        {pcRing && (
+          <RingMenu
+            at={pcRing.at}
+            options={pcOptions}
+            current={hunter}
+            onPick={(color) => {
+              if (pcRing.seek === null) {
+                confirm(color);
+                return;
+              }
+              setTarget(pcRing.seek);
+              setHunter(color);
+            }}
+            onClose={() => setPcRing(null)}
+          />
+        )}
+        {unknown.length > 0 && <span className="lab-note">Unknown resonance in the sheet: {unknown.join(", ")}</span>}
+      </div>
+      {pickingHuntPlace && data && (
+        <LocationPicker
+          data={data}
+          location={effectiveLocation ?? undefined}
+          heading="Hunt location (odds only)"
+          onPick={(next) => {
+            setHuntOverride(next);
+            setPickingHuntPlace(false);
+            reset();
+          }}
+          onClose={() => setPickingHuntPlace(false)}
         />
       )}
-      {unknown.length > 0 && <span className="lab-note">Unknown resonance in the sheet: {unknown.join(", ")}</span>}
     </div>
   );
 };

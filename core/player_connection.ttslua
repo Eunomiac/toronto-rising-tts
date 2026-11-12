@@ -323,9 +323,10 @@ function PC.prepareSessionStartSeats()
   syncScatterPackToOccupancy()
 end
 
---- Run a connection-source change (debug mode switch, simulated toggle) and fire the same
---- handlers a real connect / disconnect would: newly connected seats are seated at once
---- (one relayout for the batch), newly disconnected seats only darken.
+--- Run a connection-source change (debug mode switch, simulated toggle): newly connected seats
+--- are seated at once; newly disconnected seats are fully unoccupied and parked (same as a
+--- connection checkpoint). Live Steam disconnect mid-session still only darkens until the next
+--- blindfold checkpoint — this path is for the Storyteller debug controls.
 --- @param mutate fun()
 local function applyConnectionSourceChange(mutate)
   local before = {}
@@ -341,7 +342,9 @@ local function applyConnectionSourceChange(mutate)
       end
     end
   end
-  if seatedAny then
+  -- Park every seat that is now disconnected (simulated off, or Assume Connected → By Connection).
+  local parked = PC.applyConnectionCheckpoint()
+  if seatedAny and #parked == 0 then
     relayoutAfterOccupancyChange()
   end
   PC.reconcileEffectivePresence(nil)

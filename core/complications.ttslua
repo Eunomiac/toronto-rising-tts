@@ -576,7 +576,12 @@ pump=function()
         if g.ending then
             local err=require('core.complications_rolls').finish(g.target,g.finalTotal,g.id)
             if err then fail(g,err); return end
-            save(nil); D.refresh(); require('core.roll_ui').refreshPlayerRollPanel(g.target.color)
+            local targetColor=g.target and g.target.color or nil
+            save(nil); D.refresh()
+            if type(targetColor)=='string' and targetColor~='' then
+                require('core.compulsions').setPlayerDeckInteractable(targetColor, true)
+            end
+            require('core.roll_ui').refreshPlayerRollPanel(targetColor)
             require('dashboard.push').markWorldDirty({rolls=true}); return
         end
         announce(g); return
@@ -646,6 +651,8 @@ function D.start(color,rollId)
     local order={1,2,3,4,5,6,7,8,9,10};for i=10,2,-1 do local j=math.random(i);order[i],order[j]=order[j],order[i] end
     for _,i in ipairs(order) do Model.draw(g,i) end
     mountAutomationButton();save(g)
+    -- Keep the player's Compulsion deck from being drawn/moved while Complications owns the seat.
+    require('core.compulsions').setPlayerDeckInteractable(color, false)
     require('core.roll_ui').refreshPlayerRollPanel(g.target.color)
     begin(g); return nil
 end
@@ -767,6 +774,9 @@ function D.restore()
     mountAutomationButton()
     require('core.compulsions').restoreClanSources()
     local g=game(); if not g then D.refresh(); return end
+    if g.target and type(g.target.color)=='string' then
+        require('core.compulsions').setPlayerDeckInteractable(g.target.color, false)
+    end
     require('core.roll_ui').refreshPlayerRollPanel(g.target.color)
     if g.cards[''] then
         fail(g,'This saved game has empty card GUIDs from an older build. Load a save from before Complications setup and start a new game; its overwritten card records cannot be recovered safely.',false)

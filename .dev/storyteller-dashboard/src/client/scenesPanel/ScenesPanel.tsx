@@ -117,7 +117,7 @@ const STAGE_H = 1042 - G - STAGE_Y;
 const RIGHT_H = 1042 - G - MAIN_Y;
 const ROLLS_Y = MAIN_Y + ASPECT_H + G;
 const ROLLS_H = RIGHT_H - ASPECT_H - G;
-const HUNT_H = 48;
+const HUNT_H = 68;
 const ROSTER_Y = BODY_Y + HUNT_H + G;
 const WHEN_W = 470;
 const WEATHER_W = 380;
@@ -591,7 +591,11 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             )}
           </Box>
           <Box x={G} y={BODY_Y} w={LEFT_W} h={HUNT_H} className="lab-hunt-box lab-borderless">
-            {location && <HuntRoller location={location} pcs={hunters} onConfirm={(hunt) => rollCommands.send({ op: "hunt", ...hunt })} />}
+            <HuntRoller
+              location={location}
+              pcs={hunters}
+              onConfirm={(hunt) => rollCommands.send({ op: "hunt", ...hunt })}
+            />
           </Box>
           <Box x={G} y={ROSTER_Y} w={LEFT_W} h={1042 - G - ROSTER_Y} className="lab-borderless lab-dock-box">
             <RosterDock scene={title ?? NO_SCENE} />

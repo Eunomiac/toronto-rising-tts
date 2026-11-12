@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-774 — Debug disconnect parks seats; sheets clickable; discipline facing; Compulsion deck lock
+
+> **Agent-assessment note:** Connection checkpoint wiring and ClickableSeatControls order are covered in code. You still need Save & Play to confirm pile hide, sheet clicks, card facing, and Compulsion deck lock in TTS.
+
+**How to verify:** Save & Play. In Storyteller Debug, turn **Assume Connected** off (or flip a per-color connection button off). That seat's objects should hide under the table and hand cards should stash; turn it back on and they should reseat. Move a seated PC to another table or chair and check their discipline cards face the new hand (hand-zone yaw + 180°). After load, character sheet pages should accept clicks while staying locked in place. Start a Deck of Complications game for one PC: their Compulsion deck should refuse grabs until the game ends, then become grabable again.
+
 #### 🟡 TOR-773 — First live multiplayer session recovery
 
 > **Agent-assessment note:** The dashboard behaviors, Lua syntax, safety gates, and the state changes are covered by automated checks. The important remaining evidence is real connected-client input, Tabletop Simulator's physical hand behavior, and listening to the Unity audio transition.

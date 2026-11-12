@@ -3168,11 +3168,20 @@ function U.movePlayerHand(playerRef, position, rotation)
 
 	local deltaYaw = shortestSignedYawDelta(hzBefore.rotation.y, targetRot.y)
 	poseObjectWithHand(hz, targetPos, targetRot)
+	local handFacing = Vector(targetRot)
+	if handFacing.add ~= nil then
+		handFacing = handFacing:add(Vector(0, 180, 0))
+	else
+		handFacing = Vector({ x = handFacing.x, y = (handFacing.y or 0) + 180, z = handFacing.z })
+	end
 	for i = 1, #captured do
 		local entry = captured[i]
 		local rotated = U.frameAfterRigidYawAboutCenter(hzBefore.position, entry.before, deltaYaw)
 		local newPos = Vector(rotated.position) + (targetPos - hzBefore.position)
-		local cardRot = Vector(rotated.rotation)
+		-- Discipline cards always face the hand (zone yaw + 180°); other cards keep relative yaw.
+		local cardRot = (entry.obj.hasTag ~= nil and entry.obj.hasTag(DISCIPLINE_CARD_TAG))
+				and handFacing
+			or Vector(rotated.rotation)
 		poseObjectWithHand(entry.obj, newPos, cardRot)
 	end
 	return hzBefore

@@ -88,6 +88,13 @@ local function setPlayerDeckInteractable(color, on)
     deck.interactable = on == true
 end
 
+--- Lock or unlock a seat's Compulsion deck (e.g. while a Deck of Complications game is live).
+--- @param color string
+--- @param on boolean
+function Compulsions.setPlayerDeckInteractable(color, on)
+    setPlayerDeckInteractable(color, on)
+end
+
 --- @param card Object|nil
 --- @param on boolean
 local function setCardInteractable(card, on)

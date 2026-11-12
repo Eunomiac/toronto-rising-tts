@@ -205,6 +205,17 @@ local function applyLockedObjectsFromConstants(options)
             end
         end
     end
+    -- Clickable controls stay locked but must accept clicks (sheets, bags, candles, …).
+    if U.Type(clickableSeatControls) == "table" then
+        for guid, on in pairs(clickableSeatControls) do
+            if on == true and type(guid) == "string" and guid ~= "" then
+                local obj = getObjectFromGUID(guid)
+                if obj ~= nil then
+                    obj.interactable = true
+                end
+            end
+        end
+    end
     if options.logSummary == true and missing > 0 then
         local listed, nilSlots = countLockedObjectListEntries()
         local expected = listed - nilSlots
@@ -764,11 +775,13 @@ function O.restoreObject(obj, opts)
     end
 
     local interactable = opts.interactable
+    -- Clickable seat controls (sheets, bags, candles, …) must accept clicks when restored even
+    -- when they also appear in C.LockedObjects (lock keeps them from being picked up).
+    if interactable == nil and guid ~= nil and clickableSeatControls[guid] == true then
+        interactable = true
+    end
     if interactable == nil and guid ~= nil and O.isLockedObjectGuid(guid) then
         interactable = false
-    end
-    if interactable == nil and clickableSeatControls[guid] == true then
-        interactable = true
     end
     if interactable == nil and type(snap) == "table" and type(snap.interactable) == "boolean" then
         interactable = snap.interactable

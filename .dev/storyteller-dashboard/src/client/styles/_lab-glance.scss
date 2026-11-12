@@ -2093,11 +2093,78 @@ input.lab-cat-rename {
   overflow: visible;
 }
 
+.lab-hunt-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  min-width: 0;
+}
+
+.lab-hunt-place {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  padding: 0 2px;
+
+  &-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #9a9aa6;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: none;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      color: #d8d8e0;
+      outline: none;
+    }
+
+    &.overridden {
+      color: #e8c56a;
+    }
+  }
+
+  &-reset {
+    flex: 0 0 auto;
+    padding: 0 4px;
+    border: 1px solid #4a4a56;
+    border-radius: 3px;
+    font: inherit;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #c9c9d2;
+    background: #1a1a22;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      border-color: #8a8a96;
+      color: #fff;
+      outline: none;
+    }
+  }
+}
+
 .lab-hunt {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: 4px;
-  height: 100%;
+  min-height: 0;
 
   // Hover and spin the mouse wheel to change it.
   &-successes {
