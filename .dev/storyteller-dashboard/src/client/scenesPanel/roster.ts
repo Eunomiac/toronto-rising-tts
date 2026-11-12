@@ -6,15 +6,27 @@ import { parseControlBoardSnaps } from "./catalogs";
 import type { CatalogCharacter, ControlBoardSnaps, SceneCatalogs } from "./catalogs";
 
 let catalogsRequest: Promise<SceneCatalogs> | null = null;
+const catalogsListeners = new Set<(catalogs: SceneCatalogs) => void>();
 
 const loadSceneCatalogs = (): Promise<SceneCatalogs> => {
   catalogsRequest ??= fetch("/api/scene-catalogs").then(async (response) => {
     if (!response.ok) {
+      catalogsRequest = null;
       throw new Error(`Scene catalogs failed to load (${response.status}).`);
     }
     return (await response.json()) as SceneCatalogs;
   });
   return catalogsRequest;
+};
+
+/** Drop the cached scene catalogs and reload so roster membership changes show up without a hard refresh. */
+export const refreshSceneCatalogs = async (): Promise<SceneCatalogs> => {
+  catalogsRequest = null;
+  const catalogs = await loadSceneCatalogs();
+  for (const listener of catalogsListeners) {
+    listener(catalogs);
+  }
+  return catalogs;
 };
 
 let snapsRequest: Promise<ControlBoardSnaps> | null = null;
@@ -55,9 +67,14 @@ export const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; raw: Scene
   const [error, setError] = useState<string | null>(null);
   const overrides = useNpcOverrides();
   useEffect(() => {
+    const onRefresh = (catalogs: SceneCatalogs): void => setRaw(catalogs);
+    catalogsListeners.add(onRefresh);
     loadSceneCatalogs()
       .then(setRaw)
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : String(reason)));
+    return () => {
+      catalogsListeners.delete(onRefresh);
+    };
   }, []);
   const catalogs = useMemo(() => (raw ? renamed(raw, overrides) : null), [raw, overrides]);
   return { catalogs, raw, error };

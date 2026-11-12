@@ -11,6 +11,15 @@ export type CatalogCharacter = {
   readonly pickerGroups: readonly string[];
 };
 
+/**
+ * Roster membership key for a named NPC: their unique parent when set, otherwise their own key.
+ * Sheet exports often send `variantOfUnique: ""` for non-variants — treat that as unset (not a blank key).
+ */
+export const rosterCanonicalKey = (npc: { readonly characterKey: string; readonly variantOfUnique?: string }): string => {
+  const parent = npc.variantOfUnique?.trim();
+  return parent ? parent : npc.characterKey;
+};
+
 export type CatalogSite = {
   readonly key: string;
   readonly name: string;

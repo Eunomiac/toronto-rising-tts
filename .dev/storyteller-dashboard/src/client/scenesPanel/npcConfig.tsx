@@ -141,9 +141,6 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
     if (inScene && name.trim() !== "" && name.trim() !== inScene.name) {
       inScene.rename(name.trim(), keptId);
     }
-    if (target.rosterGroup && rosterGroupKey !== "" && rosterGroupKey !== target.rosterGroup.current) {
-      target.rosterGroup.assign(rosterGroupKey);
-    }
     if (JSON.stringify(next) === JSON.stringify(saved)) {
       onClose();
       return;
@@ -258,7 +255,17 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
             title="Permanent Catalog roster group (any category). Same as dragging the token onto a group."
           >
             <span>Group</span>
-            <select className="lab-select" value={rosterGroupKey} onChange={(event) => setRosterGroupKey(event.target.value)}>
+            <select
+              className="lab-select"
+              value={rosterGroupKey}
+              onChange={(event) => {
+                const nextGroup = event.target.value;
+                setRosterGroupKey(nextGroup);
+                if (nextGroup !== "" && nextGroup !== target.rosterGroup?.current) {
+                  target.rosterGroup?.assign(nextGroup);
+                }
+              }}
+            >
               {target.rosterGroup.options.map((option) => (
                 <option key={option.value === "" ? "__ungrouped__" : option.value} value={option.value}>{option.label}</option>
               ))}

@@ -12,7 +12,17 @@ import {
 import { SEAT_ACCENT } from "../pcSheet/layout";
 import { DISTRICT_MAP_HEIGHT, DISTRICT_MAP_SRC, DISTRICT_MAP_WIDTH, districtPin } from "./districtMap";
 import { Icon, type IconName } from "./icons";
-import { assignNpcRosterGroup, groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./roster";
+import { rosterCanonicalKey } from "./catalogs";
+import {
+  assignNpcRosterGroup,
+  groupColor,
+  groupLeader,
+  refreshSceneCatalogs,
+  setRosterLayout,
+  useRosterLayout,
+  useSceneCatalogs,
+  type RosterCategory
+} from "./roster";
 import { SceneNotes } from "./sceneNotes";
 import {
   INTENSITIES,
@@ -1062,15 +1072,24 @@ export const MasonryRoster = (): ReactElement => {
     const eligible = catalogs.namedNpcs.filter(npc => npc.catalog === true);
     const byNpc = new Map(eligible.map(npc => [npc.characterKey, npc]));
     for (const npc of eligible) {
-      const groupNpc = byNpc.get(npc.variantOfUnique ?? "") ?? npc;
-      const assignedGroup = memberGroups[groupNpc.characterKey];
+      const parentKey = npc.variantOfUnique?.trim() ?? "";
+      const groupNpc = (parentKey !== "" ? byNpc.get(parentKey) : undefined) ?? npc;
+      const assignedGroup = memberGroups[rosterCanonicalKey(groupNpc)] ?? memberGroups[npc.characterKey];
       for (const key of assignedGroup ? [assignedGroup] : groupNpc.pickerGroups.length ? groupNpc.pickerGroups : ["catalogUngrouped"]) {
         byKey.set(key, [...(byKey.get(key) ?? []), { characterKey: npc.characterKey, name: npc.fullName }]);
       }
     }
     return [...byKey].map(([key, members]) => {
       const label = catalogs.pickerGroupLabels[key] ?? (key === "catalogUngrouped" ? "Ungrouped" : key);
-      return { key, label, labelWidth: groupLabelWidth(label), members: sortNamedVariants(members, npcKey => byNpc.get(npcKey)?.variantOfUnique) };
+      return {
+        key,
+        label,
+        labelWidth: groupLabelWidth(label),
+        members: sortNamedVariants(members, npcKey => {
+          const parent = byNpc.get(npcKey)?.variantOfUnique?.trim();
+          return parent ? parent : undefined;
+        })
+      };
     });
   }, [catalogs, memberGroups]);
   const spawnedKey = [...inScene.map((npc) => npc.characterKey), ...Object.keys(queuedGenerics)].join(",");
@@ -1208,9 +1227,9 @@ export const MasonryRoster = (): ReactElement => {
       }
     } : undefined;
     const namedNpc = named;
-    const namedCanonical = namedNpc ? (namedNpc.variantOfUnique ?? namedNpc.characterKey) : undefined;
+    const namedCanonical = namedNpc ? rosterCanonicalKey(namedNpc) : "";
     const namedGroupCurrent = namedNpc
-      ? (memberGroups[namedCanonical ?? namedNpc.characterKey] ?? namedNpc.pickerGroups[0] ?? "")
+      ? (memberGroups[namedCanonical] ?? namedNpc.pickerGroups[0] ?? "")
       : "";
     const namedGroupOptions = namedNpc ? rosterGroupOptions(namedGroupCurrent) : [];
     setConfiguring({
@@ -1221,12 +1240,12 @@ export const MasonryRoster = (): ReactElement => {
       stats: generic
         ? { key: genericStatsKey(generic.key), label: generic.label, tiered: true }
         : { key: characterKey, label: namedNpc?.fullName ?? characterKey, tiered: false },
-      ...(namedNpc && namedGroupOptions.length > 0
+      ...(namedNpc && namedCanonical !== "" && namedGroupOptions.length > 0
         ? {
           rosterGroup: {
             current: namedGroupCurrent,
             options: namedGroupOptions,
-            assign: (nextGroup: string) => assignMemberToGroup(namedCanonical ?? namedNpc.characterKey, nextGroup)
+            assign: (nextGroup: string) => assignMemberToGroup(namedCanonical, nextGroup)
           }
         }
         : {}),
@@ -1253,23 +1272,32 @@ export const MasonryRoster = (): ReactElement => {
   };
   const ownColor = (characterKey: string): string | undefined => overrides[characterKey]?.color;
   const assignMemberToGroup = (characterKey: string, groupKey: string): void => {
-    if (!catalogs || groupKey === "catalogUngrouped") {
+    if (!catalogs || groupKey === "" || groupKey === "catalogUngrouped") {
       return;
     }
     const npc = catalogs.namedNpcs.find((row) => row.characterKey === characterKey);
-    const canonicalKey = npc?.variantOfUnique ?? characterKey;
+    const canonicalKey = npc ? rosterCanonicalKey(npc) : characterKey.trim();
+    if (canonicalKey === "") {
+      setRosterError("Roster assignment needs a character key and group key.");
+      return;
+    }
     const previous = memberGroups[canonicalKey];
     setMemberGroups((current) => ({ ...current, [canonicalKey]: groupKey }));
     setRosterError(null);
-    void assignNpcRosterGroup(canonicalKey, groupKey).catch((reason: unknown) => {
-      setMemberGroups((current) => {
-        const next = { ...current };
-        if (previous) next[canonicalKey] = previous;
-        else delete next[canonicalKey];
-        return next;
-      });
-      setRosterError(reason instanceof Error ? reason.message : String(reason));
-    });
+    void assignNpcRosterGroup(canonicalKey, groupKey).then(
+      () => {
+        void refreshSceneCatalogs();
+      },
+      (reason: unknown) => {
+        setMemberGroups((current) => {
+          const next = { ...current };
+          if (previous) next[canonicalKey] = previous;
+          else delete next[canonicalKey];
+          return next;
+        });
+        setRosterError(reason instanceof Error ? reason.message : String(reason));
+      }
+    );
   };
   /**
    * Permanent group choices for the token config popup: every Catalog-tab roster group (any category), never
