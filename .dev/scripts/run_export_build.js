@@ -10,8 +10,13 @@ function run(script, env, args = []) {
   if (child.status !== 0) throw new Error(`${script} failed (${child.status})`);
 }
 function runNpm(script, env) {
-  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-  const child = spawnSync(npmCommand, ["run", script], { cwd: root, env, stdio: "inherit" });
+  // Windows cannot spawn npm.cmd without a shell (Node EINVAL). Pass a fixed
+  // command string with shell:true — no args array (Node DEP0190) — and only
+  // accept hardcoded package-script names from our callers.
+  if (typeof script !== "string" || !/^[A-Za-z0-9:_-]+$/.test(script)) {
+    throw new Error(`Refusing unsafe npm script name: ${JSON.stringify(script)}`);
+  }
+  const child = spawnSync(`npm run ${script}`, { cwd: root, env, stdio: "inherit", shell: true });
   if (child.error) throw child.error;
   if (child.status !== 0) throw new Error(`${script} failed (${child.status})`);
 }
@@ -66,4 +71,4 @@ async function main() {
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exitCode = 1; });
 
-module.exports = { runFullPipeline };
+module.exports = { runFullPipeline, runNpm };

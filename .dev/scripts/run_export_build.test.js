@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const { runFullPipeline } = require("./run_export_build.js");
+const { runFullPipeline, runNpm } = require("./run_export_build.js");
 
 function recorder() {
   const calls = [];
@@ -36,4 +36,11 @@ test("FULL can skip only the final Player Map publication for offline diagnosis"
   assert.equal(calls.some((call) => call[1] === "player-map:check"), true);
   assert.equal(calls.some((call) => call[1] === "player-map:publish"), false);
   assert.deepEqual(calls.at(-1), ["node", ".tools/tts-save/build-session-start.js", "--full"]);
+});
+
+test("runNpm refuses script names that would break the fixed shell command", () => {
+  assert.throws(
+    () => runNpm("player-map:data:build && echo pwned", process.env),
+    /Refusing unsafe npm script name/
+  );
 });
