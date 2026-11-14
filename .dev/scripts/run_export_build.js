@@ -3,7 +3,7 @@ const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { fetchSnapshot, validateSnapshot, root, writeAtomic } = require("./lib/sheet_exports.js");
+const { fetchSnapshot, validateSnapshot, root, writeAtomic, defaultSnapshotPath } = require("./lib/sheet_exports.js");
 function run(script, env, args = []) {
   const child = spawnSync(process.execPath, [path.join(root, script), ...args], { cwd: root, env, stdio: "inherit" });
   if (child.error) throw child.error;
@@ -19,6 +19,13 @@ function runNpm(script, env) {
   const child = spawnSync(`npm run ${script}`, { cwd: root, env, stdio: "inherit", shell: true });
   if (child.error) throw child.error;
   if (child.status !== 0) throw new Error(`${script} failed (${child.status})`);
+}
+/** Persist the validated live snapshot so local Dashboard / Player Map reuse matches FULL. */
+function refreshDashboardExportCache(snapshot, { liveFetch, cachePath = defaultSnapshotPath, write = writeAtomic, log = console.log } = {}) {
+  if (!liveFetch) return false;
+  write(cachePath, JSON.stringify(snapshot));
+  log(`[exports] Refreshed Dashboard export cache → ${cachePath}`);
+  return true;
 }
 function runFullPipeline(env, actions = { run, runNpm }) {
   // Generate from the same temporary Sheet snapshot before any consumer can
@@ -45,10 +52,14 @@ async function main() {
   if (full && check) throw new Error("--full and --check cannot be combined");
   // Write-back must finish before we read formula-derived exports. It is a no-op without pending edits.
   if (full) run(".dev/storyteller-dashboard/scripts/npc-stats/push.ts", process.env);
-  const snapshot = process.env.TR_EXPORT_SNAPSHOT ? validateSnapshot(JSON.parse(fs.readFileSync(process.env.TR_EXPORT_SNAPSHOT, "utf8"))) : await fetchSnapshot();
+  const liveFetch = !process.env.TR_EXPORT_SNAPSHOT;
+  const snapshot = liveFetch ? await fetchSnapshot() : validateSnapshot(JSON.parse(fs.readFileSync(process.env.TR_EXPORT_SNAPSHOT, "utf8")));
   const { validateExportData } = require("./lib/validate_export_data.js");
   const counts = validateExportData(snapshot);
   for (const warning of snapshot.warnings) console.warn(`[exports] ${warning}`);
+  // FULL (and any other live export build) must refresh the gitignored Dashboard
+  // cache. Offline TR_EXPORT_SNAPSHOT replay leaves that file alone.
+  refreshDashboardExportCache(snapshot, { liveFetch });
   if (check) {
     console.log("[exports] All exports validated:", counts);
     return;
@@ -71,4 +82,4 @@ async function main() {
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exitCode = 1; });
 
-module.exports = { runFullPipeline, runNpm };
+module.exports = { runFullPipeline, runNpm, refreshDashboardExportCache };

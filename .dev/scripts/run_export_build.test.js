@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const { runFullPipeline, runNpm } = require("./run_export_build.js");
+const { runFullPipeline, runNpm, refreshDashboardExportCache } = require("./run_export_build.js");
 
 function recorder() {
   const calls = [];
@@ -43,4 +43,27 @@ test("runNpm refuses script names that would break the fixed shell command", () 
     () => runNpm("player-map:data:build && echo pwned", process.env),
     /Refusing unsafe npm script name/
   );
+});
+
+test("live export builds refresh the Dashboard sheet-exports cache", () => {
+  const writes = [];
+  const logs = [];
+  const snapshot = { version: 1, tables: {} };
+  assert.equal(refreshDashboardExportCache(snapshot, {
+    liveFetch: true,
+    cachePath: "sheet-exports.json",
+    write: (file, contents) => writes.push([file, contents]),
+    log: (message) => logs.push(message),
+  }), true);
+  assert.deepEqual(writes, [["sheet-exports.json", JSON.stringify(snapshot)]]);
+  assert.match(logs[0], /Refreshed Dashboard export cache/);
+});
+
+test("offline TR_EXPORT_SNAPSHOT replay leaves the Dashboard cache alone", () => {
+  const writes = [];
+  assert.equal(refreshDashboardExportCache({ version: 1 }, {
+    liveFetch: false,
+    write: (file, contents) => writes.push([file, contents]),
+  }), false);
+  assert.deepEqual(writes, []);
 });
