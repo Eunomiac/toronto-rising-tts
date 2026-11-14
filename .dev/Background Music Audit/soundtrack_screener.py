@@ -22,6 +22,7 @@ import argparse
 import csv
 import json
 import math
+import os
 import shutil
 import subprocess
 import sys
@@ -573,10 +574,32 @@ def main() -> int:
         help="Prefer AI on passages at/above this DSP stability score (default: 45)",
     )
     parser.add_argument("--ai-samples", type=int, default=3, help="AI excerpts per chosen passage (default: 3)")
+    parser.add_argument(
+        "--ai-threads",
+        type=int,
+        default=0,
+        help="Limit PyTorch/CPU math threads for --ai (0 = library default; try 2 to leave headroom for other work)",
+    )
     parser.add_argument("--ai-model", default="laion/larger_clap_music_and_speech")
     args = parser.parse_args()
     if args.window < CHUNK_SECONDS * 2 or args.step < 1 or args.ai_samples < 1 or args.ai_top < 1:
         parser.error("--window must be >= 20; --step, --ai-samples and --ai-top must be >= 1")
+    if args.ai_threads < 0:
+        parser.error("--ai-threads must be >= 0")
+    if args.ai and args.ai_threads > 0:
+        os.environ["OMP_NUM_THREADS"] = str(args.ai_threads)
+        os.environ["MKL_NUM_THREADS"] = str(args.ai_threads)
+        os.environ["OPENBLAS_NUM_THREADS"] = str(args.ai_threads)
+        os.environ["TORCH_NUM_THREADS"] = str(args.ai_threads)
+        try:
+            import torch
+
+            torch.set_num_threads(args.ai_threads)
+            if hasattr(torch, "set_num_interop_threads"):
+                torch.set_num_interop_threads(max(1, min(2, args.ai_threads)))
+        except ImportError:
+            pass
+        print(f"AI CPU threads limited to {args.ai_threads}", flush=True)
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
         parser.error("ffmpeg and ffprobe must both be on PATH")
     if not args.path.exists():
