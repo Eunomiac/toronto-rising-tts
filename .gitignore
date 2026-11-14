@@ -128,3 +128,5 @@ background-music/**/*.mp3
 .dev/storyteller-dashboard/data/roll-chronicle.json
 .dev/storyteller-dashboard/data/npc-roster.json
 lib/csheet_xp_log_baked.ttslua
+
+.dev/Background Music Audit/__pycache__/
