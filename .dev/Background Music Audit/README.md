@@ -16,6 +16,8 @@ Source of truth:
 - `compare_to_approved.py` — calibration report against that list
 - `soundtrack_screening.csv` — latest scan output (regenerated; not hand-edited)
 - `csv_to_mpcpl.py` — build a Media Player Classic playlist (`.mpcpl`) from the CSV
+- `calibrate_from_folders.py` — learn ranking weights from `background-music/calibration/{approved,rejects}`
+- `calibration_weights.json` / `calibration_centroids.npz` — outputs of calibration (used by the screener)
 - `soundtrack_screening.mpcpl` — ranked audition playlist (partial passages are real split clips under `clips/`)
 
 Verification:
@@ -57,6 +59,16 @@ Then:
 ```powershell
 py ".\.dev\Background Music Audit\compare_to_approved.py"
 ```
+
+### Calibration from your folders
+
+Put known-good beds in `background-music/calibration/approved/` and unsuitable-but-tempting tracks in `background-music/calibration/rejects/` (Intrigue/Combat and future false positives). Then:
+
+```powershell
+py ".\.dev\Background Music Audit\calibrate_from_folders.py" --samples 4
+```
+
+That writes learned weights + audio “average approved/reject” embeddings. The next `--ai` library scan uses them automatically (and skips the `calibration/` folder so those files are not rescored as candidates). After adding new rejects from a bad shortlist, re-run calibration and then re-scan.
 
 ### Media Player Classic playlist
 

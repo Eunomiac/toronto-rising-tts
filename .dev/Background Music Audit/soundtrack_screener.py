@@ -96,6 +96,40 @@ ALL_PROMPTS = (
     + list(MOOD_PROMPTS.values())
 )
 SILENCE_DB = -65.0
+WEIGHTS_PATH = Path(__file__).resolve().with_name("calibration_weights.json")
+CENTROIDS_PATH = Path(__file__).resolve().with_name("calibration_centroids.npz")
+_CALIBRATION_WEIGHTS: dict | None = None
+_CALIBRATION_CENTROIDS: dict[str, np.ndarray] | None = None
+
+
+def load_calibration_weights() -> dict | None:
+    global _CALIBRATION_WEIGHTS
+    if _CALIBRATION_WEIGHTS is not None:
+        return _CALIBRATION_WEIGHTS
+    if not WEIGHTS_PATH.exists():
+        return None
+    import json
+
+    _CALIBRATION_WEIGHTS = json.loads(WEIGHTS_PATH.read_text(encoding="utf-8"))
+    return _CALIBRATION_WEIGHTS
+
+
+def load_calibration_centroids() -> dict[str, np.ndarray] | None:
+    global _CALIBRATION_CENTROIDS
+    if _CALIBRATION_CENTROIDS is not None:
+        return _CALIBRATION_CENTROIDS
+    if not CENTROIDS_PATH.exists():
+        return None
+    data = np.load(CENTROIDS_PATH)
+    _CALIBRATION_CENTROIDS = {
+        "approved_mean": data["approved_mean"],
+        "reject_mean": data["reject_mean"],
+    }
+    return _CALIBRATION_CENTROIDS
+
+
+def is_calibration_path(path: Path) -> bool:
+    return "calibration" in {part.lower() for part in path.parts}
 
 
 @dataclass
@@ -234,7 +268,7 @@ def passages(path: Path, blocks: list[Block], duration: float, window: int, step
             "largest_2s_jump_db": round(jump, 1),
             "texture_shift": round(texture, 3),
             "strings_match": "", "piano_risk": "", "voice_risk": "", "bed_match": "",
-            "mood_match": "", "likely_mood": "",
+            "mood_match": "", "likely_mood": "", "approved_similarity": "",
             "likely_instruments": "", "voice_type": "", "ai_scanned": "no",
         }
 
@@ -267,19 +301,37 @@ def select_ai_candidates(rows: list[dict], top_n: int, min_stability: float) -> 
 
 
 def compute_overall_rank(row: dict) -> float:
-    """Combine DSP stability with CLAP bed/mood/strings/voice/piano signals.
+    """Combine DSP + CLAP features into a 0..100 audition rank.
 
-    bed_match scales stability so loudness-stable combat/tension cues cannot
-    sit beside true beds. mood_match prefers dark/tense over bright/cheerful.
-    Strings/cello are rewarded; piano and vocals/speech are strongly penalized.
+    If calibrate_from_folders.py has written calibration_weights.json, use those
+    learned weights. Otherwise fall back to the hand-tuned heuristic.
     """
+    learned = load_calibration_weights()
+    if learned and row.get("bed_match") not in (None, ""):
+        values = {
+            "stability_score": float(row.get("stability_score") or 0) / 100.0,
+            "bed_match": float(row.get("bed_match") or 0),
+            "mood_match": float(row.get("mood_match") or 0),
+            "strings_match": float(row.get("strings_match") or 0),
+            "piano_risk": float(row.get("piano_risk") or 0),
+            "voice_risk": float(row.get("voice_risk") or 0),
+            # Neutral mid-point when similarity has not been computed yet.
+            "approved_similarity": float(row["approved_similarity"])
+            if row.get("approved_similarity") not in (None, "")
+            else 0.5,
+        }
+        logit = float(learned["intercept"])
+        for key in learned["feature_keys"]:
+            logit += float(learned["weights"][key]) * values[key]
+        prob = 1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, logit))))
+        return float(np.clip(100.0 * prob, 0, 100))
+
     voice_types = {
         part.strip()
         for part in str(row.get("voice_type") or "").split(";")
         if part.strip()
     }
     vocal_labels = {"singing", "choir", "speech"}
-    # Vocals/speech are especially disruptive under table dialogue.
     if voice_types & vocal_labels and "instrumental" not in voice_types:
         voice_coef = 55.0
     elif voice_types & vocal_labels:
@@ -292,7 +344,6 @@ def compute_overall_rank(row: dict) -> float:
     piano = float(row.get("piano_risk") or 0)
     voice = float(row.get("voice_risk") or 0)
     stability = float(row["stability_score"])
-    # Floors keep weak rows visible for audition; weights reward bed + dark mood.
     return float(np.clip(
         stability * (0.35 + 0.65 * bed) * (0.35 + 0.65 * mood)
         + 32 * strings
@@ -300,6 +351,16 @@ def compute_overall_rank(row: dict) -> float:
         - voice_coef * voice,
         0, 100,
     ))
+
+
+def approved_similarity_from_embedding(embedding: np.ndarray) -> float | None:
+    centroids = load_calibration_centroids()
+    if centroids is None:
+        return None
+    emb = embedding / (np.linalg.norm(embedding) + 1e-9)
+    cos_a = float(np.dot(emb, centroids["approved_mean"]))
+    cos_r = float(np.dot(emb, centroids["reject_mean"]))
+    return float(np.clip(0.5 + 0.5 * (cos_a - cos_r), 0, 1))
 
 
 def enrich_with_ai(
@@ -325,6 +386,15 @@ def enrich_with_ai(
     )
     # Device -1 = CPU; set device=0 here if you've set up a CUDA-enabled PyTorch.
     classifier = pipeline("zero-shot-audio-classification", model=model_name, device=-1)
+    clap_model = None
+    clap_processor = None
+    if load_calibration_centroids() is not None:
+        import torch
+        from transformers import AutoProcessor, ClapModel
+
+        clap_model = ClapModel.from_pretrained(model_name)
+        clap_processor = AutoProcessor.from_pretrained(model_name)
+        clap_model.eval()
     for index, row in enumerate(candidates, 1):
         path = Path(row["file"])
         start, end = row["start_seconds"], row["end_seconds"]
@@ -337,6 +407,7 @@ def enrich_with_ai(
         voice_scores: list[float] = []
         bed_scores: list[float] = []
         mood_scores: list[float] = []
+        embeddings: list[np.ndarray] = []
         instrument_tags: list[str] = []
         voice_tags: list[str] = []
         mood_tags: list[str] = []
@@ -376,6 +447,20 @@ def enrich_with_ai(
             instrument_tags.append(max(inst, key=inst.get))
             voice_tags.append(max(voc, key=voc.get))
             mood_tags.append(max(mood, key=mood.get))
+            if clap_model is not None and clap_processor is not None:
+                import torch
+
+                inputs = clap_processor(
+                    audio=[sample.astype(np.float64)],
+                    sampling_rate=AI_SR,
+                    return_tensors="pt",
+                )
+                with torch.no_grad():
+                    emb = clap_model.get_audio_features(**inputs)
+                    if hasattr(emb, "pooler_output"):
+                        emb = emb.pooler_output
+                    emb = emb / emb.norm(dim=-1, keepdim=True)
+                    embeddings.append(emb.squeeze(0).cpu().numpy())
         if string_scores:
             row["strings_match"] = round(float(np.mean(string_scores)), 3)
             row["piano_risk"] = round(float(np.mean(piano_scores)), 3)
@@ -386,6 +471,11 @@ def enrich_with_ai(
             row["likely_mood"] = "; ".join(sorted(set(mood_tags)))
             row["likely_instruments"] = "; ".join(sorted(set(instrument_tags)))
             row["voice_type"] = "; ".join(sorted(set(voice_tags)))
+            if embeddings:
+                mean_emb = np.mean(np.stack(embeddings), axis=0)
+                sim = approved_similarity_from_embedding(mean_emb)
+                if sim is not None:
+                    row["approved_similarity"] = round(sim, 3)
             row["ai_scanned"] = "yes"
 
 
@@ -418,7 +508,10 @@ def main() -> int:
     if not args.path.exists():
         parser.error(f"Not found: {args.path}")
     files = (
-        sorted(p for p in args.path.rglob("*") if p.suffix.lower() in AUDIO_EXTENSIONS)
+        sorted(
+            p for p in args.path.rglob("*")
+            if p.suffix.lower() in AUDIO_EXTENSIONS and not is_calibration_path(p)
+        )
         if args.path.is_dir() else [args.path]
     )
     if not files:
@@ -468,8 +561,8 @@ def main() -> int:
         "file", "start", "end", "stability_score", "dynamic_range_db",
         "loudness_spike_db", "largest_2s_jump_db", "texture_shift",
         "strings_match", "piano_risk", "voice_risk", "bed_match", "mood_match",
-        "likely_mood", "likely_instruments", "voice_type", "overall_rank",
-        "ai_scanned", "start_seconds", "end_seconds",
+        "likely_mood", "approved_similarity", "likely_instruments", "voice_type",
+        "overall_rank", "ai_scanned", "start_seconds", "end_seconds",
     ]
     with output_path.open("w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)

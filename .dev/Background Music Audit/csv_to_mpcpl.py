@@ -88,11 +88,12 @@ def build_label(row: dict, media_path: Path, split: bool) -> str:
     strings = row.get("strings_match") or "—"
     piano = row.get("piano_risk") or "—"
     voice = row.get("voice_risk") or "—"
+    sim = row.get("approved_similarity") or "—"
     marker = "clip" if split else "full"
     return (
         f"{rank} | {media_path.stem} | {row['start']}-{row['end']} | "
-        f"bed={bed} mood={mood}/{mood_tag} str={strings} piano={piano} "
-        f"voice={voice} | {marker}"
+        f"bed={bed} mood={mood}/{mood_tag} sim={sim} str={strings} "
+        f"piano={piano} voice={voice} | {marker}"
     )
 
 
