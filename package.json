@@ -30,6 +30,7 @@
     "npc-stats:import": "node .dev/storyteller-dashboard/scripts/npc-stats/import.ts",
     "npc-stats:check-sheet": "node .dev/storyteller-dashboard/scripts/npc-stats/check-sheet.ts",
     "npc-stats:push": "node .dev/storyteller-dashboard/scripts/npc-stats/push.ts",
+    "disciplines:import": "npm --prefix .dev/storyteller-dashboard run disciplines:import",
     "cloud:pull": "node .tools/tts-cloud/cloud-pull.js",
     "cloud:push": "node .tools/tts-cloud/cloud-push.js",
     "cloud:audit": "node .tools/tts-cloud/cloud-audit.js",

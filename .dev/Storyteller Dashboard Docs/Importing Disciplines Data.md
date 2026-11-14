@@ -6,7 +6,9 @@ The Storyteller Dashboard shows Power, Ritual, and Ceremony tooltips from a loca
 
 ## Import
 
-From `.dev/storyteller-dashboard/`:
+`npm run build:full` (and `npm run exports:build`) runs this automatically after the NPC stats import, using the same validated `TR_EXPORT_SNAPSHOT` as the other sheet consumers.
+
+Standalone (from the repo root or `.dev/storyteller-dashboard/`):
 
 ```bash
 npm run disciplines:import
@@ -14,12 +16,12 @@ npm run disciplines:import
 
 What it does:
 
-1. Reads `EXPORT_DISCIPLINES` from the local sheet-exports snapshot (or set `TR_DISCIPLINES_REFRESH_EXPORT=1` to re-fetch all exports first).
+1. Reads `EXPORT_DISCIPLINES` from `TR_EXPORT_SNAPSHOT` when set (FULL / `exports:build`), otherwise the local sheet-exports cache (or set `TR_DISCIPLINES_REFRESH_EXPORT=1` to re-fetch all exports first).
 2. Downloads the public `.xlsx` of [V5: DISCIPLINES](https://docs.google.com/spreadsheets/d/1U8Ktl4iHOwqldvikCKtEdXd56Mgt6LGukP4P_sjC0ME) (or set `TR_DISCIPLINES_XLSX` to a local file).
 3. Parses OOXML rich text for **System** and **Duration** (bold, italic, underline, colors, fonts, line breaks, `●` / `○` / `▸` bullets).
-4. Writes git-ignored `data/disciplines-catalog.json`.
+4. Writes git-ignored `.dev/storyteller-dashboard/data/disciplines-catalog.json`.
 
-Serve with `npm run dev`. The client loads `GET /api/disciplines`.
+Serve with `npm run storyteller-dashboard:dev` or `npm run dev` in the dashboard folder. The client loads `GET /api/disciplines`.
 
 ## Tooltip HTML
 

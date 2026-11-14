@@ -74,6 +74,8 @@ async function main() {
     if (!full) scripts.push("import_skyboxes_from_sheet.js", "import_locations_from_sheet.js");
     for (const script of scripts) run(`.dev/scripts/${script}`, env);
     run(".dev/storyteller-dashboard/scripts/npc-stats/import.ts", env);
+    // Disciplines catalog (git-ignored) needs the same snapshot plus the V5: DISCIPLINES xlsx for styled System/Duration.
+    run(".dev/storyteller-dashboard/scripts/disciplines/import.ts", env);
     console.log(full ? "[exports] All exports validated; asset joins follow cloud sync:" : "[exports] All exports generated successfully:", counts);
     if (full) {
       runFullPipeline(env);
