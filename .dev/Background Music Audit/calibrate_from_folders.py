@@ -149,11 +149,31 @@ def cosine(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-9))
 
 
-def fit_logistic(X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None) -> np.ndarray:
-    """Return weight vector [intercept, ...features] with light L2 regularization."""
+def fit_logistic(
+    X: np.ndarray,
+    y: np.ndarray,
+    sample_weight: np.ndarray | None = None,
+    feature_keys: list[str] | None = None,
+) -> np.ndarray:
+    """Return weight vector [intercept, ...features] with light L2 regularization.
+
+    Aesthetic sign constraints keep future fits from rewarding vocals or
+    non-ominous mood just because CLAP mis-tags string beds.
+    """
     if sample_weight is None:
         sample_weight = np.ones(len(y), dtype=float)
     sample_weight = sample_weight / (np.mean(sample_weight) + 1e-9)
+    feature_keys = feature_keys or []
+
+    # bounds: intercept free; voice/piano <= 0; mood/strings/bed/sim >= 0
+    bounds: list[tuple[float | None, float | None]] = [(None, None)]
+    for key in feature_keys:
+        if key in {"voice_risk", "piano_risk"}:
+            bounds.append((None, 0.0))
+        elif key in {"mood_match", "strings_match", "bed_match", "approved_similarity"}:
+            bounds.append((0.0, None))
+        else:
+            bounds.append((None, None))
 
     def nll(w: np.ndarray) -> float:
         z = X @ w
@@ -163,7 +183,7 @@ def fit_logistic(X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None 
         return float(-np.mean(sample_weight * ll) + 0.05 * np.sum(w[1:] ** 2))
 
     w0 = np.zeros(X.shape[1], dtype=float)
-    result = minimize(nll, w0, method="L-BFGS-B")
+    result = minimize(nll, w0, method="L-BFGS-B", bounds=bounds)
     if not result.success:
         print(f"WARNING: optimizer reported {result.message}", file=sys.stderr)
     return result.x
@@ -317,7 +337,7 @@ def main() -> int:
     sw = np.array(sample_weights, dtype=float)
     X_feat = np.array([[rec[k] for k in FEATURE_KEYS] for rec in records], dtype=float)
     X = np.concatenate([np.ones((len(records), 1)), X_feat], axis=1)
-    weights = fit_logistic(X, y, sw)
+    weights = fit_logistic(X, y, sw, FEATURE_KEYS)
 
     logits = X @ weights
     probs = 1.0 / (1.0 + np.exp(-np.clip(logits, -30, 30)))

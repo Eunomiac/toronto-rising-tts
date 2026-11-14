@@ -113,6 +113,6 @@ Against `Pre-Approved Plague Tale Tracks.md` on the original Plague Tale OST:
 - **Before retune:** Main-only median DSP score was ~0 (album fades/silence jumps crushed usable beds).
 - **After silence-aware jumps + softer texture penalty:** Main-only median ~86; 20/25 Main tracks score ≥ 45.
 - **Remaining DSP gap:** some Combat/Intrigue cues are loudness-stable too (*Escape* scored 100 on DSP alone).
-- **AI pass:** CLAP `bed_match` demotes loudness-stable combat/tension cues. `mood_match` prefers ominous/sinister/haunting (+ tense) over bright/cheerful and sorrowful/melancholy. Strings/cello are boosted; piano and vocals/speech are strongly penalized. `overall_rank` multiplies DSP stability by both bed and mood.
+- **AI + calibration:** `approved_similarity` is the main learned signal from perfect/approved/rejects. Final `overall_rank` is a **hybrid**: similarity + bed/strings, with hard guards that strongly demote vocals/speech and prefer ominous/tense mood over sorrowful/bright. Unconstrained logistic weights alone were not trusted for voice/mood (they had rewarded choir-tagged string beds).
 
 Always audition before using a passage in session. If you change the overall-rank formula, run `py recompute_overall.py` instead of re-downloading the model.

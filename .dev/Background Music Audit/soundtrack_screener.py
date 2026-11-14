@@ -72,9 +72,10 @@ BED_PROMPTS = {
 # Mood prompts for Vampire: the Masquerade / Toronto Rising beds.
 # Prefer ominous/sinister/haunting atmosphere — not sorrowful/tearful melancholy.
 MOOD_PROMPTS = {
+    # Key name stays "dark" in CSV; playlist labels map it to "ominous".
     "dark": (
-        "Dark, ominous, sinister, haunting music with a nocturnal, predatory, "
-        "quietly threatening atmosphere — gothic dread rather than tearful sadness."
+        "Ominous, sinister, haunting, gothic underscore with a nocturnal, "
+        "predatory, quietly threatening atmosphere — dread and danger, not tears."
     ),
     "bright": (
         "Bright, cheerful, optimistic, hopeful music with a warm, major-key, "
@@ -82,11 +83,11 @@ MOOD_PROMPTS = {
     ),
     "melancholy": (
         "Sorrowful, mournful, tearful, grieving music that feels sad and emotional "
-        "rather than dangerous or sinister."
+        "rather than dangerous, ominous, or sinister."
     ),
     "tense": (
-        "Uneasy, suspenseful underscore with quiet dread, paranoia, and held breath "
-        "rather than open melody or open hope."
+        "Uneasy, suspenseful, haunting underscore with quiet dread, paranoia, and "
+        "held breath rather than open melody or open hope."
     ),
 }
 ALL_PROMPTS = (
@@ -301,56 +302,74 @@ def select_ai_candidates(rows: list[dict], top_n: int, min_stability: float) -> 
 
 
 def compute_overall_rank(row: dict) -> float:
-    """Combine DSP + CLAP features into a 0..100 audition rank.
+    """Combine calibration similarity with hard aesthetic guards.
 
-    If calibrate_from_folders.py has written calibration_weights.json, use those
-    learned weights. Otherwise fall back to the hand-tuned heuristic.
+    Calibration is trusted for "sounds like my perfect/approved beds"
+    (approved_similarity) plus helpful bed/strings cues. Voice and mood are
+    NOT left to unconstrained logistic weights: the fit on Plague Tale labels
+    sometimes rewarded high voice_risk / low ominous mood because CLAP tags
+    string beds as choir/melancholy. Those must stay hand-guarded.
     """
-    learned = load_calibration_weights()
-    if learned and row.get("bed_match") not in (None, ""):
-        values = {
-            "stability_score": float(row.get("stability_score") or 0) / 100.0,
-            "bed_match": float(row.get("bed_match") or 0),
-            "mood_match": float(row.get("mood_match") or 0),
-            "strings_match": float(row.get("strings_match") or 0),
-            "piano_risk": float(row.get("piano_risk") or 0),
-            "voice_risk": float(row.get("voice_risk") or 0),
-            # Neutral mid-point when similarity has not been computed yet.
-            "approved_similarity": float(row["approved_similarity"])
-            if row.get("approved_similarity") not in (None, "")
-            else 0.5,
-        }
-        logit = float(learned["intercept"])
-        for key in learned["feature_keys"]:
-            logit += float(learned["weights"][key]) * values[key]
-        prob = 1.0 / (1.0 + math.exp(-max(-30.0, min(30.0, logit))))
-        return float(np.clip(100.0 * prob, 0, 100))
+    if row.get("bed_match") in (None, ""):
+        return 0.0
 
-    voice_types = {
-        part.strip()
+    sim = (
+        float(row["approved_similarity"])
+        if row.get("approved_similarity") not in (None, "")
+        else 0.5
+    )
+    bed = float(row.get("bed_match") or 0)
+    # mood_match = share of dark/tense (ominous) vs bright/melancholy prompts.
+    ominous = float(row.get("mood_match") or 0)
+    strings = float(row.get("strings_match") or 0)
+    piano = float(row.get("piano_risk") or 0)
+    voice = float(row.get("voice_risk") or 0)
+    stability = float(row.get("stability_score") or 0) / 100.0
+
+    mood_tags = {
+        part.strip().lower()
+        for part in str(row.get("likely_mood") or "").split(";")
+        if part.strip()
+    }
+    voice_tags = {
+        part.strip().lower()
         for part in str(row.get("voice_type") or "").split(";")
         if part.strip()
     }
     vocal_labels = {"singing", "choir", "speech"}
-    if voice_types & vocal_labels and "instrumental" not in voice_types:
-        voice_coef = 55.0
-    elif voice_types & vocal_labels:
-        voice_coef = 42.0
-    else:
-        voice_coef = 22.0
-    bed = float(row["bed_match"])
-    mood = float(row.get("mood_match") or 0)
-    strings = float(row.get("strings_match") or 0)
-    piano = float(row.get("piano_risk") or 0)
-    voice = float(row.get("voice_risk") or 0)
-    stability = float(row["stability_score"])
-    return float(np.clip(
-        stability * (0.35 + 0.65 * bed) * (0.35 + 0.65 * mood)
-        + 32 * strings
-        - 30 * piano
-        - voice_coef * voice,
-        0, 100,
-    ))
+
+    # Similarity is the main calibration channel; guards enforce TR aesthetics.
+    score = (
+        100.0 * (0.50 * sim + 0.15 * bed + 0.20 * ominous + 0.15 * strings)
+        + 8.0 * stability
+        - 25.0 * piano
+        - 55.0 * voice
+    )
+
+    # Near-certain vocal detections must not sit in the top of the shortlist.
+    if voice >= 0.95:
+        score *= 0.25
+    elif voice >= 0.80:
+        score *= 0.40
+    elif voice >= 0.60:
+        score *= 0.65
+
+    if voice_tags & vocal_labels and "instrumental" not in voice_tags:
+        score *= 0.55
+    elif voice_tags & vocal_labels:
+        score *= 0.75
+
+    # Prefer ominous/haunting; demote sorrowful or bright-dominant tags.
+    if mood_tags & {"melancholy", "bright"} and not (mood_tags & {"dark", "tense"}):
+        score *= 0.55
+    elif "melancholy" in mood_tags and "dark" not in mood_tags:
+        score *= 0.75
+    if ominous < 0.25:
+        score *= 0.70
+    elif ominous >= 0.55:
+        score += 6.0
+
+    return float(np.clip(score, 0, 100))
 
 
 def approved_similarity_from_embedding(embedding: np.ndarray) -> float | None:
