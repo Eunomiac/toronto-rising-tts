@@ -62,13 +62,19 @@ py ".\.dev\Background Music Audit\compare_to_approved.py"
 
 ### Calibration from your folders
 
-Put known-good beds in `background-music/calibration/approved/` and unsuitable-but-tempting tracks in `background-music/calibration/rejects/` (Intrigue/Combat and future false positives). Then:
+Put tracks in one folder only under `background-music/calibration/`:
+
+- `perfect/` — a small set of peak aesthetic examples (optional but useful)
+- `approved/` — solid Main beds that are still good yes-examples
+- `rejects/` — Intrigue/Combat and future false positives
+
+Then:
 
 ```powershell
 py ".\.dev\Background Music Audit\calibrate_from_folders.py" --samples 4
 ```
 
-That writes learned weights + audio “average approved/reject” embeddings. The next `--ai` library scan uses them automatically (and skips the `calibration/` folder so those files are not rescored as candidates). After adding new rejects from a bad shortlist, re-run calibration and then re-scan.
+That writes learned weights + embeddings. Similarity is anchored on `perfect/` when present (otherwise on all positives). Perfect tracks also get extra training weight. The next `--ai` library scan uses the results automatically and skips `calibration/` so those files are not treated as candidates. After adding new rejects or reshuffling perfect/approved, re-run calibration and then re-scan.
 
 ### Media Player Classic playlist
 

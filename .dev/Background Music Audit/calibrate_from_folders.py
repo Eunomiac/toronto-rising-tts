@@ -149,15 +149,18 @@ def cosine(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-9))
 
 
-def fit_logistic(X: np.ndarray, y: np.ndarray) -> np.ndarray:
+def fit_logistic(X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None) -> np.ndarray:
     """Return weight vector [intercept, ...features] with light L2 regularization."""
+    if sample_weight is None:
+        sample_weight = np.ones(len(y), dtype=float)
+    sample_weight = sample_weight / (np.mean(sample_weight) + 1e-9)
 
     def nll(w: np.ndarray) -> float:
         z = X @ w
         z = np.clip(z, -30, 30)
         p = 1.0 / (1.0 + np.exp(-z))
         ll = y * np.log(p + 1e-9) + (1 - y) * np.log(1 - p + 1e-9)
-        return float(-np.mean(ll) + 0.05 * np.sum(w[1:] ** 2))
+        return float(-np.mean(sample_weight * ll) + 0.05 * np.sum(w[1:] ** 2))
 
     w0 = np.zeros(X.shape[1], dtype=float)
     result = minimize(nll, w0, method="L-BFGS-B")
@@ -224,10 +227,16 @@ def main() -> int:
         "--calibration-root",
         type=Path,
         default=DEFAULT_CALIBRATION,
-        help="Folder containing approved/ and rejects/",
+        help="Folder containing approved/, rejects/, and optional perfect/",
     )
     parser.add_argument("--samples", type=int, default=4, help="CLAP excerpts per calibration track (default: 4)")
     parser.add_argument("--model", default="laion/larger_clap_music_and_speech")
+    parser.add_argument(
+        "--perfect-weight",
+        type=float,
+        default=2.0,
+        help="Extra training weight for tracks in perfect/ (default: 2.0)",
+    )
     parser.add_argument(
         "--apply-csv",
         action="store_true",
@@ -237,12 +246,15 @@ def main() -> int:
 
     approved_dir = args.calibration_root / "approved"
     rejects_dir = args.calibration_root / "rejects"
+    perfect_dir = args.calibration_root / "perfect"
     approved = list_audio(approved_dir)
     rejects = list_audio(rejects_dir)
-    if not approved or not rejects:
+    perfect = list_audio(perfect_dir)
+    # Positives = approved + perfect (each file should live in only one folder).
+    if not (approved or perfect) or not rejects:
         print(
-            f"Need audio in both {approved_dir} and {rejects_dir} "
-            f"(found {len(approved)} approved, {len(rejects)} rejects)",
+            f"Need rejects/ plus approved/ and/or perfect/ "
+            f"(found {len(approved)} approved, {len(perfect)} perfect, {len(rejects)} rejects)",
             file=sys.stderr,
         )
         return 1
@@ -259,9 +271,15 @@ def main() -> int:
 
     records: list[dict] = []
     labels: list[int] = []
+    kinds: list[str] = []
+    sample_weights: list[float] = []
 
-    for label, paths in ((1, approved), (0, rejects)):
-        tag = "approved" if label else "rejects"
+    groups = (
+        ("perfect", 1, perfect, float(args.perfect_weight)),
+        ("approved", 1, approved, 1.0),
+        ("rejects", 0, rejects, 1.0),
+    )
+    for tag, label, paths, weight in groups:
         for i, path in enumerate(paths, 1):
             print(f"[{tag} {i}/{len(paths)}] {path.name}", flush=True)
             try:
@@ -269,16 +287,22 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 - report and continue calibration set
                 print(f"  SKIPPED: {exc}", file=sys.stderr, flush=True)
                 continue
+            rec["kind"] = tag
             records.append(rec)
             labels.append(label)
+            kinds.append(tag)
+            sample_weights.append(weight)
 
     if len(records) < 4 or len(set(labels)) < 2:
         print("Not enough scored calibration tracks to fit weights.", file=sys.stderr)
         return 1
 
-    approved_embs = [r["embedding"] for r, y in zip(records, labels) if y == 1]
+    # Similarity target: prefer perfect centroid when available; else all positives.
+    perfect_embs = [r["embedding"] for r, k in zip(records, kinds) if k == "perfect"]
+    positive_embs = [r["embedding"] for r, y in zip(records, labels) if y == 1]
     reject_embs = [r["embedding"] for r, y in zip(records, labels) if y == 0]
-    approved_mean = np.mean(np.stack(approved_embs), axis=0)
+    target_embs = perfect_embs if perfect_embs else positive_embs
+    approved_mean = np.mean(np.stack(target_embs), axis=0)
     reject_mean = np.mean(np.stack(reject_embs), axis=0)
     approved_mean = approved_mean / (np.linalg.norm(approved_mean) + 1e-9)
     reject_mean = reject_mean / (np.linalg.norm(reject_mean) + 1e-9)
@@ -290,28 +314,39 @@ def main() -> int:
         rec["approved_similarity"] = float(np.clip(0.5 + 0.5 * (cos_a - cos_r), 0, 1))
 
     y = np.array(labels, dtype=float)
+    sw = np.array(sample_weights, dtype=float)
     X_feat = np.array([[rec[k] for k in FEATURE_KEYS] for rec in records], dtype=float)
     X = np.concatenate([np.ones((len(records), 1)), X_feat], axis=1)
-    weights = fit_logistic(X, y)
+    weights = fit_logistic(X, y, sw)
 
     logits = X @ weights
     probs = 1.0 / (1.0 + np.exp(-np.clip(logits, -30, 30)))
     metrics = confusion(probs, y)
 
-    # Leave-one-out style sanity: mean approved_similarity for each class.
-    sim_approved = np.mean([r["approved_similarity"] for r, lab in zip(records, labels) if lab == 1])
-    sim_reject = np.mean([r["approved_similarity"] for r, lab in zip(records, labels) if lab == 0])
+    sim_perfect = (
+        float(np.mean([r["approved_similarity"] for r, k in zip(records, kinds) if k == "perfect"]))
+        if perfect_embs else None
+    )
+    sim_approved = (
+        float(np.mean([r["approved_similarity"] for r, k in zip(records, kinds) if k == "approved"]))
+        if any(k == "approved" for k in kinds) else None
+    )
+    sim_reject = float(np.mean([r["approved_similarity"] for r, y in zip(records, labels) if y == 0]))
 
     payload = {
         "feature_keys": FEATURE_KEYS,
         "intercept": float(weights[0]),
         "weights": {k: float(v) for k, v in zip(FEATURE_KEYS, weights[1:])},
         "metrics": metrics,
-        "n_approved": int(np.sum(y == 1)),
+        "n_perfect": sum(1 for k in kinds if k == "perfect"),
+        "n_approved": sum(1 for k in kinds if k == "approved"),
         "n_rejects": int(np.sum(y == 0)),
+        "perfect_weight": float(args.perfect_weight),
+        "similarity_centroid": "perfect" if perfect_embs else "approved+perfect",
         "mean_approved_similarity": {
-            "approved_tracks": float(sim_approved),
-            "reject_tracks": float(sim_reject),
+            "perfect_tracks": sim_perfect,
+            "approved_tracks": sim_approved,
+            "reject_tracks": sim_reject,
         },
         "model": args.model,
         "samples_per_track": args.samples,
@@ -329,22 +364,28 @@ def main() -> int:
         f"approved_recall={metrics['approved_recall']:.2%}  "
         f"tp={metrics['tp']} tn={metrics['tn']} fp={metrics['fp']} fn={metrics['fn']}"
     )
-    print(
-        f"  mean approved_similarity: approved={sim_approved:.3f}  rejects={sim_reject:.3f}"
-    )
+    print("  mean approved_similarity:")
+    if sim_perfect is not None:
+        print(f"    perfect  = {sim_perfect:.3f}")
+    if sim_approved is not None:
+        print(f"    approved = {sim_approved:.3f}")
+    print(f"    rejects  = {sim_reject:.3f}")
+    print(f"  similarity centroid source: {payload['similarity_centroid']}")
     print(f"\nWrote {WEIGHTS_PATH}")
     print(f"Wrote {CENTROIDS_PATH}")
 
     # Rank calibration tracks by learned score for a quick sanity listen list.
     print("\nCalibration tracks by learned score (high = more 'approved'):")
     ranked = sorted(
-        zip(records, labels, probs),
+        zip(records, kinds, probs),
         key=lambda t: t[2],
         reverse=True,
     )
-    for rec, lab, prob in ranked:
-        tag = "APPROVED" if lab == 1 else "REJECT "
-        print(f"  {prob:5.3f}  {tag}  sim={rec['approved_similarity']:.3f}  {Path(rec['file']).name}")
+    for rec, kind, prob in ranked:
+        print(
+            f"  {prob:5.3f}  {kind.upper():8}  "
+            f"sim={rec['approved_similarity']:.3f}  {Path(rec['file']).name}"
+        )
 
     if args.apply_csv:
         apply_weights_to_csv(payload)

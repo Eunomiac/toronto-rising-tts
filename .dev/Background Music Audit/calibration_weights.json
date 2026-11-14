@@ -8,30 +8,34 @@
     "voice_risk",
     "approved_similarity"
   ],
-  "intercept": 0.9703328990080943,
+  "intercept": 1.2477220447455188,
   "weights": {
-    "stability_score": -0.33319528432276363,
-    "bed_match": 0.7552488254000332,
-    "mood_match": -0.5944411195790208,
-    "strings_match": 0.4504966495609465,
-    "piano_risk": 0.022263064604113307,
-    "voice_risk": 0.1246624987989261,
-    "approved_similarity": 0.2924847359689072
+    "stability_score": -0.27893782393069566,
+    "bed_match": 0.6663277255648757,
+    "mood_match": -0.5382138401318908,
+    "strings_match": 0.46325451322607825,
+    "piano_risk": 0.016362172922698367,
+    "voice_risk": 0.10846923710309726,
+    "approved_similarity": 0.21769352727732072
   },
   "metrics": {
-    "tp": 24,
+    "tp": 28,
     "tn": 0,
     "fp": 8,
     "fn": 0,
-    "accuracy": 0.75,
+    "accuracy": 0.7777777777777778,
     "approved_recall": 1.0,
     "reject_precision": 0.0
   },
-  "n_approved": 24,
+  "n_perfect": 6,
+  "n_approved": 22,
   "n_rejects": 8,
+  "perfect_weight": 2.0,
+  "similarity_centroid": "perfect",
   "mean_approved_similarity": {
-    "approved_tracks": 0.5950312769661347,
-    "reject_tracks": 0.3972497880458832
+    "perfect_tracks": 0.5937860508759817,
+    "approved_tracks": 0.5719083473086357,
+    "reject_tracks": 0.4063931293785572
   },
   "model": "laion/larger_clap_music_and_speech",
   "samples_per_track": 4
