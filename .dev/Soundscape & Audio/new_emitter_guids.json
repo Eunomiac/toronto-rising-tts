@@ -1,0 +1,114 @@
+{
+  "guids": {
+    "SOUNDSCAPE_MUSIC_A_1": "9fb097",
+    "SOUNDSCAPE_MUSIC_A_2": "e8343e",
+    "SOUNDSCAPE_MUSIC_B_1": "fc15a8",
+    "SOUNDSCAPE_MUSIC_B_2": "2f0fc8",
+    "SOUNDSCAPE_MUSIC_C_1": "f611cb",
+    "SOUNDSCAPE_MUSIC_C_2": "8c9189",
+    "SOUNDSCAPE_SESSIONSTARTERS": "24ec1c",
+    "SOUNDSCAPE_LOCATION_A_1": "119c4e",
+    "SOUNDSCAPE_LOCATION_A_2": "863493",
+    "SOUNDSCAPE_LOCATION_B_1": "c2ff9c",
+    "SOUNDSCAPE_LOCATION_B_2": "1d253b",
+    "SOUNDSCAPE_WEATHER_RAIN": "506469",
+    "SOUNDSCAPE_WEATHER_WIND": "d87890",
+    "SOUNDSCAPE_WEATHER_THUNDER": "9dbbbd"
+  },
+  "urls": {
+    "music_a": "https://steamusercontent-a.akamaihd.net/ugc/9934436633982862978/2636643C3E23753F97F337969E8C0D97A753B171/",
+    "music_b": "https://steamusercontent-a.akamaihd.net/ugc/13272524759584242943/F88722586BD938FB5A51D76C4920D7C5B12FDF41/",
+    "music_c": "https://steamusercontent-a.akamaihd.net/ugc/13109732593224810046/50E0D3E698B3AEE3B0C1D9FA6AC07B75F24BBE54/",
+    "sessionstarters": "https://steamusercontent-a.akamaihd.net/ugc/15535418419740242630/F9FBE2FCF214944494C20F552834C43FA898CDFC/",
+    "location_a": "https://steamusercontent-a.akamaihd.net/ugc/18074363500698293260/7FDAB03948475295454F77BD3938A93770C250D0/",
+    "location_b": "https://steamusercontent-a.akamaihd.net/ugc/16963522729041244017/FABFA9F727B376249714D20EFA18518D94A68F0A/",
+    "weather": "https://steamusercontent-a.akamaihd.net/ugc/13185439109300550930/3D3D878E9966A39BFB1352086E7E0CFCEFEA5CEA/",
+    "thunder": "https://steamusercontent-a.akamaihd.net/ugc/14509421228892389276/C6AECE642F55783BA5C236263C1004A6D66FB43F/"
+  },
+  "created": [
+    {
+      "gm": "SOUNDSCAPE_MUSIC_A_1",
+      "guid": "9fb097",
+      "bundle": "music_a",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/9934436633982862978/2636643C3E23753F97F337969E8C0D97A753B171/"
+    },
+    {
+      "gm": "SOUNDSCAPE_MUSIC_A_2",
+      "guid": "e8343e",
+      "bundle": "music_a",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/9934436633982862978/2636643C3E23753F97F337969E8C0D97A753B171/"
+    },
+    {
+      "gm": "SOUNDSCAPE_MUSIC_B_1",
+      "guid": "fc15a8",
+      "bundle": "music_b",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/13272524759584242943/F88722586BD938FB5A51D76C4920D7C5B12FDF41/"
+    },
+    {
+      "gm": "SOUNDSCAPE_MUSIC_B_2",
+      "guid": "2f0fc8",
+      "bundle": "music_b",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/13272524759584242943/F88722586BD938FB5A51D76C4920D7C5B12FDF41/"
+    },
+    {
+      "gm": "SOUNDSCAPE_MUSIC_C_1",
+      "guid": "f611cb",
+      "bundle": "music_c",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/13109732593224810046/50E0D3E698B3AEE3B0C1D9FA6AC07B75F24BBE54/"
+    },
+    {
+      "gm": "SOUNDSCAPE_MUSIC_C_2",
+      "guid": "8c9189",
+      "bundle": "music_c",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/13109732593224810046/50E0D3E698B3AEE3B0C1D9FA6AC07B75F24BBE54/"
+    },
+    {
+      "gm": "SOUNDSCAPE_SESSIONSTARTERS",
+      "guid": "24ec1c",
+      "bundle": "sessionstarters",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/15535418419740242630/F9FBE2FCF214944494C20F552834C43FA898CDFC/"
+    },
+    {
+      "gm": "SOUNDSCAPE_LOCATION_A_1",
+      "guid": "119c4e",
+      "bundle": "location_a",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/18074363500698293260/7FDAB03948475295454F77BD3938A93770C250D0/"
+    },
+    {
+      "gm": "SOUNDSCAPE_LOCATION_A_2",
+      "guid": "863493",
+      "bundle": "location_a",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/18074363500698293260/7FDAB03948475295454F77BD3938A93770C250D0/"
+    },
+    {
+      "gm": "SOUNDSCAPE_LOCATION_B_1",
+      "guid": "c2ff9c",
+      "bundle": "location_b",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/16963522729041244017/FABFA9F727B376249714D20EFA18518D94A68F0A/"
+    },
+    {
+      "gm": "SOUNDSCAPE_LOCATION_B_2",
+      "guid": "1d253b",
+      "bundle": "location_b",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/16963522729041244017/FABFA9F727B376249714D20EFA18518D94A68F0A/"
+    },
+    {
+      "gm": "SOUNDSCAPE_WEATHER_RAIN",
+      "guid": "506469",
+      "bundle": "weather",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/13185439109300550930/3D3D878E9966A39BFB1352086E7E0CFCEFEA5CEA/"
+    },
+    {
+      "gm": "SOUNDSCAPE_WEATHER_WIND",
+      "guid": "d87890",
+      "bundle": "weather",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/13185439109300550930/3D3D878E9966A39BFB1352086E7E0CFCEFEA5CEA/"
+    },
+    {
+      "gm": "SOUNDSCAPE_WEATHER_THUNDER",
+      "guid": "9dbbbd",
+      "bundle": "thunder",
+      "url": "https://steamusercontent-a.akamaihd.net/ugc/14509421228892389276/C6AECE642F55783BA5C236263C1004A6D66FB43F/"
+    }
+  ]
+}

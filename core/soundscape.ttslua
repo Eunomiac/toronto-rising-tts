@@ -139,6 +139,8 @@ local function resolveActiveFeaturedChannel(state)
 end
 
 local LOCATION_CHANNEL_KEYS = { "locationA", "locationB", "location2A", "location2B" }
+--- Background music crossfade pairs across split AssetBundles (pack B / C / A site).
+local MUSIC_CHANNEL_KEYS = { "musicA", "musicB", "music2A", "music2B", "musicSiteA", "musicSiteB" }
 
 local function locationBankForChannel(channelKey)
     if channelKey == "location2A" or channelKey == "location2B" then
@@ -171,9 +173,50 @@ end
 
 -- Defined after `silenceLoopChannel` (Lua local function order).
 local silenceAllLocationChannels
+local silenceAllMusicChannels
+
+--- Pack routing for background music: musicB (default main), musicC (main pack C), musicA (site/location music on pack A).
+local function musicBankForChannel(channelKey)
+    if channelKey == "music2A" or channelKey == "music2B" then
+        return "musicC"
+    end
+    if channelKey == "musicSiteA" or channelKey == "musicSiteB" then
+        return "musicA"
+    end
+    return "musicB"
+end
+
+local function musicPairForBank(bank)
+    if bank == "musicC" then
+        return "music2A", "music2B"
+    end
+    if bank == "musicA" then
+        return "musicSiteA", "musicSiteB"
+    end
+    return "musicA", "musicB"
+end
+
+local function musicBankForTrack(track)
+    if type(track) == "table" then
+        local bank = track.emitterBank
+        if bank == "musicC" or bank == "musicA" or bank == "musicB" then
+            return bank
+        end
+    end
+    return "musicB"
+end
 
 local function resolveActiveMusicChannel(state)
-    return state.activeMusicChannel == "musicB" and "musicB" or "musicA"
+    local channelKey = state and state.activeMusicChannel or nil
+    if channelKey == "musicB"
+        or channelKey == "music2A"
+        or channelKey == "music2B"
+        or channelKey == "musicSiteA"
+        or channelKey == "musicSiteB"
+        or channelKey == "musicA" then
+        return channelKey
+    end
+    return "musicA"
 end
 
 local function sortedEffectRows(indexByName)
@@ -742,6 +785,17 @@ silenceAllLocationChannels = function()
     return okAll, table.concat(messages, " | ")
 end
 
+silenceAllMusicChannels = function()
+    local okAll = true
+    local messages = {}
+    for _, channelKey in ipairs(MUSIC_CHANNEL_KEYS) do
+        local ok, message = silenceLoopChannel(channelKey)
+        okAll = okAll and ok
+        table.insert(messages, message)
+    end
+    return okAll, table.concat(messages, " | ")
+end
+
 local function scheduleNextBackgroundTrack(kind, key, track, generation)
     local duration = type(track) == "table" and tonumber(track.durationSeconds) or nil
     if duration == nil or duration <= 0 or track.effectList == Catalog.EFFECT_LIST.LOOPING then
@@ -925,6 +979,10 @@ end
 local BOOTSTRAP_LOOP_CHANNELS = {
     "musicA",
     "musicB",
+    "music2A",
+    "music2B",
+    "musicSiteA",
+    "musicSiteB",
     "musicC",
     "featuredA",
     "featuredB",
@@ -1069,8 +1127,10 @@ end
 --- Physical-only: silence the music channel not currently active in `gameState.soundscape`.
 function Soundscape.silenceInactiveMusicChannel()
     local state = ensureState()
-    local active = state.activeMusicChannel or "musicA"
-    local inactive = active == "musicB" and "musicA" or "musicB"
+    local active = resolveActiveMusicChannel(state)
+    local bank = musicBankForChannel(active)
+    local channelA, channelB = musicPairForBank(bank)
+    local inactive = active == channelB and channelA or channelB
     forceSilentLoopPhysicalOnly(inactive)
 end
 
@@ -1093,8 +1153,7 @@ end
 local function silenceMusicChannelsAfterFade(generation, fadeSeconds)
     waitTime(function()
         if generation == musicGeneration then
-            silenceLoopChannel("musicA")
-            silenceLoopChannel("musicB")
+            silenceAllMusicChannels()
         end
     end, fadeSeconds)
 end
@@ -1112,7 +1171,7 @@ local function pauseBackgroundForFeatured(fadeSecondsOverride)
     if fadeSeconds == nil then
         fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
     end
-    for _, channelKey in ipairs({ "musicA", "musicB" }) do
+    for _, channelKey in ipairs(MUSIC_CHANNEL_KEYS) do
         local obj = resolveEmitter(channelKey)
         if obj ~= nil then
             local channelState = state.channels and state.channels[channelKey] or {}
@@ -1213,14 +1272,55 @@ local function playBackgroundPlaylist(kind, key, playlist, forcedTrack)
 
     musicGeneration = musicGeneration + 1
     local thisGeneration = musicGeneration
+    local bank = musicBankForTrack(track)
+    local channelA, channelB = musicPairForBank(bank)
     local oldChannel = resolveActiveMusicChannel(state)
+    local oldBank = musicBankForChannel(oldChannel)
     local targetVolume = savedTrackVolume(track) or tonumber(playlist.volume) or tonumber(track.volume) or 0.45
     local fadeSeconds = transitionFade(tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0)
 
+    if oldBank ~= bank then
+        local oldA, oldB = musicPairForBank(oldBank)
+        for _, channelKey in ipairs({ oldA, oldB }) do
+            local obj = resolveEmitter(channelKey)
+            if obj ~= nil then
+                local channelState = state.channels and state.channels[channelKey] or {}
+                fadeEmitterVolume(obj, tonumber(channelState.volume) or 0, 0, fadeSeconds)
+                updateChannelState(channelKey, { volume = 0 })
+            end
+        end
+        waitTime(function()
+            silenceLoopChannel(oldA)
+            silenceLoopChannel(oldB)
+        end, fadeSeconds)
+
+        local okPlay, message = playCatalogEntry(channelA, track, targetVolume, fadeSeconds, 0)
+        if okPlay then
+            state.backgroundMusicSuppressed = false
+            state.backgroundMusicMode = kind
+            state.backgroundMusicEnabled = true
+            state.activeMusicChannel = channelA
+            state.backgroundTrackKey = track.key
+            if kind == BACKGROUND_KIND_MOOD then
+                state.musicMood = key
+                state.locationMusic = Catalog.DEFAULTS.locationMusic
+            else
+                state.locationMusic = key
+            end
+            scheduleNextBackgroundTrack(kind, key, track, thisGeneration)
+        end
+        return okPlay, message
+    end
+
+    local pairedOldChannel = oldChannel
+    if pairedOldChannel ~= channelA and pairedOldChannel ~= channelB then
+        pairedOldChannel = channelA
+    end
+
     local okPlay, message, newChannel = playPairedEmitterEntry(track, {
-        channelA = "musicA",
-        channelB = "musicB",
-        oldChannel = oldChannel,
+        channelA = channelA,
+        channelB = channelB,
+        oldChannel = pairedOldChannel,
         volume = targetVolume,
         fadeSeconds = fadeSeconds,
         canSilenceOld = function(channelKey)
@@ -1563,7 +1663,8 @@ local function applySilentSiteAmbient()
     cancelSingleEmitterTransition("weatherRain")
     cancelSingleEmitterTransition("weatherWind")
 
-    for _, channelKey in ipairs({ "musicA", "musicB", "weatherRain", "weatherWind" }) do
+    silenceAllMusicChannels()
+    for _, channelKey in ipairs({ "weatherRain", "weatherWind" }) do
         silenceLoopChannel(channelKey)
     end
     silenceAllLocationChannels()
@@ -1620,8 +1721,7 @@ local function suppressBackgroundMusic()
     state.locationMusic = Catalog.DEFAULTS.locationMusic
     state.backgroundMusicEnabled = false
     state.backgroundTrackKey = nil
-    silenceLoopChannel("musicA")
-    silenceLoopChannel("musicB")
+    silenceAllMusicChannels()
     return true, "Background music stopped"
 end
 
@@ -1850,8 +1950,7 @@ function Soundscape.fadeOutTransitionAmbient(opts)
             updateChannelState("weatherThunder", { volume = 0 })
         end
         U.await(function()
-            silenceLoopChannel("musicA")
-            silenceLoopChannel("musicB")
+            silenceAllMusicChannels()
             silenceAllLocationChannels()
             silenceLoopChannel("weatherRain")
             silenceLoopChannel("weatherWind")
@@ -2535,7 +2634,7 @@ local function describeSessionIntroState()
         catalogVolume = catalogVolume,
         catalogDuration = catalogDuration,
         catalogEffectIndex = fallbackIndex,
-        guidKey = channelDef and channelDef.guidKey or "SOUNDSCAPE_MUSIC_C",
+        guidKey = channelDef and channelDef.guidKey or "SOUNDSCAPE_SESSIONSTARTERS",
         expectedGuid = getGuidForChannel(channelDef),
         liveGuid = liveGuid,
         found = obj ~= nil,
@@ -2951,7 +3050,12 @@ function Soundscape.stopAll()
 
     local messages = {}
     local ok = true
-    for _, channelKey in ipairs({ "musicA", "musicB", "musicC", "featuredA", "featuredB", "weatherRain", "weatherWind" }) do
+    do
+        local musicOk, musicMessage = silenceAllMusicChannels()
+        ok = ok and musicOk
+        table.insert(messages, musicMessage)
+    end
+    for _, channelKey in ipairs({ "musicC", "featuredA", "featuredB", "weatherRain", "weatherWind" }) do
         local channelOk, message = silenceLoopChannel(channelKey)
         ok = ok and channelOk
         table.insert(messages, message)

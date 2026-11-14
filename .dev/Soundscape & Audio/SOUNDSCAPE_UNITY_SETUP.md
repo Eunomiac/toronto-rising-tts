@@ -380,7 +380,7 @@ After saving the objects into the mod:
   (`emitters resolved 0/10`), and **`Wait` is often unset**, so the real work runs from
   **`onLoad`**: an immediate pass plus deferred passes at **0 / 0.05 / 0.25 / 0.5** seconds.
   **Keep those GUIDs in sync with** `lib/guids.ttslua`
-  (`SYNC` comment on `SOUNDSCAPE_MUSIC_A`). The file **also** calls
+  (`SYNC` comment on the NEW EMITTERS block — currently 14 split-pack GUIDs). The file **also** calls
   `Soundscape.bootstrapSilenceStrayEmitterLoops()` immediately after
   `require("core.soundscape")` so emitters mute **before** `require("core.debug")`
   (whose tail prints the custom UI manifest — often the first visible Lua line while audio was leaking).

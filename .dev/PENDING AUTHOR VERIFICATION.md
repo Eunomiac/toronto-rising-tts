@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-778 — Split soundscape packs: new dual emitters + Main music catalog
+
+> **Agent-assessment note:** GUID wiring, channel banks, and save injection are checked in code. You still need a listen pass in TTS for Main crossfades, site music on Music A, featured, session starters, location packs, and weather.
+
+**How to verify:** Quit TTS if it is open, then load save 230 from the main menu (or Save & Play after a Full build). There should be no loud music blast while the table loads. From the Storyteller sound controls, start Main mood music — you should hear the new Main tracks, crossfading across the Music B and Music C emitter pairs. Play a Casa Loma or Giovanni location-music playlist — that should come from the Music A emitters. Play a featured theme (TR Intro/Loop or Scarlett) on the same Music A pair; Main should duck or stop first. Start a Session Starter from the single Session Starters emitter. Switch a Location 1 ambience (for example airport) and a Location 2 ambience (for example fireplace) — each pack on its own pair, without two beds left audible. Toggle rain/wind and trigger thunder once.
+
 #### 🟡 TOR-777 — Scenes pins: Court packing, y-level Delta, preload notices, hunt resonance
 
 > **Agent-assessment note:** Resonance parsing and Court blank packing are covered by unit checks / rebuild. You still need Save & Play for Court layout and figurine Y delta, and a dashboard pass for Group / Delta fields, red preload text, clearing notices, and Intermission reminders.

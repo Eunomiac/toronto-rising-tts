@@ -365,6 +365,7 @@ G.GUIDS = {
     -- Soundscape AssetBundle Objects
 
     -- SYNC: `core/global_script.ttslua` `TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS` (zero-require silence on load)
+    --[[ *** OLD EMITTER GUIDS ***
     SOUNDSCAPE_MUSIC_A = "2870fb",
     SOUNDSCAPE_MUSIC_B = "ed206e",
     SOUNDSCAPE_MUSIC_C = "e1366c",
@@ -377,6 +378,23 @@ G.GUIDS = {
     SOUNDSCAPE_WEATHER_RAIN = "c0b9d4",
     SOUNDSCAPE_WEATHER_WIND = "290128",
     SOUNDSCAPE_WEATHER_THUNDER = "c7a6c5",
+    ]]
+
+    -- NEW EMITTERS (TS_Save_230)
+    SOUNDSCAPE_MUSIC_A_1 = "9fb097", -- tr_soundscape_music_a.unity3d
+    SOUNDSCAPE_MUSIC_A_2 = "e8343e", -- tr_soundscape_music_a.unity3d
+    SOUNDSCAPE_MUSIC_B_1 = "fc15a8", -- tr_soundscape_music_b.unity3d
+    SOUNDSCAPE_MUSIC_B_2 = "2f0fc8", -- tr_soundscape_music_b.unity3d
+    SOUNDSCAPE_MUSIC_C_1 = "f611cb", -- tr_soundscape_music_c.unity3d
+    SOUNDSCAPE_MUSIC_C_2 = "8c9189", -- tr_soundscape_music_c.unity3d
+    SOUNDSCAPE_SESSIONSTARTERS = "24ec1c", -- tr_soundscape_sessionstarters.unity3d
+    SOUNDSCAPE_LOCATION_A_1 = "119c4e", -- tr_soundscape_location_a.unity3d
+    SOUNDSCAPE_LOCATION_A_2 = "863493", -- tr_soundscape_location_a.unity3d
+    SOUNDSCAPE_LOCATION_B_1 = "c2ff9c", -- tr_soundscape_location_b.unity3d
+    SOUNDSCAPE_LOCATION_B_2 = "1d253b", -- tr_soundscape_location_b.unity3d
+    SOUNDSCAPE_WEATHER_RAIN = "506469", -- tr_soundscape_weather.unity3d
+    SOUNDSCAPE_WEATHER_WIND = "d87890", -- tr_soundscape_weather.unity3d
+    SOUNDSCAPE_WEATHER_THUNDER = "9dbbbd", -- tr_soundscape_thunder.unity3d
 
     -- Hand zones (player hand zones)
     -- Storyteller (Black) and player colors: Brown, Orange, Red, Pink

@@ -30,12 +30,22 @@
 
   "jobs": [
     {
-      // Split soundscape packs (location/music/weather/session starters). Manifest-only until
-      // the new emitters exist in TS_Save_230 with GUIDs; then switch back to ObjectImage and
-      // map each bundle name onto those GUIDs (see lib/guids.ttslua NEW EMITTERS comments).
+      // Split soundscape packs → CustomAssetbundle.AssetbundleURL on the dual emitters in TS_Save_230.
+      // GUID checklist: lib/guids.ttslua NEW EMITTERS.
       "id": "soundscapeBundles",
       "folder": "AssetBundles",
-      "output": "Manifest",
+      "output": "ObjectImage",
+      "field": "CustomAssetbundle.AssetbundleURL",
+      "objects": {
+        "tr_soundscape_music_a": ["9fb097", "e8343e"],
+        "tr_soundscape_music_b": ["fc15a8", "2f0fc8"],
+        "tr_soundscape_music_c": ["f611cb", "8c9189"],
+        "tr_soundscape_sessionstarters": "24ec1c",
+        "tr_soundscape_location_a": ["119c4e", "863493"],
+        "tr_soundscape_location_b": ["c2ff9c", "1d253b"],
+        "tr_soundscape_weather": ["506469", "d87890"],
+        "tr_soundscape_thunder": "9dbbbd"
+      },
       "filenameToNameSearchPattern": "^tr_soundscape_(location_a|location_b|music_a|music_b|music_c|sessionstarters|weather|thunder)\\.unity3d$",
       "filenameToNameReplacePattern": "tr_soundscape_$1"
     },

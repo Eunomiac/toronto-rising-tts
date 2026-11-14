@@ -29,18 +29,21 @@ U = require("lib.util")
 UISet = U.UISet
 
 local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
-  "2870fb",
-  "ed206e",
-  "e1366c",
-  "ef76cf",
-  "7a1f69",
-  "8ecefd",
-  "4f352f",
-  "81c6cf",
-  "5855d5",
-  "c0b9d4",
-  "290128",
-  "c7a6c5",
+  -- SYNC: `lib/guids.ttslua` NEW EMITTERS (TS_Save_230)
+  "9fb097", -- SOUNDSCAPE_MUSIC_A_1
+  "e8343e", -- SOUNDSCAPE_MUSIC_A_2
+  "fc15a8", -- SOUNDSCAPE_MUSIC_B_1
+  "2f0fc8", -- SOUNDSCAPE_MUSIC_B_2
+  "f611cb", -- SOUNDSCAPE_MUSIC_C_1
+  "8c9189", -- SOUNDSCAPE_MUSIC_C_2
+  "24ec1c", -- SOUNDSCAPE_SESSIONSTARTERS
+  "119c4e", -- SOUNDSCAPE_LOCATION_A_1
+  "863493", -- SOUNDSCAPE_LOCATION_A_2
+  "c2ff9c", -- SOUNDSCAPE_LOCATION_B_1
+  "1d253b", -- SOUNDSCAPE_LOCATION_B_2
+  "506469", -- SOUNDSCAPE_WEATHER_RAIN
+  "d87890", -- SOUNDSCAPE_WEATHER_WIND
+  "9dbbbd", -- SOUNDSCAPE_WEATHER_THUNDER
 }
 
 local function trEarlyCollectAudioSources(obj)

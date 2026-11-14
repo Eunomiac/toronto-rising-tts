@@ -269,6 +269,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Soundscape
 
+- [x] **Split soundscape AssetBundles into dual emitters:** 14 new `SOUNDSCAPE_*` objects in save 230 (Music A/B/C pairs, Session Starters, Location A/B pairs, weather); GUID slots + early silence list; catalog channel banks for Main B/C and site Music A; cloud-asset-sync ObjectImage retarget. Pending Save & Play. _(TOR-778)_
 - [x] **Build parks emitters on silent in the save:** `npm run tts-save:silence-emitters` (in `build`, `build:xml`, `build:full`) sets `CustomAssetbundle.LoopingEffectIndex` to 0 (`silent`) on every `SOUNDSCAPE_*` emitter in the live save, so a cold load does not restart the saved track at full volume. Pending Save & Play. _(TOR-706)_
 - [x] **End→Intermission keeps the TR Loop:** `Phases.beginIntermissionThemeHandoff` always pauses Main / location for the featured lane (zero-length when already faded), so the Main playlist's next-track timer can no longer start Main and stop TR_Loop. Pending Save & Play. _(TOR-702)_
 - [x] **Indoor sites fully silence weather:** Every indoor location mutes weather audio and hides the weather panel. Outdoor sites still use their weather-ducking multiplier. relatedTo **TOR-80**. Author confirmed 2026-10-02. _(TOR-635)_
