@@ -67,10 +67,10 @@ export const LIGHTING_PRESETS: readonly LightingPreset[] = within("lightModes", 
 /** `AdminDark` → "Dark". */
 export const lightingLabel = (preset: LightingPreset): string => preset.slice("Admin".length);
 
-export type MusicMood = "main" | "combat" | "intrigue";
+export type MusicMood = "main";
 
 /** Background playlists the `musicMood` command plays (`Catalog.PLAYLISTS.backgroundMusic`). */
-export const MUSIC_MOODS: readonly MusicMood[] = within("backgroundMoods", backgroundMoods, ["main", "combat", "intrigue"]);
+export const MUSIC_MOODS: readonly MusicMood[] = within("backgroundMoods", backgroundMoods, ["main"]);
 
 /** Every other background playlist is a site's own music (`locationMusic`). */
 export const LOCATION_MUSIC: readonly string[] = backgroundMoods.filter((key) => !(MUSIC_MOODS as readonly string[]).includes(key));

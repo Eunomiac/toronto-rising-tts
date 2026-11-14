@@ -98,7 +98,7 @@ describe("weatherAxes", () => {
 describe("soundView", () => {
   it("reads lanes as slider values and names the playlist", () => {
     const sound: SoundscapeSlice = {
-      musicMood: "combat", musicEnabled: true, musicSuppressed: false, siteSilent: false, featuredActive: true, featuredKey: "TR_Loop",
+      musicMood: "main", musicEnabled: true, musicSuppressed: false, siteSilent: false, featuredActive: true, featuredKey: "TR_Loop",
       sessionIntroActive: false, location: "none",
       lanes: [
         { id: "featured", volume: 0.25, naturalVolume: 0.25, ducked: false, active: true },
@@ -106,7 +106,7 @@ describe("soundView", () => {
       ]
     };
     const view = soundView(sound);
-    expect(view.playlist).toBe("Combat");
+    expect(view.playlist).toBe("Main");
     expect(view.levels.featured).toBe(25);
     expect(view.playing.featured).toBe(true);
     expect(view.levels.thunder).toBe(60);

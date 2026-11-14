@@ -386,12 +386,15 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   // With no live scene (Intermission, Downtime, nothing on the table) the clock panel works on present day. A
   // Memoriam has no library scene but runs on the scene clock (set to its own date).
   const inMemoriam = phase?.phase === "Play" && phase.subPhase === "Memoriam";
+  const inDowntime = phase?.phase === "Play" && phase.subPhase === "Downtime";
   const sceneActive = (scene?.liveKey !== undefined || inMemoriam) && clock?.activeClock === "scene";
   const sceneNow = sceneActive && clock ? clockNow(clock, now) : undefined;
   const sceneAt = sceneNow ? toDate(sceneNow) : null;
   // TTS moves present day forward with a scene that passes it, but only re-pushes the clock on rollovers.
   const pushedPresent = clock?.presentDay ? toDate(clock.presentDay) : null;
   const present = pushedPresent && sceneAt && sceneAt > pushedPresent ? sceneAt : pushedPresent;
+  const downtimeNow = inDowntime && clock?.activeClock === "downtime" ? clockNow(clock, now) : undefined;
+  const reminderNow = downtimeNow ? toDate(downtimeNow) : present;
   const at = sceneAt ?? present;
   const location: LabLocation | null = scene?.districtKey && scene.siteKey ? { districtKey: scene.districtKey, siteKey: scene.siteKey } : null;
   const siteTrack = catalogs?.sites.find((site) => site.key === scene?.siteKey)?.locationTrack;
@@ -708,6 +711,11 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 h={STAGE_H - 10}
                 seats={board.seats}
                 phase={phase?.phase}
+                subPhase={phase?.subPhase}
+                sessionNum={phase?.sessionNum}
+                {...(reminderNow ? { clockNow: reminderNow } : {})}
+                {...(clock?.dusk ? { dusk: toDate(clock.dusk) } : {})}
+                {...(clock?.dawn ? { dawn: toDate(clock.dawn) } : {})}
                 {...(board.sheet ? { liveSheet: board.sheet } : {})}
               />
             ) : (

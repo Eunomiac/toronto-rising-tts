@@ -27,6 +27,15 @@ import type { GenericNpc, ScatterGroup } from "../worldState";
 import { Icon } from "./icons";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import { farRadii, ScatterLayer, StageLayer } from "./stageEdit";
+import {
+  dismissStageReminder,
+  readStageReminderStore,
+  visibleStageReminders,
+  writeStageReminderStore,
+  type ReminderId,
+  type StageReminderContext,
+  type StageReminderStore
+} from "./stageReminders";
 
 /**
  * Building blocks for the Scenes tab. Every panel is laid out in absolute pixels on the fixed 1920×1042 canvas
@@ -639,65 +648,54 @@ export type StageEnv = {
 /** An edit stays drawn until TTS pushes the stage back, or this long if it never does (TTS refused it). */
 const OPTIMISTIC_MS = 6000;
 
-const INTERMISSION_REMINDER_KEY = "tr.dashboard.intermissionRemindersDismissed";
-
-type IntermissionReminders = { readonly recorder: boolean; readonly scenesPreloaded: boolean };
-
-const readIntermissionReminders = (): IntermissionReminders => {
-  try {
-    const raw = sessionStorage.getItem(INTERMISSION_REMINDER_KEY);
-    if (!raw) {
-      return { recorder: true, scenesPreloaded: true };
-    }
-    const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null) {
-      return { recorder: true, scenesPreloaded: true };
-    }
-    const row = parsed as Record<string, unknown>;
-    return {
-      recorder: row.recorder !== false,
-      scenesPreloaded: row.scenesPreloaded !== false
-    };
-  } catch {
-    return { recorder: true, scenesPreloaded: true };
-  }
-};
-
 /** The stage with no scene on the table: seats stay along the bottom (trackers, sheets, and DnD to slide-out bins; no chair swaps). */
 export const IdleBoard = ({
   w,
   h,
   seats,
   liveSheet,
-  phase
+  phase,
+  subPhase,
+  sessionNum,
+  clockNow: narrativeNow,
+  dusk,
+  dawn
 }: {
   w: number;
   h: number;
   seats: readonly SeatSketch[];
   liveSheet?: LiveSheetAccess;
   phase?: string;
+  subPhase?: string;
+  sessionNum?: number;
+  clockNow?: Date;
+  dusk?: Date;
+  dawn?: Date;
 }): ReactElement => {
-  const [reminders, setReminders] = useState(readIntermissionReminders);
-  const dismiss = (key: keyof IntermissionReminders): void => {
-    const next = { ...reminders, [key]: false };
-    setReminders(next);
-    sessionStorage.setItem(INTERMISSION_REMINDER_KEY, JSON.stringify(next));
+  const reminderCtx: StageReminderContext = {
+    ...(phase !== undefined ? { phase } : {}),
+    ...(subPhase !== undefined ? { subPhase } : {}),
+    ...(sessionNum !== undefined ? { sessionNum } : {}),
+    ...(narrativeNow ? { now: narrativeNow } : {}),
+    ...(dusk ? { dusk } : {}),
+    ...(dawn ? { dawn } : {})
   };
-  const showReminders = phase === "Intermission" && (reminders.recorder || reminders.scenesPreloaded);
+  const [store, setStore] = useState<StageReminderStore>(readStageReminderStore);
+  const reminders = visibleStageReminders(reminderCtx, store);
+  const dismiss = (id: ReminderId): void => {
+    const next = dismissStageReminder(store, id, reminderCtx);
+    setStore(next);
+    writeStageReminderStore(next);
+  };
   return (
     <div className="lab-board wide idle" style={{ width: w, height: h }}>
-      {showReminders ? (
-        <div className="lab-intermission-reminders">
-          {reminders.recorder && (
-            <button type="button" className="lab-intermission-reminder" onClick={() => dismiss("recorder")}>
-              Ensure session recorder is connected
+      {reminders.length > 0 ? (
+        <div className="lab-stage-reminders">
+          {reminders.map((row) => (
+            <button key={row.id} type="button" className="lab-stage-reminder" onClick={() => dismiss(row.id)}>
+              {row.text}
             </button>
-          )}
-          {reminders.scenesPreloaded && (
-            <button type="button" className="lab-intermission-reminder" onClick={() => dismiss("scenesPreloaded")}>
-              Ensure scenes are preloaded.
-            </button>
-          )}
+          ))}
         </div>
       ) : (
         <span className="lab-board-idle">(No Active Scene)</span>
