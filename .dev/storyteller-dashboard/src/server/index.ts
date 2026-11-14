@@ -432,6 +432,22 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
+  if (request.method === "GET" && pathname === "/api/disciplines") {
+    const catalogPath = path.join(dashboardRoot, "data", "disciplines-catalog.json");
+    try {
+      const body = await readFile(catalogPath, "utf8");
+      response.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      response.end(body);
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        sendJson(response, 404, { error: "Disciplines catalog missing. Run npm run disciplines:import." });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
   if (request.method === "GET" && pathname === "/api/scene-catalogs") {
     const base = JSON.parse(await readFile(sceneCatalogsPath, "utf8")) as { namedNpcs: { characterKey: string; pickerGroups: string[] }[]; pcs: unknown[] };
     const byKey = new Map(base.namedNpcs.map(row => [row.characterKey, row]));

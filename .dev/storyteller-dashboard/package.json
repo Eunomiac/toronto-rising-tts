@@ -17,7 +17,10 @@
     "test:dnd": "node scripts/dnd-smoke.mjs",
     "test:npc-rolls:browser": "node scripts/npc-custom-rolls-smoke.mjs",
     "test:complications:browser": "node scripts/dnd-smoke.mjs --complications-only",
-    "test:exports:browser": "node scripts/exports-smoke.mjs"
+    "test:exports:browser": "node scripts/exports-smoke.mjs",
+    "test:reminders:browser": "node scripts/stage-reminders-smoke.mjs",
+    "disciplines:import": "node --experimental-strip-types scripts/disciplines/import.ts",
+    "test:disciplines:browser": "node scripts/disciplines-smoke.mjs"
   },
   "dependencies": {
     "@tiptap/core": "^3.31.4",

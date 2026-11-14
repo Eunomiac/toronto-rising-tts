@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Field } from "../pcSheet/fields.js";
 import { SheetModal } from "../pcSheet/SheetModal.js";
+import { isDisciplineTermKey } from "../disciplines/store.js";
 import {
   loadTermImages,
   removeTermImage,
@@ -196,7 +197,12 @@ export const TermImageLayer = (): ReactElement | null => {
 
     const refreshTip = (): void => {
       const key = hoverRef.current?.dataset.term;
-      setTip(key ? termTooltip(key) ?? null : null);
+      // Powers / rituals / ceremonies use the Disciplines catalog tip layer instead.
+      if (!key || isDisciplineTermKey(key)) {
+        setTip(null);
+        return;
+      }
+      setTip(termTooltip(key) ?? null);
     };
 
     const onOver = (event: MouseEvent): void => {
@@ -227,7 +233,7 @@ export const TermImageLayer = (): ReactElement | null => {
       }
       const el = termElement(event.target);
       const target = el ? targetOf(el) : null;
-      if (!target) {
+      if (!target || isDisciplineTermKey(target.key)) {
         return;
       }
       event.preventDefault();

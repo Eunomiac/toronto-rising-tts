@@ -16,6 +16,8 @@ import { poolOptions, type NpcStatBlock } from "../../../shared/npcStats";
 import type { StLiveRoll } from "../../worldState";
 import { Overlay } from "../sketch";
 import type { RollsSend } from "./commands";
+import { kindForExportDiscipline } from "../../../shared/disciplinesCatalog";
+import { termProps } from "../../termImages/store";
 import { PoolDiamonds } from "./dice";
 
 /**
@@ -69,14 +71,24 @@ const describe = (plan: NpcRollPlan): string => {
   return lines.join("\n");
 };
 
-const EntryButton = ({ label, planned, onPick }: { label: string; planned: Planned; onPick: (plan: NpcRollPlan) => void }): ReactElement =>
+const EntryButton = ({
+  label,
+  planned,
+  onPick,
+  tip
+}: {
+  label: string;
+  planned: Planned;
+  onPick: (plan: NpcRollPlan) => void;
+  tip?: Record<string, string>;
+}): ReactElement =>
   "plan" in planned ? (
-    <button type="button" className="roll-toggle npc-config-entry" title={describe(planned.plan)} onClick={() => onPick(planned.plan)}>
+    <button type="button" className="roll-toggle npc-config-entry" title={describe(planned.plan)} onClick={() => onPick(planned.plan)} {...tip}>
       {label}
       <span className="npc-config-dice">{summary(planned.plan)}</span>
     </button>
   ) : (
-    <button type="button" className="roll-toggle npc-config-entry broken" disabled title={planned.error}>
+    <button type="button" className="roll-toggle npc-config-entry broken" disabled title={planned.error} {...tip}>
       {label}
       <span className="npc-config-dice">{planned.error.startsWith("Set Resolve") ? "set Resolve" : "fix in Stats"}</span>
     </button>
@@ -253,6 +265,7 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
                   label={`${"•".repeat(power.level)} ${power.name}`}
                   planned={planFor({ kind: "power", category: categoryIndex, power: powerIndex })}
                   onPick={pick}
+                  tip={termProps(kindForExportDiscipline(category.name), power.name, power.name, { discipline: category.name })}
                 />
               ))}
             </div>

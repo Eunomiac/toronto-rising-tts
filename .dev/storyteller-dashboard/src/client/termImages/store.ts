@@ -89,5 +89,16 @@ export const removeTermImage = async (key: string, part: "all" | "image" = "all"
 };
 
 /** Spread onto any element to make it right-click-able for a tooltip image / text. */
-export const termProps = (kind: string, name: string, label: string = name): Record<string, string> =>
-  name.trim() === "" ? {} : { "data-term": termKey(kind, name), "data-term-label": label };
+export const termProps = (
+  kind: string,
+  name: string,
+  label: string = name,
+  extras: { readonly discipline?: string } = {}
+): Record<string, string> => {
+  if (name.trim() === "") return {};
+  return {
+    "data-term": termKey(kind, name),
+    "data-term-label": label,
+    ...(extras.discipline?.trim() ? { "data-discipline": extras.discipline.trim() } : {})
+  };
+};

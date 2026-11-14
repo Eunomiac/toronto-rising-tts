@@ -6,6 +6,7 @@ import { OpenPcSheetContext } from "./pcSheet/openPcSheet";
 import { PcSheetTab } from "./pcSheet/PcSheetTab";
 import type { SeatColor } from "./pcSheet/types";
 import { ScenesPanel } from "./scenesPanel/ScenesPanel";
+import { DisciplineTipLayer } from "./disciplines/DisciplineTipLayer";
 import { TermImageLayer } from "./termImages/TermImageLayer";
 
 const DEFAULT_TAB_ID = "tab-scenes";
@@ -185,6 +186,7 @@ export const App = (): ReactElement => {
 
       <div id="modal-root"></div>
       <TermImageLayer />
+      <DisciplineTipLayer />
     </>
   );
 };

@@ -1,0 +1,123 @@
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/pc-sheet-assets/fonts/AlegreyaSans/AlegreyaSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/pc-sheet-assets/fonts/AlegreyaSans/AlegreyaSans-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/pc-sheet-assets/fonts/AlegreyaSans/AlegreyaSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Alegreya Sans SC";
+  src: url("/pc-sheet-assets/fonts/AlegreyaSansSC/AlegreyaSansSC-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Alegreya Sans SC";
+  src: url("/pc-sheet-assets/fonts/AlegreyaSansSC/AlegreyaSansSC-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Days One";
+  src: url("/pc-sheet-assets/fonts/DaysOne/DaysOne-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+.discipline-tip {
+  position: fixed;
+  z-index: 12000;
+  pointer-events: none;
+  max-width: min(28rem, calc(100vw - 16px));
+  max-height: min(70vh, 36rem);
+  overflow: auto;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(40, 20, 20, 0.55);
+  border-radius: 4px;
+  background: #f7f1e8;
+  color: #111;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+
+  &.on {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .discipline_tooltip {
+    font-family: "Alegreya Sans", system-ui, sans-serif;
+    font-size: 0.92rem;
+    line-height: 1.35;
+  }
+
+  .discipline_title {
+    margin: 0 0 0.15rem;
+    font-family: "Days One", "Bebas Neue", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: #4c0000;
+  }
+
+  .discipline_subtitle {
+    margin: 0 0 0.55rem;
+    font-family: "Alegreya Sans SC", "Alegreya Sans", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #4c0000;
+  }
+
+  .discipline_flavor {
+    margin: 0 0 0.65rem;
+    font-style: italic;
+    color: #2a2a2a;
+  }
+
+  .discipline_body {
+    margin: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .discipline_rouse_checks,
+  .discipline_ingredients,
+  .discipline_process {
+    margin: 0;
+  }
+
+  .discipline_system,
+  .discipline_duration {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .discipline_duration {
+    margin-top: 0.25rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid rgba(76, 0, 0, 0.2);
+  }
+
+  .discipline_source {
+    margin: 0.65rem 0 0;
+    font-size: 0.78rem;
+    color: #555;
+  }
+}

@@ -79,7 +79,7 @@ const DisciplineCell = ({
                   type="button"
                   className="pc-power"
                   title={power.notes !== "" ? power.notes : `Level ${power.level}`}
-                  {...termProps("power", power.name)}
+                  {...termProps("power", power.name, power.name, { discipline: DISCIPLINE_LABELS[row.key] })}
                   onClick={() => onPopup({ kind: "power", key: row.key, entry: power })}
                 >
                   {power.name}

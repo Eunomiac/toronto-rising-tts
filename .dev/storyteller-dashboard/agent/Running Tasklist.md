@@ -1,5 +1,9 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-StageReminders. Empty-stage click-to-hide reminders now cover Intermission (recorder + preload), first Downtime of each dusk→dawn night (awakening rouse checks), and first End of each session (Aishe / Fomórach / Black Caesar). Vitest + `npm run test:reminders:browser`.
+
+- ✔️ SD-DisciplinesTooltips. Powers, Rituals, and Ceremonies share one catalog HTML tooltip (EXPORT_DISCIPLINES + styled System/Duration from the V5: DISCIPLINES xlsx). Term Images stay for every other term kind. Import with `npm run disciplines:import`; API `GET /api/disciplines`; smoke `npm run test:disciplines:browser`.
+
 - ✔️ SD-ComplicationConditionPrompt. Scenes seat tracker opens a prefilled Conditions form when TTS pushes `complicationConditionPrompt` (Automate + Dashboard Prompt). Confirm uses `personalCardAdd` with `correlationId`; Dismiss clears the pending Automate half. Pending Save & Play / live prompt under **TOR-780**.
 
 - ✔️ SD-ScenesPins-1112c. Seven Scenes pins from 2026-11-12: Court blank packing across columns; roster Group + y-level Delta; red deck text until preloaded; preload notices clear on completion; Intermission reminders; hunt site resonance for bare Plus cells (GEDiningHall). Pending Save & Play under **TOR-777**.
