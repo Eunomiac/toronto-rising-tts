@@ -2,11 +2,15 @@
 // (e.g. Assets/Editor/TorontoRising/SoundscapeMainMusicBundleSync.cs).
 // Unity 6000.x + UnityEditor.
 //
-// Menu: Tools → Toronto Rising → Sync Main Music Into Prefabs
+// Menus:
+//   Tools → Toronto Rising → Sync Main Music Into Prefabs
+//   Tools → Toronto Rising → Export Prefab Effects Catalog CSV
 //
 // Expects Audition-exported .wav files (sound-matched / faded). Applies Main
 // playlist import defaults, measures duration from each AudioClip, and upserts
 // Trigger Effects on the paired prefabs (non-managed effects are preserved).
+// After sync (or on demand), scans top-level prefabs in Config.PrefabsFolder and
+// writes a catalog CSV (effect name, 0-based TTS index, duration, clip, …).
 
 #if UNITY_EDITOR
 
@@ -84,6 +88,19 @@ public static class SoundscapeMainMusicBundleSync
         /// </summary>
         public static readonly string ManifestCsvRelativeToProject =
             "Soundscape_Main_Music_Manifest.csv";
+
+        /// <summary>
+        /// Folder of soundscape prefabs to scan for the effects catalog CSV.
+        /// Only immediate .prefab children are included (no subfolders).
+        /// </summary>
+        public static readonly string PrefabsFolder = "Assets/Soundscape/Prefabs";
+
+        /// <summary>
+        /// Catalog of every Looping/Trigger effect on those prefabs (for Lua alignment).
+        /// Written next to the Unity Assets folder.
+        /// </summary>
+        public static readonly string PrefabEffectsCatalogCsvRelativeToProject =
+            "Soundscape_Prefab_Effects_Catalog.csv";
     }
 
     public enum EffectNameMode
@@ -133,6 +150,7 @@ public static class SoundscapeMainMusicBundleSync
         }
 
         WriteManifest(allRows);
+        var catalogCount = ExportPrefabEffectsCatalog();
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
@@ -140,8 +158,19 @@ public static class SoundscapeMainMusicBundleSync
             "[SoundscapeMainMusicBundleSync] Done. Tracks=" + allRows.Count +
             " errors=" + errors +
             " manifest=" + Config.ManifestCsvRelativeToProject +
-            "\nAll entries are Trigger Effects for the Main background playlist." +
+            " prefab_catalog_rows=" + catalogCount +
+            " (" + Config.PrefabEffectsCatalogCsvRelativeToProject + ")" +
+            "\nAll synced entries are Trigger Effects for the Main background playlist." +
             " Durations came from AudioClip.length (Audition .wav exports).");
+    }
+
+    [MenuItem("Tools/Toronto Rising/Export Prefab Effects Catalog CSV")]
+    private static void ExportPrefabEffectsCatalogMenu()
+    {
+        var count = ExportPrefabEffectsCatalog();
+        Debug.Log(
+            "[SoundscapeMainMusicBundleSync] Prefab effects catalog rows=" + count +
+            " → " + Config.PrefabEffectsCatalogCsvRelativeToProject);
     }
 
     [MenuItem("Tools/Toronto Rising/Apply Main Music Import Settings Only")]
@@ -549,6 +578,181 @@ public static class SoundscapeMainMusicBundleSync
         return result;
     }
 
+    /// <summary>
+    /// Scan top-level prefabs in <see cref="Config.PrefabsFolder"/> and write every
+    /// Looping/Trigger effect row for Lua catalog alignment. Returns row count.
+    /// </summary>
+    private static int ExportPrefabEffectsCatalog()
+    {
+        var folder = NormalizeAssetPath(Config.PrefabsFolder);
+        if (!AssetDatabase.IsValidFolder(folder))
+        {
+            Debug.LogError("[SoundscapeMainMusicBundleSync] Prefabs folder not found: " + folder);
+            return 0;
+        }
+
+        var effectsType = FindComponentType();
+        if (effectsType == null)
+        {
+            Debug.LogError(
+                "[SoundscapeMainMusicBundleSync] Could not find type " + ComponentTypeName +
+                " while exporting prefab catalog.");
+            return 0;
+        }
+
+        // Top-level only: FindAssets is recursive, so keep prefabs whose parent folder is exactly PrefabsFolder.
+        var prefabPaths = AssetDatabase.FindAssets("t:Prefab", new[] { folder })
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .Where(p => !string.IsNullOrEmpty(p) && p.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+            .Where(p =>
+            {
+                var parent = Path.GetDirectoryName(p)?.Replace("\\", "/");
+                return string.Equals(parent, folder, StringComparison.OrdinalIgnoreCase);
+            })
+            .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var rows = new List<PrefabEffectRow>();
+        foreach (var prefabPath in prefabPaths)
+        {
+            var root = PrefabUtility.LoadPrefabContents(prefabPath);
+            if (root == null)
+            {
+                Debug.LogWarning("[SoundscapeMainMusicBundleSync] Could not load prefab: " + prefabPath);
+                continue;
+            }
+
+            try
+            {
+                var effects = root.GetComponent(effectsType) as Component
+                    ?? root.GetComponentInChildren(effectsType, true) as Component;
+                if (effects == null)
+                {
+                    continue;
+                }
+
+                var so = new SerializedObject(effects);
+                CollectEffectListRows(rows, prefabPath, so, "LoopingEffects", "looping");
+                CollectEffectListRows(rows, prefabPath, so, "TriggerEffects", "trigger");
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        var csvPath = Path.Combine(
+            Application.dataPath, "..", Config.PrefabEffectsCatalogCsvRelativeToProject);
+        var sb = new StringBuilder();
+        sb.AppendLine(string.Join(",",
+            "prefab",
+            "prefab_path",
+            "effect_list",
+            "index_0_based",
+            "index_1_based",
+            "effect_name",
+            "duration_seconds",
+            "duration_mmss",
+            "clip_name",
+            "clip_path",
+            "clip_length_seconds",
+            "positional_3d"));
+        foreach (var row in rows)
+        {
+            sb.AppendLine(string.Join(",",
+                Csv(row.Prefab),
+                Csv(row.PrefabPath),
+                Csv(row.EffectList),
+                row.Index0.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                row.Index1.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Csv(row.EffectName),
+                row.DurationSeconds.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture),
+                Csv(FormatMmSs(row.DurationSeconds)),
+                Csv(row.ClipName),
+                Csv(row.ClipPath),
+                row.ClipLengthSeconds.HasValue
+                    ? row.ClipLengthSeconds.Value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
+                    : "",
+                row.Positional3D ? "true" : "false"));
+        }
+
+        File.WriteAllText(csvPath, sb.ToString(), new UTF8Encoding(false));
+        return rows.Count;
+    }
+
+    private static void CollectEffectListRows(
+        List<PrefabEffectRow> rows,
+        string prefabPath,
+        SerializedObject so,
+        string propertyName,
+        string effectListLabel)
+    {
+        var listProp = so.FindProperty(propertyName);
+        if (listProp == null || !listProp.isArray)
+        {
+            return;
+        }
+
+        var prefabFile = Path.GetFileNameWithoutExtension(prefabPath);
+        for (var i = 0; i < listProp.arraySize; i++)
+        {
+            var element = listProp.GetArrayElementAtIndex(i);
+            var nameProp = element.FindPropertyRelative("Name");
+            var effectName = nameProp != null ? nameProp.stringValue : "";
+            if (string.IsNullOrWhiteSpace(effectName))
+            {
+                continue;
+            }
+
+            float duration = 0f;
+            var durationProp = element.FindPropertyRelative("Duration");
+            var hasDurationField = durationProp != null;
+            if (hasDurationField)
+            {
+                duration = durationProp.floatValue;
+            }
+
+            string clipName = "";
+            string clipPath = "";
+            float? clipLength = null;
+            var positional = false;
+            var soundProp = element.FindPropertyRelative("Sound");
+            if (soundProp != null)
+            {
+                var audioProp = soundProp.FindPropertyRelative("Audio");
+                var clip = audioProp != null ? audioProp.objectReferenceValue as AudioClip : null;
+                if (clip != null)
+                {
+                    clipName = clip.name;
+                    clipPath = AssetDatabase.GetAssetPath(clip).Replace("\\", "/");
+                    clipLength = clip.length;
+                    if (!hasDurationField || duration <= 0.01f)
+                    {
+                        duration = clip.length;
+                    }
+                }
+
+                var positionalProp = soundProp.FindPropertyRelative("Positional3D");
+                positional = positionalProp != null && positionalProp.boolValue;
+            }
+
+            rows.Add(new PrefabEffectRow
+            {
+                Prefab = prefabFile,
+                PrefabPath = prefabPath.Replace("\\", "/"),
+                EffectList = effectListLabel,
+                Index0 = i,
+                Index1 = i + 1,
+                EffectName = effectName,
+                DurationSeconds = duration,
+                ClipName = clipName,
+                ClipPath = clipPath,
+                ClipLengthSeconds = clipLength,
+                Positional3D = positional,
+            });
+        }
+    }
+
     private static void WriteManifest(List<ManifestRow> rows)
     {
         var path = Path.Combine(Application.dataPath, "..", Config.ManifestCsvRelativeToProject);
@@ -632,6 +836,21 @@ public static class SoundscapeMainMusicBundleSync
         public float DurationSeconds;
         public string Playlist;
         public string EffectList;
+    }
+
+    private sealed class PrefabEffectRow
+    {
+        public string Prefab;
+        public string PrefabPath;
+        public string EffectList;
+        public int Index0;
+        public int Index1;
+        public string EffectName;
+        public float DurationSeconds;
+        public string ClipName;
+        public string ClipPath;
+        public float? ClipLengthSeconds;
+        public bool Positional3D;
     }
 
     /// <summary>
