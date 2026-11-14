@@ -11,7 +11,14 @@ local Catalog = require('lib.complications_catalog')
 local Decks = require('core.complications_decks')
 local Automations = require('lib.complications_automations')
 local Effects=require('core.complications_effects')
+local PersonalConditions = require('core.complications_personal')
 Effects.register()
+Automations.bindPersonal({
+    apply = PersonalConditions.apply,
+    remove = PersonalConditions.remove,
+    prompt = PersonalConditions.prompt,
+    swap = PersonalConditions.swap,
+})
 local running, selectArmed, randomEpoch, confirmEpoch = false, false, 0, 0
 local pump
 local function game() return S.getStateVal('complications') end
@@ -93,10 +100,14 @@ function D.refresh()
     local mode=g.mode
     b.UI.setAttributes('button_StopSelect',{text=mode=='select' and 'Select' or mode=='confirm' and 'Confirm' or 'Stop',class='complicationButton '..(mode=='select' and 'magentaButton' or mode=='confirm' and 'redButton' or 'yellowButton')})
     local selected=g.selected and g.cards[g.selected] and (g.cards[g.selected].zone=='slot' or g.cards[g.selected].zone=='external')
-    b.UI.setAttribute('button_Automate','interactable',selected and g.cards[g.selected].zone=='slot' and not busy(g) and Automations.has(g.cards[g.selected].index) and 'true' or 'false')
+    local automateVisible = selected and g.cards[g.selected].zone=='slot' and Automations.has(g.cards[g.selected].index)
+    b.UI.setAttribute('button_Automate','active',automateVisible and 'true' or 'false')
+    b.UI.setAttribute('button_Automate','interactable',automateVisible and not busy(g) and 'true' or 'false')
     b.UI.setAttribute('button_Enhance','active',selected and 'true' or 'false')
     b.UI.setAttribute('button_Negate','active',selected and g.cards[g.selected].zone=='slot' and 'true' or 'false')
-    b.UI.setAttribute('button_Automate','text',g.automations and g.automations[g.selected] and 'Reverse' or 'Automate')
+    local receipt = g.automations and g.automations[g.selected]
+    local reverseLabel = receipt and (receipt.key or receipt.personalCardId or receipt.personalPending) and true or false
+    b.UI.setAttribute('button_Automate','text',reverseLabel and 'Reverse' or 'Automate')
     b.UI.setAttribute('button_Adjust','text','Adjust ('..signed(g.adjust)..')')
     b.UI.setAttributes('button_ToggleCategoryDiscard',{text=g.autoDiscard and 'Auto-Disc' or 'Mults Okay',class='complicationButton '..(g.autoDiscard and 'greenButton' or 'redButton')})
     for _,guid in pairs(g.slots) do
@@ -503,6 +514,10 @@ local function execute(g,op,done)
             spawnObjectData({data=data,position=stagingPosition(g),rotation=c.externalPose and c.externalPose.rotation or {0,g.rotation.y,0},callback_function=finish})
         end
     elseif op.kind=='effect' then Effects.execute(op); done()
+    elseif op.kind=='personalSync' then
+        Automations.syncEnhancedPersonal(g, op.guid)
+        save(g)
+        done()
     elseif op.kind=='doomPlan' then
         if not op.planned then
             retireDoomCopies(g,op.guid)
@@ -686,7 +701,11 @@ function D.onPlayerAction(player,action,targets)
             save(g)
         elseif o.hasTag('enhancedComplication') and not U.isStorytellerSteamPlayer(player) then return false end
     end
-    if found and Model.reveal(g,found) then
+    local revealed, pause = Model.reveal(g,found)
+    if found and revealed then
+        if pause == false then
+            Automations.applyOnReveal(g, found)
+        end
         save(g); -- lock other cards now, but do not interrupt the current flip animation.
         for _,guid in pairs(g.slots) do if guid~=found and obj(guid) then obj(guid).setLock(true) end end
         U.await(function() if game()==g then begin(g) end end,0.7)
@@ -741,7 +760,11 @@ function D.button(player,value,id)
     elseif id=='button_SelectRandom' then randomSelect(g,right and 'all' or 'normal'); return
     elseif id=='button_Enhance' then
         if right then randomSelect(g,'enhanced'); return
-        elseif c then c.enhanced=not c.enhanced; Model.queue(g,{kind=c.enhanced and 'enhance' or 'unenhance',guid=g.selected}) end
+        elseif c then
+            c.enhanced=not c.enhanced
+            Model.queue(g,{kind=c.enhanced and 'enhance' or 'unenhance',guid=g.selected})
+            Model.queue(g,{kind='personalSync',guid=g.selected})
+        end
     elseif id=='button_Negate' and c and c.zone=='slot' then
         if right then Model.discard(g) else c.negated=not c.negated end
     elseif id=='button_Adjust' then g.adjust=g.adjust+(right and -1 or 1)

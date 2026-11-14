@@ -175,13 +175,29 @@ const placeConditionPanel = (node: HTMLElement): void => {
   node.style.maxHeight = `${Math.max(180, Math.floor(anchor.bottom - bounds.top - gap))}px`;
 };
 
+/** Prefill from a Complications Automate → Dashboard Prompt push. */
+export type ConditionPromptDraft = {
+  readonly title: string;
+  readonly subtitle: string;
+  readonly description: string;
+  readonly displayType: (typeof SHEET_TYPES)[number]["id"];
+  readonly textColor: (typeof TEXT_COLORS)[number]["id"];
+  readonly kind: Kind;
+  readonly session?: number;
+  readonly duration: string;
+  readonly displayOnSheet?: boolean;
+};
+
 /** Resonance grid, or the other-condition form, beside the seat tracker popup. */
-export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply }: {
+export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply, promptDraft, correlationId, onPromptHandled }: {
   seat: SeatSnapshot;
   sessionNum: number;
   manualConditions: readonly ManualCondition[];
   pane: "resonance" | "other";
   apply: (command: ApplyCommand) => void;
+  promptDraft?: ConditionPromptDraft | null;
+  correlationId?: string | null;
+  onPromptHandled?: () => void;
 }): ReactElement => {
   const [dyscrasia, setDyscrasia] = useState(false);
   const [dyscrasiaTitle, setDyscrasiaTitle] = useState("");
@@ -199,6 +215,26 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
   const shown = cards.filter((card) => card.displayOnSheet).length;
   const sheetFull = onSheet && shown >= 8;
   const bloodBlocked = trigger.kind === "ChangeOfBlood" && seat.hunger >= 5;
+
+  useEffect(() => {
+    if (!promptDraft) {
+      return;
+    }
+    setTitle(promptDraft.title);
+    setSubtitle(promptDraft.subtitle);
+    setDescription(promptDraft.description);
+    setDisplayType(promptDraft.displayType);
+    setTextColor(promptDraft.textColor);
+    setOnSheet(promptDraft.displayOnSheet !== false);
+    setCondition("");
+    trigger.setKind(promptDraft.kind);
+    if (promptDraft.kind === "EndOfSession" && typeof promptDraft.session === "number") {
+      trigger.setSession(promptDraft.session);
+    }
+    trigger.setDuration(promptDraft.duration);
+    // Only re-apply when a new prompt draft arrives.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: draft identity drives prefill
+  }, [promptDraft]);
 
   const pickResonance = (temperament: string, resonanceType: string): void => {
     const same = resonance?.temperament === temperament && resonance.resonanceType === resonanceType;
@@ -228,8 +264,10 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
       title,
       subtitle,
       description,
-      duration: trigger.duration
+      duration: trigger.duration,
+      ...(correlationId ? { correlationId } : {})
     });
+    onPromptHandled?.();
   };
 
   const panelRef = useRef<HTMLDivElement>(null);
@@ -337,7 +375,23 @@ export const ConditionPanel = ({ seat, sessionNum, manualConditions, pane, apply
                 onDuration={trigger.setDuration}
               />
               {sheetFull && <p className="pc-cond-note">The sheet already has eight conditions. Remove one, or leave this one off the sheet.</p>}
-              <button type="submit" className="lab-btn" disabled={sheetFull || bloodBlocked}>Add condition</button>
+              <div className="pc-cond-choices">
+                <button type="submit" className="lab-btn" disabled={sheetFull || bloodBlocked}>
+                  {correlationId ? "Confirm condition" : "Add condition"}
+                </button>
+                {correlationId && onPromptHandled && (
+                  <button
+                    type="button"
+                    className="lab-btn"
+                    onClick={() => {
+                      apply({ op: "complicationConditionDismiss", color: seat.color, correlationId });
+                      onPromptHandled();
+                    }}
+                  >
+                    Dismiss
+                  </button>
+                )}
+              </div>
             </form>
           )}
         </div>

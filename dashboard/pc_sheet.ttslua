@@ -665,7 +665,36 @@ local function applyCommand(cmd)
     return require("core.personal_conditions").setDyscrasia(color, cmd.title, cmd.description)
   end
   if op == "personalCardAdd" then
-    return require("core.personal_conditions").addCard(color, cmd)
+    local err, id = require("core.personal_conditions").addCard(color, cmd)
+    if err ~= nil then
+      return err
+    end
+    if type(cmd.correlationId) == "string" and cmd.correlationId ~= "" and type(id) == "string" then
+      local g = S.getStateVal("complications")
+      if type(g) == "table" then
+        local Automations = require("lib.complications_automations")
+        if Automations.ackPrompt(g, cmd.correlationId, id) then
+          S.setStateVal(g, "complications")
+          require("core.complications").refresh()
+        end
+      end
+    end
+    return nil
+  end
+  if op == "complicationConditionDismiss" then
+    local correlationId = cmd.correlationId
+    if type(correlationId) ~= "string" or correlationId == "" then
+      return "Missing correlation id."
+    end
+    local g = S.getStateVal("complications")
+    if type(g) == "table" then
+      local Automations = require("lib.complications_automations")
+      if Automations.dismissPrompt(g, correlationId) then
+        S.setStateVal(g, "complications")
+        require("core.complications").refresh()
+      end
+    end
+    return nil
   end
   if op == "personalCardRemove" then
     return require("core.personal_conditions").removeCard(color, cmd.id)

@@ -371,6 +371,7 @@ function P.addCard(color, fields)
     conditionId = nil
   end
   local seq = nextSeq(list)
+  local id = "pc-" .. tostring(seq)
   local duration = fields.duration
   if type(duration) ~= "string" then
     duration = PC.durationForTrigger(trigger)
@@ -378,7 +379,7 @@ function P.addCard(color, fields)
     duration = text(duration, 240)
   end
   list[#list + 1] = {
-    id = "pc-" .. tostring(seq),
+    id = id,
     seq = seq,
     appliedOn = PC.clockStamp(S.getStateVal("presentDayClock")),
     displayOnSheet = onSheet,
@@ -395,7 +396,7 @@ function P.addCard(color, fields)
   recheckSavedTriggers(list)
   writeList(pid, list)
   markSeatsDirty()
-  return nil
+  return nil, id
 end
 
 --- @param color string

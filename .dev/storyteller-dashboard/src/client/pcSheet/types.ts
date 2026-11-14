@@ -191,7 +191,8 @@ export type ApplyCommand =
   | { op: "hunger"; color: SeatColor; delta: number }
   | { op: "personalResonance"; color: SeatColor; temperament: string; resonanceType: string }
   | { op: "personalDyscrasia"; color: SeatColor; title: string; description: string }
-  | { op: "personalCardAdd"; color: SeatColor; condition?: string; displayOnSheet: boolean; displayType: string; textColor: string; kind: string; session?: number; year?: number; month?: number; day?: number; title: string; subtitle: string; description: string; duration: string }
+  | { op: "personalCardAdd"; color: SeatColor; condition?: string; displayOnSheet: boolean; displayType: string; textColor: string; kind: string; session?: number; year?: number; month?: number; day?: number; title: string; subtitle: string; description: string; duration: string; correlationId?: string }
+  | { op: "complicationConditionDismiss"; color: SeatColor; correlationId: string }
   | { op: "personalCardRemove"; color: SeatColor; id: string }
   | { op: "personalDueConfirm"; color: SeatColor; id: string }
   | { op: "personalDueSkip"; color: SeatColor; id: string }

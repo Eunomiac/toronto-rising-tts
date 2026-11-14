@@ -60,6 +60,7 @@ console output; no request waits for a dashboard response.
 | `projects` | `DashPush.projects()` from `Projects.refreshAfterMutation` and `PJP.onPresentDayChanged` | none | Page 5 refetches the projects snapshot (only while it is mounted) |
 | `reload` | dashboard server, on gateway `loadingANewGame` | none | Server clears its cache; PCs tab runs its one-shot `refresh(true)`; page 5 refetches; world store clears |
 | `notice` | `DashPush.notice(text)`: scene Play refusals, dice-on-table blocks, failed blindfold transitions | `json` = `{ text }` | Scenes tab shows a red notice with OK (`scenesPanel/notices.ts`); replays older than a minute are ignored |
+| `complicationConditionPrompt` | `DashPush.complicationConditionPrompt(color, payload)` from Complications Automate when `Dashboard Prompt` is true | `color` + `json` = `{ correlationId, complicationGuid, index, enhanced, draft }` | Scenes seat tracker opens the Conditions form prefilled; confirm runs `personalCardAdd` with `correlationId` so TTS stores the new card id on the Automate receipt |
 | `phase` | world flush (§ 3a) | phase, Play subphase, session number/name, first-Downtime flag, Memoriam active | world store replaces the slice (no UI yet) |
 | `scene` | world flush | live library scene key/title/linked flag, district/site/table keys, placement mode, lighting preset, skybox override, top fog, weather layers | same |
 | `clock` | world flush | clock **anchor** (§ 3b) | same; read through `clockNow` |

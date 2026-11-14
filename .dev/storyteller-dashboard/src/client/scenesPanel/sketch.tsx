@@ -8,13 +8,14 @@ import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { ApplyCommand, ManualCondition, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
-import { LIGHTING_PRESETS, lightingLabel, type LightingPreset } from "../catalogVocab";
+import { LIGHTING_PRESETS, lightingLabel, isSeatColor, type LightingPreset } from "../catalogVocab";
 import type { NpcTier } from "../../shared/npcStats";
 import { GenericTiersContext, useScenesCommand, type StageChanges } from "./commands";
 import { CompulsionBadge } from "./compulsionBadge";
 import { TokenBadges } from "./tierBadge";
 import { BoxRow, HUNGER_DOT, NpcLevelBadge, NpcLiveContext, NpcTrackerPopup } from "./npcTrackers";
-import { ConditionPanel } from "./personalConditions";
+import { ConditionPanel, type ConditionPromptDraft } from "./personalConditions";
+import { subscribeTtsEvents } from "../ttsEvents";
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
@@ -144,7 +145,7 @@ const swallowClicks = {
  * A PC's trackers as controls, as on the PCs tab: click Health, Willpower, or Humanity for that tracker's ring
  * (left-click a button to add, right-click to remove); left-click Hunger to raise it, right-click to lower it.
  */
-const TrackerPopup = ({ seat, sessionNum, manualConditions, onRing, onHunger, onOpenSheet, onApply }: {
+const TrackerPopup = ({ seat, sessionNum, manualConditions, onRing, onHunger, onOpenSheet, onApply, promptDraft, correlationId, onPromptHandled }: {
   seat: SeatSnapshot;
   sessionNum: number;
   manualConditions: readonly ManualCondition[];
@@ -152,8 +153,16 @@ const TrackerPopup = ({ seat, sessionNum, manualConditions, onRing, onHunger, on
   onHunger: (delta: number) => void;
   onOpenSheet?: () => void;
   onApply: (command: ApplyCommand) => void;
+  promptDraft?: ConditionPromptDraft | null;
+  correlationId?: string | null;
+  onPromptHandled?: () => void;
 }): ReactElement => {
-  const [conditionPane, setConditionPane] = useState<"resonance" | "other" | null>(null);
+  const [conditionPane, setConditionPane] = useState<"resonance" | "other" | null>(promptDraft ? "other" : null);
+  useEffect(() => {
+    if (promptDraft) {
+      setConditionPane("other");
+    }
+  }, [promptDraft]);
   return (
   <div className="lab-seat-pop" role="dialog" aria-label={`${seat.charName} trackers`} {...swallowClicks}>
     <span className="lab-seat-pop-head">
@@ -206,6 +215,9 @@ const TrackerPopup = ({ seat, sessionNum, manualConditions, onRing, onHunger, on
         manualConditions={manualConditions}
         pane={conditionPane}
         apply={onApply}
+        promptDraft={conditionPane === "other" ? promptDraft : null}
+        correlationId={conditionPane === "other" ? correlationId : null}
+        onPromptHandled={onPromptHandled}
       />
     )}
   </div>
@@ -268,12 +280,59 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
   };
   const [openColor, setOpenColor] = useState<SeatColor | null>(null);
   const [ring, setRing] = useState<TrackRing | null>(null);
+  const [conditionPrompt, setConditionPrompt] = useState<{
+    color: SeatColor;
+    correlationId: string;
+    draft: ConditionPromptDraft;
+  } | null>(null);
   const sheetMissing = liveSheet !== undefined && liveSheet.sheet === null && liveSheet.error === null;
   useEffect(() => {
     if (sheetMissing) {
       liveSheet?.load();
     }
   }, [sheetMissing, liveSheet]);
+  useEffect(() => subscribeTtsEvents((event) => {
+    if (event.topic !== "complicationConditionPrompt" || !isSeatColor(event.color)) {
+      return;
+    }
+    const data = event.data;
+    if (typeof data !== "object" || data === null) {
+      return;
+    }
+    const record = data as Record<string, unknown>;
+    const draftRaw = record.draft;
+    if (typeof record.correlationId !== "string" || typeof draftRaw !== "object" || draftRaw === null) {
+      return;
+    }
+    const draft = draftRaw as Record<string, unknown>;
+    const displayType = draft.displayType === "theBeast" || draft.displayType === "debilitation" || draft.displayType === "general"
+      ? draft.displayType
+      : "general";
+    const textColor = draft.textColor === "gold" || draft.textColor === "red" || draft.textColor === "white"
+      ? draft.textColor
+      : "white";
+    const kind = draft.kind === "EndOfSession" || draft.kind === "Manual" || draft.kind === "EndOfScene"
+      || draft.kind === "Clock" || draft.kind === "ChangeOfBlood"
+      ? draft.kind
+      : "Manual";
+    setConditionPrompt({
+      color: event.color,
+      correlationId: record.correlationId,
+      draft: {
+        title: typeof draft.title === "string" ? draft.title : "",
+        subtitle: typeof draft.subtitle === "string" ? draft.subtitle : "",
+        description: typeof draft.description === "string" ? draft.description : "",
+        displayType,
+        textColor,
+        kind,
+        session: typeof draft.session === "number" ? draft.session : undefined,
+        duration: typeof draft.duration === "string" ? draft.duration : "",
+        displayOnSheet: draft.displayOnSheet !== false
+      }
+    });
+    setOpenColor(event.color);
+    liveSheet?.load();
+  }), [liveSheet]);
   useEffect(() => {
     if (!openColor) {
       return undefined;
@@ -450,6 +509,9 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
                 onRing={(event, target) => setRing({ ...canvasPoint(event), target })}
                 onHunger={(delta) => apply({ op: "hunger", color: openSeat.color, delta })}
                 onApply={apply}
+                promptDraft={conditionPrompt?.color === openSeat.color ? conditionPrompt.draft : null}
+                correlationId={conditionPrompt?.color === openSeat.color ? conditionPrompt.correlationId : null}
+                onPromptHandled={() => setConditionPrompt(null)}
                 onOpenSheet={openPcSheet ? () => {
                   setOpenColor(null);
                   openPcSheet(openSeat.color);

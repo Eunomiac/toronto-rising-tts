@@ -99,9 +99,18 @@ end
 function M.reveal(g, guid)
     local c = g.cards[guid]
     if g.hidden or g.mode ~= 'stop' or g.exhausted or not c or c.zone ~= 'slot' or c.up then return false end
-    c.up, g.selected, g.last, g.mode = true, guid, guid, 'select'
+    local Catalog = require("lib.complications_catalog")
+    local def = Catalog[c.index]
+    local pause = def == nil or def.requiresPause ~= false
+    c.up, g.last = true, guid
+    if pause then
+        g.selected, g.mode = guid, 'select'
+    else
+        -- Player may flip again immediately; ST re-selects later via Select when needed.
+        g.selected, g.mode = nil, 'stop'
+    end
     M.restrict(g,c.category)
-    return true
+    return true, pause
 end
 function M.discard(g)
     local guid = g.selected

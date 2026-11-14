@@ -31,6 +31,17 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-780 — Complications: Requires Pause, personal conditions, Automate hide, Dashboard Prompt
+
+> **Agent-assessment note:** Catalog import and unit tests cover the sheet columns. Flip handoff, Automate hide/show, personal-card apply/swap, and the Dashboard prompt need Save & Play plus a live Dashboard window.
+
+**How to verify:** Save & Play after a Full build (or at least after `npm run complications:import`). Start a Complications draw for a PC with the Dashboard open on Scenes.
+
+1. Flip **Ennui** (no pause) — you should be able to flip another card immediately, and the PC’s sheet should gain the ENNUI personal condition without Automate.
+2. Flip **Cognitive Dissonance** (pause + Function Calls + condition) — control should pass to you; Automate should be visible. Click Automate — the Function Call and the personal condition should both apply. Reverse should undo both.
+3. Flip **Guilt By Association** (pause + Dashboard Prompt) — Automate should open that PC’s Conditions form on the Dashboard, already filled in. Confirm adds the card; Dismiss leaves no personal condition. Enhance a card that already applied a condition and check the sheet text swaps to the enhanced description (and back on un-enhance).
+4. On a card with neither Function Calls nor condition data, Automate should be hidden.
+
 #### 🟡 TOR-778 — Split soundscape packs: new dual emitters + Main music catalog
 
 > **Agent-assessment note:** GUID wiring, channel banks, and save injection are checked in code. You still need a listen pass in TTS for Main crossfades, site music on Music A, featured, session starters, location packs, and weather.

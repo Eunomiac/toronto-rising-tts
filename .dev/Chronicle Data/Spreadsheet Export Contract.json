@@ -338,7 +338,17 @@
         "Willpower",
         "Launch",
         "Goal",
-        "Function Calls"
+        "Requires Pause",
+        "Function Calls",
+        "Condition Title",
+        "Condition Subtitle",
+        "Condition Style",
+        "Condition Color",
+        "Dashboard Prompt",
+        "Condition Base Description",
+        "Condition Enhanced Description",
+        "Condition Base Duration",
+        "Condition Enhanced Duration"
       ],
       "source": "Toronto Rising Decks: completed [CPL] Cards and automation keys",
       "verifiedRows": 66,

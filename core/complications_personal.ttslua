@@ -1,0 +1,163 @@
+--[[
+  Personal sheet-condition apply/remove for Deck of Complications catalog rows.
+  Called from flip (no-pause auto-apply), Automate / Reverse, and enhance swap.
+]]
+
+local P = {}
+
+local S = require("core.state")
+local PC = require("lib.personal_conditions")
+local Catalog = require("lib.complications_catalog")
+local Personal = require("core.personal_conditions")
+
+local function sessionNum()
+  return math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+end
+
+--- @param duration table|nil
+--- @return table|nil fields partial
+--- @return string|nil error
+local function durationFields(duration)
+  if type(duration) ~= "table" or type(duration.kind) ~= "string" then
+    return nil, "Missing condition duration."
+  end
+  if duration.kind == "Manual" then
+    return { kind = "Manual", duration = "" }, nil
+  end
+  if duration.kind == "EndOfSession" then
+    local offset = math.floor(tonumber(duration.offset) or 0)
+    local session = sessionNum() + offset
+    return {
+      kind = "EndOfSession",
+      session = session,
+      duration = PC.durationForTrigger(PC.sessionTrigger(session)),
+    }, nil
+  end
+  return nil, "Unsupported condition duration kind."
+end
+
+--- @param index number
+--- @param enhanced boolean
+--- @return table|nil fields
+--- @return string|nil error
+function P.buildFields(index, enhanced)
+  local def = Catalog[index]
+  local condition = def and def.condition
+  if type(condition) ~= "table" then
+    return nil, "No condition data for this Complication."
+  end
+  local duration = enhanced and condition.enhancedDuration or condition.baseDuration
+  local description = enhanced and condition.enhancedDescription or condition.baseDescription
+  local dur, durErr = durationFields(duration)
+  if dur == nil then
+    return nil, durErr
+  end
+  return {
+    displayOnSheet = true,
+    displayType = condition.style or "general",
+    textColor = condition.color or "white",
+    kind = dur.kind,
+    session = dur.session,
+    title = condition.title or "",
+    subtitle = condition.subtitle or "",
+    description = description or "",
+    duration = dur.duration,
+  }, nil
+end
+
+--- Prefill payload for the Dashboard Conditions prompt.
+--- @param index number
+--- @param enhanced boolean
+--- @return table|nil draft
+--- @return string|nil error
+function P.buildDraft(index, enhanced)
+  local fields, err = P.buildFields(index, enhanced)
+  if fields == nil then
+    return nil, err
+  end
+  return {
+    title = fields.title,
+    subtitle = fields.subtitle,
+    description = fields.description,
+    displayType = fields.displayType,
+    textColor = fields.textColor,
+    kind = fields.kind,
+    session = fields.session,
+    duration = fields.duration,
+    displayOnSheet = true,
+  }, nil
+end
+
+--- @param color string
+--- @param index number
+--- @param enhanced boolean
+--- @return string|nil personalCardId
+--- @return string|nil error
+function P.apply(color, index, enhanced)
+  local fields, err = P.buildFields(index, enhanced)
+  if fields == nil then
+    return nil, err
+  end
+  local addErr, id = Personal.addCard(color, fields)
+  if addErr ~= nil then
+    return nil, addErr
+  end
+  require("core.sync").player(color)
+  return id, nil
+end
+
+--- @param color string
+--- @param personalCardId string
+--- @return string|nil error
+function P.remove(color, personalCardId)
+  if type(personalCardId) ~= "string" or personalCardId == "" then
+    return nil
+  end
+  local err = Personal.removeCard(color, personalCardId)
+  if err ~= nil then
+    return err
+  end
+  require("core.sync").player(color)
+  return nil
+end
+
+--- Replace an applied personal card with the other enhance variant.
+--- @param color string
+--- @param index number
+--- @param personalCardId string|nil
+--- @param enhanced boolean desired variant after toggle
+--- @return string|nil newId
+--- @return string|nil error
+function P.swap(color, index, personalCardId, enhanced)
+  if type(personalCardId) == "string" and personalCardId ~= "" then
+    local removeErr = P.remove(color, personalCardId)
+    if removeErr ~= nil then
+      return nil, removeErr
+    end
+  end
+  return P.apply(color, index, enhanced == true)
+end
+
+--- Open the Dashboard Conditions popup with a prefilled draft.
+--- @param color string
+--- @param index number
+--- @param enhanced boolean
+--- @param correlationId string
+--- @param complicationGuid string
+--- @return string|nil error
+function P.prompt(color, index, enhanced, correlationId, complicationGuid)
+  local draft, err = P.buildDraft(index, enhanced)
+  if draft == nil then
+    return err
+  end
+  require("dashboard.push").complicationConditionPrompt(color, {
+    correlationId = correlationId,
+    complicationGuid = complicationGuid,
+    index = index,
+    enhanced = enhanced == true,
+    draft = draft,
+  })
+  return nil
+end
+
+return P

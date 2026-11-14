@@ -23,7 +23,7 @@ function fixture() {
   const code = [keys.base, keys.temperatureDelta, keys.humidity, keys.wind].map(set => [...set][0]).join("");
   const days = [31,29,31,30,31,30,31,31,30,31,30,31];
   tables.EXPORT_WEATHER = table("WEATHER", days.flatMap((n, month) => Array.from({length:n}, (_, day) => ({ Month: String(month+1), "Average Temperature": "0", Day: String(day+1), DayCodes: Array(24).fill(`"${code}"`).join(",") }))));
-  tables.EXPORT_COMPLICATIONS = table("COMPLICATIONS", [{ Index: "1", Name: "Test", Category: "", Rarity: "Common", Value: "0", "Function Calls": "projectDiePenalty", Standard: "TRUE", Discipline: "TRUE", Willpower: "FALSE", Launch: "FALSE", Goal: "FALSE" }]);
+  tables.EXPORT_COMPLICATIONS = table("COMPLICATIONS", [{ Index: "1", Name: "Test", Category: "", Rarity: "Common", Value: "0", "Function Calls": "projectDiePenalty", Standard: "TRUE", Discipline: "TRUE", Willpower: "FALSE", Launch: "FALSE", Goal: "FALSE", "Requires Pause": "TRUE", "Dashboard Prompt": "FALSE" }]);
   return { version: 1, tables };
 }
 test("named CSV URL includes the export tab gid", () => {

@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ComplicationConditionPrompt. Scenes seat tracker opens a prefilled Conditions form when TTS pushes `complicationConditionPrompt` (Automate + Dashboard Prompt). Confirm uses `personalCardAdd` with `correlationId`; Dismiss clears the pending Automate half. Pending Save & Play / live prompt under **TOR-780**.
+
 - ✔️ SD-ScenesPins-1112c. Seven Scenes pins from 2026-11-12: Court blank packing across columns; roster Group + y-level Delta; red deck text until preloaded; preload notices clear on completion; Intermission reminders; hunt site resonance for bare Plus cells (GEDiningHall). Pending Save & Play under **TOR-777**.
 
 - ✔️ SD-ScenesPins-1112b. Two follow-up Scenes pins from 2026-11-12 are implemented and cleared: Complications board margin/total texts clear on load when no game is live, and non-Scatter table figurine references sit two world units farther from the table centre. Pending Save & Play under **TOR-776**.

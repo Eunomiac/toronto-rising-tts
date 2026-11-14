@@ -59,7 +59,7 @@ The machine-readable contract contains every exact header and snapshot range. Th
 | EXPORT_MEMORIAM | 50 | 26 | Approved MEMORIAMS records and the existing runtime key transformations |
 | EXPORT_WEATHER | 366 | 4 | WEATHER month, temperature, day, and DayCodes columns |
 | EXPORT_SKYBOXES | 95 | 4 | Authored site names/availability and the API workbook's non-site keyed definitions |
-| EXPORT_COMPLICATIONS | 66 | 14 | Toronto Rising Decks → [CPL] Cards, completed designs and automation keys |
+| EXPORT_COMPLICATIONS | 66 | 24 | Toronto Rising Decks → [CPL] Cards, automation keys, pause/prompt flags, personal condition fields |
 | EXPORT_COMPULSIONS | 36 | 11 | Toronto Rising Decks → COM_DEFINITIONS joined to COM_VARIANTS |
 | EXPORT_DISCIPLINES | 382 | 15 | V5: DISCIPLINES → normalized in the Toronto Rising export |
 
@@ -124,9 +124,9 @@ Random generic panoramas remain cloud-owned: genericSkyboxes currently supplies 
 
 ### Complications
 
-`import_complications_from_sheet.js` currently selects completed designs and emits runtime metadata into `lib/complications_catalog.ttslua`. `core/complications.ttslua`, the model, and existing effect modules use card index/name/category/rarity/value and five roll eligibility flags.
+`import_complications_from_sheet.js` selects completed designs and emits runtime metadata into `lib/complications_catalog.ttslua`, including `requiresPause`, `dashboardPrompt`, optional `condition` (title/subtitle/style/color/base+enhanced description and duration), Function Calls, and five roll eligibility flags. `core/complications.ttslua` uses those fields for flip handoff, Automate visibility, personal sheet-condition apply/swap, and Dashboard Prompt pushes.
 
-The 15 export fields also preserve Standard/Enhanced/Active Enhanced wording and Necessary Automations. Effect text is data, not executable code. All 66 completed records reproduce the current runtime parser output exactly. Numeric zero, negatives, X, and booleans survive transport.
+Standard/Enhanced/Active Enhanced wording columns remain in the export for card art/review; they are not required by the Lua catalog. All 66 completed records must parse cleanly. Numeric zero, negatives, X, and booleans survive transport.
 
 Physical deck sheets, image quantities, ordered settings sidecars, cloud sync, and save assembly remain separate asset workflows. Export completion does not authorize regenerating private artwork or changing the effect implementation.
 

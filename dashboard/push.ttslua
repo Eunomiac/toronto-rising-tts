@@ -7,6 +7,8 @@
     { type = "dashboard", v = 1, topic = <world slice>, data }     — phase / scene / clock / soundscape / seats
     { type = "dashboard", v = 1, topic = "notice", data }          — `{ text }`: a refusal the Storyteller must see
                                                                     (TTS broadcasts hide behind the blindfold)
+    { type = "dashboard", v = 1, topic = "complicationConditionPrompt", color, data }
+                                                                  — prefilled Conditions popup for Automate + Dashboard Prompt
   The `<@DASHBOARD@>` prefix makes the gateway route each print only to the dashboard. The gateway
   strips the prefix before delivery; direct-mode dashboard listeners strip it themselves.
   No handshake, session id or sequence number: the dashboard refetches its full snapshot on
@@ -86,6 +88,23 @@ end
 --- Tell the dashboard the project list changed (it refetches projects on demand).
 function DashPush.projects()
   emit({ topic = "projects" })
+end
+
+--- Open the Scenes seat Conditions popup with a prefilled Complication draft.
+--- @param color string seat color
+--- @param payload table correlationId, complicationGuid, index, enhanced, draft
+function DashPush.complicationConditionPrompt(color, payload)
+  if not U.isIn(color, C.PlayerColors) then
+    error("DashPush.complicationConditionPrompt: invalid seat color", 2)
+  end
+  if type(payload) ~= "table" or type(payload.correlationId) ~= "string" or type(payload.draft) ~= "table" then
+    error("DashPush.complicationConditionPrompt: payload needs correlationId and draft", 2)
+  end
+  emit({
+    topic = "complicationConditionPrompt",
+    color = color,
+    json = JSON.encode(payload),
+  })
 end
 
 --- Show a refusal or failure on the dashboard (scene Play blocked by dice on the table, a transition that

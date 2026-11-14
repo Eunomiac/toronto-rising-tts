@@ -1,9 +1,21 @@
 -- Registration boundary for reviewed card effects.
 -- Handlers plan saved-state changes and journal operations; core.complications executes
 -- the journal. They must not perform immediate world mutations or schedule callbacks.
+-- Personal sheet conditions are applied through core.complications_personal (bound below).
 local A = {}
 local Catalog = require("lib.complications_catalog")
 local entries = {}
+local personal = nil
+
+function A.bindPersonal(api)
+    assert(type(api) == "table"
+        and type(api.apply) == "function"
+        and type(api.remove) == "function"
+        and type(api.prompt) == "function"
+        and type(api.swap) == "function")
+    personal = api
+end
+
 function A.register(key, handler)
     assert(type(key)=='string' and key~="" and not entries[key], 'Duplicate/invalid automation key')
     assert(type(handler.apply)=='function' and type(handler.reverse)=='function', 'Automation needs apply and reverse')
@@ -15,32 +27,164 @@ local function keyFor(index)
     if key ~= nil then assert(entries[key], "Unknown Complication automation key: " .. tostring(key)) end
     return key
 end
-function A.has(index) return keyFor(index)~=nil end
+local function conditionFor(index)
+    local card = Catalog[index]
+    return card and card.condition or nil
+end
+function A.has(index)
+    return keyFor(index) ~= nil or conditionFor(index) ~= nil
+end
 function A.validateCatalog()
     for index in pairs(Catalog) do keyFor(index) end
 end
+
+local function newCorrelation()
+    return tostring(os.time()) .. ":" .. tostring(math.random(100000, 999999))
+end
+
+--- Apply or reverse Function Calls and/or catalog personal conditions for one slot card.
 function A.run(g, guid, reverse)
-    local c=g.cards[guid]
-    local key=c and keyFor(c.index)
-    local handler=key and entries[key]
-    if not handler or not c.up or c.zone~='slot' then return false end
-    g.automations=g.automations or {}
-    local receipt=g.automations[guid]
-    if reverse==nil then reverse=receipt~=nil end
+    local c = g.cards[guid]
+    if not c or not c.up or c.zone ~= 'slot' then return false end
+    local key = keyFor(c.index)
+    local handler = key and entries[key]
+    local condition = conditionFor(c.index)
+    if not handler and not condition then return false end
+    g.automations = g.automations or {}
+    local receipt = g.automations[guid]
+    local color = g.target and g.target.color
+    if reverse == nil then reverse = receipt ~= nil end
+
     if reverse then
         if not receipt then return false end
-        assert(receipt.key==key and type(receipt.value)=='table', "Invalid Complication automation receipt for " .. key)
-        handler.reverse(g,guid,receipt.value)
-        g.automations[guid]=nil
-    else
-        if receipt then return false end
-        -- Return a serializable receipt recording exactly this source's contribution.
-        -- Keep its variant even if the card is subsequently enhanced/unenhanced.
-        receipt=handler.apply(g,guid,c.enhanced==true)
-        if receipt==nil then return false end
-        assert(type(receipt)=='table','Automation must return a saved reversal receipt')
-        g.automations[guid]={key=key,value=receipt}
+        if receipt.key and handler then
+            assert(receipt.key == key and type(receipt.value) == 'table', "Invalid Complication automation receipt for " .. tostring(key))
+            handler.reverse(g, guid, receipt.value)
+        end
+        if personal and type(receipt.personalCardId) == "string" and receipt.personalCardId ~= "" and color then
+            local err = personal.remove(color, receipt.personalCardId)
+            if err then
+                require("lib.util").AlertGM("Complications: could not remove personal condition (" .. tostring(err) .. ")")
+            end
+        end
+        g.automations[guid] = nil
+        return true
     end
-    return true
+
+    if receipt and not receipt.personalPending then return false end
+    receipt = receipt or {}
+
+    if handler and not receipt.key then
+        local value = handler.apply(g, guid, c.enhanced == true)
+        if value == nil then return false end
+        assert(type(value) == 'table', 'Automation must return a saved reversal receipt')
+        receipt.key = key
+        receipt.value = value
+    end
+
+    if condition and personal and color and not receipt.personalCardId then
+        local def = Catalog[c.index]
+        local enhanced = c.enhanced == true
+        if def.dashboardPrompt == true then
+            local correlationId = newCorrelation()
+            local err = personal.prompt(color, c.index, enhanced, correlationId, guid)
+            if err then
+                require("lib.util").AlertGM("Complications: " .. tostring(err))
+                if receipt.key then
+                    g.automations[guid] = receipt
+                end
+                return receipt.key ~= nil
+            end
+            receipt.personalPending = correlationId
+            receipt.personalVariant = enhanced and "enhanced" or "base"
+        else
+            local id, err = personal.apply(color, c.index, enhanced)
+            if err then
+                require("lib.util").AlertGM("Complications: " .. tostring(err))
+                if receipt.key then
+                    g.automations[guid] = receipt
+                end
+                return receipt.key ~= nil
+            end
+            receipt.personalCardId = id
+            receipt.personalVariant = enhanced and "enhanced" or "base"
+        end
+    end
+
+    if receipt.key or receipt.personalCardId or receipt.personalPending then
+        g.automations[guid] = receipt
+        return true
+    end
+    return false
 end
+
+--- No-pause flips apply the base personal condition immediately (no Automate).
+function A.applyOnReveal(g, guid)
+    local c = g.cards[guid]
+    if not c or not personal then return end
+    local def = Catalog[c.index]
+    if not def or not def.condition or def.requiresPause ~= false then return end
+    local color = g.target and g.target.color
+    if not color then return end
+    g.automations = g.automations or {}
+    if g.automations[guid] and g.automations[guid].personalCardId then return end
+    local id, err = personal.apply(color, c.index, false)
+    if err then
+        require("lib.util").AlertGM("Complications: " .. tostring(err))
+        return
+    end
+    g.automations[guid] = g.automations[guid] or {}
+    g.automations[guid].personalCardId = id
+    g.automations[guid].personalVariant = "base"
+end
+
+--- Dashboard confirmed a prompted personal condition.
+function A.ackPrompt(g, correlationId, personalCardId)
+    if type(correlationId) ~= "string" or type(personalCardId) ~= "string" then return false end
+    g.automations = g.automations or {}
+    for guid, receipt in pairs(g.automations) do
+        if type(receipt) == "table" and receipt.personalPending == correlationId then
+            receipt.personalCardId = personalCardId
+            receipt.personalPending = nil
+            return true, guid
+        end
+    end
+    return false
+end
+
+--- Dashboard dismissed the prompt without adding a condition.
+function A.dismissPrompt(g, correlationId)
+    if type(correlationId) ~= "string" then return false end
+    g.automations = g.automations or {}
+    for guid, receipt in pairs(g.automations) do
+        if type(receipt) == "table" and receipt.personalPending == correlationId then
+            receipt.personalPending = nil
+            receipt.personalVariant = nil
+            if not receipt.key then
+                g.automations[guid] = nil
+            end
+            return true, guid
+        end
+    end
+    return false
+end
+
+--- After enhance / unenhance, swap the personal card to the matching variant when one was applied.
+function A.syncEnhancedPersonal(g, guid)
+    local c = g.cards[guid]
+    local receipt = g.automations and g.automations[guid]
+    if not c or not receipt or not personal or type(receipt.personalCardId) ~= "string" then return end
+    local color = g.target and g.target.color
+    if not color or not conditionFor(c.index) then return end
+    local want = c.enhanced and "enhanced" or "base"
+    if receipt.personalVariant == want then return end
+    local id, err = personal.swap(color, c.index, receipt.personalCardId, c.enhanced == true)
+    if err then
+        require("lib.util").AlertGM("Complications: " .. tostring(err))
+        return
+    end
+    receipt.personalCardId = id
+    receipt.personalVariant = want
+end
+
 return A
