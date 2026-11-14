@@ -13746,6 +13746,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     <VerticalLayout id="scenes_site_group_dist_DupontByTheCastle" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Dupont by the Castle — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_CLControlRoom" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Control Room" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_CLGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Estate Grounds" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_CLGallery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Gallery of Mirrors" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_CLGreatHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Great Hall" onClick="HUD_scenesPickSite" />
@@ -13753,9 +13754,9 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
         <Button id="scenes_pick_site_CLTerrace" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Moonlit Terrace" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_CLOverlook" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Overlook" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_CLLibrary" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Tacettin Ayhan Library" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_CLVestibule" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Vestibule" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_CLVestibule" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Vestibule" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_GeorgeBrown" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="George Brown College" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
     </VerticalLayout>

@@ -302,6 +302,18 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
     offsetXY = "-168.8 109.93",
   },
+  CLControlRoom = {
+    name = "Casa Loma: Control Room",
+    district = Districts.DupontByTheCastle,
+    soundscape = {
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "computer" },
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    isTopFogActive = false,
+    offsetXY = "-254.33 441.43",
+  },
   CLDrawingRoom = {
     name = "Casa Loma: Maximillian Steele Drawing Room",
     skybox = "CLDrawingRoom",
