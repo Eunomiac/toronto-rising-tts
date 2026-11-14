@@ -5,12 +5,14 @@
 // Menus:
 //   Tools → Toronto Rising → Sync Main Music Into Prefabs
 //   Tools → Toronto Rising → Export Prefab Effects Catalog CSV
+//   Tools → Toronto Rising → Sort Prefab Effect Lists Alphabetically
 //
 // Expects Audition-exported .wav files (sound-matched / faded). Applies Main
 // playlist import defaults, measures duration from each AudioClip, and upserts
 // Trigger Effects on the paired prefabs (non-managed effects are preserved).
 // After sync (or on demand), scans top-level prefabs in Config.PrefabsFolder and
 // writes a catalog CSV (effect name, 0-based TTS index, duration, clip, …).
+// Alphabetical sort rewrites LoopingEffects / TriggerEffects order (TTS indexes change).
 
 #if UNITY_EDITOR
 
@@ -170,6 +172,86 @@ public static class SoundscapeMainMusicBundleSync
         var count = ExportPrefabEffectsCatalog();
         Debug.Log(
             "[SoundscapeMainMusicBundleSync] Prefab effects catalog rows=" + count +
+            " → " + Config.PrefabEffectsCatalogCsvRelativeToProject);
+    }
+
+    [MenuItem("Tools/Toronto Rising/Sort Prefab Effect Lists Alphabetically")]
+    private static void SortPrefabEffectListsAlphabetically()
+    {
+        var folder = NormalizeAssetPath(Config.PrefabsFolder);
+        if (!AssetDatabase.IsValidFolder(folder))
+        {
+            Debug.LogError("[SoundscapeMainMusicBundleSync] Prefabs folder not found: " + folder);
+            return;
+        }
+
+        var effectsType = FindComponentType();
+        if (effectsType == null)
+        {
+            Debug.LogError(
+                "[SoundscapeMainMusicBundleSync] Could not find type " + ComponentTypeName + ".");
+            return;
+        }
+
+        var prefabPaths = FindTopLevelPrefabPaths(folder);
+        var changedPrefabs = 0;
+        var changedLists = 0;
+
+        foreach (var prefabPath in prefabPaths)
+        {
+            var root = PrefabUtility.LoadPrefabContents(prefabPath);
+            if (root == null)
+            {
+                Debug.LogWarning("[SoundscapeMainMusicBundleSync] Could not load prefab: " + prefabPath);
+                continue;
+            }
+
+            try
+            {
+                var effects = root.GetComponent(effectsType) as Component
+                    ?? root.GetComponentInChildren(effectsType, true) as Component;
+                if (effects == null)
+                {
+                    continue;
+                }
+
+                var loopingChanged = SortNamedEffectListField(effects, "LoopingEffects");
+                var triggerChanged = SortNamedEffectListField(effects, "TriggerEffects");
+                if (!loopingChanged && !triggerChanged)
+                {
+                    continue;
+                }
+
+                if (loopingChanged)
+                {
+                    changedLists++;
+                }
+
+                if (triggerChanged)
+                {
+                    changedLists++;
+                }
+
+                EditorUtility.SetDirty(effects);
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+                changedPrefabs++;
+                Debug.Log(
+                    "[SoundscapeMainMusicBundleSync] Sorted effects on " + prefabPath +
+                    " (looping=" + loopingChanged + ", trigger=" + triggerChanged + ")");
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        var catalogCount = ExportPrefabEffectsCatalog();
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Debug.Log(
+            "[SoundscapeMainMusicBundleSync] Alphabetical sort done. Prefabs changed=" +
+            changedPrefabs + " lists changed=" + changedLists +
+            ". TTS indexes changed — refreshed catalog rows=" + catalogCount +
             " → " + Config.PrefabEffectsCatalogCsvRelativeToProject);
     }
 
@@ -600,17 +682,7 @@ public static class SoundscapeMainMusicBundleSync
             return 0;
         }
 
-        // Top-level only: FindAssets is recursive, so keep prefabs whose parent folder is exactly PrefabsFolder.
-        var prefabPaths = AssetDatabase.FindAssets("t:Prefab", new[] { folder })
-            .Select(AssetDatabase.GUIDToAssetPath)
-            .Where(p => !string.IsNullOrEmpty(p) && p.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
-            .Where(p =>
-            {
-                var parent = Path.GetDirectoryName(p)?.Replace("\\", "/");
-                return string.Equals(parent, folder, StringComparison.OrdinalIgnoreCase);
-            })
-            .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var prefabPaths = FindTopLevelPrefabPaths(folder);
 
         var rows = new List<PrefabEffectRow>();
         foreach (var prefabPath in prefabPaths)
@@ -678,6 +750,100 @@ public static class SoundscapeMainMusicBundleSync
 
         File.WriteAllText(csvPath, sb.ToString(), new UTF8Encoding(false));
         return rows.Count;
+    }
+
+    private static List<string> FindTopLevelPrefabPaths(string folder)
+    {
+        // FindAssets is recursive; keep only prefabs whose parent folder is exactly `folder`.
+        return AssetDatabase.FindAssets("t:Prefab", new[] { folder })
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .Where(p => !string.IsNullOrEmpty(p) && p.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+            .Where(p =>
+            {
+                var parent = Path.GetDirectoryName(p)?.Replace("\\", "/");
+                return string.Equals(parent, folder, StringComparison.OrdinalIgnoreCase);
+            })
+            .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Sort a List&lt;T&gt; field of TTS*Effect entries by Name (ordinal ignore-case).
+    /// Empty names go last. Returns true if order changed.
+    /// </summary>
+    private static bool SortNamedEffectListField(Component effectsComponent, string fieldName)
+    {
+        var field = effectsComponent.GetType().GetField(
+            fieldName,
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.NonPublic);
+        if (field == null)
+        {
+            Debug.LogWarning(
+                "[SoundscapeMainMusicBundleSync] Field not found on " +
+                effectsComponent.GetType().Name + ": " + fieldName);
+            return false;
+        }
+
+        var listObj = field.GetValue(effectsComponent) as System.Collections.IList;
+        if (listObj == null || listObj.Count <= 1)
+        {
+            return false;
+        }
+
+        var nameField = listObj[0]?.GetType().GetField(
+            "Name",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.NonPublic);
+
+        string ReadName(object item)
+        {
+            if (item == null || nameField == null)
+            {
+                return "";
+            }
+
+            return nameField.GetValue(item) as string ?? "";
+        }
+
+        var before = new object[listObj.Count];
+        for (var i = 0; i < listObj.Count; i++)
+        {
+            before[i] = listObj[i];
+        }
+
+        var sorted = before
+            .Select((item, index) => new { item, index, name = ReadName(item) })
+            .OrderBy(x => string.IsNullOrWhiteSpace(x.name) ? 1 : 0)
+            .ThenBy(x => x.name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x => x.index)
+            .Select(x => x.item)
+            .ToList();
+
+        var changed = false;
+        for (var i = 0; i < sorted.Count; i++)
+        {
+            if (!ReferenceEquals(before[i], sorted[i]))
+            {
+                changed = true;
+                break;
+            }
+        }
+
+        if (!changed)
+        {
+            return false;
+        }
+
+        listObj.Clear();
+        foreach (var item in sorted)
+        {
+            listObj.Add(item);
+        }
+
+        return true;
     }
 
     private static void CollectEffectListRows(

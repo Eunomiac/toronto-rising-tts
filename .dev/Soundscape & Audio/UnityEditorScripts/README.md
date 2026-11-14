@@ -38,6 +38,7 @@ Reimport assets first if sizes look stale (**Assets → Reimport** or change a s
 
 - **Tools → Toronto Rising → Sync Main Music Into Prefabs**
 - **Tools → Toronto Rising → Export Prefab Effects Catalog CSV**
+- **Tools → Toronto Rising → Sort Prefab Effect Lists Alphabetically**
 - **Tools → Toronto Rising → Apply Main Music Import Settings Only**
 
 Use this after you finish tracks in Audition and export **sound-matched, faded `.wav`** files into the configured folders.
@@ -73,6 +74,8 @@ Those folders/prefabs must exist in the Unity project before running the menu.
 7. Also writes **`Soundscape_Prefab_Effects_Catalog.csv`** by scanning **top-level** prefabs in `Config.PrefabsFolder` (default `Assets/Soundscape/Prefabs`, no subfolders). Each Looping/Trigger row includes prefab, `effect_list`, **0-based TTS index** (`index_0_based`), 1-based slot, effect name, duration, clip path, and Positional 3D — use this to align `lib/soundscape_catalog.ttslua`.
 
 Re-run **Export Prefab Effects Catalog CSV** anytime without re-syncing music.
+
+**Sort Prefab Effect Lists Alphabetically** reorders **Looping Effects** and **Trigger Effects** on every top-level prefab in `Config.PrefabsFolder` by effect **Name** (case-insensitive; blank names last). That **changes TTS 0-based indexes**, so the catalog CSV is refreshed automatically afterward. Prefer name-based Lua lookups; if anything still uses hard-coded indexes, update it from the new catalog.
 
 Looping Effects (ambience, weather, `silent`) are not touched by the Main music sync; they still appear in the prefab catalog CSV.
 
