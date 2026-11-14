@@ -37,14 +37,18 @@ def main() -> int:
         ),
         reverse=True,
     )
+    rows, strings_floor, removed = screener.apply_top20_strings_floor(rows)
     with CSV_PATH.open("w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
-    print(
-        "Recomputed overall_rank for "
-        f"{sum(1 for r in rows if r.get('overall_rank') not in (None, ''))} AI rows"
-    )
+    kept = sum(1 for r in rows if r.get("overall_rank") not in (None, ""))
+    print(f"Recomputed overall_rank for AI rows; {kept} remain after strings floor")
+    if strings_floor is not None:
+        print(
+            f"Strings floor: top-20 mean strings_match={strings_floor:.3f}; "
+            f"cleared {removed} passages below that"
+        )
     return 0
 
 

@@ -372,6 +372,61 @@ def compute_overall_rank(row: dict) -> float:
     return float(np.clip(score, 0, 100))
 
 
+def apply_top20_strings_floor(
+    rows: list[dict],
+    top_n: int = 20,
+    refine_passes: int = 2,
+) -> tuple[list[dict], float | None, int]:
+    """Hard-filter AI rows below the mean strings_match of the current top N.
+
+    1. Sort by overall_rank
+    2. Average strings_match on the top N AI-scored rows
+    3. Clear overall_rank on any AI row below that average (drops them from
+       audition shortlists / --ai-only playlists)
+    4. Repeat once by default so a polluted first top-20 cannot keep the floor
+       artificially low
+
+    Returns (rows, final_threshold_or_None, total_removed_count).
+    """
+    total_removed = 0
+    threshold: float | None = None
+    for _ in range(max(1, refine_passes)):
+        ai_ranked = [
+            row for row in rows
+            if row.get("ai_scanned") == "yes"
+            and row.get("overall_rank") not in (None, "")
+            and row.get("strings_match") not in (None, "")
+        ]
+        ai_ranked.sort(key=lambda row: float(row["overall_rank"]), reverse=True)
+        if not ai_ranked:
+            break
+        probe = ai_ranked[: min(top_n, len(ai_ranked))]
+        threshold = float(np.mean([float(row["strings_match"]) for row in probe]))
+        removed = 0
+        for row in rows:
+            if row.get("ai_scanned") != "yes" or row.get("overall_rank") in (None, ""):
+                continue
+            if row.get("strings_match") in (None, ""):
+                row["overall_rank"] = ""
+                removed += 1
+                continue
+            if float(row["strings_match"]) < threshold:
+                row["overall_rank"] = ""
+                removed += 1
+        total_removed += removed
+        rows.sort(
+            key=lambda row: (
+                row.get("ai_scanned") == "yes",
+                float(row["overall_rank"] or 0),
+                float(row.get("stability_score") or 0),
+            ),
+            reverse=True,
+        )
+        if removed == 0:
+            break
+    return rows, threshold, total_removed
+
+
 def approved_similarity_from_embedding(embedding: np.ndarray) -> float | None:
     centroids = load_calibration_centroids()
     if centroids is None:
@@ -571,6 +626,13 @@ def main() -> int:
             ),
             reverse=True,
         )
+        rows, strings_floor, removed = apply_top20_strings_floor(rows)
+        if strings_floor is not None:
+            print(
+                f"Strings floor: top-20 mean strings_match={strings_floor:.3f}; "
+                f"cleared overall_rank on {removed} passages below that.",
+                flush=True,
+            )
     else:
         for row in rows:
             row["overall_rank"] = ""

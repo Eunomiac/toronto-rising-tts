@@ -88,7 +88,7 @@ py ".\.dev\Background Music Audit\csv_to_mpcpl.py" --ai-only --out ".\.dev\Backg
 py ".\.dev\Background Music Audit\csv_to_mpcpl.py" --out ".\.dev\Background Music Audit\soundtrack_screening_all.mpcpl"
 ```
 
-Playlist labels look like: `98.9 | Hide and Seek | 00:00:00-00:01:17 | bed=0.991 | clip`  
+Playlist labels look like: `98.9 | Hide and Seek | 00:00:00-00:01:17 | bed=0.991 | clip`
 (Media Player Classic’s extension is `.mpcpl`, not `.mcpcl`.)
 
 ## How to read the CSV
@@ -102,7 +102,7 @@ Playlist labels look like: `98.9 | Hide and Seek | 00:00:00-00:01:17 | bed=0.991
 | `strings_match` | CLAP relative score for sustained strings / cello among instrument prompts |
 | `piano_risk` | CLAP relative score for piano among instrument prompts (penalized in rank) |
 | `voice_risk` | CLAP relative score for singing / choir / speech (strongly penalized) |
-| `overall_rank` | Combined heuristic on AI-scanned rows only |
+| `overall_rank` | Combined heuristic on AI-scanned rows only; cleared if below the top-20 mean `strings_match` floor |
 
 Scores are rankings for auditioning, not approvals. Prefer passages that also resemble the Main set in `Pre-Approved Plague Tale Tracks.md`.
 
