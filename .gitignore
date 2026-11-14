@@ -111,6 +111,7 @@ build/
 .dev/storyteller-dashboard/data/*.tmp
 # Audio
 background-music/**/*.mp3
+.dev/Background Music Audit/clips/
 
 # Local mirror of Steam Cloud "Vampire the Masquerade 5E/" (npm run cloud:pull / cloud:push).
 /assets/*
