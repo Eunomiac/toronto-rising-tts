@@ -38,7 +38,7 @@ test("fails closed for drift, unsupported placements, and collateral assets", ()
   assert.throws(() => planSessionStart(source, review), /would also remove/);
   source.CustomUIAssets.push({ Name: "bundle", URL: bundle });
   assert.throws(() => planSessionStart(source, review), /needs a restore handler/);
-  assert.throws(() => planSessionStart({ ObjectStates: [] }, review), /no longer occurs/);
+  assert.throws(() => planSessionStart({ ObjectStates: [] }, review), /No assets are marked Prune/);
 });
 
 test("keeps review decisions for replacement uploads and uses the new bundle size", () => {
@@ -82,9 +82,10 @@ test("keeps review decisions for replacement uploads and uses the new bundle siz
   assert.deepEqual(overridden.source.CustomUIAssets, []);
   assert.deepEqual(overridden.report.inheritedDecisions, []);
 
-  // The old Prune still fails loudly if the replacement moved to a different path.
+  // When the replacement leaves the old job path, the historical Prune is skipped as stale
+  // and session-start needs at least one live Prune remaining.
   manifest.jobs.soundscape.rows[0].path = "AssetBundles/new.unity3d";
-  assert.throws(() => planSessionStart(source, decisions, manifest), /Prune URL no longer occurs/);
+  assert.throws(() => planSessionStart(source, decisions, manifest), /No assets are marked Prune/);
 });
 
 test("leaves a replacement unreviewed when the previous URL is live or was marked for removal", () => {

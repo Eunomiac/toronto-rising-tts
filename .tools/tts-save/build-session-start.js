@@ -232,6 +232,9 @@ async function main() {
   }
   console.log(`Asset URLs ${report.distinctAssetUrls.before} → ${report.distinctAssetUrls.after}; top-level objects ${report.topLevelObjects.before} → ${report.topLevelObjects.after}.`);
   console.log(`${values["dry-run"] ? "Would remove" : "Removed"} ${report.pruned.length} reviewed bundle URLs from the session-start save (${plan.objects.length} objects); these will load during staged onboarding.`);
+  if (report.stalePrune?.length) {
+    console.log(`Skipped ${report.stalePrune.length} historical Prune row(s) no longer present as live ObjectStates CustomAssetbundle URLs: ${report.stalePrune.map(row => row.label || row.url).join(" | ")}`);
+  }
   console.log(`Known download size of those bundles: ${report.deferredKnownBytes.toLocaleString("en-CA")} bytes; ${report.deferredUnknownSizes} URLs have an unknown size.`);
   if (!replace && report.forcePurgedReferences) console.log(`ForcePurge ${values["dry-run"] ? "would remove" : "removed"} ${report.forcePurgedReferences} URL references and ${report.forcePurgedRegistrations} registrations${values["dry-run"] ? "" : " from the output copy"}.`);
   if (!preflight && !values.decisions && review.fetchedAt) await publishPendingReview(plan, review, values["dry-run"] === true);

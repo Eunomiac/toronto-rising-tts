@@ -170,6 +170,7 @@ function planSessionStart(save, decisions, manifest = { jobs: {} }) {
   const skyboxKey = typeof save.SkyURL === "string" ? urlKey(save.SkyURL) : null;
   const skybox = urls.get(skyboxKey)?.find(isSkyboxReference);
   const pruned = [];
+  const stalePrune = [];
   const purge = [];
   const investigate = [];
   const removedObjects = new Set();
@@ -180,7 +181,13 @@ function planSessionStart(save, decisions, manifest = { jobs: {} }) {
     if (reviewed.decision === "Purge" && references.length) purge.push(entry);
     if (reviewed.decision === "Investigate") investigate.push(entry);
     if (reviewed.decision !== "Prune") continue;
-    if (!references.length) throw new Error(`Prune URL no longer occurs in the save. Review ${reviewed.label || reviewed.url}.`);
+    // Replaced / deleted emitters leave a historical Prune row with no ObjectStates
+    // CustomAssetbundle refs (URLs may still linger only inside embedded Lua). Skip those
+    // rows so session-start can still defer the remaining live Prune bundles.
+    if (!references.length) {
+      stalePrune.push(entry);
+      continue;
+    }
     for (const { path } of references) {
       const [root, index, field, property] = path;
       const object = save.ObjectStates[index];
@@ -215,7 +222,7 @@ function planSessionStart(save, decisions, manifest = { jobs: {} }) {
       inheritedDecisions: inherited,
       unreviewedUrls: [...urls].filter(([key, references]) =>
         !decisions.has(key) && references.some(ref => !isSkyboxReference(ref))).length,
-      pruned, purge, investigate,
+      pruned, stalePrune, purge, investigate,
       forcePurged: forced.entries,
       forcePurgedRegistrations: forced.registrationsRemoved,
       forcePurgedReferences: forced.entries.reduce((sum, row) => sum + row.references.length, 0),
