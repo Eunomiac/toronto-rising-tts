@@ -52,14 +52,14 @@ Edit the `Config` class before running:
 | `NameMode` | `PlagueTalePtCodeThenStem` (default): `PT_12_Title.wav` → `pt12`; otherwise a sanitized camelCase stem. |
 | `PreserveUnmanagedTriggerEffects` | Keep Trigger Effects that this sync does not own (session starters, featured, etc.). |
 
-Default folder / prefab placeholders:
+Current Toronto Rising paths (edit `Config` if yours differ):
 
 ```text
-Assets/Soundscape/Audio/MusicMainA  →  Assets/Soundscape/Prefabs/TR_Soundscape_Music_A.prefab
-Assets/Soundscape/Audio/MusicMainB  →  Assets/Soundscape/Prefabs/TR_Soundscape_Music_B.prefab
+Assets/Soundscape/Audio/Music/Main 1  →  Assets/Soundscape/Prefabs/TR Soundscape Music A.prefab
+Assets/Soundscape/Audio/Music/Main 2  →  Assets/Soundscape/Prefabs/TR Soundscape Music B.prefab
 ```
 
-Create those folders/prefabs (or change the paths to your real ones) before running the menu.
+Those folders/prefabs must exist in the Unity project before running the menu.
 
 ### What the sync does
 

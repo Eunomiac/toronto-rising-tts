@@ -37,8 +37,8 @@ public static class SoundscapeMainMusicBundleSync
         /// </summary>
         public static readonly string[] AudioFolders =
         {
-            "Assets/Soundscape/Audio/MusicMainA",
-            "Assets/Soundscape/Audio/MusicMainB",
+            "Assets/Soundscape/Audio/Music/Main 1",
+            "Assets/Soundscape/Audio/Music/Main 2",
         };
 
         /// <summary>
@@ -47,8 +47,8 @@ public static class SoundscapeMainMusicBundleSync
         /// </summary>
         public static readonly string[] PrefabPaths =
         {
-            "Assets/Soundscape/Prefabs/TR_Soundscape_Music_A.prefab",
-            "Assets/Soundscape/Prefabs/TR_Soundscape_Music_B.prefab",
+            "Assets/Soundscape/Prefabs/TR Soundscape Music A.prefab",
+            "Assets/Soundscape/Prefabs/TR Soundscape Music B.prefab",
         };
 
         /// <summary>
