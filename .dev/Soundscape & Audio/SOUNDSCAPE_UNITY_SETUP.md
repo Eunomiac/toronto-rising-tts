@@ -147,6 +147,10 @@ required Unity version.
 
 ### 7. Add Effect Entries
 
+For **Main playlist background music** exported from Audition as `.wav`, prefer the Editor menu instead of typing each Trigger Effect by hand: copy `UnityEditorScripts/SoundscapeMainMusicBundleSync.cs` into an `Editor/` folder, set the `Config.AudioFolders` / `Config.PrefabPaths` arrays (two folders if you are splitting under the Steam Cloud size limit), then run **Tools → Toronto Rising → Sync Main Music Into Prefabs**. Details: `UnityEditorScripts/README.md`. Durations come from each clip automatically.
+
+For ambience, weather, featured, and other one-off effects, continue with the manual steps below (or extend the sync script later).
+
 1. In the **Inspector**, find the **TTS Asset Bundle Effects** component.
 2. Expand **Looping Effects**.
 3. Set **Size** to the number of looping effect names you are authoring.
