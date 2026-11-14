@@ -79,12 +79,12 @@ Location ambience is split across two AssetBundles because of Steam Cloud upload
 
 Music will be played simultaneously with Ambient and Weather audio. There are two broad categories of music:
 
-- **Background Music**: This is the ambient music that plays over every scene and at all times, unless Featured Music is playing. Background Music is further divided into four sub-categories: Main, Combat, Intrigue, and Location. Each sub-category comprises a playlist containing multiple tracks. The individual tracks are not loops, rather the entire playlist is meant to be looped, with random/shuffled selection of tracks. Switching between sub-categories changes the playlist.
+- **Background Music**: This is the ambient music that plays over every scene and at all times, unless Featured Music is playing. The default mood playlist is **Main**. Site-linked location playlists (Casa Loma, Giovanni Catacombs, Giovanni Estate) can replace Main for a scene. Combat and Intrigue mood playlists were removed when the soundscape packs were split. The live Main track list is generated into `lib/soundscape_catalog.ttslua` from [TR Soundscape Catalog.csv](TR%20Soundscape%20Catalog.csv).
 - **Featured Music**: This is the music that plays during specific scenes or events. Featured Music is further divided into two sub-categories: the *Toronto Rising* theme song, and performances by "Scarlett & the Boys", a coterie of in-game musicians. Unless looped, when a Feature Music track is stopped, the Background Music will resume playing.
 
 ### Background Music: Main
 
-These tracks comprise the main/default background music.
+These tracks comprise the main/default background music. The table below is a historical Plague Tale export; prefer the Unity CSV / Lua catalog for the current Main pack.
 
 | Effect Name   | Effect List     | Name                               |   Size   | Duration | isLoop | Preconvert | Load Type | Compression Format | Preload Audio Data |
 | ------------- | --------------- | ---------------------------------- | -------: | -------: | :----: | ---------- | --------- | ------------------ | ------------------ |
@@ -117,31 +117,9 @@ These tracks comprise the main/default background music.
 |  pt36         | Trigger Effects | PT_36_They Don't Know.mp3          |  2.08 MB |     1:23 |  false |            | Streaming |                    | Disabled           |
 |  pt37         | Trigger Effects | PT_37_Freedom.mp3                  |  3.80 MB |     3:03 |  false |            | Streaming |                    | Disabled           |
 
-### Background Music: Combat
-
-These tracks comprise the combat background music.
-
-| Effect Name   | Effect List     | Name                | Size    | Duration | isLoop | Preconvert | Load Type | Compression Format | Preload Audio Data |
-| ------------- | --------------- | ------------------- | ------: | -------: | :----: | ---------- | --------- | ------------------ | ------------------ |
-|  pt8          | Trigger Effects | PT_8_Escape.mp3     | 2.04 MB |     1:28 |  false |            | Streaming |                    | Disabled           |
-|  pt13         | Trigger Effects | PT_13_The Rats.mp3  | 1.47 MB |     1:06 |  false |            | Streaming |                    | Disabled           |
-|  pt24B        | Trigger Effects | PT_24B_Reunited.mp3 | 3.42 MB |     2:25 |  false |            | Streaming |                    | Disabled           |
-
-### Background Music: Intrigue
-
-These tracks comprise the intrigue background music.
-
-| Effect Name   | Effect List     | Name                      | Size    | Duration | isLoop | Preconvert | Load Type | Compression Format | Preload Audio Data |
-| ------------- | --------------- | ------------------------- | ------: | -------: | :----: | ---------- | --------- | ------------------ | ------------------ |
-|  pt5B         | Trigger Effects | PT_5B_The Inquisition.mp3 | 2.17 MB |     1:30 |  false |            | Streaming |                    | Disabled           |
-|  pt6          | Trigger Effects | PT_6_Orphans.mp3          | 2.82 MB |     2:01 |  false |            | Streaming |                    | Disabled           |
-|  pt10         | Trigger Effects | PT_10_The Killing.mp3     | 1.95 MB |     1:25 |  false |            | Streaming |                    | Disabled           |
-|  pt11         | Trigger Effects | PT_11_Adulthood.mp3       | 2.49 MB |     1:45 |  false |            | Streaming |                    | Disabled           |
-|  pt17B        | Trigger Effects | PT_17B_Prisoners.mp3      | 2.47 MB |     1:46 |  false |            | Streaming |                    | Disabled           |
-
 ### Background Music: Location
 
-These tracks are linked to specific locations in the game world, specifically to Sites. When a scene takes place at a Site that defines a location playlist, that playlist will serve as the Background Music for that scene instead of the generic playlists described above. (It should still be possible to switch to one of the generic playlists if desired, for example if combat breaks out and we want to play the Combat background music.)
+These tracks are linked to specific locations in the game world, specifically to Sites. When a scene takes place at a Site that defines a location playlist, that playlist will serve as the Background Music for that scene instead of Main. You can still switch back to Main from the Storyteller sound controls.
 
 | Effect Name   | Effect List     | Site/Playlist     | Name                  | Size    | Duration | isLoop | Preconvert                            | Load Type            | Compression Format | Preload Audio Data |
 | ------------- | --------------- | ----------------- | --------------------- | ------: | -------: | :----: | ------------------------------------- | -------------------- | ------------------ | ------------------ |

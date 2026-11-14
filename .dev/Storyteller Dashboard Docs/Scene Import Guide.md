@@ -199,7 +199,7 @@ A new dashboard scene starts at `{ "isPresentDay": true }` (flags only — Apply
 
 | Field | Apply behavior |
 | --- | --- |
-| `backgroundMusic` | `"none"` silences; otherwise a mood playlist key (`main`, `combat`, `intrigue`, `casaLoma`, `gioCatacombs`, `gioEstate`). |
+| `backgroundMusic` | `"none"` silences; otherwise a mood/site playlist key (`main`, `casaLoma`, `gioCatacombs`, `gioEstate`). |
 | `location` | Location ambience track key (`silent` allowed). |
 | `wind`, `rain`, `thunderstorm` | The **weather trio**: all three set (`thunderstorm: false` counts as set) or all omitted. Applied only when `chronicleWeatherManualHold` is true. |
 | `isIndoors` | Ignored — ducking follows `C.Sites[siteKey].isIndoors`. |

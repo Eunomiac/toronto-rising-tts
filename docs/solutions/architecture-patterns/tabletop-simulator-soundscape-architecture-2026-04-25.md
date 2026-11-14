@@ -97,7 +97,7 @@ Scene presets may provide defaults without owning playback:
 
 ```lua
 soundscapeContext = {
-    musicMood = "intrigue",
+    musicMood = "main",
     weather = "lightRain",
     location = "alleyway",
     isIndoors = false,
@@ -136,7 +136,7 @@ Use these TTS console commands after Save & Play and after placing the hidden As
 ```lua
 lua inspectSoundscapeAudio()
 lua testSoundscape()
-lua soundscapeMusic("intrigue")
+lua soundscapeMusic("main")
 lua soundscapeWeather("thunderstorm", true)
 lua soundscapeThunder("hit", "thunder1")
 lua soundscapeFeatured("TR_Intro")

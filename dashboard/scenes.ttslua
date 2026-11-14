@@ -18,7 +18,7 @@
     realTime          running, speed?     live real-time clock on/off and narrative minutes per minute
     clockTo           datetime            animate the live scene clock to a datetime
     presentDay        datetime            set chronicle present day
-    musicMood         mood                background music mood (`main` / `combat` / `intrigue`)
+    musicMood         mood                background music mood (`main`)
     musicSilent                           suppress background music
     locationMusic     key                 site background playlist (`casaLoma`, `gioEstate`, `gioCatacombs`)
     laneVolume        lane, volume        Storyteller lane volume 0..1

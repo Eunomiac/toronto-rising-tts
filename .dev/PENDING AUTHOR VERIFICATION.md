@@ -832,7 +832,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 **How to verify:** Sit at the Storyteller seat with a live scene and open the **Scenes** tab.
 
-1. **Sound:** drag the Music slider: TTS's music volume should follow, and the slider should not jump back while you drag. Pick **Combat** in the music list, then **Casa Loma** (under Location): TTS should switch each time and the list should stay on your choice. Play a featured track with ▶ and stop it with ■. Change the ambient loop.
+1. **Sound:** drag the Music slider: TTS's music volume should follow, and the slider should not jump back while you drag. Pick **Main** in the music list, then **Casa Loma** (under Location): TTS should switch each time and the list should stay on your choice. Play a featured track with ▶ and stop it with ■. Change the ambient loop.
 2. **Clock:** click the clock button at the top right of the date-and-time panel: real time should start in TTS at 2×. Right-click it and pick 5×, then click it again to stop. Drag the moon to another time tonight and press ▶: the TTS clock should animate there. The dusk and dawn times in the bottom corners should look right for the date.
 3. **Real time only in Main and Memoriam:** end the scene so the game is in Downtime. The clock button should disappear and the clock should stop. In the in-game Scenes panel, the real-time toggle should say real time only runs during Main and Memoriam.
 4. **Seats:** right-click a seated PC on the dashboard and choose **Out of the scene**: the seat should go dark in TTS. Right-click again and choose **Into the scene**.

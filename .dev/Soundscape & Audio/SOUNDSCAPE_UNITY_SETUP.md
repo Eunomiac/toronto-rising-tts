@@ -282,24 +282,15 @@ with indoor/outdoor ducking applied to weather layers.
 
 ## Effect Names
 
-The current Lua catalog expects these looping effects:
+Authoritative effect names live in [TR Soundscape Catalog.csv](TR%20Soundscape%20Catalog.csv)
+and `lib/soundscape_catalog.ttslua`. Background moods are **Main** only (plus site location
+playlists); Combat and Intrigue mood playlists were removed with the split packs.
 
-- `silent`
-- `music_general_01`
-- `music_general_02`
-- `music_intrigue_01`
-- `music_intrigue_02`
-- `music_combat_01`
-- `music_combat_02`
-- `weather_light_rain`
-- `weather_heavy_rain`
-- `weather_wind`
-- `location_indoor_office`
-- `location_sewers`
-- `location_alleyway`
-- `location_industrial_exterior`
+Every prefab still needs a `silent` looping effect at index 0. Music / weather / location /
+session-starter clip names must match the catalog keys (for example `aPlagueTale`,
+`rainHeavy`, `airport`, `Session Starter 1`).
 
-The expanded audio inventory in `Audio Tracks.md` should be authored into the bundle
+The expanded audio inventory in `Audio Tracks.md` should be authored into the bundles
 using these categories:
 
 - **Ambient/location loops**: Looping Effects, one per site ambience clip.

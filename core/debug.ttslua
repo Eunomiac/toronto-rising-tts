@@ -2023,7 +2023,7 @@ function DEBUG.resetToIntermission()
 end
 
 --- Quick test: set a Storyteller-controlled background playlist.
--- @param moodKey string One of: main, intrigue, combat
+-- @param moodKey string Background mood key (currently only `main`)
 function DEBUG.soundscapeMusic(moodKey)
     local ok, message = Soundscape.setMusicMood(moodKey or "main")
     printTestResult("Soundscape music mood", ok, message)
@@ -5987,7 +5987,7 @@ function DEBUG.help()
     print("  dumpNpcPlacements()      - Print sessionScene.npcWorld.placements")
     print("\nQUICK SETTERS (prefer the Storyteller Dashboard for narrative apply):")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
-    print("  soundscapeMusic(mood)    - Set music mood: main, intrigue, combat")
+    print("  soundscapeMusic(mood)    - Set music mood: main")
     print("  soundscapeWeather(key, isIndoors?) - Set weather preset: none, lightRain, heavyRain, wind, thunderstorm")
     print("  soundscapeRain(key)      - Set rain layer: none, lightRain, heavyRain")
     print("  soundscapeWind(key)      - Set wind layer: none, lowWindAmbient, whistlingWind1/2/3, windyLeaves1/2")
