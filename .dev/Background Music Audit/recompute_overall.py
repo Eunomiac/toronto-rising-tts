@@ -18,18 +18,23 @@ def compute_overall_rank(row: dict) -> float:
     }
     vocal_labels = {"singing", "choir", "speech"}
     if voice_types & vocal_labels and "instrumental" not in voice_types:
-        voice_coef = 28.0
+        voice_coef = 55.0
     elif voice_types & vocal_labels:
-        voice_coef = 18.0
+        voice_coef = 42.0
     else:
-        voice_coef = 10.0
+        voice_coef = 22.0
     bed = float(row["bed_match"])
+    mood = float(row.get("mood_match") or 0)
+    strings = float(row.get("strings_match") or 0)
+    piano = float(row.get("piano_risk") or 0)
+    voice = float(row.get("voice_risk") or 0)
     stability = float(row["stability_score"])
     return float(
         np.clip(
-            stability * (0.35 + 0.65 * bed)
-            + 16 * float(row["strings_match"])
-            - voice_coef * float(row["voice_risk"]),
+            stability * (0.35 + 0.65 * bed) * (0.35 + 0.65 * mood)
+            + 32 * strings
+            - 30 * piano
+            - voice_coef * voice,
             0,
             100,
         )
@@ -40,8 +45,10 @@ def main() -> int:
     rows = list(csv.DictReader(CSV_PATH.open(encoding="utf-8-sig")))
     fieldnames = list(rows[0].keys()) if rows else []
     for row in rows:
-        if row.get("ai_scanned") == "yes":
+        if row.get("ai_scanned") == "yes" and row.get("mood_match") not in (None, ""):
             row["overall_rank"] = round(compute_overall_rank(row), 1)
+        elif row.get("ai_scanned") == "yes":
+            row["overall_rank"] = ""
         else:
             row["overall_rank"] = ""
     rows.sort(
@@ -58,7 +65,7 @@ def main() -> int:
         writer.writerows(rows)
     print(
         "Recomputed overall_rank for "
-        f"{sum(1 for r in rows if r.get('ai_scanned') == 'yes')} AI rows"
+        f"{sum(1 for r in rows if r.get('overall_rank') not in (None, ''))} AI rows"
     )
     return 0
 

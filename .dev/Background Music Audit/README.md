@@ -79,8 +79,11 @@ Playlist labels look like: `98.9 | Hide and Seek | 00:00:00-00:01:17 | bed=0.991
 | --- | --- |
 | `stability_score` | Loudness + texture stability (DSP). Silence/fades are ignored for jump penalties. |
 | `bed_match` | CLAP relative score for quiet underscore vs dramatic cue |
+| `mood_match` | CLAP share for dark+tense vs bright/cheerful/sorrowful (ominous Masquerade mood) |
+| `likely_mood` | Best-matching mood label among dark / bright / melancholy / tense |
 | `strings_match` | CLAP relative score for sustained strings / cello among instrument prompts |
-| `voice_risk` | CLAP relative score for singing / choir / speech |
+| `piano_risk` | CLAP relative score for piano among instrument prompts (penalized in rank) |
+| `voice_risk` | CLAP relative score for singing / choir / speech (strongly penalized) |
 | `overall_rank` | Combined heuristic on AI-scanned rows only |
 
 Scores are rankings for auditioning, not approvals. Prefer passages that also resemble the Main set in `Pre-Approved Plague Tale Tracks.md`.
@@ -92,6 +95,6 @@ Against `Pre-Approved Plague Tale Tracks.md` on the original Plague Tale OST:
 - **Before retune:** Main-only median DSP score was ~0 (album fades/silence jumps crushed usable beds).
 - **After silence-aware jumps + softer texture penalty:** Main-only median ~86; 20/25 Main tracks score ≥ 45.
 - **Remaining DSP gap:** some Combat/Intrigue cues are loudness-stable too (*Escape* scored 100 on DSP alone).
-- **AI pass:** CLAP `bed_match` demotes loudness-stable combat/tension cues (*Escape* ≈ 0.03). `overall_rank` multiplies DSP stability by bed match so dramatic-but-flat tracks cannot sit beside true beds. Voice tags are noisy on sustained strings, so that penalty stays softer than bed/drama.
+- **AI pass:** CLAP `bed_match` demotes loudness-stable combat/tension cues. `mood_match` prefers ominous/sinister/haunting (+ tense) over bright/cheerful and sorrowful/melancholy. Strings/cello are boosted; piano and vocals/speech are strongly penalized. `overall_rank` multiplies DSP stability by both bed and mood.
 
 Always audition before using a passage in session. If you change the overall-rank formula, run `py recompute_overall.py` instead of re-downloading the model.

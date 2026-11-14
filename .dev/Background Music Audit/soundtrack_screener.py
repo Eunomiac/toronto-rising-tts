@@ -69,10 +69,31 @@ BED_PROMPTS = {
         "crescendos, or percussion that would compete with tabletop roleplay dialogue."
     ),
 }
+# Mood prompts for Vampire: the Masquerade / Toronto Rising beds.
+# Prefer ominous/sinister/haunting atmosphere — not sorrowful/tearful melancholy.
+MOOD_PROMPTS = {
+    "dark": (
+        "Dark, ominous, sinister, haunting music with a nocturnal, predatory, "
+        "quietly threatening atmosphere — gothic dread rather than tearful sadness."
+    ),
+    "bright": (
+        "Bright, cheerful, optimistic, hopeful music with a warm, major-key, "
+        "uplifting or playful emotional tone."
+    ),
+    "melancholy": (
+        "Sorrowful, mournful, tearful, grieving music that feels sad and emotional "
+        "rather than dangerous or sinister."
+    ),
+    "tense": (
+        "Uneasy, suspenseful underscore with quiet dread, paranoia, and held breath "
+        "rather than open melody or open hope."
+    ),
+}
 ALL_PROMPTS = (
     list(INSTRUMENT_PROMPTS.values())
     + list(VOICE_PROMPTS.values())
     + list(BED_PROMPTS.values())
+    + list(MOOD_PROMPTS.values())
 )
 SILENCE_DB = -65.0
 
@@ -212,7 +233,8 @@ def passages(path: Path, blocks: list[Block], duration: float, window: int, step
             "loudness_spike_db": round(spike, 1),
             "largest_2s_jump_db": round(jump, 1),
             "texture_shift": round(texture, 3),
-            "strings_match": "", "voice_risk": "", "bed_match": "",
+            "strings_match": "", "piano_risk": "", "voice_risk": "", "bed_match": "",
+            "mood_match": "", "likely_mood": "",
             "likely_instruments": "", "voice_type": "", "ai_scanned": "no",
         }
 
@@ -245,10 +267,11 @@ def select_ai_candidates(rows: list[dict], top_n: int, min_stability: float) -> 
 
 
 def compute_overall_rank(row: dict) -> float:
-    """Combine DSP stability with CLAP bed/strings/voice signals.
+    """Combine DSP stability with CLAP bed/mood/strings/voice/piano signals.
 
-    bed_match scales stability so loudness-stable combat/tension cues with a
-    low underscore match cannot sit beside true beds at the top of the list.
+    bed_match scales stability so loudness-stable combat/tension cues cannot
+    sit beside true beds. mood_match prefers dark/tense over bright/cheerful.
+    Strings/cello are rewarded; piano and vocals/speech are strongly penalized.
     """
     voice_types = {
         part.strip()
@@ -256,19 +279,25 @@ def compute_overall_rank(row: dict) -> float:
         if part.strip()
     }
     vocal_labels = {"singing", "choir", "speech"}
+    # Vocals/speech are especially disruptive under table dialogue.
     if voice_types & vocal_labels and "instrumental" not in voice_types:
-        voice_coef = 28.0
+        voice_coef = 55.0
     elif voice_types & vocal_labels:
-        voice_coef = 18.0
+        voice_coef = 42.0
     else:
-        voice_coef = 10.0
+        voice_coef = 22.0
     bed = float(row["bed_match"])
+    mood = float(row.get("mood_match") or 0)
+    strings = float(row.get("strings_match") or 0)
+    piano = float(row.get("piano_risk") or 0)
+    voice = float(row.get("voice_risk") or 0)
     stability = float(row["stability_score"])
-    # 0.35 floor keeps weak-bed rows visible for audition; 0.65 weight rewards beds.
+    # Floors keep weak rows visible for audition; weights reward bed + dark mood.
     return float(np.clip(
-        stability * (0.35 + 0.65 * bed)
-        + 16 * float(row["strings_match"])
-        - voice_coef * float(row["voice_risk"]),
+        stability * (0.35 + 0.65 * bed) * (0.35 + 0.65 * mood)
+        + 32 * strings
+        - 30 * piano
+        - voice_coef * voice,
         0, 100,
     ))
 
@@ -304,10 +333,13 @@ def enrich_with_ai(
             continue
         positions = np.linspace(0.15, 0.85, max(1, samples_per_passage))
         string_scores: list[float] = []
+        piano_scores: list[float] = []
         voice_scores: list[float] = []
         bed_scores: list[float] = []
+        mood_scores: list[float] = []
         instrument_tags: list[str] = []
         voice_tags: list[str] = []
+        mood_tags: list[str] = []
         print(
             f"  AI {index}/{len(candidates)}: {path.name} {row['start']}–{row['end']}",
             flush=True,
@@ -326,18 +358,32 @@ def enrich_with_ai(
             inst = {name: scores[caption] for name, caption in INSTRUMENT_PROMPTS.items()}
             voc = {name: scores[caption] for name, caption in VOICE_PROMPTS.items()}
             bed = {name: scores[caption] for name, caption in BED_PROMPTS.items()}
-            inst_sum, voc_sum, bed_sum = sum(inst.values()), sum(voc.values()), sum(bed.values())
+            mood = {name: scores[caption] for name, caption in MOOD_PROMPTS.items()}
+            inst_sum = sum(inst.values())
+            voc_sum = sum(voc.values())
+            bed_sum = sum(bed.values())
+            mood_sum = sum(mood.values())
             string_scores.append((inst["strings"] + inst["cello"]) / max(inst_sum, 1e-9))
+            piano_scores.append(inst["piano"] / max(inst_sum, 1e-9))
             voice_scores.append(
                 (voc["singing"] + voc["choir"] + voc["speech"]) / max(voc_sum, 1e-9)
             )
             bed_scores.append(bed["underscore"] / max(bed_sum, 1e-9))
+            # Prefer ominous/tense Masquerade beds; demote bright and sorrowful cues.
+            mood_scores.append(
+                (mood["dark"] + mood["tense"]) / max(mood_sum, 1e-9)
+            )
             instrument_tags.append(max(inst, key=inst.get))
             voice_tags.append(max(voc, key=voc.get))
+            mood_tags.append(max(mood, key=mood.get))
         if string_scores:
             row["strings_match"] = round(float(np.mean(string_scores)), 3)
+            row["piano_risk"] = round(float(np.mean(piano_scores)), 3)
+            # Use peak voice risk across excerpts so a brief choir/speech hit still counts.
             row["voice_risk"] = round(float(max(voice_scores)), 3)
             row["bed_match"] = round(float(np.mean(bed_scores)), 3)
+            row["mood_match"] = round(float(np.mean(mood_scores)), 3)
+            row["likely_mood"] = "; ".join(sorted(set(mood_tags)))
             row["likely_instruments"] = "; ".join(sorted(set(instrument_tags)))
             row["voice_type"] = "; ".join(sorted(set(voice_tags)))
             row["ai_scanned"] = "yes"
@@ -421,8 +467,9 @@ def main() -> int:
     fieldnames = [
         "file", "start", "end", "stability_score", "dynamic_range_db",
         "loudness_spike_db", "largest_2s_jump_db", "texture_shift",
-        "strings_match", "voice_risk", "bed_match", "likely_instruments",
-        "voice_type", "overall_rank", "ai_scanned", "start_seconds", "end_seconds",
+        "strings_match", "piano_risk", "voice_risk", "bed_match", "mood_match",
+        "likely_mood", "likely_instruments", "voice_type", "overall_rank",
+        "ai_scanned", "start_seconds", "end_seconds",
     ]
     with output_path.open("w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)

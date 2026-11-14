@@ -83,10 +83,16 @@ def sort_key(row: dict) -> tuple:
 def build_label(row: dict, media_path: Path, split: bool) -> str:
     rank = row.get("overall_rank") or "—"
     bed = row.get("bed_match") or "—"
+    mood = row.get("mood_match") or "—"
+    mood_tag = row.get("likely_mood") or "—"
+    strings = row.get("strings_match") or "—"
+    piano = row.get("piano_risk") or "—"
+    voice = row.get("voice_risk") or "—"
     marker = "clip" if split else "full"
     return (
         f"{rank} | {media_path.stem} | {row['start']}-{row['end']} | "
-        f"bed={bed} | {marker}"
+        f"bed={bed} mood={mood}/{mood_tag} str={strings} piano={piano} "
+        f"voice={voice} | {marker}"
     )
 
 
