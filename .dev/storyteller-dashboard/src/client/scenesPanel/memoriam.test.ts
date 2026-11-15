@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import type { MemoriamPeriod } from "./catalogs";
 import {
   TIMELINE_UNITS,
+  formatMemoriamCalendarDate,
   memoriamDate,
   memoriamPayload,
   memoriamTimeline,
   nearestYearIn,
+  parseMemoriamDisplayDate,
   periodsFor,
   timelinePeriodAt,
   timelinePosition,
@@ -80,5 +82,24 @@ describe("Memoriam set-up", () => {
 
   it("builds a Just Smoke payload with no location", () => {
     expect(memoriamPayload("lucien", 1900, "smoke", null, new Set())).toMatchObject({ justSmoke: true, location: "" });
+  });
+
+  it("formats and parses an exact calendar date", () => {
+    expect(formatMemoriamCalendarDate(1889, 10, 14)).toBe("October 14, 1889");
+    expect(parseMemoriamDisplayDate("October 14, 1889")).toEqual({ year: 1889, month: 10, day: 14 });
+  });
+
+  it("carries an optional Toronto District/Site on the Advance payload", () => {
+    const payload = memoriamPayload("lucien", 1812, { periodKey: "short", panel: "panelA" }, periods[1] ?? null, new Set(), {
+      date: "March 3, 1812",
+      toronto: { districtKey: "downtown", siteKey: "thePrinceCourt" }
+    });
+    expect(payload).toMatchObject({
+      date: "March 3, 1812",
+      districtKey: "downtown",
+      siteKey: "thePrinceCourt",
+      skyboxKey: "short",
+      panel: "panelA"
+    });
   });
 });

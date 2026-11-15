@@ -608,6 +608,31 @@ end
 --- @return string[] changedSeatColors
 function Conditions.reconcileHostedForSession(opts)
   local skipPresentation = type(opts) == "table" and opts.skipPresentation == true
+  -- Memoriam is a past self: hosted district/site conditions stay off even when a Toronto location is set.
+  local Memoriam = require("core.memoriam")
+  if type(Memoriam.isActive) == "function" and Memoriam.isActive() then
+    local desired = {}
+    local changedSeatColors = {}
+    local changedSeatColorSet = {}
+    local pd = S.getStateVal("playerData")
+    if type(pd) == "table" then
+      for playerID, row in pairs(pd) do
+        if type(playerID) == "string" and playerID ~= C.StorytellerID and type(row) == "table" then
+          local seatColor = seatColorForPlayer(playerID)
+          local present = type(seatColor) == "string" and isSeatPresentInScene(seatColor) == true
+          if reconcileHostedForPlayer(playerID, desired, present, skipPresentation)
+            and type(seatColor) == "string"
+            and changedSeatColorSet[seatColor] ~= true
+          then
+            changedSeatColorSet[seatColor] = true
+            changedSeatColors[#changedSeatColors + 1] = seatColor
+          end
+        end
+      end
+    end
+    require("core.npc_conditions").reconcileForSession()
+    return changedSeatColors
+  end
   local desired = Conditions.collectHostedIdsForSession()
   local changedSeatColors = {}
   local changedSeatColorSet = {}

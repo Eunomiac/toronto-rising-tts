@@ -2739,6 +2739,13 @@ input.lab-cat-rename {
     }
   }
 
+  &-date-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
   &-date {
     font-size: 26px;
     font-weight: 800;
@@ -2746,11 +2753,50 @@ input.lab-cat-rename {
     text-align: center;
   }
 
+  &-calendar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    background: #333;
+    cursor: pointer;
+    font-size: 18px;
+
+    input[type="date"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+
   &-place {
     font-size: 19px;
     font-weight: 800;
     font-style: italic;
     text-align: center;
+  }
+
+  &-location-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  &-location {
+    width: min(720px, 92vw);
+    max-height: 80vh;
+    overflow: auto;
+    gap: 10px;
+  }
+
+  &-location-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   /* Segment colours match the TTS bar: gaps black, two greys for base periods, two lighter for nested ones. */

@@ -479,16 +479,48 @@ applyWorldUnderCover = function(payload, opts)
 
     Scenes.clearLiveNarrativeForPhaseTransition({ reason = "memoriam_enter" })
 
-    S.setStateVal(nil, "sessionScene", "districtKey")
-    S.setStateVal(nil, "sessionScene", "siteKey")
-    S.setStateVal(nil, "sessionScene", "skyboxOverride")
+    local useTorontoLocation = type(payload.districtKey) == "string" and payload.districtKey ~= ""
+        and type(payload.siteKey) == "string" and payload.siteKey ~= ""
+
+    if useTorontoLocation then
+        S.setStateVal(payload.districtKey, "sessionScene", "districtKey")
+        S.setStateVal(payload.siteKey, "sessionScene", "siteKey")
+        S.setStateVal(nil, "sessionScene", "skyboxOverride")
+        if type(SceneLibrary.applySiteTopFogToSessionScene) == "function" then
+            SceneLibrary.applySiteTopFogToSessionScene(payload.siteKey)
+        end
+    else
+        S.setStateVal(nil, "sessionScene", "districtKey")
+        S.setStateVal(nil, "sessionScene", "siteKey")
+        S.setStateVal(nil, "sessionScene", "skyboxOverride")
+        S.setStateVal(false, "sessionScene", "isTopFogActive")
+    end
     S.setStateVal({}, "sessionScene", "soundscapeNarrative")
-    S.setStateVal(false, "sessionScene", "isTopFogActive")
     S.setStateVal("Table B", "sessionScene", "tableKey")
 
     local seatOk, seatErr = applySeatLayoutForPayload(payload)
     if not seatOk then
         return false, seatErr
+    end
+
+    -- Past self: clear personal conditions / Resonance from sheets for the Memoriam; restore on exit.
+    local personalStash = {}
+    if not reinit then
+        local PersonalConditions = require("core.personal_conditions")
+        local presentColors = {}
+        local seatSlots = S.getStateVal("sessionScene", "seatSlots") or {}
+        for _, color in ipairs(C.PlayerColors or {}) do
+            local row = seatSlots[color]
+            if type(row) == "table" and row.isPresent == true then
+                presentColors[#presentColors + 1] = color
+            end
+        end
+        if type(PersonalConditions.stashAndClearForMemoriam) == "function" then
+            personalStash = PersonalConditions.stashAndClearForMemoriam(presentColors)
+        end
+    else
+        local prev = S.getStateVal("memoriam") or {}
+        personalStash = type(prev.personalConditionsByPid) == "table" and prev.personalConditionsByPid or {}
     end
 
     if not reinit then
@@ -513,6 +545,7 @@ applyWorldUnderCover = function(payload, opts)
         returnSessionScene = returnBundle,
         preMemoriamNowClock = preClock,
         enterStats = enterStats,
+        personalConditionsByPid = personalStash,
     })
 
     -- Avoid nested U.chain from Phases.setPlaySubPhase inside HUDBF work.
@@ -525,9 +558,13 @@ applyWorldUnderCover = function(payload, opts)
     if type(Sync.full) == "function" then
         Sync.full({ skipSoundscape = true, force = true })
     end
-    -- Skybox after Sync so Memoriam reconcile path sees active state.
+    -- Skybox after Sync so Memoriam reconcile path sees active state (or site sky when Toronto is set).
     Scenes.reconcileSkyboxFromState({ force = true })
-    applyMemoriamSoundscape(panel)
+    if useTorontoLocation and type(Scenes.applyActiveSceneSoundscapeFromSession) == "function" then
+        Scenes.applyActiveSceneSoundscapeFromSession()
+    else
+        applyMemoriamSoundscape(panel)
+    end
 
     local GameStateOverlay = require("core.game_state_overlay")
     if type(GameStateOverlay.reconcileFromState) == "function" then
@@ -605,6 +642,12 @@ function Memoriam.applyEnter(payload)
         image = Memoriam.blindfoldImageName(payload.skyboxKey)
     end
 
+    local useTorontoLocation = type(payload.districtKey) == "string" and payload.districtKey ~= ""
+        and type(payload.siteKey) == "string" and payload.siteKey ~= ""
+    -- Toronto location uses the standard cover; period panels keep their Memoriam art cover.
+    if useTorontoLocation then
+        image = nil
+    end
     HUDBF.runStagedTransition({
         fadeOut = function()
             if type(SS.fadeOutTransitionAmbient) == "function" then
@@ -646,10 +689,18 @@ function Memoriam.applyExit(opts)
     end
 
     local returnSceneKey = mem.returnSceneKey
+    local returnTitle = mem.returnTitle
+    local returnPlacement = mem.returnPlacementMode
+    local returnBundle = type(mem.returnSessionScene) == "table" and mem.returnSessionScene or nil
     local presentOverride = cloneClock(mem.preMemoriamNowClock)
     local enterStats = type(mem.enterStats) == "table" and mem.enterStats or {}
+    local personalStash = type(mem.personalConditionsByPid) == "table" and mem.personalConditionsByPid or {}
 
     applyExitStatConversion(enterStats)
+    local PersonalConditions = require("core.personal_conditions")
+    if type(PersonalConditions.restoreFromMemoriam) == "function" then
+        PersonalConditions.restoreFromMemoriam(personalStash)
+    end
     writeMemoriamState(emptyMemoriamState())
 
     local Scenes = require("core.scenes")
@@ -673,7 +724,6 @@ function Memoriam.applyExit(opts)
 
     -- restore: back to the interrupted scene unless it was ended meanwhile (then Downtime, no live scene)
     local player = opts.player or findStorytellerPlayer()
-    local returnBundle = S.getStateVal("memoriam", "returnSessionScene")
     local canRestore = type(returnBundle) == "table" and type(returnSceneKey) == "string" and returnSceneKey ~= ""
     if not canRestore then
         local returnStatus = require("core.scene_library").statusOf(returnSceneKey)
@@ -691,8 +741,8 @@ function Memoriam.applyExit(opts)
             if type(returnBundle) == "table" then
                 clockOpts = {
                     key = returnSceneKey,
-                    title = S.getStateVal("memoriam", "returnTitle"),
-                    placementMode = S.getStateVal("memoriam", "returnPlacementMode"),
+                    title = returnTitle,
+                    placementMode = returnPlacement,
                     sessionScene = returnBundle,
                     status = "ongoing",
                 }

@@ -201,18 +201,67 @@ export const memoriamDate = (year: number, seed: number): string => {
   return `${MONTHS[month - 1]} ${day}, ${year}`;
 };
 
+/** Format a calendar pick as `Memoriam.applyEnter` expects (`October 14, 1889`). */
+export const formatMemoriamCalendarDate = (year: number, month: number, day: number): string => {
+  const m = Math.min(12, Math.max(1, Math.floor(month)));
+  const dim = daysInMonth(year, m);
+  const d = Math.min(dim, Math.max(1, Math.floor(day)));
+  return `${MONTHS[m - 1]} ${d}, ${Math.floor(year)}`;
+};
+
+/** Parse `Month D, YYYY` into parts for the calendar control. */
+export const parseMemoriamDisplayDate = (date: string): { year: number; month: number; day: number } | null => {
+  const match = /^([A-Za-z]+)\s+(\d{1,2}),\s+(\d{1,4})$/.exec(date.trim());
+  if (!match) {
+    return null;
+  }
+  const monthName = match[1]!;
+  const month = MONTHS.findIndex((name) => name.toLowerCase() === monthName.toLowerCase()) + 1;
+  if (month < 1) {
+    return null;
+  }
+  const day = Number(match[2]);
+  const year = Number(match[3]);
+  if (!Number.isFinite(day) || !Number.isFinite(year)) {
+    return null;
+  }
+  return { year, month, day };
+};
+
 export type MemoriamChoice = { readonly periodKey: string; readonly panel: string } | "smoke";
 
+export type MemoriamLocationPick = { readonly districtKey: string; readonly siteKey: string };
+
 /** Everyone marked present plays themselves; the subject is always present. */
-export const memoriamPayload = (subjectKey: string, year: number, choice: MemoriamChoice, period: MemoriamPeriod | null, present: ReadonlySet<string>): MemoriamPayload => {
+export const memoriamPayload = (
+  subjectKey: string,
+  year: number,
+  choice: MemoriamChoice,
+  period: MemoriamPeriod | null,
+  present: ReadonlySet<string>,
+  opts?: { readonly date?: string; readonly toronto?: MemoriamLocationPick | null }
+): MemoriamPayload => {
   const seed = MEMORIAM_PCS.findIndex((pc) => pc.key === subjectKey);
   const assignments = Object.fromEntries([...new Set([subjectKey, ...present])].map((key) => [key, { kind: "self" as const }]));
-  const date = memoriamDate(year, seed);
+  const date = opts?.date?.trim() || memoriamDate(year, seed);
+  const toronto = opts?.toronto ?? null;
+  const place =
+    toronto !== null
+      ? { districtKey: toronto.districtKey, siteKey: toronto.siteKey }
+      : {};
   if (choice === "smoke") {
-    return { subjectKey, date, location: "", assignments, justSmoke: true };
+    return { subjectKey, date, location: "", assignments, justSmoke: true, ...place };
   }
   if (!period || period.key !== choice.periodKey) {
     throw new Error(`Memoriam: the chosen panel's period ${choice.periodKey} is not the one passed in.`);
   }
-  return { subjectKey, date, location: period.location, assignments, skyboxKey: choice.periodKey, panel: choice.panel };
+  return {
+    subjectKey,
+    date,
+    location: period.location,
+    assignments,
+    skyboxKey: choice.periodKey,
+    panel: choice.panel,
+    ...place
+  };
 };

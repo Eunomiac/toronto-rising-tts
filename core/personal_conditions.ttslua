@@ -593,6 +593,52 @@ function P.onClock()
   end
 end
 
+--- Snapshot present PCs' personal conditions (including Resonance), then clear the live lists for Memoriam.
+--- @param colors string[] seat colors that are present in the Memoriam
+--- @return table pid → personalConditions list
+function P.stashAndClearForMemoriam(colors)
+  local out = {}
+  if type(colors) ~= "table" then
+    return out
+  end
+  for i = 1, #colors do
+    local color = colors[i]
+    local pid = playerId(color)
+    if type(pid) == "string" then
+      local list = readList(pid)
+      out[pid] = PC.copyList(list)
+      writeList(pid, {})
+      require("core.sync").player(color)
+    end
+  end
+  markSeatsDirty()
+  return out
+end
+
+--- Restore personal conditions stashed by `stashAndClearForMemoriam`.
+--- @param byPid table|nil pid → personalConditions list
+function P.restoreFromMemoriam(byPid)
+  if type(byPid) ~= "table" then
+    return
+  end
+  for pid, list in pairs(byPid) do
+    if type(pid) == "string" and type(list) == "table" then
+      writeList(pid, PC.copyList(list))
+      local color = nil
+      for _, c in ipairs(C.PlayerColors or {}) do
+        if S.getPlayerID(c) == pid then
+          color = c
+          break
+        end
+      end
+      if type(color) == "string" then
+        require("core.sync").player(color)
+      end
+    end
+  end
+  markSeatsDirty()
+end
+
 --- Load: a date already past dusk, or an End phase already underway, is waiting when the table finishes loading.
 --- Startup sync paints the sheets; this does not announce seats on its own.
 function P.onLoad()
