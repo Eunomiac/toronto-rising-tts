@@ -354,6 +354,16 @@ local function applyCommand(cmd)
     require("core.npc_trackers").setConditionState(cmd.key, cmd.field, nil)
     return nil
   end
+  if op == "npcOverrideScale" then
+    if type(cmd.key) ~= "string" or cmd.key == "" then
+      return "npcOverrideScale needs a character key."
+    end
+    local ok, err = require("core.npcs").applyOverrideCardScale(cmd.key, cmd.cardScale)
+    if ok ~= true then
+      return err or "Could not apply NPC card scale."
+    end
+    return nil
+  end
   if op == "location" then
     if type(cmd.siteKey) ~= "string" then
       return "location needs a siteKey."

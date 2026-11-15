@@ -2777,27 +2777,84 @@ local function containerHasGuid(container, guid)
 	return false
 end
 
---- Loose world `DisciplineCard` objects (TTS omits bag contents from `getObjectsWithTag`).
---- @param colorFilter string|nil when set, only that seat's `<Color>Card` owners
---- @return Object[] cards
---- @return table guid → owner color
-local function listLooseDisciplineCards(colorFilter)
-	local found = getObjectsWithTag(DISCIPLINE_CARD_TAG) or {}
-	local cards = {}
-	local owners = {}
-	for i = 1, #found do
-		local obj = found[i]
-		if U.isGameObject(obj) and isHandCardLikeObject(obj) then
-			local owner = ownerColorFromCardTags(obj)
-			if owner ~= nil and (colorFilter == nil or owner == colorFilter) then
-				cards[#cards + 1] = obj
-				local guid = obj.getGUID and obj.getGUID() or nil
-				if type(guid) == "string" and guid ~= "" then
-					owners[guid] = owner
+--- True when a Deck (or its face entries) carries DisciplineCard ownership.
+--- Dropped Discipline cards often form a Deck that keeps `<Color>Card` but drops `DisciplineCard` on the shell.
+--- @param obj Object
+--- @return boolean
+local function deckLooksLikeDisciplineCards(obj)
+	if obj == nil or not U.isGameObject(obj) then
+		return false
+	end
+	if obj.hasTag ~= nil and obj.hasTag(DISCIPLINE_CARD_TAG) then
+		return true
+	end
+	if obj.getObjects == nil then
+		return false
+	end
+	local entries = obj.getObjects() or {}
+	for i = 1, #entries do
+		local entry = entries[i]
+		local tags = type(entry) == "table" and entry.tags or nil
+		if type(tags) == "table" then
+			for t = 1, #tags do
+				if tags[t] == DISCIPLINE_CARD_TAG then
+					return true
 				end
 			end
 		end
 	end
+	return false
+end
+
+--- Loose world `DisciplineCard` objects and decks formed from them (TTS omits bag contents from `getObjectsWithTag`).
+--- @param colorFilter string|nil when set, only that seat's `<Color>Card` owners
+--- @return Object[] cards
+--- @return table guid → owner color
+local function listLooseDisciplineCards(colorFilter)
+	local cards = {}
+	local owners = {}
+	local seen = {}
+
+	local function add(obj, owner)
+		if not U.isGameObject(obj) or type(owner) ~= "string" then
+			return
+		end
+		if colorFilter ~= nil and owner ~= colorFilter then
+			return
+		end
+		local guid = obj.getGUID and obj.getGUID() or nil
+		if type(guid) ~= "string" or guid == "" or seen[guid] then
+			return
+		end
+		seen[guid] = true
+		cards[#cards + 1] = obj
+		owners[guid] = owner
+	end
+
+	local found = getObjectsWithTag(DISCIPLINE_CARD_TAG) or {}
+	for i = 1, #found do
+		local obj = found[i]
+		if isHandCardLikeObject(obj) then
+			add(obj, ownerColorFromCardTags(obj))
+		end
+	end
+
+	-- Decks that lost the DisciplineCard shell tag still keep `<Color>Card` when players drop stacked cards.
+	local playerColors = C.PlayerColors or {}
+	for c = 1, #playerColors do
+		local color = playerColors[c]
+		if colorFilter == nil or colorFilter == color then
+			local tagged = getObjectsWithTag(tostring(color) .. "Card") or {}
+			for i = 1, #tagged do
+				local obj = tagged[i]
+				local tagVal = obj and (obj.tag or obj.type) or nil
+				if (tagVal == "Deck") and deckLooksLikeDisciplineCards(obj) then
+					add(obj, color)
+				end
+			end
+		end
+	end
+
 	return cards, owners
 end
 

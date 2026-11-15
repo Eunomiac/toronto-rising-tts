@@ -3789,4 +3789,60 @@ function NPCS.isGenericCharacter(characterKey)
     return type(def) == "table" and def.isGeneric == true
 end
 
+--- Live-apply a Storyteller Dashboard `cardScale` override to the NPC registry and any spawned figurine.
+--- Seated figurines stay at seat ImageScalar 53; stage / Scatter / preload use the new scale.
+--- @param characterKey string
+--- @param cardScale number|nil nil clears the override and restores the catalog default
+--- @return boolean
+--- @return string|nil
+function NPCS.applyOverrideCardScale(characterKey, cardScale)
+    if U.Type(characterKey) ~= "string" or characterKey == "" then
+        return false, "applyOverrideCardScale needs a character key."
+    end
+    local scale = tonumber(cardScale)
+    if cardScale ~= nil and (scale == nil or scale ~= scale) then
+        return false, "cardScale must be a number."
+    end
+    if scale ~= nil then
+        if scale < 1 then
+            scale = 1
+        elseif scale > 500 then
+            scale = 500
+        end
+    end
+
+    local overrides = DATA.overrides
+    if U.Type(overrides) ~= "table" then
+        overrides = {}
+        DATA.overrides = overrides
+    end
+    local row = overrides[characterKey]
+    if U.Type(row) ~= "table" then
+        row = {}
+        overrides[characterKey] = row
+    end
+    row.cardScale = scale
+
+    local def = NPCS.characters[characterKey]
+    if U.Type(def) ~= "table" then
+        return true, nil
+    end
+    if U.Type(def.figurine) ~= "table" then
+        def.figurine = {}
+    end
+    def.figurine.scale = scale or DATA.DEFAULT_FIGURINE_SCALE
+
+    local rec = getInstances()[characterKey]
+    if U.Type(rec) ~= "table" then
+        return true, nil
+    end
+    local fig = G.getObject(rec.figurineGuid or "")
+    local areaKey = rec.areaKey
+    if U.Type(areaKey) ~= "string" or areaKey == "" then
+        areaKey = STAGE_BOARD_AREA_KEY
+    end
+    applyNpcFigurineImageScalarForPlacement(fig, characterKey, areaKey)
+    return true, nil
+end
+
 return NPCS

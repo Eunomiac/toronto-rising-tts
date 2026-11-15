@@ -10,6 +10,7 @@ import { isNpcTier, keptStatsKey, NPC_TIERS, type NpcTier } from "../../shared/n
 import { TIER_LABELS } from "../npcTierBadges";
 import { openHeadshotEditor } from "../headshots/headshotEditor";
 import { saveNpcOverride, useNpcOverrides } from "../npcOverrides";
+import { useScenesCommand } from "./commands";
 import { NpcStatsModal } from "./npcStatsModal";
 import { CANVAS_H, CANVAS_W, Overlay } from "./sketch";
 
@@ -69,10 +70,11 @@ const numberOrUndefined = (text: string): number | string | undefined => {
 
 /**
  * One NPC's token settings: name, ring colour, head crop, card scale and seated height. Blank fields keep the
- * defaults. Clicking off (or Escape) saves; the token art and TTS pick the changes up on the next
- * `npm run npc-art` and Save & Play.
+ * defaults. Clicking off (or Escape) saves; card scale is pushed live to any spawned figurine.
+ * Token colour / headshot art still need `npm run npc-art` and Save & Play.
  */
 export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; onClose: () => void }): ReactElement => {
+  const send = useScenesCommand();
   const saved = useNpcOverrides()[target.characterKey] ?? {};
   const { inScene } = target;
   const [name, setName] = useState(inScene ? inScene.name : saved.name ?? "");
@@ -146,7 +148,16 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
       return;
     }
     setBusy(true);
-    saveNpcOverride(target.characterKey, next).then(onClose, (reason: unknown) => {
+    saveNpcOverride(target.characterKey, next).then(() => {
+      if (next.cardScale !== saved.cardScale) {
+        send({
+          op: "npcOverrideScale",
+          key: target.characterKey,
+          ...(next.cardScale !== undefined ? { cardScale: next.cardScale } : {})
+        });
+      }
+      onClose();
+    }, (reason: unknown) => {
       setBusy(false);
       setError(reason instanceof Error ? reason.message : String(reason));
     });

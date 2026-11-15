@@ -1263,6 +1263,11 @@ local function playBackgroundPlaylist(kind, key, playlist, forcedTrack)
     end
 
     if state.featuredActive == true then
+        -- Intermission ambient is the featured TR_Loop lane. A Main / location playlist restart must not
+        -- stop it (End→Intermission handoff was losing the theme when later no-scene work nudged BGM).
+        if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
+            return false, "Intermission featured theme holds; background playlist not started"
+        end
         stopFeaturedMusicInternal(false)
         state = ensureState()
         state.backgroundPausedForFeatured = false
@@ -2542,6 +2547,19 @@ end
 
 --- Plays a featured music effect on the dedicated featured lane.
 -- @param featureKey string
+--- @param featureKey string|nil when set, must match the active featured track
+--- @return boolean
+function Soundscape.isFeaturedMusic(featureKey)
+    local state = ensureState()
+    if state.featuredActive ~= true then
+        return false
+    end
+    if featureKey == nil or featureKey == "" then
+        return true
+    end
+    return state.featuredMusic == featureKey
+end
+
 -- @param opts table|nil `{ incomingFadeSeconds?: number, outgoingFadeSeconds?: number, keepBackgroundPaused?: boolean, volumeScale?: number }`
 --   `incomingFadeSeconds` — TOR-366 Intermission fade-in from silence
 --   `outgoingFadeSeconds` — fade Main/location out over this many seconds (default catalog fades)

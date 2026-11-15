@@ -982,6 +982,18 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
             Phases.reconcileParticleEmitterFromPhase()
             return Phases.applyAllLightsDark(ctx)
         end,
+        function()
+            -- Re-assert TR_Loop after no-scene / Sync work so End→Intermission cannot leave the theme silent.
+            local Soundscape = require("core.soundscape")
+            local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
+            if type(Soundscape.isFeaturedMusic) == "function" and Soundscape.isFeaturedMusic(key) then
+                return true
+            end
+            return Phases.beginIntermissionThemeHandoff(ctx, {
+                fadeSeconds = END_INTERMISSION_THEME_FADE_SEC,
+                fadeOutgoing = false,
+            })
+        end,
     }
 end
 

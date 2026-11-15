@@ -94,11 +94,12 @@ function D.refresh()
     b.UI.setAttribute('text_originalMargin','text',signed(g.target.result.margin))
     b.UI.setAttribute('text_complicationsTotal','text',signed(total))
     b.UI.setAttribute('text_adjustedMargin','text',signed(margin))
-    for _,id in ipairs({'button_StopSelect','button_Enhance','button_SelectRandom','button_Negate','button_Adjust','button_ToggleCategoryDiscard','button_Automate'}) do
+    for _,id in ipairs({'button_StopSelect','button_ForceSelect','button_Enhance','button_SelectRandom','button_Negate','button_Adjust','button_ToggleCategoryDiscard','button_Automate'}) do
         b.UI.setAttribute(id,'onClick','Global/onComplicationButtonClick')
     end
     local mode=g.mode
     b.UI.setAttributes('button_StopSelect',{text=mode=='select' and 'Select' or mode=='confirm' and 'Confirm' or 'Stop',class='complicationButton '..(mode=='select' and 'magentaButton' or mode=='confirm' and 'redButton' or 'yellowButton')})
+    b.UI.setAttribute('button_ForceSelect','active',mode=='stop' and 'true' or 'false')
     local selected=g.selected and g.cards[g.selected] and (g.cards[g.selected].zone=='slot' or g.cards[g.selected].zone=='external')
     local automateVisible = selected and g.cards[g.selected].zone=='slot' and Automations.has(g.cards[g.selected].index)
     b.UI.setAttribute('button_Automate','active',automateVisible and 'true' or 'false')
@@ -757,6 +758,16 @@ function D.button(player,value,id)
             g.mode='confirm'; confirmEpoch=confirmEpoch+1; local epoch=confirmEpoch
             U.await(function() if game()==g and epoch==confirmEpoch and g.mode=='confirm' then g.mode='stop'; announce(g) end end,5)
         end
+    elseif id=='button_ForceSelect' then
+        if g.mode~='stop' then return end
+        -- Same ST-control pause as flipping a requiresPause card.
+        if g.last and g.cards[g.last] and g.cards[g.last].zone=='slot' then
+            g.selected=g.last
+        else
+            g.selected=nil
+        end
+        selectArmed=false
+        g.mode='select'
     elseif id=='button_SelectRandom' then randomSelect(g,right and 'all' or 'normal'); return
     elseif id=='button_Enhance' then
         if right then randomSelect(g,'enhanced'); return

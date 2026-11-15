@@ -28,7 +28,7 @@
   <HorizontalLayout class="controlsPanel"
     visibility="Black"
     height = "100"
-    width = "2900"
+    width = "3300"
     color = "#00FF00"
     position="0 105 -25"
     rotation="0 0 180"
@@ -60,6 +60,7 @@
 
 <HorizontalLayout id="controlsPanel" class="controlsPanel" >
   <Button id="button_StopSelect" class="complicationButton yellowButton" text="Stop" />
+  <Button id="button_ForceSelect" class="complicationButton magentaButton" text="Force Select" />
   <Button id="button_Enhance" class="complicationButton magentaButton" text="Enhance" />
   <Button id="button_SelectRandom" class="complicationButton blueButton" text="Random" />
   <Button id="button_Negate" class="complicationButton redButton" text="Negate" />
