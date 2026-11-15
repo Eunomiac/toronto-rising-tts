@@ -44,8 +44,8 @@
   position: fixed;
   z-index: 12000;
   pointer-events: none;
-  max-width: min(28rem, calc(100vw - 16px));
-  max-height: min(70vh, 36rem);
+  max-width: min(48rem, calc(100vw - 16px));
+  max-height: min(70vh, 46rem);
   overflow: auto;
   padding: 0.75rem 0.9rem;
   border: 1px solid rgba(40, 20, 20, 0.55);

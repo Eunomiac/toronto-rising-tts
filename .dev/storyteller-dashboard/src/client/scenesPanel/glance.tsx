@@ -212,6 +212,7 @@ export type PlayScene = (key: string, clock: SceneClock, edit?: SeatingEdit) => 
  */
 export const useSceneEntry = (): { enter: (key: string, at: Point, go: SceneGo) => void; modal: ReactElement | null } => {
   const { clock, scene, seats } = useWorldState();
+  const send = useScenesCommand();
   const [seating, setSeating] = useState<SeatingAsk | null>(null);
   const [timing, setTiming] = useState<SceneTiming | null>(null);
   const time = (key: string, at: Point, go: SceneGo, edit: SeatingEdit | undefined): void => {
@@ -225,13 +226,32 @@ export const useSceneEntry = (): { enter: (key: string, at: Point, go: SceneGo) 
       setTiming({ at, key, showScene: plan.showScene, go: (picked) => go(picked, edit) });
     }
   };
+  const preloadScene = (key: string): void => {
+    const row = sceneRowFor(key) ?? sceneLibrarySnapshot().scenes.find((entry) => entry.key === key);
+    if (!row) {
+      return;
+    }
+    send({
+      op: "preloadScene",
+      key: row.key,
+      title: row.title,
+      sessionScene: row.sessionScene,
+      ...(row.preloadNpcKeys?.length ? { preloadNpcKeys: row.preloadNpcKeys } : {})
+    });
+  };
   return {
     enter: (key, at, go) => {
       const destination = sceneRowFor(key);
       if (destination && seats && scene?.liveKey !== key) {
         const carried = scene?.liveKey !== undefined;
         const start = carried ? carryOverSeating(destination, seats.seats) : { row: destination, orphans: [] };
-        setSeating({ destination, start, carried, then: (edit) => time(key, at, go, edit) });
+        setSeating({
+          destination,
+          start,
+          carried,
+          then: (edit) => time(key, at, go, edit),
+          onPreload: () => preloadScene(key)
+        });
       } else {
         time(key, at, go, undefined);
       }

@@ -27,6 +27,9 @@ export type MemoriamPayload = {
   readonly date: string;
   readonly location: string;
   readonly assignments: Readonly<Record<string, MemoriamAssignment>>;
+  /** Optional Toronto District/Site: present as a normal scene location (skybox + overlay). */
+  readonly districtKey?: string;
+  readonly siteKey?: string;
 } & ({ readonly skyboxKey: string; readonly panel: string } | { readonly justSmoke: true });
 
 export type StageLight = "OFF" | "STANDARD" | "SPOTLIGHT";
@@ -135,7 +138,9 @@ export type ScenesCommand =
   }
   | { readonly op: "npcConditionStats"; readonly key: string; readonly stats: Partial<import("../../shared/npcStats").NpcStatBlock> }
   | { readonly op: "npcCondition"; readonly key: string; readonly id: string; readonly on: boolean }
-  | { readonly op: "npcConditionResolved"; readonly key: string; readonly field: "compulsion" | "corruptAmbition" | "desirePending" };
+  | { readonly op: "npcConditionResolved"; readonly key: string; readonly field: "compulsion" | "corruptAmbition" | "desirePending" }
+  /** Live-apply a roster `cardScale` to any spawned figurine (dashboard override save). */
+  | { readonly op: "npcOverrideScale"; readonly key: string; readonly cardScale?: number };
 
 export type NpcTrackerWhich = "health" | "willpower" | "hunger" | "rage" | "stains";
 export type NpcTrackerMode = "addSuper" | "addAgg" | "removeSuper" | "removeAgg" | "clearSuper" | "clearAgg" | "up" | "down";

@@ -20,8 +20,10 @@ import {
   type NpcStats,
   type NpcStatSlot
 } from "../../shared/npcStats";
+import { kindForExportDiscipline } from "../../shared/disciplinesCatalog";
 import { saveNpcStats, useNpcStats } from "../npcStats";
 import { TIER_LABELS, tierBadgeSrc } from "../npcTierBadges";
+import { termProps } from "../termImages/store";
 import { Overlay } from "./sketch";
 
 type Num = number | undefined;
@@ -379,6 +381,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onDelete, onClose }: {
                         data-roll-name
                         value={power.name}
                         onChange={(event) => setPower(at, { name: event.target.value })}
+                        {...termProps(kindForExportDiscipline(category.name), power.name, power.name, { discipline: category.name })}
                       />
                       {usesRouse(draft.kind) && (
                         <NumberBox

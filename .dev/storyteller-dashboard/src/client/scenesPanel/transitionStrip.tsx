@@ -19,6 +19,8 @@ export type SeatingAsk = {
   readonly carried: boolean;
   /** Runs once the strip is confirmed; `undefined` when it left the destination's seating as it was. */
   readonly then: (edit: SeatingEdit | undefined) => void;
+  /** Same as the library-row Preload button for this scene (does not confirm seating or start Play). */
+  readonly onPreload?: () => void;
 };
 
 
@@ -111,6 +113,16 @@ export const TransitionSeatingModal = ({ ask, onClose }: { ask: SeatingAsk; onCl
         )}
         <div className="lab-modal-actions">
           <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
+          {ask.onPreload && (
+            <button
+              type="button"
+              className="lab-btn"
+              title="Load this scene's NPC figurines and lights into the hidden pool (same as Preload on the scene row)"
+              onClick={ask.onPreload}
+            >
+              Preload
+            </button>
+          )}
           <button type="button" className="lab-btn primary" onClick={proceed}>Continue ▸</button>
         </div>
       </div>

@@ -50,7 +50,8 @@ export const DisciplineTipLayer = (): ReactElement | null => {
     const refresh = (): void => {
       const el = hoverRef.current;
       const key = el?.dataset.term;
-      if (!key || !isDisciplineTermKey(key)) {
+      // Power name inputs: tip while hovered, not while the field is focused for editing.
+      if (!key || !isDisciplineTermKey(key) || el === document.activeElement) {
         setHtml(null);
         return;
       }
@@ -82,16 +83,23 @@ export const DisciplineTipLayer = (): ReactElement | null => {
         setHtml(null);
       }
     };
+    const onFocusChange = (): void => {
+      refresh();
+    };
 
     const unsubscribe = subscribeDisciplines(refresh);
     document.addEventListener("mouseover", onOver);
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseout", onLeave);
+    document.addEventListener("focusin", onFocusChange);
+    document.addEventListener("focusout", onFocusChange);
     return () => {
       unsubscribe();
       document.removeEventListener("mouseover", onOver);
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseout", onLeave);
+      document.removeEventListener("focusin", onFocusChange);
+      document.removeEventListener("focusout", onFocusChange);
     };
   }, []);
 
