@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-783 — Live location change: seating ask, fork scene, keep left-behind map pins
+
+> **Agent-assessment note:** Unit tests cover fork helpers and seating carry-over. Playwright confirmed the Scenes tab loads; full relocate needs a live scene in TTS.
+
+**How to verify:** With a live scene and at least two present PCs who have map pins at the current site, click the location card on the Scenes tab and pick a different District/Site. The same seating popup as a scene switch should open. Leave one PC out, then Continue. A new forked ongoing scene should start at the new site; present PCs’ pins should move there, and the left-behind PC’s pin should stay at the prior site while the scene clock is still after their stamp.
+
 #### 🔵 TOR-782 — SceneLoad and DashPushSlow only print with Verbose Logging on
 
 > **Agent-assessment note:** Unit tests cover the SceneLoad print gate. Confirming quiet ordinary play and Verbose Logging on still needs Save & Play in TTS.

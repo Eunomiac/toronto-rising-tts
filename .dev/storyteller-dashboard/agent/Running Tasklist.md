@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-LiveRelocate. Live location pick opens the scene-switch seating modal, then forks + plays a new ongoing scene at the new site (left-behind map pins via playScene). Unit tests for relocate helpers; Playwright Scenes tab load. TTS pin check pending under **TOR-783**.
+
 - ✔️ SD-ScenesPins-1114. Nine Scenes pins (Prepare Onboarding, NPC scale live apply, Discipline decks, Force Select, Discipline tip hover, seating Preload, END→INTERMISSION TR theme, Memoriam calendar+Toronto location, Memoriam condition clear/restore). Dashboard: tip + seating Preload + Memoriam UI. TTS side pending Save & Play under **TOR-781**.
 
 - ✔️ SD-StageReminders. Empty-stage click-to-hide reminders now cover Intermission (recorder + preload), first Downtime of each dusk→dawn night (awakening rouse checks), and first End of each session (Aishe / Fomórach / Black Caesar). Vitest + `npm run test:reminders:browser`.

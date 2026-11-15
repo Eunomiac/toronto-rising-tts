@@ -49,7 +49,11 @@ import { sceneLibrarySnapshot, useSceneLibrary, useSceneLibraryStatus } from "..
 import { DraftPanels } from "./DraftPanels";
 import { deckScenes } from "./sceneStatus";
 import { useLibraryActions } from "./useLibraryActions";
+import { withLocation } from "./liveRelocate";
+import { TransitionSeatingModal, type SeatingAsk } from "./transitionStrip";
+import { carryOverSeating } from "./transitionSeating";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
+import { useChronicleLocations } from "./chronicleSheets";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
 import {
   GenericTiersContext,
@@ -366,7 +370,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const [dndNotice, setDndNotice] = useState<string | null>(null);
   const [dndEdit, setDndEdit] = useState<NpcConfigTarget | null>(null);
   const [dndTracker, setDndTracker] = useState<{ key: string; name: string; x: number; y: number } | null>(null);
+  const [relocateAsk, setRelocateAsk] = useState<SeatingAsk | null>(null);
   const { catalogs } = useSceneCatalogs();
+  const { data: chronicleLocations } = useChronicleLocations();
   const snapshotError = useWorldSnapshotOnce(active, world);
   const commands = useScenesQueue();
   const rollCommands = useRollsQueue();
@@ -468,6 +474,35 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     : null;
   const waitText = snapshotError ?? "Waiting for TTS…";
   const connected = snapshotError === null && Object.keys(world).length > 0;
+
+  /** Live location pick → same seating strip as a scene switch, then fork + play at the new site. */
+  const askRelocate = (next: LabLocation): void => {
+    if (!scene?.liveKey || !seats) {
+      setDndNotice("Connect to Tabletop Simulator with a live scene before changing location.");
+      return;
+    }
+    if (location && location.districtKey === next.districtKey && location.siteKey === next.siteKey) {
+      return;
+    }
+    const liveRow = sceneLibrarySnapshot().scenes.find((row) => row.key === scene.liveKey);
+    if (!liveRow) {
+      setDndNotice("The scene on the table is not in the dashboard library yet.");
+      return;
+    }
+    const siteName = chronicleLocations?.sites.find((site) => site.key === next.siteKey)?.title
+      ?? catalogs?.sites.find((site) => site.key === next.siteKey)?.name
+      ?? next.siteKey;
+    const destination = {
+      ...withLocation(liveRow, next),
+      title: `${liveRow.title} → ${siteName}`
+    };
+    setRelocateAsk({
+      destination,
+      start: carryOverSeating(destination, seats.seats),
+      carried: true,
+      then: (edit) => library.relocateLive(next, siteName, edit)
+    });
+  };
 
   const dropPoint = (): { x: number; y: number } => {
     const point = getDndSession().pointer;
@@ -596,7 +631,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
               <LocationPanel
                 location={location}
                 overridden={locationOverridden(scene)}
-                onChange={(next) => send({ op: "location", districtKey: next.districtKey, siteKey: next.siteKey })}
+                onChange={askRelocate}
                 onRelease={() => {
                   if (libraryLocation) {
                     send({ op: "location", ...libraryLocation });
@@ -608,6 +643,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
               <Waiting text={scene ? "No location on the table." : waitText} />
             )}
           </Box>
+          {relocateAsk && <TransitionSeatingModal ask={relocateAsk} onClose={() => setRelocateAsk(null)} />}
           <Box x={G} y={BODY_Y} w={LEFT_W} h={HUNT_H} className="lab-hunt-box lab-borderless">
             <HuntRoller
               location={location}

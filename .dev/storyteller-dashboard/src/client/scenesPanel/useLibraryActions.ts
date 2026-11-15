@@ -15,7 +15,8 @@ import {
 import type { SceneSlice } from "../worldState";
 import type { SceneClock, ScenesCommand } from "./commands";
 import { newLibraryScene, newSceneKey, newSceneTitle } from "./library";
-import { nightLabel, templateCopy } from "./sceneStatus";
+import { buildRelocatedScene, nextForkKey, relocateTitle } from "./liveRelocate";
+import { entryPlan, nightLabel, templateCopy } from "./sceneStatus";
 import type { SeatingEdit } from "./transitionSeating";
 
 /** How long the table's scene must be quiet before its library row is read back from TTS. */
@@ -41,16 +42,8 @@ const playCommand = (row: LibraryScene, clock: SceneClock): ScenesCommand => ({
   ...clock
 });
 
-const forkKeyFor = (base: string): string => {
-  const keys = new Set(sceneLibrarySnapshot().scenes.map((row) => row.key));
-  let n = 2;
-  let candidate = `${base}_${n}`;
-  while (keys.has(candidate)) {
-    n += 1;
-    candidate = `${base}_${n}`;
-  }
-  return candidate;
-};
+const forkKeyFor = (base: string): string =>
+  nextForkKey(base, new Set(sceneLibrarySnapshot().scenes.map((row) => row.key)));
 
 const locationOf = (row: LibraryScene): LabLocation | undefined => {
   const { districtKey, siteKey } = row.sessionScene;
@@ -162,6 +155,35 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     const copy = edit ? edit(dated) : dated;
     putLibraryScene(copy);
     sendBatch([playCommand(copy, clock)]);
+  };
+
+  /**
+   * Mid-scene location change: unlink the live row, fork an ongoing copy at the new site (with seating from
+   * the strip), and play that copy so left-behind PCs keep their map pins at the prior site.
+   */
+  const relocateLive = (location: LabLocation, siteName: string, edit?: SeatingEdit): void => {
+    const liveKey = scene?.liveKey;
+    if (!liveKey) {
+      setNotice("There is no scene on the table to move.");
+      return;
+    }
+    const row = findRow(liveKey);
+    if (!row) {
+      setNotice("The scene on the table is not in the dashboard library yet.");
+      return;
+    }
+    putLibraryScene({ ...row, linked: false });
+    const titles = sceneLibrarySnapshot().scenes.map((entry) => entry.title);
+    const newKey = forkKeyFor(liveKey);
+    const newTitle = relocateTitle(row.title, siteName, titles);
+    const relocated = buildRelocatedScene(row, location, newKey, newTitle, edit);
+    putLibraryScene(relocated);
+    removeFromDeck(liveKey);
+    addToDeck(relocated);
+    const plan = entryPlan({ ...relocated, status: "ongoing" }, present ?? undefined);
+    const clock: SceneClock = plan.kind === "switch" ? plan.clock : { from: "scene", plusMinutes: 0, pace: "x2" };
+    sendBatch([playCommand(relocated, clock)]);
+    setNotice(`Moved the table to “${newTitle}”. Characters left behind keep their map pins at the prior site.`);
   };
 
   /** `edit` (the seating strip's) is written into the played row before it goes to TTS. */
@@ -346,6 +368,7 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     clearNotice: () => setNotice(null),
     savedRow: (key: string) => library.scenes.find((row) => row.key === key),
     play,
+    relocateLive,
     openPreview,
     closePreview: () => setPreviewKey(null),
     prepare,
