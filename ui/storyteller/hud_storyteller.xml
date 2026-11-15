@@ -50,6 +50,7 @@ UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
       <Button id="debug_verboseLogging" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleVerboseLogging">Verbose Logging</Button>
       <Button class="hud_storyteller_button" onClick="HUD_rebootInteractions">Reboot Interactions</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
+      <Button class="hud_storyteller_button" onClick="HUD_prepareOnboarding">Prepare Onboarding</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
       <Button id="debug_ambient" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
       <Button id="debug_connectionMode" class="hud_storyteller_button toggled_active" onClick="HUD_toggleConnectionMode">Assume Connected</Button>

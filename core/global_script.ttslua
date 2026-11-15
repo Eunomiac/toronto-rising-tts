@@ -4649,7 +4649,12 @@ function HUD_sessionStartJoinStep(player, button, id)
                 local connection = require("core.player_connection")
                 connection.prepareSessionStartSeats()
                 HUDP.clearTemporaryReferenceHolds()
-                local intermissionThemeStarted = require("core.phases").reconcileIntermissionAmbientOnLoad()
+                -- Cold Intermission load starts TR_Loop here. Mid-session Prepare Onboarding stays in
+                -- Play/Downtime so the Storyteller can re-Apply the parked scene manually.
+                local intermissionThemeStarted = false
+                if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
+                    intermissionThemeStarted = require("core.phases").reconcileIntermissionAmbientOnLoad()
+                end
                 Sync.full({ force = true, reason = "finish_session_start_join", skipSoundscape = intermissionThemeStarted })
                 -- Camera presets are rebuilt by Sync.full's seat layout. Snap only afterward;
                 -- doing this before the layout used the prior chair's preset (Brown could inherit
@@ -7252,6 +7257,89 @@ function HUD_debugSeatColor(player, button, id)
     end
     hideStartupLoadingOverlays()
     syncDebugSeatColorButtons()
+end
+
+--- Debug panel: park the live scene as ongoing, clear world assets, open full session-start onboarding in Downtime.
+--- Host-only. After Seat Players finishes, the scene stays ongoing for a manual Play/Apply.
+function HUD_prepareOnboarding(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_prepareOnboarding") then
+        return
+    end
+    if S.getStateVal("connectionControls", "sessionStartJoin") == true then
+        broadcastToColor("Onboarding is already open.", player.color, { 1, 0.85, 0.2 })
+        return
+    end
+    if pendingFullUiRemount or startupCoverHeld then
+        broadcastToColor("Wait for the current restore to finish, then try Prepare Onboarding again.", player.color, { 1, 0.35, 0 })
+        return
+    end
+
+    print("[PrepareOnboarding] Parking the live scene as ongoing, clearing emitters/NPCs, opening Downtime onboarding…")
+    local HUDBF = require("core.hud_blindfold")
+    local SceneLibrary = require("core.scene_library")
+    local Scenes = require("core.scenes")
+    local NPCS = require("core.npcs")
+    local JoinColdPools = require("core.join_cold_pools")
+    local DEBUG = require("core.debug")
+    local SS = require("core.soundscape")
+
+    -- Cover + U.chain so beginCold's wait predicate is honored (runStagedTransition work cannot wait).
+    HUDBF.beginTransition({ skipLocationCardGate = true })
+    if type(SS.fadeOutTransitionAmbient) == "function" then
+        SS.fadeOutTransitionAmbient({
+            seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
+            silenceAfter = true,
+        })
+    end
+    U.chain({
+        function()
+            return HUDBF.TRANSITION_FADE_OUT_SEC
+        end,
+        function()
+            if SceneLibrary.hasLiveSceneOnTable() then
+                SceneLibrary.detachLiveTableFromLibraryMirror("ongoing")
+            end
+            Scenes.applyDefaultNoSceneEnvironment({
+                reason = "prepare_onboarding",
+                skipTransitionBlindfold = true,
+                skipSoundscape = true,
+            })
+            if type(NPCS.destroyAllWorldAndState) == "function" then
+                NPCS.destroyAllWorldAndState()
+            end
+            if type(DEBUG.retirePreloadPools) == "function" then
+                DEBUG.retirePreloadPools()
+            end
+            S.setCurrentPhase(C.Phases.PLAY)
+            S.setPlaySubPhase(C.PlaySubPhases.DOWNTIME)
+            S.setStateVal(nil, "connectionControls", "sessionStartJoinHudReady")
+            S.setStateVal(true, "connectionControls", "sessionStartJoin")
+            return JoinColdPools.beginCold()
+        end,
+        function()
+            hideStartupLoadingOverlays()
+            syncSessionStartJoinBar()
+            if type(UpdateUIDisplays) == "function" then
+                UpdateUIDisplays({ phase = true, gameStateOverlay = true, playerHud = true })
+            end
+            if syncStorytellerPhaseButtons ~= nil then
+                syncStorytellerPhaseButtons()
+            end
+            HUDBF.scheduleEnd(0)
+            print("[PrepareOnboarding] Downtime onboarding is open. Run Load Bundles → Refresh HUD → Seat Players, then Play the parked scene.")
+            return true
+        end,
+    }, {
+        maxWait = 120,
+        stepNames = { "coverFade", "parkAndCold", "openOnboarding" },
+        onComplete = function(ok, detail)
+            if not ok then
+                print("[PrepareOnboarding] Failed: " .. tostring(detail))
+                HUDBF.scheduleEnd(0)
+                U.AlertGM("Prepare Onboarding failed: " .. tostring(detail))
+            end
+        end,
+    })
 end
 
 --- Debug panel: rewrite the complete Global UI document and rebuild its runtime state.
