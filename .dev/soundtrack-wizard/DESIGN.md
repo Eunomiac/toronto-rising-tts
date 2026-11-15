@@ -27,11 +27,14 @@ This mini-project is the home for that shareable kit. It lives under `.dev/` lik
 ## Goals
 
 1. **Download** soundtrack audio (and optional video) from YouTube / playlists with sensible defaults.
-2. **Screen** long OSTs into ranked quiet-underscore passages (stability first; AI optional).
-3. **Calibrate** ranking to his taste via perfect / approved / rejects folders.
-4. **Audition** via CSV + Media Player Classic playlist (partial hits as real clipped files).
-5. **Prepare** approved material: shared loudness + short fades, no Audition required.
-6. **Ship** as something a non-engineer can unzip/clone and run with a short guide.
+2. **Chapterize** long OSTs where chapter markers exist on the YouTube download.
+3. **Split** long tracks into segments based on waveform similarity.
+4. **Calibrate** ranking to user's taste via **(1)** subfolders user populates with sample tracks ("`perfect`" / "`approved`" / "`rejected`"), and **(2)** verbal prompts describing instrumentation, mood, tempo, and other qualities.
+5. **Assess** using a pytorch local AI model capable of running with low overhead on a mid-level GPU.
+6. **Present** via a playlist file compatible with user's choice of media player, sorted by AI ranking, for user's review.
+7. **Iterate** after review: user can move reviewed tracks into calibration subfolders and adjust weights of verbal prompts to tune AI, steadily building up quantity of `perfect`/`approved` tracks.
+8. **Prepare** approved material: shared loudness + short fades, applied automatically, no audio editing required.
+9. **Ship** as something a non-engineer can use via a user-friendly "wizard" that walks user through each step.
 
 Non-goals for v1:
 

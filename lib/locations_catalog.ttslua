@@ -455,10 +455,10 @@ LocationsCatalog.Sites = {
     name = "Caruso Residence",
     district = Districts.Rosedale,
     soundscape = {
-      location = { playlist = "location", track = "softHum" },
+      location = { playlist = "location", track = "citySuburb" },
     },
-    isIndoors = true,
-    weatherDucking = 0,
+    isIndoors = false,
+    weatherDucking = 1,
     isTopFogActive = false,
     offsetXY = "208.8 580.27",
   },

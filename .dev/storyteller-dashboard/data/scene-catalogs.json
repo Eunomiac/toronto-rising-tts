@@ -1683,11 +1683,11 @@
       "name": "Caruso Residence",
       "districtKey": "Rosedale",
       "isTopFogActive": false,
-      "isIndoors": true,
+      "isIndoors": false,
       "skybox": null,
-      "locationTrack": "softHum",
+      "locationTrack": "citySuburb",
       "conditions": [],
-      "cardUrl": null
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18340338702350862923/F67ED22921818B916A8EF380E82A9A64B6AC879C/"
     },
     {
       "key": "CLControlRoom",
@@ -1698,7 +1698,7 @@
       "skybox": null,
       "locationTrack": "computer",
       "conditions": [],
-      "cardUrl": null
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17262992322450819031/784BB81BC4880EA6D1BA0A717519C5B92D492BE9/"
     },
     {
       "key": "CLGrounds",
@@ -1931,7 +1931,7 @@
       "skybox": null,
       "locationTrack": "cityTraffic",
       "conditions": [],
-      "cardUrl": null
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10308036553459907138/756E70BD5C2AFD5E04393ACE6ADEEF402A1D9ACA/"
     },
     {
       "key": "DanforthHall",

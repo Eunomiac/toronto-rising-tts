@@ -2,7 +2,7 @@
   "cloudRoot": "Vampire the Masquerade 5E",
   "jobs": {
     "soundscapeBundles": {
-      "output": "Manifest",
+      "output": "ObjectImage",
       "folder": "AssetBundles",
       "rows": [
         {
@@ -338,6 +338,13 @@
           "size": 234588
         },
         {
+          "path": "Sites/siteCard_CarusoResidence.webp",
+          "name": "siteCard_CarusoResidence",
+          "sha1": "F67ED22921818B916A8EF380E82A9A64B6AC879C",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/18340338702350862923/F67ED22921818B916A8EF380E82A9A64B6AC879C/",
+          "size": 317586
+        },
+        {
           "path": "Sites/siteCard_Cemetery.webp",
           "name": "siteCard_Cemetery",
           "sha1": "5F701EDEEF49CD10534A0E8CCB7529E2D3318A09",
@@ -429,6 +436,13 @@
           "size": 272898
         },
         {
+          "path": "Sites/siteCard_CLControlRoom.webp",
+          "name": "siteCard_CLControlRoom",
+          "sha1": "784BB81BC4880EA6D1BA0A717519C5B92D492BE9",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17262992322450819031/784BB81BC4880EA6D1BA0A717519C5B92D492BE9/",
+          "size": 291278
+        },
+        {
           "path": "Sites/siteCard_CLDrawingRoom.webp",
           "name": "siteCard_CLDrawingRoom",
           "sha1": "949252F3289FB1F9DEFB1AC0CFD008D1DE2FF100",
@@ -511,6 +525,13 @@
           "sha1": "0FC0107353B5955135A062374035212A49204527",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/11013532223775851652/0FC0107353B5955135A062374035212A49204527/",
           "size": 296942
+        },
+        {
+          "path": "Sites/siteCard_CrimeScene.webp",
+          "name": "siteCard_CrimeScene",
+          "sha1": "756E70BD5C2AFD5E04393ACE6ADEEF402A1D9ACA",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10308036553459907138/756E70BD5C2AFD5E04393ACE6ADEEF402A1D9ACA/",
+          "size": 313626
         },
         {
           "path": "Sites/siteCard_DanforthHall.webp",
