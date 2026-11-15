@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1114. Nine Scenes pins (Prepare Onboarding, NPC scale live apply, Discipline decks, Force Select, Discipline tip hover, seating Preload, END→INTERMISSION TR theme, Memoriam calendar+Toronto location, Memoriam condition clear/restore). Dashboard: tip + seating Preload + Memoriam UI. TTS side pending Save & Play under **TOR-781**.
+
 - ✔️ SD-StageReminders. Empty-stage click-to-hide reminders now cover Intermission (recorder + preload), first Downtime of each dusk→dawn night (awakening rouse checks), and first End of each session (Aishe / Fomórach / Black Caesar). Vitest + `npm run test:reminders:browser`.
 
 - ✔️ SD-DisciplinesTooltips. Powers, Rituals, and Ceremonies share one catalog HTML tooltip (EXPORT_DISCIPLINES + styled System/Duration from the V5: DISCIPLINES xlsx). Term Images stay for every other term kind. Import runs in FULL / `exports:build` (also `npm run disciplines:import`); API `GET /api/disciplines`; smoke `npm run test:disciplines:browser`.

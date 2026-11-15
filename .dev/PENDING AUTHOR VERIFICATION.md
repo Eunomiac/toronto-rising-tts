@@ -31,6 +31,19 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-781 — Scenes pins: Prepare Onboarding, Memoriam calendar/location/conditions, Force Select, scale, TR theme, discipline decks
+
+> **Agent-assessment note:** Dashboard Memoriam/seating/tooltip pieces are unit-tested. Prepare Onboarding, TR theme, Force Select, discipline decks, live scale, and Memoriam world apply need Save & Play and listen/look checks in TTS.
+
+**How to verify:** Save & Play, then:
+
+1. Mid-Play with a live scene, click **Prepare Onboarding** (Storyteller Debug, above Refresh UI). The table should go quiet in Downtime with that scene still ongoing; run Load Bundles → Refresh HUD → Seat Players; then Play the parked scene yourself.
+2. Change a staged NPC’s card scale in the roster — the stage figurine should resize without regenerating art.
+3. Drop Discipline cards into a table deck, then **Reset Discipline Hands** — the deck should clear and cards redeal.
+4. During Complications **Stop**, **Force Select** should appear and put the board into Storyteller Select control.
+5. Advance **End → Intermission** and confirm the Toronto Rising theme loop plays.
+6. Start a Memoriam: use **Cal** for a near-present day; optionally pick a Toronto location (skybox and location overlay like a normal scene). Conditions and Resonance should leave PC sheets during Memoriam and come back when you leave.
+
 #### 🟡 TOR-780 — Complications: Requires Pause, personal conditions, Automate hide, Dashboard Prompt
 
 > **Agent-assessment note:** Catalog import and unit tests cover the sheet columns. Flip handoff, Automate hide/show, personal-card apply/swap, and the Dashboard prompt need Save & Play plus a live Dashboard window.

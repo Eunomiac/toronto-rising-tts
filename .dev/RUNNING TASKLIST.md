@@ -374,6 +374,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Scenes Panel & Scene State
 
+- [x] **Scenes pins batch (Prepare Onboarding, Memoriam calendar/location/conditions, Force Select, live NPC scale, TR theme, Discipline decks, seating Preload, Discipline tip):** Debug Prepare Onboarding parks the live scene as ongoing and opens full session-start join in quiet Downtime; Memoriam supports calendar date + optional Toronto location, clears/restores personal conditions while active; Complications Force Select; roster scale reapplied live; End→Intermission TR_Loop; Reset Discipline Hands stashes decks; seating modal Preload; NPC Stats tip on hover. Pending Save & Play. _(TOR-781)_
 - [x] **Scene within fifteen minutes of present day runs on present day:** `PresentDayClock.snapToPresentIfNear` moves the scene datetime onto present day on activation, time-animation settle, Scenes panel clock apply and each real-time tick. Pending Save & Play. _(TOR-682)_
 - [x] **Memoriam splash stays on the cover:** A full refresh while the Memoriam cover is down no longer swaps the splash for a stock scene blindfold. Author confirmed 2026-10-04. _(TOR-647)_
 - [x] **Rapid scene Apply must not lift the cover early:** A second Apply while the first cover transition is still running cancels that chain, including its lift, and the new cover sequence is the only one that continues. Author confirmed 2026-10-02. _(TOR-643)_
