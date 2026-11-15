@@ -47,6 +47,19 @@ local realPrint = print
 print = function(line)
     printed[#printed + 1] = line
 end
+Trace._setConsolePrintEnabled(false)
+Trace.start("scatter-group", { label = "Red → group 2" })
+local quietId = Trace.currentId()
+now = now + 1
+local quietInterrupted = Trace.start("scene-transition", { label = "quiet / gate" })
+assert(quietInterrupted ~= nil and quietInterrupted.interrupted == true, "a new report closes the previous one")
+assert(quietInterrupted.kind == "scatter-group", "the closed report is the scatter move")
+assert(Trace.currentId() ~= quietId, "the new report has its own id")
+assert(#printed == 0, "Verbose Logging off keeps automatic SceneLoad quiet")
+Trace.finish({ ok = true })
+
+printed = {}
+Trace._setConsolePrintEnabled(true)
 Trace.start("scatter-group", { label = "Red → group 2" })
 local scatterId = Trace.currentId()
 now = now + 3
@@ -54,7 +67,7 @@ local interrupted = Trace.start("scene-transition", { label = "district / site" 
 assert(interrupted ~= nil and interrupted.interrupted == true, "a new report closes the previous one")
 assert(interrupted.kind == "scatter-group", "the closed report is the scatter move")
 assert(Trace.currentId() ~= scatterId, "the new report has its own id")
-assert(#printed == 1, "the interrupted report prints once")
+assert(#printed == 1, "Verbose Logging on prints the interrupted report once")
 Trace.finish({ ok = true })
 print = realPrint
 

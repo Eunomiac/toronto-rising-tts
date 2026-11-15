@@ -53,7 +53,7 @@ Each library scene now has a **Preload** button. It reserves and creates only th
 
 The pool is deliberately cold until the button is clicked. A bad reservation or failed preload sequence disables pool reuse for the session, tells the Storyteller that ordinary spawning remains available, and leaves the normal on-demand path intact. Full NPC-world reset also disables it. `DEBUG.inspectNpcPreloadPool()` prints a one-shot record of reserved, parked, complete, and image-ready pairs.
 
-Preload, a covered scene transition, and a Scatter player group change each print one `[SceneLoad]` timing block when they finish. `DEBUG.sceneLoadReport()` reprints the recent blocks and writes `.dev/.debug/scene-load-report.txt`. The block separates the cover's scheduled holds from world work, and it lists NPC figurines that were created during the action, already live before an application, still loading, or sent through an image reload. A player group change does not pose NPC figurines; its block should show player seat objects only.
+Preload, a covered scene transition, and a Scatter player group change each record one `[SceneLoad]` timing block when they finish. The block prints to the console only while Storyteller Debug → **Verbose Logging** is on. `DEBUG.sceneLoadReport()` always reprints the recent blocks and can write `.dev/.debug/scene-load-report.txt` in a solo debug session. The block separates the cover's scheduled holds from world work, and it lists NPC figurines that were created during the action, already live before an application, still loading, or sent through an image reload. A player group change does not pose NPC figurines; its block should show player seat objects only.
 
 ### TOR-769 stall isolation
 
@@ -79,8 +79,9 @@ actions split the dashboard path into `seats` and `scene`, then into snapshot bu
 the external-message call. Code review then confirmed that live dashboard updates had bypassed the
 gateway's passive route-tag path and called the blocking TTS API during scene synchronization. That
 path is removed: dashboard updates now print `<@DASHBOARD@>` plus a versioned JSON envelope, which
-the gateway routes only to the dashboard. Production pushes print one `[DashPushSlow]` line when
-snapshot build, JSON encoding, or tagged-console emission takes at least 250 ms.
+the gateway routes only to the dashboard. With **Verbose Logging** on, production pushes print one
+`[DashPushSlow]` line when snapshot build, JSON encoding, or tagged-console emission takes at
+least 250 ms.
 
 Automatic timing reports now stay on the TTS console. Writing `scene-load-report.txt` is an explicit
 `DEBUG.sceneLoadReport()` action and is refused while more than one player is connected. The Lua API

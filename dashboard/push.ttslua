@@ -188,7 +188,9 @@ local function flushWorld()
           bytes = tostring(#encoded),
           outcome = emitted and "emitted" or "emit_unavailable",
         })
-        if buildMs >= 250 or encodeMs >= 250 or emitMs >= 250 then
+        if (buildMs >= 250 or encodeMs >= 250 or emitMs >= 250)
+            and require("core.state").getStateVal("debug", "verboseLoggingEnabled") == true
+        then
           print(string.format(
             "[DashPushSlow] %s build=%d ms encode=%d ms emit=%d ms bytes=%d",
             slice,

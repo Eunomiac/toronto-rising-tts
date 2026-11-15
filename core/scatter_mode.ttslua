@@ -1212,6 +1212,9 @@ function ScatterMode.movePcToGroup(pcKey, groupIndex)
     LoadTrace.finishAndPrint({ ok = true })
     local resumedAt = os.clock()
     U.await(function()
+        if S.getStateVal("debug", "verboseLoggingEnabled") ~= true then
+            return
+        end
         print(string.format(
             "[SceneLoad] script resumed %d ms after the scatter report",
             math.floor((os.clock() - resumedAt) * 1000 + 0.5)

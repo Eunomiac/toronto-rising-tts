@@ -242,7 +242,7 @@ Storyteller **== DEBUG ==** column (no automated test suites):
 
 - Overlay Alpha: Full/Min (global blindfold translucent inspect)
 - Print State, Sync All (force)
-- **Verbose Logging**: master switch for detailed dice-bag, Tarot, companion-toggle, and Sync Trace console evidence. Leave it off during ordinary play; turn it on immediately before reproducing an interaction failure.
+- **Verbose Logging**: master switch for detailed dice-bag, Tarot, companion-toggle, Sync Trace, automatic `[SceneLoad]` timing blocks, and slow dashboard push (`[DashPushSlow]`) console evidence. Leave it off during ordinary play; turn it on immediately before reproducing an interaction failure or timing a slow scene/dashboard flush.
 - **Reboot Interactions**: emergency recovery for every player dice bag, Pink Tarot control, and all companion toggles. It cancels active player rolls, clears pending bag work, rebuilds the scripted button layers, and reapplies current control poses.
 - **Debug Camera**, **Debug Light** (+ GUID field)
 

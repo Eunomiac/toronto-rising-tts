@@ -6,8 +6,9 @@
     that blocks inside a call, such as a figurine `reload()`. It does not include engine downloads
     that continue after the call returns, except where a chain step's wait is itself a mark.
 
-    `finishAndPrint` prints one block and, inside Tabletop Simulator, rewrites
-    `.dev/.debug/scene-load-report.txt` with the recent reports.
+    `finishAndPrint` always records the closed report. It prints the block only when Storyteller
+    Debug → Verbose Logging is on (`gameState.debug.verboseLoggingEnabled`). Explicit reprint and
+    file export stay on `DEBUG.sceneLoadReport()`.
 ]]
 
 local Trace = {}
@@ -26,6 +27,8 @@ end
 local history = {}
 local open = nil
 local nextId = 0
+--- Test hook: nil follows Verbose Logging; true/false forces console print on/off.
+local consolePrintEnabledOverride = nil
 
 --- @param fn function|nil
 function Trace._setClock(fn)
@@ -43,10 +46,30 @@ function Trace._setGameClock(fn)
     end
 end
 
+--- Test hook for the Verbose Logging console gate.
+--- @param enabled boolean|nil
+function Trace._setConsolePrintEnabled(enabled)
+    if enabled == nil then
+        consolePrintEnabledOverride = nil
+    else
+        consolePrintEnabledOverride = enabled == true
+    end
+end
+
 function Trace._reset()
     history = {}
     open = nil
     nextId = 0
+    consolePrintEnabledOverride = nil
+end
+
+--- Automatic `[SceneLoad]` console print follows Verbose Logging.
+--- @return boolean
+local function shouldPrintToConsole()
+    if consolePrintEnabledOverride ~= nil then
+        return consolePrintEnabledOverride == true
+    end
+    return require("core.state").getStateVal("debug", "verboseLoggingEnabled") == true
 end
 
 --- Identity of the open report. A later action replaces it, so delayed callbacks must compare this
@@ -163,7 +186,9 @@ function Trace.finishAndPrint(fields)
     if report == nil then
         return nil
     end
-    print(Trace.format(report))
+    if shouldPrintToConsole() then
+        print(Trace.format(report))
+    end
     return report
 end
 

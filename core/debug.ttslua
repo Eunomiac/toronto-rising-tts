@@ -1212,7 +1212,7 @@ function DEBUG.logVerboseInteraction(component, event, details)
     return true
 end
 
---- Set the master verbose switch. Sync Trace follows it so one button enables all aggressive traces.
+--- Set the master verbose switch. Sync Trace, automatic `[SceneLoad]` prints, and `[DashPushSlow]` follow it.
 --- @param enabled boolean
 --- @return boolean
 function DEBUG.setVerboseLogging(enabled)

@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🔵 TOR-782 — SceneLoad and DashPushSlow only print with Verbose Logging on
+
+> **Agent-assessment note:** Unit tests cover the SceneLoad print gate. Confirming quiet ordinary play and Verbose Logging on still needs Save & Play in TTS.
+
+**How to verify:** Save & Play with **Verbose Logging** off. Play a library scene (or move a Scatter player group). The game console should stay free of `[SceneLoad]` blocks and `[DashPushSlow]` lines. Turn **Verbose Logging** on, play another scene (or wait for a slow dashboard seats flush), and confirm those lines appear. Optionally run `lua DEBUG.sceneLoadReport()` — it should still reprint recent timing even if Verbose Logging was off during the earlier scene.
+
 #### 🟡 TOR-781 — Scenes pins: Prepare Onboarding, Memoriam calendar/location/conditions, Force Select, scale, TR theme, discipline decks
 
 > **Agent-assessment note:** Dashboard Memoriam/seating/tooltip pieces are unit-tested. Prepare Onboarding, TR theme, Force Select, discipline decks, live scale, and Memoriam world apply need Save & Play and listen/look checks in TTS.
