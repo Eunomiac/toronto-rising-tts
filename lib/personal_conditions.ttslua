@@ -80,6 +80,22 @@ function PC.normalizeTextColor(value)
   return "white"
 end
 
+--- Sheet/XmlUI-safe free text. Catalog copy often uses U+2212 (minus), which some fonts omit;
+--- ASCII hyphen can also be coerced away by TTS when a `text` attribute looks numeric.
+--- @param value string|nil
+--- @return string
+function PC.sheetAttrText(value)
+  local s = tostring(value or "")
+  -- U+2212 MINUS SIGN (UTF-8 E2 88 92) → ASCII hyphen-minus for reliable glyphs.
+  s = s:gsub("\226\136\146", "-")
+  local b1, b2 = s:byte(1, 2)
+  if b1 == 45 and b2 and b2 >= 48 and b2 <= 57 then
+    -- Leading U+200B keeps XmlUI from treating the attribute as a signed number.
+    return "\226\128\139" .. s
+  end
+  return s
+end
+
 --- What one filled page 2 slot shows. Empty slots are not built.
 --- @param card table
 --- @return table
@@ -89,7 +105,7 @@ function PC.slotPresentation(card)
     textColor = PC.normalizeTextColor(card.textColor),
     title = tostring(card.title or ""),
     subtitle = tostring(card.subtitle or ""),
-    description = tostring(card.description or ""),
+    description = PC.sheetAttrText(card.description),
     duration = tostring(card.duration or ""),
   }
 end
@@ -469,7 +485,7 @@ function PC.sheetUpdates(pageNum, list)
     }
     updates[#updates + 1] = {
       id = "dyscrasia_description",
-      attributes = { text = showDyscrasia and description or "" },
+      attributes = { text = showDyscrasia and PC.sheetAttrText(description) or "" },
     }
     return updates
   end

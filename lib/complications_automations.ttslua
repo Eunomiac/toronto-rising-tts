@@ -169,21 +169,99 @@ function A.dismissPrompt(g, correlationId)
     return false
 end
 
+--- Remove the personal sheet condition / pending Dashboard prompt for one card.
+--- Does not reverse Function Call automations. Safe when the card has left a board slot.
+function A.clearPersonal(g, guid)
+    local receipt = g.automations and g.automations[guid]
+    if not receipt or not personal then return false end
+    local color = g.target and g.target.color
+    local changed = false
+    if type(receipt.personalCardId) == "string" and receipt.personalCardId ~= "" and color then
+        local err = personal.remove(color, receipt.personalCardId)
+        if err then
+            require("lib.util").AlertGM("Complications: could not remove personal condition (" .. tostring(err) .. ")")
+        else
+            changed = true
+        end
+        receipt.personalCardId = nil
+        receipt.personalVariant = nil
+    end
+    if type(receipt.personalPending) == "string" then
+        receipt.personalPending = nil
+        receipt.personalVariant = nil
+        changed = true
+    end
+    if not receipt.key and not receipt.personalCardId and not receipt.personalPending then
+        g.automations[guid] = nil
+    end
+    return changed
+end
+
+--- Reverse Function Call + personal condition receipts without requiring the card to stay in a slot.
+--- Used when discarding a card that already ran Automate / auto-apply.
+function A.reverseApplied(g, guid)
+    local c = g.cards[guid]
+    local receipt = g.automations and g.automations[guid]
+    if not receipt then return false end
+    local key = c and keyFor(c.index) or receipt.key
+    local handler = key and entries[key]
+    if receipt.key and handler then
+        assert(receipt.key == key and type(receipt.value) == "table", "Invalid Complication automation receipt for " .. tostring(key))
+        handler.reverse(g, guid, receipt.value)
+    end
+    local color = g.target and g.target.color
+    if personal and type(receipt.personalCardId) == "string" and receipt.personalCardId ~= "" and color then
+        local err = personal.remove(color, receipt.personalCardId)
+        if err then
+            require("lib.util").AlertGM("Complications: could not remove personal condition (" .. tostring(err) .. ")")
+        end
+    end
+    g.automations[guid] = nil
+    return true
+end
+
 --- After enhance / unenhance, swap the personal card to the matching variant when one was applied.
+--- Dashboard Prompt cards re-open the Conditions form instead of silently swapping.
 function A.syncEnhancedPersonal(g, guid)
     local c = g.cards[guid]
     local receipt = g.automations and g.automations[guid]
-    if not c or not receipt or not personal or type(receipt.personalCardId) ~= "string" then return end
+    if not c or not receipt or not personal then return end
     local color = g.target and g.target.color
     if not color or not conditionFor(c.index) then return end
+    local hasApplied = type(receipt.personalCardId) == "string" and receipt.personalCardId ~= ""
+    local hasPending = type(receipt.personalPending) == "string" and receipt.personalPending ~= ""
+    if not hasApplied and not hasPending then return end
     local want = c.enhanced and "enhanced" or "base"
-    if receipt.personalVariant == want then return end
+    if receipt.personalVariant == want and hasApplied and not hasPending then return end
+    local def = Catalog[c.index]
+    if def and def.dashboardPrompt == true then
+        if hasApplied then
+            local err = personal.remove(color, receipt.personalCardId)
+            if err then
+                require("lib.util").AlertGM("Complications: " .. tostring(err))
+                return
+            end
+            receipt.personalCardId = nil
+        end
+        local correlationId = newCorrelation()
+        local err = personal.prompt(color, c.index, c.enhanced == true, correlationId, guid)
+        if err then
+            require("lib.util").AlertGM("Complications: " .. tostring(err))
+            return
+        end
+        receipt.personalPending = correlationId
+        receipt.personalVariant = want
+        g.automations[guid] = receipt
+        return
+    end
+    if not hasApplied then return end
     local id, err = personal.swap(color, c.index, receipt.personalCardId, c.enhanced == true)
     if err then
         require("lib.util").AlertGM("Complications: " .. tostring(err))
         return
     end
     receipt.personalCardId = id
+    receipt.personalPending = nil
     receipt.personalVariant = want
 end
 

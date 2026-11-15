@@ -31,5 +31,7 @@ As above, except applied when the Complication is Enhanced. When a Complication 
 ### `Dashboard Prompt`
 When `TRUE`, clicking Automate opens the Conditions popup on the Storyteller Dashboard with all values filled in. The ST may edit before confirming; the condition is applied only on confirm. If `FALSE`, Automate applies the condition immediately with no Dashboard prompt. (Use the `<@DASHBOARD@>` live push channel — never `sendExternalMessage`.)
 
+When `TRUE` and the Storyteller later toggles Enhance / Unenhance on a card that already has an applied or pending personal condition, remove the prior card (if any) and open the Dashboard Conditions popup again for the new variant — same prefill path as Automate. When `FALSE`, Enhance / Unenhance still silent-swaps the personal card.
+
 ## Changes to the Automate Button
 The Automate button that appears when control is passed to the Storyteller should be _hidden_ whenever there is no automation to apply (i.e. no custom condition data and no function calls). Its appearance is meant to indicate to the Storyteller that there is automation to perform, so it shouldn't be visible at all times.

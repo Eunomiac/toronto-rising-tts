@@ -31,6 +31,22 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-785 — Complications pins: enhance re-prompt, leading minus, discard/negate clears conditions
+
+> **Agent-assessment note:** Import unit tests cover minus normalization. Enhance / discard / negate need Save & Play on a live Complications board.
+
+**How to verify:** Save & Play. Start a Complications game for a seated PC.
+
+1. Flip or Automate a **Dashboard Prompt** card (for example Mental Block or Heavy Lies the Crown). Confirm the condition on the Storyteller Dashboard. Then click **Enhance** on that card — the Dashboard Conditions form should open again with the enhanced text, and the old condition should leave the sheet until you confirm. Un-enhance should prompt for the base text the same way.
+2. Flip a no-pause card whose condition starts with a minus (for example Obsessed). On character sheet page 2, the description should still begin with **-2** (not `2 to all Social rolls`).
+3. After a condition is on the sheet, **Negate** that card — the personal condition should disappear from the sheet. Discard another card that applied a condition — that condition should clear too.
+
+#### 🟡 TOR-786 — Site hub overview fills screen height while held
+
+> **Agent-assessment note:** Defaults and embedded Global XmlUI updated in tooling. Hold presentation needs Save & Play (and Refresh UI if the HUD was already mounted).
+
+**How to verify:** Save & Play (or Refresh UI after load). Put the table at a hub site such as Casa Loma Great Hall. Hover the lower-left location icon for District + Site cards, then click and hold — the hub overview should fill the height of the screen. Release to return to the cards.
+
 #### 🟡 TOR-784 — Location icon hold shows site hub overview
 
 > **Agent-assessment note:** Cloud push and Custom UI registration succeeded in tooling. Hover/hold presentation and hub art look need Save & Play in TTS.

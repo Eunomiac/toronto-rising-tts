@@ -32,6 +32,8 @@ test('parses Requires Pause, Dashboard Prompt and condition fields', () => {
   assert.equal(cards[0].dashboardPrompt, false);
   assert.equal(cards[0].condition.style, 'general');
   assert.equal(cards[0].condition.color, 'red');
+  assert.equal(cards[0].condition.baseDescription, '-1 Humanity');
+  assert.equal(cards[0].condition.enhancedDescription, '-2 Humanity');
   assert.deepEqual(cards[0].condition.baseDuration, { kind: 'EndOfSession', offset: 2 });
   assert.match(render(cards), /requiresPause = false/);
   assert.match(render(cards), /condition = \{/);

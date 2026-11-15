@@ -777,7 +777,16 @@ function D.button(player,value,id)
             Model.queue(g,{kind='personalSync',guid=g.selected})
         end
     elseif id=='button_Negate' and c and c.zone=='slot' then
-        if right then Model.discard(g) else c.negated=not c.negated end
+        if right then
+            -- Discard clears Function Call + personal-condition effects this card applied.
+            Automations.reverseApplied(g, g.selected)
+            Model.discard(g)
+        else
+            local nextNegated = not c.negated
+            c.negated = nextNegated
+            -- Negate clears personal sheet conditions the card created; Function Calls stay (manual Adjust).
+            if nextNegated then Automations.clearPersonal(g, g.selected) end
+        end
     elseif id=='button_Adjust' then g.adjust=g.adjust+(right and -1 or 1)
     elseif id=='button_Automate' and c then Automations.run(g,g.selected,right and true or nil)
     elseif id=='button_ToggleCategoryDiscard' and not right then Model.toggleCategories(g) end

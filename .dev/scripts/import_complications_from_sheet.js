@@ -52,8 +52,9 @@ function parseCondition(read, r, name, columns) {
     subtitle: String(read(r, 'Condition Subtitle') || '').trim(),
     style: parseStyle(read(r, 'Condition Style'), name),
     color: parseColor(read(r, 'Condition Color'), name),
-    baseDescription: String(read(r, 'Condition Base Description') || '').trim(),
-    enhancedDescription: String(read(r, 'Condition Enhanced Description') || '').trim(),
+    // Sheets often emit U+2212; store ASCII hyphen so sheet fonts and XmlUI show the minus.
+    baseDescription: String(read(r, 'Condition Base Description') || '').trim().replace(/\u2212/g, '-'),
+    enhancedDescription: String(read(r, 'Condition Enhanced Description') || '').trim().replace(/\u2212/g, '-'),
     baseDuration: parseDuration(read(r, 'Condition Base Duration'), 'Condition Base Duration', name),
     enhancedDuration: parseDuration(read(r, 'Condition Enhanced Duration'), 'Condition Enhanced Duration', name),
   };

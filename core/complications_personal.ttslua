@@ -48,6 +48,10 @@ function P.buildFields(index, enhanced)
   end
   local duration = enhanced and condition.enhancedDuration or condition.baseDuration
   local description = enhanced and condition.enhancedDescription or condition.baseDescription
+  -- Prefer ASCII hyphen so sheet fonts and the Dashboard show the leading minus reliably.
+  if type(description) == "string" then
+    description = description:gsub("\226\136\146", "-")
+  end
   local dur, durErr = durationFields(duration)
   if dur == nil then
     return nil, durErr

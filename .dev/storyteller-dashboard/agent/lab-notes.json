@@ -1,34 +1,3 @@
 {
-  "notes": [
-    {
-      "id": 1,
-      "sketch": "scenes",
-      "x": 1371,
-      "y": 364,
-      "text": "In the Deck of Complications game, when a card is Enhanced and it has Dashboard Prompt TRUE, the Storyteller should be sent a Dashboard Prompt again -- just as they were when the card was automated in its unenhanced state.",
-      "status": "open",
-      "createdAt": "2026-11-15T18:42:38.031Z",
-      "updatedAt": "2026-11-15T18:42:38.031Z"
-    },
-    {
-      "id": 2,
-      "sketch": "scenes",
-      "x": 1449,
-      "y": 370,
-      "text": "For some reason, when an automatic custom condition is applied from a Complication flip, if it starts with a minus sign, the minus sign is omitted from the text (e.g. \"-2 to  all Social rolls\" becomes \"2 to all Social rolls\"",
-      "status": "open",
-      "createdAt": "2026-11-15T18:43:59.544Z",
-      "updatedAt": "2026-11-15T18:43:59.544Z"
-    },
-    {
-      "id": 3,
-      "sketch": "scenes",
-      "x": 1511,
-      "y": 354,
-      "text": "When a complication card is DISCARDED or NEGATED, all Conditions it created must be cleared from the player.",
-      "status": "open",
-      "createdAt": "2026-11-15T18:45:22.354Z",
-      "updatedAt": "2026-11-15T18:45:22.354Z"
-    }
-  ]
+  "notes": []
 }

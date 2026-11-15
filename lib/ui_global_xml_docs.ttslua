@@ -838,13 +838,15 @@ M.full = [=[
 
 
   <!-- Per-seat lower-left location card popout (see `ui/.templates/panel_overlay_location.xml`). Hover lives on `popout_locationPanel_<Color>` only; root does not raycast. -->
-  <Panel class="playerHud_overlay_location" height="800" width="1000" rectAlignment="LowerLeft" offsetXY="0 0" raycastTarget="false" />
+  <!-- Tall enough that a held site-hub overview can fill the screen height. -->
+  <Panel class="playerHud_overlay_location" height="1080" width="1600" rectAlignment="LowerLeft" offsetXY="0 0" raycastTarget="false" />
 
   <Image class="popoutControl_location" raycastTarget="true" rectAlignment="LowerLeft" height="100" width="100" color="rgba(1, 1, 1, 1)" />
 
   <Image class="gameStateOverlay_district" rectAlignment="UpperLeft" width="800" offsetXY="0 0" active="false" />
   <Image class="gameStateOverlay_site" rectAlignment="LowerLeft" width="800" offsetXY="300 0" active="false" />
-  <Image class="gameStateOverlay_siteHub" rectAlignment="MiddleLeft" width="1000" offsetXY="50 0" active="false" preserveAspect="true" raycastTarget="false" />
+  <!-- Held hub overview: full screen height; width follows aspect ratio. -->
+  <Image class="gameStateOverlay_siteHub" rectAlignment="MiddleLeft" height="1080" offsetXY="50 0" active="false" preserveAspect="true" raycastTarget="false" />
 
   <!-- Destination District/Site cards over scene-transition blindfolds (TOR-425). Tune animationDelay on these classes to stagger vs blindfold slide. -->
   <Image class="player_overlay_district_card_display"
