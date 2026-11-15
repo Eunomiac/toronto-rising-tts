@@ -32,6 +32,10 @@ local HUDP = {}
 -- While this is set, Update will override the visible reference panel.
 local tempHoldRefByPlayerID = {}
 
+-- Seat color -> true while the location icon is hovered / held for site-hub overview.
+local locationDockHoverBySeatColor = {}
+local locationHubHoldBySeatColor = {}
+
 --- Clear click-and-hold reference state that cannot survive a connection, cover transition, or
 --- full XmlUI remount. With no seat, clears every player; otherwise clears only that seat.
 --- @param seatColor string|nil
@@ -41,9 +45,13 @@ function HUDP.clearTemporaryReferenceHolds(seatColor)
         if type(pid) == "string" and pid ~= "" then
             tempHoldRefByPlayerID[pid] = nil
         end
+        locationDockHoverBySeatColor[seatColor] = nil
+        locationHubHoldBySeatColor[seatColor] = nil
         return
     end
     tempHoldRefByPlayerID = {}
+    locationDockHoverBySeatColor = {}
+    locationHubHoldBySeatColor = {}
 end
 
 -- PlayerID -> currently hovered right-sidebar base button id (overlay is id.."_hover")
@@ -1040,14 +1048,54 @@ local function applyLocationDockCachedBool(elementID, desired, applyFn)
     lastLocationDockUiCache[elementID] = desired
 end
 
---- Per-seat location popout: one district + one site Image mirror `sessionScene` (TOR-444 stack collapse).
+--- Live session site key for location-dock art (district / site / hub).
+--- @return string trimmed siteKey, or ""
+local function resolveLocationDockSiteKey()
+    return trimHudKey(S.getStateVal("sessionScene", "siteKey"))
+end
+
+--- @param seatColor string
+--- @return string|nil `siteHub_<stem>` when the live site is in a known hub
+local function resolveLocationDockHubImageRef(seatColor)
+    if type(seatColor) ~= "string" then
+        return nil
+    end
+    local sessionS = resolveLocationDockSiteKey()
+    if sessionS == "" then
+        return nil
+    end
+    if type(C.resolveSiteHubImageRefForSiteKey) ~= "function" then
+        return nil
+    end
+    return C.resolveSiteHubImageRefForSiteKey(sessionS)
+end
+
+--- Per-seat location popout: district + site cards on hover; site hub overview while held (hub sites only).
 -- @param seatColor string HUD owner seat
 local function reconcileLocationDockCardsFromState(seatColor)
     if type(seatColor) ~= "string" then
         return
     end
-    local sessionD = trimHudKey(S.getStateVal("sessionScene", "districtKey"))
     local dockDistrictId = "gameStateOverlay_districtCard_current_" .. seatColor
+    local dockSiteId = "gameStateOverlay_siteCard_current_" .. seatColor
+    local dockHubId = "gameStateOverlay_siteHub_current_" .. seatColor
+    local hubRef = resolveLocationDockHubImageRef(seatColor)
+    local showHub = locationHubHoldBySeatColor[seatColor] == true and type(hubRef) == "string"
+
+    if showHub then
+        applySiteCardImageIfChanged(dockDistrictId, nil)
+        applyLocationDockCachedBool(dockDistrictId, false, setMapStackImageVisibility)
+        applySiteCardImageIfChanged(dockSiteId, nil)
+        applyLocationDockCachedBool(dockSiteId, false, setMapStackImageVisibility)
+        applySiteCardImageIfChanged(dockHubId, hubRef)
+        applyLocationDockCachedBool(dockHubId, true, setMapStackImageVisibility)
+        return
+    end
+
+    applySiteCardImageIfChanged(dockHubId, nil)
+    applyLocationDockCachedBool(dockHubId, false, setMapStackImageVisibility)
+
+    local sessionD = trimHudKey(S.getStateVal("sessionScene", "districtKey"))
     if sessionD == "" or MAP_DISTRICT_KEY_SET[sessionD] ~= true then
         applySiteCardImageIfChanged(dockDistrictId, nil)
         applyLocationDockCachedBool(dockDistrictId, false, setMapStackImageVisibility)
@@ -1055,8 +1103,7 @@ local function reconcileLocationDockCardsFromState(seatColor)
         applySiteCardImageIfChanged(dockDistrictId, "districtCard_" .. sessionD)
         applyLocationDockCachedBool(dockDistrictId, true, setMapStackImageVisibility)
     end
-    local sessionS = trimHudKey(S.getStateVal("sessionScene", "siteKey"))
-    local dockSiteId = "gameStateOverlay_siteCard_current_" .. seatColor
+    local sessionS = resolveLocationDockSiteKey()
     local dockRef = (sessionS ~= "") and resolveSiteCardImageRefForSiteKey(sessionS) or nil
     if type(dockRef) ~= "string" then
         applySiteCardImageIfChanged(dockSiteId, nil)
@@ -2097,23 +2144,60 @@ local function parseSeatColorFromPopoutLocationPanelId(id)
     return col
 end
 
---- Per-seat lower-left location popout: hover shows `gameStateOverlay_locationPanel_<Color>`.
+--- Per-seat lower-left location popout: hover shows district + site cards.
+--- Hold shows the site hub overview when the live site belongs to a hub; otherwise hold is a no-op.
 --- Popout stays full-alpha always (blocks TTS chrome the author wants blocked).
 function HUD_locationOverlay_hoverOn(player, value, id)
     local seat = parseSeatColorFromPopoutLocationPanelId(id)
     if seat == nil then
         return
     end
+    locationDockHoverBySeatColor[seat] = true
     setActive("gameStateOverlay_locationPanel_" .. seat, true)
+    reconcileLocationDockCardsFromState(seat)
 end
 
---- Mouse left the popout: collapse the district/site panel.
+--- Mouse left the popout: clear hold and collapse the location panel.
 function HUD_locationOverlay_hoverOff(player, value, id)
     local seat = parseSeatColorFromPopoutLocationPanelId(id)
     if seat == nil then
         return
     end
+    locationDockHoverBySeatColor[seat] = nil
+    locationHubHoldBySeatColor[seat] = nil
     setActive("gameStateOverlay_locationPanel_" .. seat, false)
+    reconcileLocationDockCardsFromState(seat)
+end
+
+--- Mouse down on the location icon: hub sites swap the dock to the hub overview while held.
+function HUD_locationOverlay_mouseDown(player, value, id)
+    local seat = parseSeatColorFromPopoutLocationPanelId(id)
+    if seat == nil then
+        return
+    end
+    local hubRef = resolveLocationDockHubImageRef(seat)
+    if type(hubRef) ~= "string" then
+        return
+    end
+    locationHubHoldBySeatColor[seat] = true
+    setActive("gameStateOverlay_locationPanel_" .. seat, true)
+    reconcileLocationDockCardsFromState(seat)
+end
+
+--- Mouse up on the location icon: leave hub overview; restore cards if still hovered.
+function HUD_locationOverlay_mouseUp(player, value, id)
+    local seat = parseSeatColorFromPopoutLocationPanelId(id)
+    if seat == nil then
+        return
+    end
+    locationHubHoldBySeatColor[seat] = nil
+    if locationDockHoverBySeatColor[seat] == true then
+        setActive("gameStateOverlay_locationPanel_" .. seat, true)
+        reconcileLocationDockCardsFromState(seat)
+        return
+    end
+    setActive("gameStateOverlay_locationPanel_" .. seat, false)
+    reconcileLocationDockCardsFromState(seat)
 end
 
 --- Hover on: tint the sidebar base button (TOR-444; no _hover sibling Image).

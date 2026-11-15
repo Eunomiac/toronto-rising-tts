@@ -437,6 +437,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## UI Panels
 
+- [x] **Location icon hold shows site hub overview:** District cards live under `assets/Districts`; site hub art under `assets/Site Hubs` is synced to Global Custom UI. Hover still shows District + Site cards; click-and-hold on a hub site shows the hub image. Pending Save & Play. _(TOR-784)_
 - [x] **Storyteller Refresh UI performs a complete Global UI rewrite:** The debug-toolbar button now uses the same full remount and post-mount reconciliation path as staged onboarding, so it can clear stale client overlays. Pending Save & Play. _(TOR-757)_
 - [x] **Later Downtime shows the session title on the location line:** Prologue and Epilogue keep the spaced gold title on the date line. Every other Downtime keeps the date and the word DOWNTIME, and writes that same spaced title (uppercase, one space between letters, three spaces between words, gold, bold italic, location-line size) into the district/site gap. Style is `setClass` only. Pending Save & Play. _(TOR-744)_
 

@@ -3277,6 +3277,50 @@ end
 
 C.Sites = LocationsCatalog.Sites
 
+--- Site hub overview art (`siteHub_<stem>` Global Custom UI). Keyed by the parent name before
+--- the first ":" in `C.Sites[*].name` (same string as the sheet Subtitle for hub sites).
+--- Sites without a matching parent are not in a hub; the location dock hold does nothing.
+C.SiteHubByParentName = {
+  ["Casa Loma"] = "CasaLoma",
+  ["Royal Ontario Museum"] = "ROM",
+  ["The Giovanni Estate"] = "GiovanniEstate",
+  ["The Nosferatu Warrens"] = "Warrens",
+  ["The St. Regis Toronto"] = "StRegis",
+  ["The University Chantry"] = "UniversityChantry",
+  ["Union Station"] = "UnionStation",
+}
+
+--- @param siteKey string|nil
+--- @return string|nil Custom UI image ref `siteHub_<stem>`, or nil when the site is not in a hub
+function C.resolveSiteHubImageRefForSiteKey(siteKey)
+  if type(siteKey) ~= "string" then
+    return nil
+  end
+  siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
+  if siteKey == "" then
+    return nil
+  end
+  local site = C.Sites[siteKey]
+  if type(site) ~= "table" or type(site.name) ~= "string" then
+    return nil
+  end
+  local raw = string.gsub(string.gsub(site.name, "^%s+", ""), "%s+$", "")
+  local colonAt = string.find(raw, ":", 1, true)
+  if colonAt == nil then
+    return nil
+  end
+  local parent = string.gsub(string.gsub(string.sub(raw, 1, colonAt - 1), "^%s+", ""), "%s+$", "")
+  local child = string.gsub(string.gsub(string.sub(raw, colonAt + 1), "^%s+", ""), "%s+$", "")
+  if parent == "" or child == "" then
+    return nil
+  end
+  local stem = C.SiteHubByParentName[parent]
+  if type(stem) ~= "string" or stem == "" then
+    return nil
+  end
+  return "siteHub_" .. stem
+end
+
 -- #endregion
 
 -- #region Weather

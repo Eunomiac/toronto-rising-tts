@@ -1482,259 +1482,314 @@
     },
     "districtCards": {
       "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map/District Cards",
+      "folder": "Districts",
       "rows": [
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Annex.webp",
+          "path": "Districts/districtCard_Annex.webp",
           "name": "districtCard_Annex",
           "sha1": "26358D1E6FB7FF337B1C4D3D24ABB3F84A09F3BB",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/17019747795975254721/26358D1E6FB7FF337B1C4D3D24ABB3F84A09F3BB/",
           "size": 488826
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_BayStFinancial.webp",
+          "path": "Districts/districtCard_BayStFinancial.webp",
           "name": "districtCard_BayStFinancial",
           "sha1": "6EE8665735F38B47E3B25CD0F773A7E103ACAE1F",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15839068336153808260/6EE8665735F38B47E3B25CD0F773A7E103ACAE1F/",
           "size": 412722
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Bennington.webp",
+          "path": "Districts/districtCard_Bennington.webp",
           "name": "districtCard_Bennington",
           "sha1": "CB1B32E23BD43098254B7543B59FF5AE74D85F68",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15819036476086080994/CB1B32E23BD43098254B7543B59FF5AE74D85F68/",
           "size": 453038
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Cabbagetown.webp",
+          "path": "Districts/districtCard_Cabbagetown.webp",
           "name": "districtCard_Cabbagetown",
           "sha1": "34DA594B386601160357C6B58F1B7D81C1A81001",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/14599298465421057089/34DA594B386601160357C6B58F1B7D81C1A81001/",
           "size": 359942
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_CentreIsland.webp",
+          "path": "Districts/districtCard_CentreIsland.webp",
           "name": "districtCard_CentreIsland",
           "sha1": "801266E2008EED1D1B42CBD8EBDAE78CEF08AC23",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/17889007121969795304/801266E2008EED1D1B42CBD8EBDAE78CEF08AC23/",
           "size": 297542
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Chinatown.webp",
+          "path": "Districts/districtCard_Chinatown.webp",
           "name": "districtCard_Chinatown",
           "sha1": "8AEF76F5614A063F08C4D5AC3466F3D21C779176",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/13015053628963752394/8AEF76F5614A063F08C4D5AC3466F3D21C779176/",
           "size": 333900
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Corktown.webp",
+          "path": "Districts/districtCard_Corktown.webp",
           "name": "districtCard_Corktown",
           "sha1": "C590A579D5496367D154A94687DE80D0FA7DD244",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/10814408737134328050/C590A579D5496367D154A94687DE80D0FA7DD244/",
           "size": 335700
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Danforth.webp",
+          "path": "Districts/districtCard_Danforth.webp",
           "name": "districtCard_Danforth",
           "sha1": "183A239C3D3778F5E3A9F57FA69E1ACB87E921D3",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15315521084148312739/183A239C3D3778F5E3A9F57FA69E1ACB87E921D3/",
           "size": 357854
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_DeerPark.webp",
+          "path": "Districts/districtCard_DeerPark.webp",
           "name": "districtCard_DeerPark",
           "sha1": "0A3C7BCAC5E57554948DC698E41161DB3B29CCC7",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/9858836421800571676/0A3C7BCAC5E57554948DC698E41161DB3B29CCC7/",
           "size": 356290
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Discovery.webp",
+          "path": "Districts/districtCard_Discovery.webp",
           "name": "districtCard_Discovery",
           "sha1": "EC2A122A2936A7F0259725BC1F5C0C5ED1DD4FD5",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/12575940104441280646/EC2A122A2936A7F0259725BC1F5C0C5ED1DD4FD5/",
           "size": 349070
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_DistilleryDist.webp",
+          "path": "Districts/districtCard_DistilleryDist.webp",
           "name": "districtCard_DistilleryDist",
           "sha1": "8C7F9C2C4E1D993DAE5ACC7C140446B314897CB5",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/12341220515379991524/8C7F9C2C4E1D993DAE5ACC7C140446B314897CB5/",
           "size": 333916
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_DonRavine.webp",
+          "path": "Districts/districtCard_DonRavine.webp",
           "name": "districtCard_DonRavine",
           "sha1": "345A6AE4B8F4DD61792D17B8E995E6ABF0A97F04",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15576936769137607754/345A6AE4B8F4DD61792D17B8E995E6ABF0A97F04/",
           "size": 360590
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_DupontByTheCastle.webp",
+          "path": "Districts/districtCard_DupontByTheCastle.webp",
           "name": "districtCard_DupontByTheCastle",
           "sha1": "2D53117DF65A4BB7D9B3542A7682B08C5D16036B",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/18201126675463741822/2D53117DF65A4BB7D9B3542A7682B08C5D16036B/",
           "size": 315928
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_GayVillage.webp",
+          "path": "Districts/districtCard_GayVillage.webp",
           "name": "districtCard_GayVillage",
           "sha1": "67C2D1AE2C22B653C8BA060E47721E53ADC55A75",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/17769561107813258701/67C2D1AE2C22B653C8BA060E47721E53ADC55A75/",
           "size": 335842
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_HarbordVillage.webp",
+          "path": "Districts/districtCard_HarbordVillage.webp",
           "name": "districtCard_HarbordVillage",
           "sha1": "59E0FE9BCCA95387C33C1BC4D1A7494852725E88",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/14197642393287433736/59E0FE9BCCA95387C33C1BC4D1A7494852725E88/",
           "size": 297114
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Humewood.webp",
+          "path": "Districts/districtCard_Humewood.webp",
           "name": "districtCard_Humewood",
           "sha1": "78BF9F4E0C59CD8CBDF8C644D8DB4EDAEBF1074C",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15444614701592061331/78BF9F4E0C59CD8CBDF8C644D8DB4EDAEBF1074C/",
           "size": 444426
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_LakeOntario.webp",
+          "path": "Districts/districtCard_LakeOntario.webp",
           "name": "districtCard_LakeOntario",
           "sha1": "9A83A5E0B0028E77709C2ED4A9EEE464F1FBD32B",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15628821076799797475/9A83A5E0B0028E77709C2ED4A9EEE464F1FBD32B/",
           "size": 271986
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_LibertyVillage.webp",
+          "path": "Districts/districtCard_LibertyVillage.webp",
           "name": "districtCard_LibertyVillage",
           "sha1": "F036055B293131A1EB1D28E35790CFBB314C52D9",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15262445608801709249/F036055B293131A1EB1D28E35790CFBB314C52D9/",
           "size": 315800
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_LittleItaly.webp",
+          "path": "Districts/districtCard_LittleItaly.webp",
           "name": "districtCard_LittleItaly",
           "sha1": "CDD0D6D6CAB93941BA139338DA108A6A2F25524B",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/11936706051746097552/CDD0D6D6CAB93941BA139338DA108A6A2F25524B/",
           "size": 329574
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_LittlePortugal.webp",
+          "path": "Districts/districtCard_LittlePortugal.webp",
           "name": "districtCard_LittlePortugal",
           "sha1": "AA35607C464C3E4103D04FC6F259338F9390988B",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/11591034034208291641/AA35607C464C3E4103D04FC6F259338F9390988B/",
           "size": 347080
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_PATH.webp",
+          "path": "Districts/districtCard_PATH.webp",
           "name": "districtCard_PATH",
           "sha1": "FE0B8799A08BC7FDE4B10029AD7209D73787294F",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/13169766720159328068/FE0B8799A08BC7FDE4B10029AD7209D73787294F/",
           "size": 383456
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_RegentPark.webp",
+          "path": "Districts/districtCard_RegentPark.webp",
           "name": "districtCard_RegentPark",
           "sha1": "65E9417D1AF54BBA195D057678EB49DF73F52B83",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/16550499143496994947/65E9417D1AF54BBA195D057678EB49DF73F52B83/",
           "size": 338190
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Riverdale.webp",
+          "path": "Districts/districtCard_Riverdale.webp",
           "name": "districtCard_Riverdale",
           "sha1": "562DBDF85A251942753574ACC9F9FE9D131E1463",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/11176520443841884291/562DBDF85A251942753574ACC9F9FE9D131E1463/",
           "size": 391806
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Rosedale.webp",
+          "path": "Districts/districtCard_Rosedale.webp",
           "name": "districtCard_Rosedale",
           "sha1": "AE9DA871A6FCFA50456DE3965590A50A36B21CE7",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/10559922493536704021/AE9DA871A6FCFA50456DE3965590A50A36B21CE7/",
           "size": 384330
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Sewers.webp",
+          "path": "Districts/districtCard_Sewers.webp",
           "name": "districtCard_Sewers",
           "sha1": "A2E8381238C2426E5833285C913D8CD713DD813D",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/10015637455150908803/A2E8381238C2426E5833285C913D8CD713DD813D/",
           "size": 304986
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_StJamesTown.webp",
+          "path": "Districts/districtCard_StJamesTown.webp",
           "name": "districtCard_StJamesTown",
           "sha1": "238C1B5AB556AB58B92E50119809710665E8064E",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/10453574464383803003/238C1B5AB556AB58B92E50119809710665E8064E/",
           "size": 348466
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Streets.webp",
+          "path": "Districts/districtCard_Streets.webp",
           "name": "districtCard_Streets",
           "sha1": "09BACF401164C2BDF73B65CE0E7E7BADB77F083C",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/13128450211632907628/09BACF401164C2BDF73B65CE0E7E7BADB77F083C/",
           "size": 264120
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Subway.webp",
+          "path": "Districts/districtCard_Subway.webp",
           "name": "districtCard_Subway",
           "sha1": "6FECDFE1275B50B53B2613CF4377DB57CF691987",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/15976314279505817383/6FECDFE1275B50B53B2613CF4377DB57CF691987/",
           "size": 305642
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Summerhill.webp",
+          "path": "Districts/districtCard_Summerhill.webp",
           "name": "districtCard_Summerhill",
           "sha1": "D60B281026028105D88911A249CFCD33EA6C6046",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/16580989249249332134/D60B281026028105D88911A249CFCD33EA6C6046/",
           "size": 408864
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Waterfront.webp",
+          "path": "Districts/districtCard_Waterfront.webp",
           "name": "districtCard_Waterfront",
           "sha1": "0002856A893CFF4079E976E2494DFF738B481D94",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/10760457227159094552/0002856A893CFF4079E976E2494DFF738B481D94/",
           "size": 430650
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_WestQueenWest.webp",
+          "path": "Districts/districtCard_WestQueenWest.webp",
           "name": "districtCard_WestQueenWest",
           "sha1": "74F089A4497882A354045351D3E100A54FD5DA09",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/12550746492905201466/74F089A4497882A354045351D3E100A54FD5DA09/",
           "size": 335926
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Wychwood.webp",
+          "path": "Districts/districtCard_Wychwood.webp",
           "name": "districtCard_Wychwood",
           "sha1": "39E1D9CCB139028EB63FE0BA91E0449E610C2B23",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/17603270955010774663/39E1D9CCB139028EB63FE0BA91E0449E610C2B23/",
           "size": 296074
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_YongeBloorMuseum.webp",
+          "path": "Districts/districtCard_YongeBloorMuseum.webp",
           "name": "districtCard_YongeBloorMuseum",
           "sha1": "2230E3E78D39B89D89CB8C37A619690B1DC91E91",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/9374219498990671970/2230E3E78D39B89D89CB8C37A619690B1DC91E91/",
           "size": 347052
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_YongeDundasHospital.webp",
+          "path": "Districts/districtCard_YongeDundasHospital.webp",
           "name": "districtCard_YongeDundasHospital",
           "sha1": "B579DCA1BD9BBA4F446B562C2516745F23E200B6",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/16469875627557584449/B579DCA1BD9BBA4F446B562C2516745F23E200B6/",
           "size": 337492
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_YongeStreet.webp",
+          "path": "Districts/districtCard_YongeStreet.webp",
           "name": "districtCard_YongeStreet",
           "sha1": "0D281D78F0D942DE4FB95DE0670B43B07352360A",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/12851845860706735068/0D281D78F0D942DE4FB95DE0670B43B07352360A/",
           "size": 350290
         },
         {
-          "path": "HUD/CorePanel_Map/District Cards/districtCard_Yorkville.webp",
+          "path": "Districts/districtCard_Yorkville.webp",
           "name": "districtCard_Yorkville",
           "sha1": "F5E52737A0EACBE8EB264B3CC92AB655ACE41DA0",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/12269912579654128473/F5E52737A0EACBE8EB264B3CC92AB655ACE41DA0/",
           "size": 381942
+        }
+      ]
+    },
+    "siteHubs": {
+      "output": "GlobalCustomUIAssets",
+      "folder": "Site Hubs",
+      "rows": [
+        {
+          "path": "Site Hubs/siteHub_CasaLoma.webp",
+          "name": "siteHub_CasaLoma",
+          "sha1": "312A61B82BF4585998BC4368EB584F3ECACA75C7",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11454893957897722695/312A61B82BF4585998BC4368EB584F3ECACA75C7/",
+          "size": 1283362
+        },
+        {
+          "path": "Site Hubs/siteHub_GiovanniEstate.webp",
+          "name": "siteHub_GiovanniEstate",
+          "sha1": "64C4E3C25854B513A39A3697342C66DA7340E467",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17941471477306778172/64C4E3C25854B513A39A3697342C66DA7340E467/",
+          "size": 642790
+        },
+        {
+          "path": "Site Hubs/siteHub_ROM.webp",
+          "name": "siteHub_ROM",
+          "sha1": "6132FDA98191A44FF7332E9F8B131F986D7BE898",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13830110007729780446/6132FDA98191A44FF7332E9F8B131F986D7BE898/",
+          "size": 747742
+        },
+        {
+          "path": "Site Hubs/siteHub_StRegis.webp",
+          "name": "siteHub_StRegis",
+          "sha1": "59CD288B5C293B45F6C96E3914B96AB10D445C92",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14441628080720257556/59CD288B5C293B45F6C96E3914B96AB10D445C92/",
+          "size": 699816
+        },
+        {
+          "path": "Site Hubs/siteHub_UnionStation.webp",
+          "name": "siteHub_UnionStation",
+          "sha1": "83BF7496E454343CB86F60F0DE74F65F1DEBC398",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17761306496605648872/83BF7496E454343CB86F60F0DE74F65F1DEBC398/",
+          "size": 844202
+        },
+        {
+          "path": "Site Hubs/siteHub_UniversityChantry.webp",
+          "name": "siteHub_UniversityChantry",
+          "sha1": "8AB108D18191E3A2517801A6ABFD8FF6A1C3D5B4",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12792936692257141451/8AB108D18191E3A2517801A6ABFD8FF6A1C3D5B4/",
+          "size": 670910
+        },
+        {
+          "path": "Site Hubs/siteHub_Warrens.webp",
+          "name": "siteHub_Warrens",
+          "sha1": "73BD41448B8173320BC894C69FCFAAE2E2EEE301",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12788036003628810004/73BD41448B8173320BC894C69FCFAAE2E2EEE301/",
+          "size": 799036
         }
       ]
     },

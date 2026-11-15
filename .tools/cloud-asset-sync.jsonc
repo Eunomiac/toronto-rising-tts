@@ -82,10 +82,18 @@
     },
     {
       "id": "districtCards",
-      "folder": "HUD/CorePanel_Map/District Cards",
+      "folder": "Districts",
       "output": "GlobalCustomUIAssets",
       "filenameToNameSearchPattern": "^districtCard_(.*)\\.webp$",
       "filenameToNameReplacePattern": "districtCard_$1"
+    },
+    {
+      // Site hub overview art for the player location dock (hold the location icon).
+      "id": "siteHubs",
+      "folder": "Site Hubs",
+      "output": "GlobalCustomUIAssets",
+      "filenameToNameSearchPattern": "^siteHub_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "siteHub_$1"
     },
     // Global HUD art: each file is named after its CustomUIAssets row.
     { "id": "hudHunger", "folder": "HUD/Hunger", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^overlay_hunger_(.*)\\.webp$", "filenameToNameReplacePattern": "overlay_hunger_$1" },

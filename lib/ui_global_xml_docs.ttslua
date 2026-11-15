@@ -844,6 +844,7 @@ M.full = [=[
 
   <Image class="gameStateOverlay_district" rectAlignment="UpperLeft" width="800" offsetXY="0 0" active="false" />
   <Image class="gameStateOverlay_site" rectAlignment="LowerLeft" width="800" offsetXY="300 0" active="false" />
+  <Image class="gameStateOverlay_siteHub" rectAlignment="MiddleLeft" width="1000" offsetXY="50 0" active="false" preserveAspect="true" raycastTarget="false" />
 
   <!-- Destination District/Site cards over scene-transition blindfolds (TOR-425). Tune animationDelay on these classes to stagger vs blindfold slide. -->
   <Image class="player_overlay_district_card_display"
@@ -1602,7 +1603,9 @@ M.full = [=[
 
   <Image id="popout_locationPanel_Brown" class="popoutControl_location" image="popoutControl_location"
     onMouseEnter="HUD_locationOverlay_hoverOn"
-    onMouseExit="HUD_locationOverlay_hoverOff" />
+    onMouseExit="HUD_locationOverlay_hoverOff"
+    onMouseDown="HUD_locationOverlay_mouseDown"
+    onMouseUp="HUD_locationOverlay_mouseUp" />
 
   <Panel id="gameStateOverlay_locationPanel_Brown" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
@@ -1611,6 +1614,9 @@ M.full = [=[
 
     <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
     <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Brown" active="false" image="" />
+
+    <!-- Site hub overview: hold the location icon when the live site is in a hub (`siteHub_<stem>`). -->
+    <Image class="gameStateOverlay_siteHub" id="gameStateOverlay_siteHub_current_Brown" active="false" image="" />
   </Panel>
 </Panel>
 
@@ -1618,7 +1624,9 @@ M.full = [=[
 
   <Image id="popout_locationPanel_Orange" class="popoutControl_location" image="popoutControl_location"
     onMouseEnter="HUD_locationOverlay_hoverOn"
-    onMouseExit="HUD_locationOverlay_hoverOff" />
+    onMouseExit="HUD_locationOverlay_hoverOff"
+    onMouseDown="HUD_locationOverlay_mouseDown"
+    onMouseUp="HUD_locationOverlay_mouseUp" />
 
   <Panel id="gameStateOverlay_locationPanel_Orange" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
@@ -1627,6 +1635,9 @@ M.full = [=[
 
     <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
     <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Orange" active="false" image="" />
+
+    <!-- Site hub overview: hold the location icon when the live site is in a hub (`siteHub_<stem>`). -->
+    <Image class="gameStateOverlay_siteHub" id="gameStateOverlay_siteHub_current_Orange" active="false" image="" />
   </Panel>
 </Panel>
 
@@ -1634,7 +1645,9 @@ M.full = [=[
 
   <Image id="popout_locationPanel_Red" class="popoutControl_location" image="popoutControl_location"
     onMouseEnter="HUD_locationOverlay_hoverOn"
-    onMouseExit="HUD_locationOverlay_hoverOff" />
+    onMouseExit="HUD_locationOverlay_hoverOff"
+    onMouseDown="HUD_locationOverlay_mouseDown"
+    onMouseUp="HUD_locationOverlay_mouseUp" />
 
   <Panel id="gameStateOverlay_locationPanel_Red" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
@@ -1643,6 +1656,9 @@ M.full = [=[
 
     <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
     <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Red" active="false" image="" />
+
+    <!-- Site hub overview: hold the location icon when the live site is in a hub (`siteHub_<stem>`). -->
+    <Image class="gameStateOverlay_siteHub" id="gameStateOverlay_siteHub_current_Red" active="false" image="" />
   </Panel>
 </Panel>
 
@@ -1650,7 +1666,9 @@ M.full = [=[
 
   <Image id="popout_locationPanel_Pink" class="popoutControl_location" image="popoutControl_location"
     onMouseEnter="HUD_locationOverlay_hoverOn"
-    onMouseExit="HUD_locationOverlay_hoverOff" />
+    onMouseExit="HUD_locationOverlay_hoverOff"
+    onMouseDown="HUD_locationOverlay_mouseDown"
+    onMouseUp="HUD_locationOverlay_mouseUp" />
 
   <Panel id="gameStateOverlay_locationPanel_Pink" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
@@ -1659,6 +1677,9 @@ M.full = [=[
 
     <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
     <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Pink" active="false" image="" />
+
+    <!-- Site hub overview: hold the location icon when the live site is in a hub (`siteHub_<stem>`). -->
+    <Image class="gameStateOverlay_siteHub" id="gameStateOverlay_siteHub_current_Pink" active="false" image="" />
   </Panel>
 </Panel>
 
@@ -1666,7 +1687,9 @@ M.full = [=[
 
   <Image id="popout_locationPanel_Purple" class="popoutControl_location" image="popoutControl_location"
     onMouseEnter="HUD_locationOverlay_hoverOn"
-    onMouseExit="HUD_locationOverlay_hoverOff" />
+    onMouseExit="HUD_locationOverlay_hoverOff"
+    onMouseDown="HUD_locationOverlay_mouseDown"
+    onMouseUp="HUD_locationOverlay_mouseUp" />
 
   <Panel id="gameStateOverlay_locationPanel_Purple" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
@@ -1675,6 +1698,9 @@ M.full = [=[
 
     <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
     <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_Purple" active="false" image="" />
+
+    <!-- Site hub overview: hold the location icon when the live site is in a hub (`siteHub_<stem>`). -->
+    <Image class="gameStateOverlay_siteHub" id="gameStateOverlay_siteHub_current_Purple" active="false" image="" />
   </Panel>
 </Panel>
 

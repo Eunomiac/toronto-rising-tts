@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-784 — Location icon hold shows site hub overview
+
+> **Agent-assessment note:** Cloud push and Custom UI registration succeeded in tooling. Hover/hold presentation and hub art look need Save & Play in TTS.
+
+**How to verify:** Reload the save (Cloud sync rewrote it), then Save & Play. Put the table at a hub site such as Casa Loma Great Hall or Union Station Concourse. Hover the lower-left location icon — you should still see the District and Site cards. Click and hold that same icon — the cards should swap to the site hub overview image. Release — the District and Site cards should return while you stay hovered. Move to a non-hub site (for example a street or café) and hold the icon again — nothing should change; hover cards only.
+
 #### 🟡 TOR-783 — Live location change: seating ask, fork scene, keep left-behind map pins
 
 > **Agent-assessment note:** Unit tests cover fork helpers and seating carry-over. Playwright confirmed the Scenes tab loads; full relocate needs a live scene in TTS.

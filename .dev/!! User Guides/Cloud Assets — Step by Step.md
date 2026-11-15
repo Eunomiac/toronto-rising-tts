@@ -92,6 +92,9 @@ If something goes wrong, `cloud:restore-index` with the snapshot printed by the 
 | Path | What |
 | --- | --- |
 | `assets/` | Your copy of Cloud. Edit here. Not in git. |
+| `assets/Districts/` | District card art (`districtCard_*.webp`) for Global Custom UI. |
+| `assets/Site Hubs/` | Site hub overview art (`siteHub_*.webp`) for the player location dock hold. |
+| `assets/Sites/` | Site card art (`siteCard_*.webp`) for Global Custom UI. |
 | `assets/.cloud-ledger.json` | What has been synced. Do not edit. |
 | `.tools/cloud-asset-sync.jsonc` | The job list: folder, filename pattern, and where each asset's link goes. |
 | `lib/cloud_*.ttslua`, `lib/json/cloud-assets.json` | Generated link tables. Do not edit; rebuild instead. |

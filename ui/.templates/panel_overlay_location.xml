@@ -7,7 +7,9 @@
 
   <Image id="popout_locationPanel_@@color@@" class="popoutControl_location" image="popoutControl_location"
     onMouseEnter="HUD_locationOverlay_hoverOn"
-    onMouseExit="HUD_locationOverlay_hoverOff" />
+    onMouseExit="HUD_locationOverlay_hoverOff"
+    onMouseDown="HUD_locationOverlay_mouseDown"
+    onMouseUp="HUD_locationOverlay_mouseUp" />
 
   <Panel id="gameStateOverlay_locationPanel_@@color@@" class="gameStateOverlay_locationPanel" active="false" raycastTarget="false">
 
@@ -16,5 +18,8 @@
 
     <!-- Site card: default inactive + empty `image`; Lua sets `image` then activates (see `core/hud_player.ttslua`). -->
     <Image class="gameStateOverlay_site" id="gameStateOverlay_siteCard_current_@@color@@" active="false" image="" />
+
+    <!-- Site hub overview: hold the location icon when the live site is in a hub (`siteHub_<stem>`). -->
+    <Image class="gameStateOverlay_siteHub" id="gameStateOverlay_siteHub_current_@@color@@" active="false" image="" />
   </Panel>
 </Panel>
