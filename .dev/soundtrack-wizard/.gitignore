@@ -1,0 +1,17 @@
+# Local media and generated outputs (when the wizard exists)
+library/
+clips/
+approved/
+calibration/perfect/*
+calibration/approved/*
+calibration/rejects/*
+!calibration/**/.gitkeep
+
+*.csv
+*.mpcpl
+calibration_weights.json
+calibration_centroids.npz
+__pycache__/
+*.pyc
+.venv/
+venv/

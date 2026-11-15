@@ -2,6 +2,8 @@
 
 Tools for ranking soundtrack passages as quiet Toronto Rising tabletop underscore.
 
+For the **shareable friend-facing package** (yt-dlp download wizard, loudness matching, fades, no Audition), see the parked mini-project [`../soundtrack-wizard/`](../soundtrack-wizard/README.md) — design handoff in [`DESIGN.md`](../soundtrack-wizard/DESIGN.md). Do not merge this folder into that package until the author asks.
+
 ## Agent Routing
 
 Read this when:
