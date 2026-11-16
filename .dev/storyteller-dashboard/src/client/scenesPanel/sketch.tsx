@@ -20,6 +20,7 @@ import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
 import { beginDrag, endDrag } from "./dnd/session";
+import { DndUiContext } from "./dnd/uiContext";
 import { startNativeDrag } from "./dnd/native";
 import { moveInScatter, NPC_DRAG_TYPE, SEAT_DRAG_TYPE, withChanges, type ScatterMove, type StageSpot } from "./stage";
 import { stagePacks } from "./stageFrame";
@@ -715,6 +716,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
   const npcLive = useContext(NpcLiveContext);
   const rollsSend = useContext(RollsCommandContext);
   const tiers = useContext(GenericTiersContext);
+  const dndUi = useContext(DndUiContext);
   const [clearArmed, setClearArmed] = useState(false);
   const [local, setLocal] = useState<StageChanges>({});
   const [localScatter, setLocalScatter] = useState<readonly ScatterMove[]>([]);
@@ -868,6 +870,11 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     }
     const pending = characterKey in spawning;
     const generic = kind === "npc" && (pending || generics.some((npc) => npc.characterKey === characterKey));
+    // NPC stage/scatter right-click opens the same config popup as the roster — do not start a drag.
+    if (kind === "npc") {
+      dndUi?.openNpcEdit?.(characterKey);
+      return;
+    }
     if (color) {
       const seat = seats.find((row) => row.color === color);
       if (seat?.seatKey) {
@@ -878,8 +885,6 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
           command
         );
       }
-    } else {
-      beginDrag({ dragKind: "npcStaged", characterKey }, { x: event.clientX, y: event.clientY }, undefined, command);
     }
     if (generic) {
       setCharRing({

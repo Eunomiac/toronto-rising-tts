@@ -21,16 +21,6 @@
       "updatedAt": "2026-11-16T17:51:59.422Z"
     },
     {
-      "id": 8,
-      "sketch": "scenes",
-      "x": 472,
-      "y": 289,
-      "text": "Right-clicking an NPC token on the stage should not initiate the drag process, but bring up the same popup window that right-clicking a token in the NPC Roster displays.",
-      "status": "open",
-      "createdAt": "2026-11-16T17:53:08.648Z",
-      "updatedAt": "2026-11-16T17:53:08.648Z"
-    },
-    {
       "id": 9,
       "sketch": "scenes",
       "x": 516,
