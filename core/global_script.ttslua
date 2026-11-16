@@ -6922,17 +6922,22 @@ function HUD_rollRollButton(player, value, id)
         return
     end
 
+    local pid = S.getPlayerID(color)
+    local active = pid ~= nil and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
+    -- Left-click already released dice into ROLLING: a later right-click should toss them
+    -- the same way as an initial right-click (autoRollOnRelease), not re-enter startRolling.
+    if value == "-2" and type(active) == "table" and active.phase == C.RollPhase.ROLLING and type(active.id) == "string" then
+        randomizeAllRollDiceForColor(color, active.id)
+        return
+    end
+
     if value == "-2" then
-        local pid = S.getPlayerID(color)
-        if pid ~= nil then
-            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-            if type(active) == "table" then
-                if type(active.meta) ~= "table" then
-                    active.meta = {}
-                end
-                active.meta.autoRollOnRelease = true
-                S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
+        if type(active) == "table" then
+            if type(active.meta) ~= "table" then
+                active.meta = {}
             end
+            active.meta.autoRollOnRelease = true
+            S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
         end
     end
 

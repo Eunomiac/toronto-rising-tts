@@ -11,16 +11,6 @@
       "updatedAt": "2026-11-16T17:44:34.721Z"
     },
     {
-      "id": 6,
-      "sketch": "scenes",
-      "x": 675,
-      "y": 254,
-      "text": "If a player left-clicks on the button to roll their dice (resulting in the dice dropping and the game waiting for the player to roll them manually), they should be able to subsequently _right_-click on the same button, to trigger an automatic roll of all of the dice, as if they had right-clicked the button initially.",
-      "status": "open",
-      "createdAt": "2026-11-16T17:45:56.802Z",
-      "updatedAt": "2026-11-16T17:45:56.802Z"
-    },
-    {
       "id": 7,
       "sketch": "scenes",
       "x": 719,

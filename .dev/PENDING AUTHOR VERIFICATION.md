@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-792 — Right-click Roll after left-click should auto-toss sitting dice
+
+> **Agent-assessment note:** Host can confirm ROLLING + right-click calls randomize; live tray toss still needs Save & Play.
+
+**How to verify:** Save & Play. Start a PC roll, left-click Roll so the dice sit on the tray, then right-click Roll — every die should toss as if the first click had been a right-click.
+
 #### 🟡 TOR-791 — Scatter Clear Stage leaves NPC figurines in the world
 
 > **Agent-assessment note:** Host can confirm Sync.npcs after scatter clear and that GUIDs leave the object list; visual clear still needs Save & Play.
