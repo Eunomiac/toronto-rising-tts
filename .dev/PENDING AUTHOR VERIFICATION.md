@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-789 — Scene transitions scramble Discipline hands across seats
+
+> **Agent-assessment note:** Host can confirm stash/deal traces and hand membership tags; live multi-seat Apply with distinct hands still needs a human check when the cover lifts.
+
+**How to verify:** Save & Play. Give each connected PC a distinct Discipline hand. Apply a different scene or table (or Advance through a transition that reseats). When the cover lifts, each player should still hold only their own cards — without using Reset Discipline Hands.
+
 #### 🟡 TOR-788 — Intermission→Play leaves clients on the wrong default camera
 
 > **Agent-assessment note:** Host can confirm the snap call and seat `cameraAngles` after Play enter; connected-client lookAt still needs a live multiplayer check.

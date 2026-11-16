@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 2,
-      "sketch": "scenes",
-      "x": 450,
-      "y": 235,
-      "text": "[BUG] Player's hands of Discipline cards are still being scrambled during scene transitions -- players regularly found themselves holding other players' cards when the blindfolds raised, requiring the Host to use the discipline card reset button on the debug panel.\n\nI _suspect_ the movement of hand zones may be overengineered, and this bug is a result of that overengineering. We used to have issues with cards being dropped and implemented several attempts to fix this issue before realizing the root cause was moving hand zones along the y-axis. Now, hand zones containing cards are never moved along the y-axis, so these early fixes (e.g. locking cards before moving them, etc) can be removed.\n\nIdeally, the cause of this bug should be identified and remedied but, if it proves elusive, the discipline card reset is fairly quick and could be added to the end of the scene/table transition process, before the blindfold comes up.",
-      "status": "open",
-      "createdAt": "2026-11-16T17:40:49.520Z",
-      "updatedAt": "2026-11-16T18:13:34.844Z"
-    },
-    {
       "id": 3,
       "sketch": "scenes",
       "x": 573,

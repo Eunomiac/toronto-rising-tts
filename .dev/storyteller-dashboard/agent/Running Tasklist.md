@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1116 pin 2. Table-height hand moves stash→empty-zone→deal (no rigid card co-move); live Y kept. Pending Save & Play under **TOR-789**.
+
 - ✔️ SD-ScenesPins-1116 pin 1. Intermission→Play now snaps default cameras under the cover after session chairs rewrite (`Phases.onEnter[PLAY]`). Pending Save & Play / live clients under **TOR-788**.
 
 - ✔️ SD-LiveRelocate. Live location pick opens the scene-switch seating modal, then forks + plays a new ongoing scene at the new site (left-behind map pins via playScene). Unit tests for relocate helpers; Playwright Scenes tab load. TTS pin check pending under **TOR-783**.

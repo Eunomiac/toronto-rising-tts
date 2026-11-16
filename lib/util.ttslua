@@ -2690,6 +2690,8 @@ local HAND_STORAGE_ABSORB_MAX_WAIT = 8
 local pendingHandDealCancel = {}
 --- Pending park-after-absorb waits (cancel when that seat reconnects / moves to table height).
 local pendingHandParkCancel = {}
+--- Pending table-height layout moves (stash → empty-zone pose → deal). Cancel on park or a newer layout.
+local pendingHandLayoutCancel = {}
 
 --- @param y number
 --- @return boolean
@@ -2723,11 +2725,31 @@ local function cancelPendingHandPark(color)
 	end
 end
 
+--- @param color string
+local function cancelPendingHandLayout(color)
+	local entry = pendingHandLayoutCancel[color]
+	if entry == nil then
+		return
+	end
+	pendingHandLayoutCancel[color] = nil
+	entry.cancelled = true
+	if entry.waitId ~= nil then
+		U.cancel(entry.waitId)
+	end
+end
+
 --- True while a disconnected-hand park is waiting for `putObject` absorption.
 --- @param color string
 --- @return boolean
 function U.isHandParkAbsorbPending(color)
 	return type(color) == "string" and pendingHandParkCancel[color] ~= nil
+end
+
+--- True while a table-height hand layout is waiting for stash absorption before posing/dealing.
+--- @param color string
+--- @return boolean
+function U.isHandLayoutAbsorbPending(color)
+	return type(color) == "string" and pendingHandLayoutCancel[color] ~= nil
 end
 --- @param color string
 --- @param required boolean error when the seat has no storage container
@@ -3036,8 +3058,8 @@ function U.reconcileDisciplineCardsForColor(color, opts)
 	if type(color) ~= "string" or color == "" then
 		error("U.reconcileDisciplineCardsForColor: color required")
 	end
-	-- Occupancy park already stashed and is waiting for putObject absorption; do not double-put.
-	if pendingHandParkCancel[color] ~= nil then
+	-- Occupancy park / layout already stashed and is waiting for putObject absorption; do not double-put.
+	if pendingHandParkCancel[color] ~= nil or pendingHandLayoutCancel[color] ~= nil then
 		return 0
 	end
 	local forceStorage = opts.forceStorage == true
@@ -3164,21 +3186,17 @@ function U.resetDisciplineHands(opts)
 	})
 end
 
---- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
---- Sole production writer for hand-zone pose + in-hand cards. Callers must not `setPosition` /
---- `placeObjectExact` the zone first — that zeroes the delta and leaves cards behind.
+--- Sole production writer for hand-zone pose. Callers must not `setPosition` /
+--- `placeObjectExact` the zone first.
 ---
---- Behavior (Hand Lab `rigid_instant`): instant `setPosition`/`setRotation` on the zone and
---- every card (same rigid yaw + translation, preserving each card's rotation relative to the
---- hand zone). Always instant:
---- smooth-moving a hand zone or its cards breaks the hand (Hand Lab). Never lock the cards: a
---- locked card leaves the hand.
+--- Populated hands are never rigid-moved through other seats: any table-height or park move
+--- stashes loose owned `DisciplineCard`s plus remaining in-hand cards as `HeldCard` into the
+--- player's storage, waits for `putObject` absorption, then poses the **empty** zone and (for
+--- table height) deals `HeldCard`s back. That avoids HandTrigger scooping foreign cards during
+--- multi-seat layout. Never lock cards: a locked card leaves the hand.
 ---
---- Parking: stashes every loose owned `DisciplineCard` plus remaining in-hand cards with
---- `HeldCard` into the player's storage container, waits for `putObject` absorption, then parks
---- the empty zone. A same-frame "still loose" check is wrong — TTS still reports those objects
---- until absorption finishes. Moving any hand to table height deals `HeldCard`s back (even when
---- the zone never reached parked Y after a prior absorb race).
+--- Table-height moves keep the zone's live Y (XZ + yaw only) so layout does not nudge populated
+--- hands along Y. Park still uses the caller's hidden Y after the zone is empty.
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
@@ -3204,141 +3222,127 @@ function U.movePlayerHand(playerRef, position, rotation)
 		cards = {},
 	}
 
-	if isParkedHandY(targetPos.y) then
-		cancelPendingHandDeal(color)
-		cancelPendingHandPark(color)
-		local disciplineGuids = U.stashOwnedDisciplineCards(color)
-		local cards = collectHandCards(hz, color)
-		local otherGuids = stashHandCardsInStorage(color, cards)
-		hzBefore.cards = cards
-		local absorbEntries = {}
-		for i = 1, #disciplineGuids do
-			absorbEntries[#absorbEntries + 1] = { guid = disciplineGuids[i], color = color }
+	local parking = isParkedHandY(targetPos.y)
+	cancelPendingHandDeal(color)
+	cancelPendingHandPark(color)
+	cancelPendingHandLayout(color)
+
+	-- Occupied / table-height hands keep live Y (XZ + yaw only). Park targets still use hidden Y.
+	if not parking and not isParkedHandY(hzBefore.position.y) then
+		targetPos = Vector({ x = targetPos.x, y = hzBefore.position.y, z = targetPos.z })
+	end
+
+	local disciplineGuids = U.stashOwnedDisciplineCards(color)
+	local cards = collectHandCards(hz, color)
+	local otherGuids = stashHandCardsInStorage(color, cards)
+	hzBefore.cards = cards
+	local absorbEntries = {}
+	for i = 1, #disciplineGuids do
+		absorbEntries[#absorbEntries + 1] = { guid = disciplineGuids[i], color = color }
+	end
+	for i = 1, #otherGuids do
+		absorbEntries[#absorbEntries + 1] = { guid = otherGuids[i], color = color }
+	end
+
+	local function poseEmptyHandZone()
+		local liveHz = U.getHandZone(color)
+		if liveHz ~= nil then
+			poseObjectWithHand(liveHz, targetPos, targetRot)
 		end
-		for i = 1, #otherGuids do
-			absorbEntries[#absorbEntries + 1] = { guid = otherGuids[i], color = color }
+	end
+
+	local function finishTableHeightAfterEmpty()
+		poseEmptyHandZone()
+		dealStashedHandCards(color, targetPos, targetRot, { snapFacing = true })
+	end
+
+	if #absorbEntries == 0 then
+		local stillDiscipline = listLooseDisciplineCards(color)
+		local stillHand = collectHandCards(hz, color)
+		if #stillDiscipline > 0 or #stillHand > 0 then
+			U.AlertGM(
+				(parking and "Hand park" or "Hand layout")
+					.. " aborted for "
+					.. tostring(color)
+					.. ": "
+					.. tostring(#stillDiscipline + #stillHand)
+					.. " card(s) still loose and none were submitted to storage. Hand zone left in place."
+			)
+			return hzBefore
 		end
-		if #absorbEntries == 0 then
+		if parking then
+			poseEmptyHandZone()
+		else
+			finishTableHeightAfterEmpty()
+		end
+		return hzBefore
+	end
+
+	-- putObject is async: wait for absorption, then pose the empty zone (and deal at table height).
+	local cancelToken = { cancelled = false, reason = nil, waitId = nil }
+	local pendingMap = parking and pendingHandParkCancel or pendingHandLayoutCancel
+	pendingMap[color] = cancelToken
+	U.chain({
+		function()
+			return HAND_STORAGE_ABSORB_SECONDS
+		end,
+		function()
+			if cancelToken.cancelled then
+				return 0
+			end
+			return function()
+				return cancelToken.cancelled or allStashGuidsAbsorbed(absorbEntries)
+			end
+		end,
+		function()
+			if cancelToken.cancelled then
+				return 0
+			end
+			if pendingMap[color] == cancelToken then
+				pendingMap[color] = nil
+			end
 			local stillDiscipline = listLooseDisciplineCards(color)
 			local stillHand = collectHandCards(hz, color)
 			if #stillDiscipline > 0 or #stillHand > 0 then
 				U.AlertGM(
-					"Hand park aborted for "
-						.. tostring(color)
+					(parking and "Hand park" or "Hand layout")
 						.. ": "
-						.. tostring(#stillDiscipline + #stillHand)
-						.. " card(s) still loose and none were submitted to storage. Hand zone left on the table."
-				)
-				return hzBefore
-			end
-			poseObjectWithHand(hz, targetPos, targetRot)
-			return hzBefore
-		end
-		-- putObject is async: wait for absorption, then park. Do not treat same-frame world scans as failure.
-		local cancelToken = { cancelled = false, reason = nil, waitId = nil }
-		pendingHandParkCancel[color] = cancelToken
-		U.chain({
-			function()
-				return HAND_STORAGE_ABSORB_SECONDS
-			end,
-			function()
-				if cancelToken.cancelled then
-					return 0
-				end
-				return function()
-					return cancelToken.cancelled or allStashGuidsAbsorbed(absorbEntries)
-				end
-			end,
-			function()
-				if cancelToken.cancelled then
-					return 0
-				end
-				if pendingHandParkCancel[color] == cancelToken then
-					pendingHandParkCancel[color] = nil
-				end
-				local stillDiscipline = listLooseDisciplineCards(color)
-				local stillHand = collectHandCards(hz, color)
-				if #stillDiscipline > 0 or #stillHand > 0 then
-					U.AlertGM(
-						"Hand park: "
-							.. tostring(color)
-							.. " still has "
-							.. tostring(#stillDiscipline + #stillHand)
-							.. " loose card(s) after absorption. Hand zone left on the table."
-					)
-					return 0
-				end
-				local liveHz = U.getHandZone(color)
-				if liveHz ~= nil then
-					poseObjectWithHand(liveHz, targetPos, targetRot)
-				end
-				return 0
-			end,
-		}, {
-			maxWait = HAND_STORAGE_ABSORB_MAX_WAIT,
-			cancelRegistry = cancelToken,
-			onComplete = function(ok, detail)
-				if pendingHandParkCancel[color] == cancelToken then
-					pendingHandParkCancel[color] = nil
-				end
-				if ok or cancelToken.cancelled then
-					return
-				end
-				U.AlertGM(
-					"Hand park: storage absorption did not finish for "
 						.. tostring(color)
-						.. " ("
-						.. tostring(#absorbEntries)
-						.. " card(s), "
-						.. tostring(detail)
-						.. "). Hand zone left on the table; use Reset Discipline Hands if needed."
+						.. " still has "
+						.. tostring(#stillDiscipline + #stillHand)
+						.. " loose card(s) after absorption. Hand zone left in place."
 				)
-			end,
-		})
-		return hzBefore
-	end
-
-	cancelPendingHandPark(color)
-	local wasParked = isParkedHandY(hzBefore.position.y)
-	local cards = collectHandCards(hz, color)
-
-	-- Always deal HeldCards when returning to table height (covers aborted parks that left the zone up).
-	poseObjectWithHand(hz, targetPos, targetRot)
-	dealStashedHandCards(color, targetPos, targetRot, { snapFacing = true })
-	if wasParked then
-		return hzBefore
-	end
-
-	local captured = {}
-	for i = 1, #cards do
-		local obj = cards[i]
-		captured[#captured + 1] = {
-			obj = obj,
-			before = {
-				position = Vector(obj.getPosition()),
-				rotation = Vector(obj.getRotation()),
-			},
-		}
-		hzBefore.cards[#hzBefore.cards + 1] = obj
-	end
-
-	local deltaYaw = shortestSignedYawDelta(hzBefore.rotation.y, targetRot.y)
-	local handFacing = Vector(targetRot)
-	if handFacing.add ~= nil then
-		handFacing = handFacing:add(Vector(0, 180, 0))
-	else
-		handFacing = Vector({ x = handFacing.x, y = (handFacing.y or 0) + 180, z = handFacing.z })
-	end
-	for i = 1, #captured do
-		local entry = captured[i]
-		local rotated = U.frameAfterRigidYawAboutCenter(hzBefore.position, entry.before, deltaYaw)
-		local newPos = Vector(rotated.position) + (targetPos - hzBefore.position)
-		-- Discipline cards always face the hand (zone yaw + 180°); other cards keep relative yaw.
-		local cardRot = (entry.obj.hasTag ~= nil and entry.obj.hasTag(DISCIPLINE_CARD_TAG))
-				and handFacing
-			or Vector(rotated.rotation)
-		poseObjectWithHand(entry.obj, newPos, cardRot)
-	end
+				return 0
+			end
+			if parking then
+				poseEmptyHandZone()
+			else
+				finishTableHeightAfterEmpty()
+			end
+			return 0
+		end,
+	}, {
+		maxWait = HAND_STORAGE_ABSORB_MAX_WAIT,
+		cancelRegistry = cancelToken,
+		onComplete = function(ok, detail)
+			if pendingMap[color] == cancelToken then
+				pendingMap[color] = nil
+			end
+			if ok or cancelToken.cancelled then
+				return
+			end
+			U.AlertGM(
+				(parking and "Hand park" or "Hand layout")
+					.. ": storage absorption did not finish for "
+					.. tostring(color)
+					.. " ("
+					.. tostring(#absorbEntries)
+					.. " card(s), "
+					.. tostring(detail)
+					.. "). Hand zone left in place; use Reset Discipline Hands if needed."
+			)
+		end,
+	})
 	return hzBefore
 end
 
