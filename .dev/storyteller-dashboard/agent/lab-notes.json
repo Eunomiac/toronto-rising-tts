@@ -20,15 +20,5 @@
       "createdAt": "2026-11-16T17:51:59.422Z",
       "updatedAt": "2026-11-16T17:51:59.422Z"
     },
-    {
-      "id": 9,
-      "sketch": "scenes",
-      "x": 516,
-      "y": 303,
-      "text": "Dragging an NPC token from anywhere onto a player roll with no set difficulty should filter the displayed difficulty strip to two numbers -- the two \"general difficulty\" values for the dragged NPC",
-      "status": "open",
-      "createdAt": "2026-11-16T17:54:15.737Z",
-      "updatedAt": "2026-11-16T17:54:15.737Z"
-    }
   ]
 }

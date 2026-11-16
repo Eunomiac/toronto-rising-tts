@@ -93,9 +93,19 @@ export const Difficulty = ({ value, editable, title, onPick, highlight, noneCell
     const markTitle = (n: number): string | undefined =>
       none(n) ? NO_DIFFICULTY_TITLE
         : n === highlight?.strong ? "Against the dropped NPC where it is well suited" : n === highlight?.weak ? "Against the dropped NPC otherwise" : undefined;
+    // Unset difficulty + NPC drop: show only that NPC's two general difficulties (deduped).
+    const filterToNpc = value === undefined && highlight != null
+      && (highlight.strong !== undefined || highlight.weak !== undefined);
+    const numbers = filterToNpc
+      ? [...new Set([highlight.strong, highlight.weak].filter((n): n is number => typeof n === "number"))]
+        .filter((n) => npcDifficultyAllows(rule, n))
+        .sort((a, b) => a - b)
+      : range(0, max).filter((n) => npcDifficultyAllows(rule, n));
     return (
       <div className={`roll-strip${value === undefined ? "" : " over"}`} title={title}>
-        {range(0, max).filter((n) => npcDifficultyAllows(rule, n)).map((n) => (
+        {numbers.length === 0 && filterToNpc ? (
+          <span className="roll-strip-empty">No difficulties in that NPC&apos;s Stats</span>
+        ) : numbers.map((n) => (
           <button
             key={n}
             type="button"

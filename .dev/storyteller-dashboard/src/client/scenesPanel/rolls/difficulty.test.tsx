@@ -21,4 +21,30 @@ describe("custom roll difficulty strip", () => {
     expect(screen.getByRole("button", { name: "–" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "15" })).toBeInTheDocument();
   });
+  it("filters an unset strip to the dropped NPC's two general difficulties", () => {
+    render(
+      <Difficulty
+        value={undefined}
+        editable
+        title="Difficulty"
+        noneCell
+        onPick={vi.fn()}
+        highlight={{ rollId: "r1", strong: 4, weak: 2 }}
+      />
+    );
+    expect(screen.getAllByRole("button").map((button) => button.textContent)).toEqual(["2", "4"]);
+  });
+  it("dedupes when strong and weak are the same", () => {
+    render(
+      <Difficulty
+        value={undefined}
+        editable
+        title="Difficulty"
+        noneCell
+        onPick={vi.fn()}
+        highlight={{ rollId: "r1", strong: 3, weak: 3 }}
+      />
+    );
+    expect(screen.getAllByRole("button").map((button) => button.textContent)).toEqual(["3"]);
+  });
 });

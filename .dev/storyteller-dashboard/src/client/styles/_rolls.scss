@@ -515,6 +515,13 @@ $phase-held: #ff8a5c;
     z-index: 1;
     background: #16161c;
   }
+
+  &-empty {
+    flex: 1 1 auto;
+    padding: 0 6px;
+    color: #8a8a96;
+    font-size: 12px;
+  }
 }
 
 .roll-strip-cell {
