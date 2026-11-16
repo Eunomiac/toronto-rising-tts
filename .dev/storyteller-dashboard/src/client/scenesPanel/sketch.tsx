@@ -37,6 +37,7 @@ import {
   type StageReminderContext,
   type StageReminderStore
 } from "./stageReminders";
+import { XpAwardPanel } from "./xpAwardPanel";
 
 /**
  * Building blocks for the Scenes tab. Every panel is laid out in absolute pixels on the fixed 1920×1042 canvas
@@ -688,19 +689,23 @@ export const IdleBoard = ({
     setStore(next);
     writeStageReminderStore(next);
   };
+  const xpPhase = phase === "End" || phase === "Intermission" ? phase : null;
   return (
-    <div className="lab-board wide idle" style={{ width: w, height: h }}>
+    <div className={`lab-board wide idle${xpPhase ? " has-xp" : ""}`} style={{ width: w, height: h }}>
       {reminders.length > 0 ? (
-        <div className="lab-stage-reminders">
+        <div className={`lab-stage-reminders${xpPhase ? " lab-stage-reminders--side" : ""}`}>
           {reminders.map((row) => (
             <button key={row.id} type="button" className="lab-stage-reminder" onClick={() => dismiss(row.id)}>
               {row.text}
             </button>
           ))}
         </div>
-      ) : (
+      ) : !xpPhase ? (
         <span className="lab-board-idle">(No Active Scene)</span>
-      )}
+      ) : null}
+      {xpPhase && liveSheet ? (
+        <XpAwardPanel phase={xpPhase} seats={seats} apply={liveSheet.apply} />
+      ) : null}
       <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
         <Seats seats={seats} {...(liveSheet ? { liveSheet } : {})} />
       </div>

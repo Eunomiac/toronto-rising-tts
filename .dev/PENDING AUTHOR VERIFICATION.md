@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-795 — END / INTERMISSION stage XP award controls
+
+> **Agent-assessment note:** Typecheck passed for the IdleBoard panel. Live XP log writes and disconnected greying need Save & Play.
+
+**How to verify:** Restart the Storyteller Dashboard, then Save & Play. With no scene on the table in End, the XP panel should sit in the stage centre with reminders on the left. Try Session attendance, End of Story, and a greyed-out disconnected seat on Promoted Team Play. In Intermission, award Provided Feedback to a seat (including a disconnected one).
+
 #### 🟡 TOR-794 — Scatter group title field on Dashboard and player HUD strip
 
 > **Agent-assessment note:** Vitest covers draft summary storage. Live HUD text and scene persistence need Save & Play.

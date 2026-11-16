@@ -64,14 +64,15 @@ M.ops.xpAppend = function(color, pid, cmd)
   return nil
 end
 
---- Every seat except disconnected PCs (`absentFromSession`).
+--- Every connected seat by default. `includeDisconnected` awards every PC color (including
+--- `absentFromSession` / not-connected), for End-of-Story and custom all-seat grants.
 M.ops.xpAppendAll = function(_color, _pid, cmd)
   local ok, err = XpLog.validateEntry(cmd.amount, cmd.description)
   if not ok then
     return err
   end
   local touched = {}
-  local colors = XpLog.presentPcColors()
+  local colors = cmd.includeDisconnected == true and (C.PlayerColors or {}) or XpLog.presentPcColors()
   for i = 1, #colors do
     local seatPid = C.GetPlayerID(colors[i])
     if type(seatPid) == "string" and seatPid ~= C.StorytellerID then
@@ -81,7 +82,7 @@ M.ops.xpAppendAll = function(_color, _pid, cmd)
     end
   end
   if #touched == 0 then
-    return "No connected PCs to give XP to"
+    return cmd.includeDisconnected == true and "No PC seats to give XP to" or "No connected PCs to give XP to"
   end
   announceSeats(touched)
   return nil

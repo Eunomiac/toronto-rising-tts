@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1116 pin 7. END/INTERMISSION IdleBoard XP awards; reminders/PersonalDue moved aside. Pending Save & Play under **TOR-795**.
+
 - ✔️ SD-ScenesPins-1116 pin 5. Scatter group summary field → player HUD strip; stored on scene library. Pending Save & Play under **TOR-794**.
 
 - ✔️ SD-ScenesPins-1116 pin 9. Dropping an NPC on an unset PC difficulty strip shows only that NPC's two general difficulties.

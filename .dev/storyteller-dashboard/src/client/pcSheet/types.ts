@@ -183,7 +183,8 @@ export type ApplyCommand =
   | { op: "damage"; color: SeatColor; which: "health" | "willpower"; mode: DamageMode }
   | { op: "humanity"; color: SeatColor; kind: "stain" | "base" | "remorse"; delta?: number; remorse?: "pass" | "fail" }
   | { op: "xpAppend"; color: SeatColor; amount: number; description: string }
-  | { op: "xpAppendAll"; color: SeatColor; amount: number; description: string }
+  /** `includeDisconnected` awards every PC seat, including `absentFromSession` / not-connected. */
+  | { op: "xpAppendAll"; color: SeatColor; amount: number; description: string; includeDisconnected?: boolean }
   | { op: "xpUndo"; color: SeatColor; expect?: XpEntryRef }
   | { op: "xpUndoAll"; color: SeatColor; expect: XpEntryRef; colors: readonly SeatColor[] }
   | { op: "relationshipUpsert"; color: SeatColor; key?: string; expectHeader?: string; entry: RelationshipDraft }

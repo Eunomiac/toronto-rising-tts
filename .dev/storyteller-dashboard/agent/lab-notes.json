@@ -1,14 +1,3 @@
 {
-  "notes": [
-    {
-      "id": 7,
-      "sketch": "scenes",
-      "x": 719,
-      "y": 226,
-      "text": "Add a set of controls for awarding XP to the END phase stage, moving the reminder notifications and Condition-removal notifications to make room.  This control panel should include the following:\n\n- a single button to award 1 XP to each connected player, with \"Session attendance\" as the description.\n- a single button to award 1 XP to all players (even those who are not connected), with \"End of Story\" as the description.\n- a row of buttons, one per player (with not-connected player buttons greyed out) that, when clicked, will award 1 XP to that player, with \"Promoted Team Play\" as the description\n- a row of buttons, one per player (with not-connected player buttons greyed out) that, when clicked, will award 1 XP to that player, with \"Compulsion Roleplay\" as the description\n- a row of buttons, one per player (with not-connected player buttons greyed out) that, when clicked, will award 1 XP to that player, with \"Compulsion Resolution\" as the description\n- a row comprising an integer input field, a text input field, and a single button that, when pressed, will award an amount of XP equal to the amount entered into the integer input field to all players (including non-connected players), with the contents of the text field as the description\n\nAdditionally, add a row of buttons to the INTERMISSION phase stage (again making room by moving the reminder notifications), one per player (including non-connected players) that, when clicked, will award 1 XP to that player, with \"Provided Feedback\" as the description",
-      "status": "open",
-      "createdAt": "2026-11-16T17:51:59.422Z",
-      "updatedAt": "2026-11-16T17:51:59.422Z"
-    },
-  ]
+  "notes": []
 }

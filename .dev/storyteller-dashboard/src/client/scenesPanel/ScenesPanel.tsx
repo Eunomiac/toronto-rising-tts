@@ -759,7 +759,14 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             )}
           </Box>
           <StageQueue right={1920 - STRIP_X - STAGE_W + 3 * G} top={STAGE_Y + 36} connected={connected} live={queueView} />
-          <div className="scenes-alerts" style={{ left: STRIP_X + STAGE_W / 2, top: STAGE_Y + 40 }}>
+          <div
+            className={`scenes-alerts${scene?.liveKey === undefined && !inMemoriam && (phase?.phase === "End" || phase?.phase === "Intermission") ? " is-xp-idle" : ""}`}
+            style={
+              scene?.liveKey === undefined && !inMemoriam && (phase?.phase === "End" || phase?.phase === "Intermission")
+                ? { right: 1920 - STRIP_X - STAGE_W + 16, top: STAGE_Y + 40 }
+                : { left: STRIP_X + STAGE_W / 2, top: STAGE_Y + 40 }
+            }
+          >
             {dndNotice && <div className="scenes-tts-notice" role="alert"><span>{dndNotice}</span><button type="button" className="lab-btn" onClick={() => setDndNotice(null)}>OK</button></div>}
             {ttsNotice.notice && (
               <div className="scenes-tts-notice" role="alert">

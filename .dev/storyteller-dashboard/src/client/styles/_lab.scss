@@ -127,6 +127,12 @@ $lab-pin: #f5b13d;
     pointer-events: auto;
     animation: scenes-alert-in 0.25s ease-out;
   }
+
+  // END / INTERMISSION IdleBoard XP panel owns the centre — park due-condition alerts on the right.
+  &.is-xp-idle {
+    align-items: flex-end;
+    transform: none;
+  }
 }
 
 @keyframes scenes-alert-in {
