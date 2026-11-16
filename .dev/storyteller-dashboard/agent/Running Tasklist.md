@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1116 pin 4. Scatter NPC clear runs Sync.npcs (despawn); Clear Stage flushes. Pending Save & Play under **TOR-791**.
+
 - ✔️ SD-ScenesPins-1116 pin 3. Pink Tarot right-click consult (shuffle + face-up top card); left-click scoop-on-hide unchanged. Pending Save & Play under **TOR-790**.
 
 - ✔️ SD-ScenesPins-1116 pin 2. Table-height hand moves stash→empty-zone→deal (no rigid card co-move); live Y kept. Pending Save & Play under **TOR-789**.

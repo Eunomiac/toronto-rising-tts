@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 4,
-      "sketch": "scenes",
-      "x": 621,
-      "y": 267,
-      "text": "[BUG] After clearing a group of NPCs from the stage during a Scatter mode scene, their figurines were not removed from the game world.",
-      "status": "open",
-      "createdAt": "2026-11-16T17:42:51.552Z",
-      "updatedAt": "2026-11-16T17:42:51.552Z"
-    },
-    {
       "id": 5,
       "sketch": "scenes",
       "x": 616,

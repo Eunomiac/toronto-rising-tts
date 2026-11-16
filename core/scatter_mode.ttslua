@@ -1234,10 +1234,12 @@ function ScatterMode.moveNpcToGroup(npcKey, groupIndex)
     end
     if groupIndex == nil then
         removeCharacterFromAllGroups(npcKey)
-        ScatterMode.applyWorldLayout()
         mirrorLiveScatterToLibrary()
         ScatterMode.reconcileControlHudFromState()
         markDashboardScatterDirty()
+        -- applyWorldLayout only re-poses NPCs still in a group. Sync.npcs Step Five despawns
+        -- untargeted figurines and re-lays out the rest (same finish as scatter enter).
+        require("core.sync").npcs({ reason = "scatter_npc_clear", force = true })
         return nil
     end
     local gi = math.floor(tonumber(groupIndex) or 0)

@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-791 — Scatter Clear Stage leaves NPC figurines in the world
+
+> **Agent-assessment note:** Host can confirm Sync.npcs after scatter clear and that GUIDs leave the object list; visual clear still needs Save & Play.
+
+**How to verify:** Save & Play. In a Scatter scene with several NPCs on stage, use Clear Stage (confirm if asked). Their figurines and lights should leave the table; any NPCs you leave in a group should stay posed.
+
 #### 🟡 TOR-790 — Pink Tarot right-click consult: shuffle, draw, flip face-up
 
 > **Agent-assessment note:** Host can confirm Global consult logs and that a loose card sits on the deck; face-up orientation and feel still need Save & Play.

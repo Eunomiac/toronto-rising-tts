@@ -803,6 +803,8 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
           placeScatter(npc.characterKey, "npc", undefined);
         }
       }
+      // Flush like standard Clear Stage so the queued group removals reach TTS without waiting on Send.
+      command({ op: "stage", clear: true });
       return;
     }
     setLocal(Object.fromEntries(spots.map((spot) => [spot.characterKey, { remove: true } as const])));
