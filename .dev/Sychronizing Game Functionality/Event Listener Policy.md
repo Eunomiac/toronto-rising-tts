@@ -256,6 +256,7 @@ Snap default cameras **after** layout has written seat `cameraAngles` (including
 | --- | --- | --- |
 | Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold_panel)`, then `U.await(1.5)` |
 | Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); heavy Sync/table work first, then `M.snapDefaultCamerasAfterLayout` (TOR-368 / TOR-603 occupied-seat Storyteller copy). `beginTransition` arms UI only (no early camera await). |
+| Intermission → Play enter | `Phases.onEnter[PLAY]` | After `applySessionChairsUnderCover` (session-chair shuffle + `cameraAngles` rewrite), while the global cover is still up; before HUD arm / lights / explode. Cover is already visible after Intermission, so `showStartupLoadingOverlays` does not snap again. |
 | Simple / lead-in transition settle | `HUDBF.scheduleEnd` | When settle delay > 0, snap default cameras at the start of the settle wait (after work). |
 | Dashboard PCs blindfold toggle on | `dashboard/pc_sheet.ttslua` `toggleBlindfold` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
 | Scatter world apply | `ScatterMode.applyWorldLayout` | After group-origin rigs + `RSL.applyCameraModesFromComputed` (same camera writer as wood tables). Immediate; no cover. |

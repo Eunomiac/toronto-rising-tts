@@ -1030,6 +1030,17 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.applySessionChairsUnderCover(ctx)
         end,
         function()
+            -- Layout (or Intermission lookAt) may already have rewritten cameraAngles under
+            -- cover; snap LookAt before splash so clients do not keep another seat's pose.
+            -- Same TOR-368 finish as HUDBF.runStagedTransition. Cover is already up on
+            -- Intermission→Play, so showStartupLoadingOverlays will not snap again.
+            local Main = require("core.main")
+            if type(Main.snapDefaultCamerasAfterLayout) == "function" then
+                Main.snapDefaultCamerasAfterLayout("ALL")
+            end
+            return true
+        end,
+        function()
             return Phases.armPlayHudBehindCover(ctx)
         end,
         function()

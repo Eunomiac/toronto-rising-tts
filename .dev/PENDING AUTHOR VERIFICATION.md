@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-788 — Intermission→Play leaves clients on the wrong default camera
+
+> **Agent-assessment note:** Host can confirm the snap call and seat `cameraAngles` after Play enter; connected-client lookAt still needs a live multiplayer check.
+
+**How to verify:** Save & Play. With at least two connected clients on a random-seating table, Advance from Intermission into Play. When the splash finishes and the cover lifts, each player's view should already match their own seat — without clicking the camera icon. Clicking the bottom-right camera icon afterward should not jump them to a different spot.
+
 #### 🟡 TOR-785 — Complications pins: enhance re-prompt, leading minus, discard/negate clears conditions
 
 > **Agent-assessment note:** Import unit tests cover minus normalization. Enhance / discard / negate need Save & Play on a live Complications board.

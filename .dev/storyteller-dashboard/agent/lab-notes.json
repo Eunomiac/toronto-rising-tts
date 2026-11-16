@@ -1,3 +1,84 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 450,
+      "y": 235,
+      "text": "[BUG] Player's hands of Discipline cards are still being scrambled during scene transitions -- players regularly found themselves holding other players' cards when the blindfolds raised, requiring the Host to use the discipline card reset button on the debug panel.\n\nI _suspect_ the movement of hand zones may be overengineered, and this bug is a result of that overengineering. We used to have issues with cards being dropped and implemented several attempts to fix this issue before realizing the root cause was moving hand zones along the y-axis. Now, hand zones containing cards are never moved along the y-axis, so these early fixes (e.g. locking cards before moving them, etc) can be removed.\n\nIdeally, the cause of this bug should be identified and remedied but, if it proves elusive, the discipline card reset is fairly quick and could be added to the end of the scene/table transition process, before the blindfold comes up.",
+      "status": "open",
+      "createdAt": "2026-11-16T17:40:49.520Z",
+      "updatedAt": "2026-11-16T18:13:34.844Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 573,
+      "y": 225,
+      "text": "When the Pink player _right_-clicks on her Tarot card control to reveal her Tarot deck, the deck should be shuffled, the top card should be drawn, flipped over, and set on top of the deck face-up. On a left click, behavior should proceed as normal.  On a left-click while the Tarot deck is active/shown, any loose Tarot cards that are not part of the deck should be returned to the deck before it is hidden.",
+      "status": "open",
+      "createdAt": "2026-11-16T17:42:12.840Z",
+      "updatedAt": "2026-11-16T17:42:12.840Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 621,
+      "y": 267,
+      "text": "[BUG] After clearing a group of NPCs from the stage during a Scatter mode scene, their figurines were not removed from the game world.",
+      "status": "open",
+      "createdAt": "2026-11-16T17:42:51.552Z",
+      "updatedAt": "2026-11-16T17:42:51.552Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 616,
+      "y": 234,
+      "text": "Add a text field to each scatter group on the Dashboard when in scatter mode, where the Storyteller can enter a short text string. This string should appear at the bottom of the in-game HUD strip the players use to change their own scatter groups, as a sort of 'title'/'summary' of that group, as written by the ST. This phrase should be stored in the scene library and should persist with the scene.",
+      "status": "open",
+      "createdAt": "2026-11-16T17:44:34.721Z",
+      "updatedAt": "2026-11-16T17:44:34.721Z"
+    },
+    {
+      "id": 6,
+      "sketch": "scenes",
+      "x": 675,
+      "y": 254,
+      "text": "If a player left-clicks on the button to roll their dice (resulting in the dice dropping and the game waiting for the player to roll them manually), they should be able to subsequently _right_-click on the same button, to trigger an automatic roll of all of the dice, as if they had right-clicked the button initially.",
+      "status": "open",
+      "createdAt": "2026-11-16T17:45:56.802Z",
+      "updatedAt": "2026-11-16T17:45:56.802Z"
+    },
+    {
+      "id": 7,
+      "sketch": "scenes",
+      "x": 719,
+      "y": 226,
+      "text": "Add a set of controls for awarding XP to the END phase stage, moving the reminder notifications and Condition-removal notifications to make room.  This control panel should include the following:\n\n- a single button to award 1 XP to each connected player, with \"Session attendance\" as the description.\n- a single button to award 1 XP to all players (even those who are not connected), with \"End of Story\" as the description.\n- a row of buttons, one per player (with not-connected player buttons greyed out) that, when clicked, will award 1 XP to that player, with \"Promoted Team Play\" as the description\n- a row of buttons, one per player (with not-connected player buttons greyed out) that, when clicked, will award 1 XP to that player, with \"Compulsion Roleplay\" as the description\n- a row of buttons, one per player (with not-connected player buttons greyed out) that, when clicked, will award 1 XP to that player, with \"Compulsion Resolution\" as the description\n- a row comprising an integer input field, a text input field, and a single button that, when pressed, will award an amount of XP equal to the amount entered into the integer input field to all players (including non-connected players), with the contents of the text field as the description\n\nAdditionally, add a row of buttons to the INTERMISSION phase stage (again making room by moving the reminder notifications), one per player (including non-connected players) that, when clicked, will award 1 XP to that player, with \"Provided Feedback\" as the description",
+      "status": "open",
+      "createdAt": "2026-11-16T17:51:59.422Z",
+      "updatedAt": "2026-11-16T17:51:59.422Z"
+    },
+    {
+      "id": 8,
+      "sketch": "scenes",
+      "x": 472,
+      "y": 289,
+      "text": "Right-clicking an NPC token on the stage should not initiate the drag process, but bring up the same popup window that right-clicking a token in the NPC Roster displays.",
+      "status": "open",
+      "createdAt": "2026-11-16T17:53:08.648Z",
+      "updatedAt": "2026-11-16T17:53:08.648Z"
+    },
+    {
+      "id": 9,
+      "sketch": "scenes",
+      "x": 516,
+      "y": 303,
+      "text": "Dragging an NPC token from anywhere onto a player roll with no set difficulty should filter the displayed difficulty strip to two numbers -- the two \"general difficulty\" values for the dragged NPC",
+      "status": "open",
+      "createdAt": "2026-11-16T17:54:15.737Z",
+      "updatedAt": "2026-11-16T17:54:15.737Z"
+    }
+  ]
 }
