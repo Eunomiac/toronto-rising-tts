@@ -24,8 +24,9 @@ local TAROT_KEYS = {
 
 local currentOpToken = 0
 
---- Forward declare: applyDeckState may shuffle after delayed reveal.
+--- Forward declare: applyDeckState may shuffle / consult-draw after delayed reveal.
 local shuffleTarotDeck
+local drawTopCardFaceUpOnDeck
 
 --- Plain `{ x, y, z }` from a Vector or table (TTS Vectors are userdata).
 --- @param v any
@@ -150,7 +151,7 @@ end
 --- @param state string
 --- @param token number
 --- @param buttonGuid string|nil
---- @param opts table|nil `{ instant?: boolean, shuffleAfterReveal?: boolean }`
+--- @param opts table|nil `{ instant?: boolean, shuffleAfterReveal?: boolean, consultDraw?: boolean }`
 local function applyDeckState(state, token, buttonGuid, opts)
     opts = type(opts) == "table" and opts or {}
     local obj = getTarotDeck(buttonGuid)
@@ -196,6 +197,7 @@ local function applyDeckState(state, token, buttonGuid, opts)
         delay = onPose.delay
     end
     local shuffleAfter = opts.shuffleAfterReveal == true
+    local consultDraw = opts.consultDraw == true
 
     local function reveal()
         if not isTokenCurrent(token) then
@@ -215,6 +217,12 @@ local function applyDeckState(state, token, buttonGuid, opts)
         end
         if shuffleAfter then
             shuffleTarotDeck(buttonGuid)
+        end
+        if consultDraw then
+            -- Brief beat so shuffle settles before takeObject.
+            CU.await(function()
+                drawTopCardFaceUpOnDeck(buttonGuid, token)
+            end, 0.35)
         end
     end
 
@@ -309,16 +317,63 @@ shuffleTarotDeck = function(buttonGuid)
     end
 end
 
+--- Shuffle is done by the caller. Draws the top card, flips it face-up, and rests it on the deck
+--- (loose Card — not putObject, or it would reabsorb).
+--- @param buttonGuid string|nil
+--- @param token number
+drawTopCardFaceUpOnDeck = function(buttonGuid, token)
+    if not isTokenCurrent(token) then
+        return
+    end
+    local deck = getTarotDeck(buttonGuid)
+    if deck == nil or deck.takeObject == nil then
+        print("[TarotToggle] Consult draw failed: tarot deck missing or cannot takeObject.")
+        return
+    end
+    local deckPos = xyzTable(deck.getPosition and deck.getPosition() or nil)
+    local deckRot = xyzTable(deck.getRotation and deck.getRotation() or nil)
+    if deckPos == nil then
+        print("[TarotToggle] Consult draw failed: deck has no position.")
+        return
+    end
+    local yaw = (deckRot and deckRot.y) or 0
+    local cardPos = { x = deckPos.x, y = deckPos.y + 0.2, z = deckPos.z }
+    local cardRot = { x = 0, y = yaw, z = 0 }
+    deck.takeObject({
+        position = cardPos,
+        rotation = cardRot,
+        top = true,
+        smooth = false,
+        callback_function = function(card)
+            if not isTokenCurrent(token) or card == nil then
+                return
+            end
+            if card.is_face_down == true and card.flip ~= nil then
+                card.flip()
+            end
+            if card.setPosition ~= nil then
+                card.setPosition(cardPos)
+            end
+            if card.setRotation ~= nil then
+                card.setRotation(cardRot)
+            end
+            card.interactable = true
+            print("[TarotToggle] Consult: top card drawn face-up onto the deck.")
+        end,
+    })
+end
+
 --- @param targetOn boolean
 --- @param token number
 --- @param buttonGuid string|nil
---- @param opts table|nil `{ skipShuffle?: boolean, instant?: boolean }`
+--- @param opts table|nil `{ skipShuffle?: boolean, instant?: boolean, consultDraw?: boolean }`
 local function applyTarotStateNow(targetOn, token, buttonGuid, opts)
     opts = type(opts) == "table" and opts or {}
     if not isTokenCurrent(token) then
         return nil
     end
-    if not targetOn then
+    if not targetOn or opts.consultDraw == true then
+        -- Hide always scoops; consult scoops so a fresh face-up card is the only loose one.
         returnLooseTarotCardsToDeck(buttonGuid)
     end
     local state = targetOn and STATE_ON or STATE_OFF
@@ -350,8 +405,9 @@ end
 --- Apply tarot on/off poses (host-only — guard at Global entry).
 --- @param targetOn boolean
 --- @param buttonGuid string|nil TAROT_BUTTON_PINK GUID from clicker object script
+--- @param opts table|nil `{ consultDraw?: boolean }`
 --- @return boolean|nil applied on-state, or nil if aborted / seat layout unavailable
-function TarotToggle.applyState(targetOn, buttonGuid)
+function TarotToggle.applyState(targetOn, buttonGuid, opts)
     if type(targetOn) ~= "boolean" then
         return nil
     end
@@ -361,7 +417,31 @@ function TarotToggle.applyState(targetOn, buttonGuid)
     end
     currentOpToken = currentOpToken + 1
     local token = currentOpToken
-    return applyTarotStateNow(targetOn, token, buttonGuid)
+    return applyTarotStateNow(targetOn, token, buttonGuid, opts)
+end
+
+--- Right-click consult: ensure the deck is shown, scoop loose cards, shuffle, draw top face-up on deck.
+--- When already shown, skips drawer/button re-pose and only runs the ritual.
+--- @param buttonGuid string|nil
+--- @return boolean|nil true when consult armed / deck is on
+function TarotToggle.consult(buttonGuid)
+    if not isSeatLayoutReady() then
+        print("[TarotToggle] seatLayout.currentTableKey is not ready; skipping tarot consult.")
+        return nil
+    end
+    local alreadyOn = TarotToggle.inferCurrentState(buttonGuid, false)
+    if not alreadyOn then
+        return TarotToggle.applyState(true, buttonGuid, { consultDraw = true })
+    end
+    currentOpToken = currentOpToken + 1
+    local token = currentOpToken
+    returnLooseTarotCardsToDeck(buttonGuid)
+    shuffleTarotDeck(buttonGuid)
+    setDeckInteractable(true, buttonGuid)
+    CU.await(function()
+        drawTopCardFaceUpOnDeck(buttonGuid, token)
+    end, 0.35)
+    return true
 end
 
 --- After seat layout moved Pink anchors: re-assert Consult on/off from ObjectPositions

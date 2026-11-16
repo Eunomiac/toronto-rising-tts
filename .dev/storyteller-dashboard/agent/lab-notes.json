@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 3,
-      "sketch": "scenes",
-      "x": 573,
-      "y": 225,
-      "text": "When the Pink player _right_-clicks on her Tarot card control to reveal her Tarot deck, the deck should be shuffled, the top card should be drawn, flipped over, and set on top of the deck face-up. On a left click, behavior should proceed as normal.  On a left-click while the Tarot deck is active/shown, any loose Tarot cards that are not part of the deck should be returned to the deck before it is hidden.",
-      "status": "open",
-      "createdAt": "2026-11-16T17:42:12.840Z",
-      "updatedAt": "2026-11-16T17:42:12.840Z"
-    },
-    {
       "id": 4,
       "sketch": "scenes",
       "x": 621,

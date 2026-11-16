@@ -154,10 +154,18 @@ end
 
 --- @param _obj Object
 --- @param clickColor string
-function click_tarotToggle(_obj, clickColor)
+--- @param altClick boolean|string|nil  true / "-2" / right-click → consult draw
+function click_tarotToggle(_obj, clickColor, altClick)
+    -- TTS createButton: alt_click true for non-left; some hosts pass string/number forms.
+    local isAlt = altClick == true
+        or altClick == "-2"
+        or altClick == -2
+        or tostring(altClick) == "true"
+        or tostring(altClick) == "True"
     verboseLog("click-received", {
         guid = self.getGUID(),
         clickerColor = clickColor,
+        altClick = isAlt,
         interactable = self.interactable == true,
         hidden = self.hasTag("HiddenObject") == true,
         buttonCount = #(self.getButtons() or {}),
@@ -170,9 +178,20 @@ function click_tarotToggle(_obj, clickColor)
         return
     end
     runWhenSeatLayoutReady(function()
-        desiredOn = not desiredOn
         local applied = nil
-        if Global ~= nil and type(Global.call) == "function" then
+        if Global == nil or type(Global.call) ~= "function" then
+            verboseLog("click-failed", { clickerColor = clickColor, reason = "no-global" })
+            return
+        end
+        if isAlt then
+            -- Right-click: reveal (if needed), shuffle, draw top card face-up onto the deck.
+            applied = Global.call("GlobalApplyTarotState", {
+                consultDraw = true,
+                buttonGuid = self.getGUID(),
+                playerColor = clickColor,
+            })
+        else
+            desiredOn = not desiredOn
             applied = Global.call("GlobalApplyTarotState", {
                 targetOn = desiredOn,
                 buttonGuid = self.getGUID(),
@@ -182,10 +201,20 @@ function click_tarotToggle(_obj, clickColor)
         if type(applied) == "boolean" then
             isOn = applied
             desiredOn = applied
-            verboseLog("click-applied", { clickerColor = clickColor, appliedOn = applied })
+            verboseLog("click-applied", {
+                clickerColor = clickColor,
+                altClick = isAlt,
+                appliedOn = applied,
+            })
         else
-            desiredOn = not desiredOn
-            verboseLog("click-failed", { clickerColor = clickColor, targetOn = not desiredOn })
+            if not isAlt then
+                desiredOn = not desiredOn
+            end
+            verboseLog("click-failed", {
+                clickerColor = clickColor,
+                altClick = isAlt,
+                consultDraw = isAlt,
+            })
             print("[TarotButton] GlobalApplyTarotState failed; reverted desired state.")
         end
     end)

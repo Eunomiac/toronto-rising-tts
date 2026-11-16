@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1116 pin 3. Pink Tarot right-click consult (shuffle + face-up top card); left-click scoop-on-hide unchanged. Pending Save & Play under **TOR-790**.
+
 - ✔️ SD-ScenesPins-1116 pin 2. Table-height hand moves stash→empty-zone→deal (no rigid card co-move); live Y kept. Pending Save & Play under **TOR-789**.
 
 - ✔️ SD-ScenesPins-1116 pin 1. Intermission→Play now snaps default cameras under the cover after session chairs rewrite (`Phases.onEnter[PLAY]`). Pending Save & Play / live clients under **TOR-788**.

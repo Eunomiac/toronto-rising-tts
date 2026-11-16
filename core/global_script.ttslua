@@ -1669,10 +1669,20 @@ end
 
 --- Pink tarot drawer/deck/button pose toggle (host-only; object script routes via Global.call).
 --- On success: Pink camera → diceTray when activating, default when hiding.
---- @param params table { targetOn: boolean, buttonGuid?: string }
+--- Right-click consult: `consultDraw = true` (targetOn may be omitted) — scoop, shuffle, draw top face-up.
+--- @param params table { targetOn?: boolean, buttonGuid?: string, consultDraw?: boolean, playerColor?: string }
 --- @return boolean|nil applied on-state, or nil on failure / non-host
 function GlobalApplyTarotState(params)
-    if type(params) ~= "table" or type(params.targetOn) ~= "boolean" then
+    if type(params) ~= "table" then
+        GlobalInteractionVerboseLog({
+            component = "Tarot",
+            event = "apply-rejected",
+            details = { reason = "invalid-params" },
+        })
+        return nil
+    end
+    local consultDraw = params.consultDraw == true
+    if not consultDraw and type(params.targetOn) ~= "boolean" then
         GlobalInteractionVerboseLog({
             component = "Tarot",
             event = "apply-rejected",
@@ -1685,22 +1695,29 @@ function GlobalApplyTarotState(params)
         event = "apply-start",
         details = {
             targetOn = params.targetOn,
+            consultDraw = consultDraw,
             buttonGuid = params.buttonGuid,
             playerColor = params.playerColor,
         },
     })
     local TarotToggle = require("lib.tarot_toggle")
-    local applied = TarotToggle.applyState(params.targetOn, params.buttonGuid)
+    local applied
+    if consultDraw then
+        applied = TarotToggle.consult(params.buttonGuid)
+    else
+        applied = TarotToggle.applyState(params.targetOn, params.buttonGuid)
+    end
     if applied ~= nil then
+        local cameraOn = consultDraw or params.targetOn == true
         GlobalRollSeatCamera({
             color = "Pink",
-            mode = params.targetOn and "diceTray" or "default",
+            mode = cameraOn and "diceTray" or "default",
         })
     end
     GlobalInteractionVerboseLog({
         component = "Tarot",
         event = "apply-finished",
-        details = { requestedOn = params.targetOn, applied = applied },
+        details = { requestedOn = params.targetOn, consultDraw = consultDraw, applied = applied },
     })
     return applied
 end

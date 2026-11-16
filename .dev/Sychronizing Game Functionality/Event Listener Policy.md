@@ -81,7 +81,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalHideObject` | C | — | Unified off-table park (`O.hideObject`); object scripts pass `guid` + optional park opts |
 | `GlobalRestoreObject` | C | — | Unified reveal (`O.restoreObject`); object scripts pass `guid` + optional restore opts |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off via hide/restore — seat layout preserves per-seat Y (TOR-380), no gameState reconciler; also called by the dashboard `signalOff` op; marks the dashboard `seats` slice dirty (O(1)) |
-| `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
+| `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses; `consultDraw` right-click ritual (TOR-144 W2) |
 | `GlobalApplyCompanionToggleClick` | C | — | Red/Brown famulus companion left/right click (TOR-288) |
 | `GlobalDiceBagClick/RightClick` | B+C | 5 | rolls; idle Rouse / Oblivion-Rouse right-click = 1-die check + Open + auto-toss (TOR-490 / TOR-491); concurrent idle-bag auto-Rouse exception (TOR-493) |
 | `GlobalSpawn*` / `GlobalDestroy*` / `GlobalRelease*` / `GlobalTagDie*` / `GlobalOnBagDie*` | C | 5 | dice |
@@ -214,7 +214,7 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 | --- | --- | --- |
 | `objects/dice_bag.ttslua` | `click_roll`, spawn, onLoad | tags; spawn via Global.call |
 | `ui/ui_signal_candle.ttslua` | click | Object GUID / color from name |
-| `ui/ui_tarot_button.ttslua` | click | Pink/Black → `GlobalApplyTarotState` |
+| `ui/ui_tarot_button.ttslua` | click | Pink/Black left → `GlobalApplyTarotState` toggle (scoop on hide). Right → `consultDraw` (shuffle + face-up top card on deck). |
 | `ui/ui_csheet_core.ttslua` | click, onLoad | Global mutators; layout onLoad; inner-strip right-click → seat `roll` camera |
 
 ## Forbidden patterns
