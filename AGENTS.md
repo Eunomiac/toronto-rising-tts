@@ -46,6 +46,8 @@ Agent-first `.dev` routing docs may stay compact for other agents; anything the 
 
 `/tr-quick` batches small Focus work: assess listed `TOR-*` ids (or the whole Focus stack if none were given), drop items too heavy to do together, then switch to Plan mode and write **one** implementation plan. Do not ask the author to confirm the issue list. Skill: [`.cursor/skills/tr-quick/SKILL.md`](.cursor/skills/tr-quick/SKILL.md).
 
+`/dashboard` clears open Storyteller Dashboard note pins one-by-one (classify bug vs feature, diagnose bugs before fixing, plan when needed, commit each pin to `master`, no waiting between pins). Skill: [`.cursor/skills/dashboard/SKILL.md`](.cursor/skills/dashboard/SKILL.md).
+
 `/testbed` writes self-contained Lua into [`.dev/testbed/TEST BED.ttslua`](.dev/testbed/TEST%20BED.ttslua) for **Execute Code** (no `require`; use live globals, especially `DEBUG`). Skill: [`.cursor/skills/testbed/SKILL.md`](.cursor/skills/testbed/SKILL.md).
 
 These workflows are not permanent architecture. Preserve their current behavior until a cleaner agent-first workflow is deliberately introduced.
