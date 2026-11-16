@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-794 — Scatter group title field on Dashboard and player HUD strip
+
+> **Agent-assessment note:** Vitest covers draft summary storage. Live HUD text and scene persistence need Save & Play.
+
+**How to verify:** Restart the Storyteller Dashboard, then Save & Play. In a Scatter scene, type a short title under a group circle and press Enter (or leave the field). Open the player Scatter strip — that group's column should show the title under the NPC list. Save the scene, reload it later, and confirm the title is still there.
+
 #### 🟡 TOR-792 — Right-click Roll after left-click should auto-toss sitting dice
 
 > **Agent-assessment note:** Host can confirm ROLLING + right-click calls randomize; live tray toss still needs Save & Play.

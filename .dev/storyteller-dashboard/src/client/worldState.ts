@@ -143,7 +143,13 @@ export type GenericNpc = { readonly characterKey: string; readonly name: string;
 /** A PC (`characterKey` = their charKey) or NPC in a Scatter group, by hole `slot`. */
 export type ScatterMember = { readonly characterKey: string; readonly slot?: number };
 
-export type ScatterGroup = { readonly group: number; readonly pcs: readonly ScatterMember[]; readonly npcs: readonly ScatterMember[] };
+export type ScatterGroup = {
+  readonly group: number;
+  readonly pcs: readonly ScatterMember[];
+  readonly npcs: readonly ScatterMember[];
+  /** Short ST-authored title/summary for the in-game Scatter HUD strip. */
+  readonly summary?: string;
+};
 
 /** An NPC's damage and Hunger/Rage tonight (generic instances: this scene), from `core/npc_trackers.ttslua`. */
 export type NpcTrackerRecord = {

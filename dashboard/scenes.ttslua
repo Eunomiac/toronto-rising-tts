@@ -49,6 +49,7 @@
     scatterPlace      characterKey, kind, group?
                                           Scatter: move an NPC (`kind` npc; no group = off) or PC (`kind` pc,
                                           characterKey = the PC's charKey) into a scatter group 1–6
+    scatterSummary    group, summary      short ST title for a Scatter group (library + player HUD strip)
     genericAdd        keys, labels?, tiers?, kept?
                                           spawn generic NPCs (catalog keys) named by the Storyteller, each
                                           with an optional stat tier (`weak` / `average` / `gifted` / `deadly` / `superhuman`)
@@ -439,6 +440,10 @@ local function applyCommand(cmd)
       require("core.npc_trackers").ensure(cmd.characterKey)
     end
     return err
+  end
+  if op == "scatterSummary" then
+    local ScatterMode = require("core.scatter_mode")
+    return ScatterMode.setGroupSummary(cmd.group, cmd.summary)
   end
   if op == "genericAdd" then
     local Scenes = require("core.scenes")

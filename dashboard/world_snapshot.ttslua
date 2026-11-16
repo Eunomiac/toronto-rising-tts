@@ -348,7 +348,11 @@ local function buildSeats(opts)
       end
       table.sort(pcs, bySlot)
       table.sort(npcs, bySlot)
-      scatter[#scatter + 1] = { group = i, pcs = pcs, npcs = npcs }
+      local row = { group = i, pcs = pcs, npcs = npcs }
+      if type(area) == "table" and type(area.summary) == "string" and area.summary ~= "" then
+        row.summary = area.summary
+      end
+      scatter[#scatter + 1] = row
     end
   end
   mark("scatter", t, #scatter)

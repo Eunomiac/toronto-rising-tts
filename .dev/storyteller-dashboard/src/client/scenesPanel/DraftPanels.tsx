@@ -94,7 +94,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange, o
       onChange((scene) => draftTable(scene, command.key, tableSeats, packs));
       return;
     }
-    if (command.op === "scatterPlace") {
+    if (command.op === "scatterPlace" || command.op === "scatterSummary") {
       onChange((scene) => applyToDraft(withScatterPack(scene, tableSeats, packs), command));
       return;
     }

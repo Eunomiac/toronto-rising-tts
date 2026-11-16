@@ -502,7 +502,17 @@ local function controlHudFingerprint()
             table.sort(pcBits)
         end
         local npcBits = npcKeysInJoinOrder(i)
-        parts[#parts + 1] = tostring(i) .. "=" .. table.concat(pcBits, ",") .. ";" .. table.concat(npcBits, ",")
+        local summary = ""
+        if U.Type(area) == "table" and type(area.summary) == "string" then
+            summary = area.summary
+        end
+        parts[#parts + 1] = tostring(i)
+            .. "="
+            .. table.concat(pcBits, ",")
+            .. ";"
+            .. table.concat(npcBits, ",")
+            .. ";"
+            .. summary
     end
     return table.concat(parts, "|")
 end
@@ -579,6 +589,15 @@ local function applyControlHudVisible()
             applyNpcListClass(color, i, myGroup == i)
             U.setAttributes("scatterModeControlGroup" .. tostring(i) .. "_npcList_" .. color, {
                 text = npcTextByGroup[i] or "",
+            })
+            local summary = ""
+            local area = areaForGroup(i)
+            if U.Type(area) == "table" and type(area.summary) == "string" then
+                summary = area.summary
+            end
+            U.setAttributes("scatterModeControlGroup" .. tostring(i) .. "_summary_" .. color, {
+                text = summary,
+                active = summary ~= "" and "true" or "false",
             })
         end
     end
@@ -1221,6 +1240,33 @@ function ScatterMode.movePcToGroup(pcKey, groupIndex)
         ))
     end, 0)
     return true
+end
+
+--- Set the short ST-authored title/summary for a Scatter group (scene library + player HUD strip).
+--- @param groupIndex number
+--- @param summary string|nil
+--- @return string|nil error
+function ScatterMode.setGroupSummary(groupIndex, summary)
+    local gi = math.floor(tonumber(groupIndex) or 0)
+    if gi < 1 or gi > ScatterLayout.groupCount() then
+        return "No scatter group " .. tostring(groupIndex) .. "."
+    end
+    local text = type(summary) == "string" and string.gsub(string.gsub(summary, "^%s+", ""), "%s+$", "") or ""
+    local area = areaForGroup(gi)
+    if U.Type(area) ~= "table" then
+        return "Scatter placements are not ready."
+    end
+    if text == "" then
+        area.summary = nil
+    else
+        area.summary = text
+    end
+    -- Force HUD re-apply even when fingerprint string would otherwise match after a trim no-op.
+    lastControlHudFingerprint = nil
+    mirrorLiveScatterToLibrary()
+    ScatterMode.reconcileControlHudFromState()
+    markDashboardScatterDirty()
+    return nil
 end
 
 --- Move an NPC into a scatter group, or off every group (`groupIndex` nil). The world re-poses and

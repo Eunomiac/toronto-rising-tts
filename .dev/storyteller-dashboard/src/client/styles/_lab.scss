@@ -899,6 +899,28 @@ $signal-fire: #ff9a1f;
   pointer-events: none;
 }
 
+.lab-scatter-summary {
+  position: absolute;
+  z-index: 2;
+  width: 140px;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border: 1px solid #5a5244;
+  border-radius: 3px;
+  color: #d8d0c0;
+  font-size: 12px;
+  text-align: center;
+  background: rgb(28 26 22 / 85%);
+
+  &::placeholder {
+    color: #6a6458;
+  }
+
+  &:focus {
+    outline: 1px solid #8a826f;
+  }
+}
+
 // The right padding holds the last box's scaled-up transparent margin.
 .lab-track {
   display: flex;

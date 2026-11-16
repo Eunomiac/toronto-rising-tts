@@ -370,6 +370,15 @@ describe("draft Scatter layout", () => {
     expect(draftStage(cleared).map((npc) => npc.characterKey)).toEqual(["drake", "hob", "ivy"]);
   });
 
+  it("stores a short ST summary on a Scatter group and clears it when blank", () => {
+    const titled = applyToDraft(scattered, { op: "scatterSummary", group: 2, summary: "  Court garden  " });
+    expect(draftScatterGroups(titled)[1]?.summary).toBe("Court garden");
+    const pack = titled.sessionScene.scatterPlacements as Record<string, { summary?: string }>;
+    expect(pack.scatter2?.summary).toBe("Court garden");
+    const clearedTitle = applyToDraft(titled, { op: "scatterSummary", group: 2, summary: "   " });
+    expect((clearedTitle.sessionScene.scatterPlacements as Record<string, { summary?: string }>).scatter2?.summary).toBeUndefined();
+  });
+
   it("puts NPCs who only stood in groups onto free stage packs when the table leaves Scatter", () => {
     const added = applyToDraft(applyToDraft(scattered, { op: "scatterPlace", characterKey: "zed", kind: "npc", group: 2 }), { op: "scatterPlace", characterKey: "yul", kind: "npc", group: 4 });
     const standard = draftTable(added, "Table B", live, packs);

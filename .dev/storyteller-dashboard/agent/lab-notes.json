@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 5,
-      "sketch": "scenes",
-      "x": 616,
-      "y": 234,
-      "text": "Add a text field to each scatter group on the Dashboard when in scatter mode, where the Storyteller can enter a short text string. This string should appear at the bottom of the in-game HUD strip the players use to change their own scatter groups, as a sort of 'title'/'summary' of that group, as written by the ST. This phrase should be stored in the scene library and should persist with the scene.",
-      "status": "open",
-      "createdAt": "2026-11-16T17:44:34.721Z",
-      "updatedAt": "2026-11-16T17:44:34.721Z"
-    },
-    {
       "id": 7,
       "sketch": "scenes",
       "x": 719,

@@ -114,6 +114,8 @@ export type ScenesCommand =
   | { readonly op: "stage"; readonly clear: true }
   | { readonly op: "stage"; readonly reset: true; readonly placements?: Readonly<Record<string, unknown>> }
   | { readonly op: "scatterPlace"; readonly characterKey: string; readonly kind: "pc" | "npc"; readonly group?: number }
+  /** Short title/summary for a Scatter group (scene library + live HUD). */
+  | { readonly op: "scatterSummary"; readonly group: number; readonly summary: string }
   | {
     readonly op: "genericAdd";
     readonly keys: readonly string[];

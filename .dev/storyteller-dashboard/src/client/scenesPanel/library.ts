@@ -386,6 +386,19 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
     }
     case "scatterPlace":
       return placeInDraftScatter(scene, command);
+    case "scatterSummary": {
+      if (!draftIsScatter(scene) || command.group < 1 || command.group > 6) {
+        return scene;
+      }
+      const pack = draftPack(scene) ?? {};
+      const areas = GROUPS.map((group) => areaOf(pack, group));
+      const summary = command.summary.trim();
+      const current = areas[command.group - 1]!;
+      areas[command.group - 1] = summary === ""
+        ? { centerCharacters: current.centerCharacters, orbitCharacters: current.orbitCharacters }
+        : { ...current, summary };
+      return withSession(scene, { scatterPlacements: packOf(areas) });
+    }
     default:
       return scene;
   }
@@ -530,7 +543,11 @@ const POLAR_FAMILY_ORDER = [
 ];
 
 /** One group: PCs (by charKey) in `centerCharacters`, NPCs in `orbitCharacters`, each row holding its `slot`. */
-type ScatterArea = { readonly centerCharacters: Record<string, unknown>; readonly orbitCharacters: Record<string, unknown> };
+type ScatterArea = {
+  readonly centerCharacters: Record<string, unknown>;
+  readonly orbitCharacters: Record<string, unknown>;
+  readonly summary?: string;
+};
 
 const draftIsScatter = (scene: LibraryScene): boolean => scene.placementMode === "scatter" || scene.sessionScene.tableKey === "Scatter";
 
@@ -540,9 +557,11 @@ const draftPack = (scene: LibraryScene): Row | undefined =>
 /** A copy of one group; an empty Lua table arrives as `[]`. */
 const areaOf = (pack: Row, group: number): ScatterArea => {
   const area = pack[`scatter${group}`];
+  const summary = isRecord(area) && typeof area.summary === "string" ? area.summary.trim() : "";
   return {
     centerCharacters: isRecord(area) && isRecord(area.centerCharacters) ? { ...area.centerCharacters } : {},
-    orbitCharacters: isRecord(area) && isRecord(area.orbitCharacters) ? { ...area.orbitCharacters } : {}
+    orbitCharacters: isRecord(area) && isRecord(area.orbitCharacters) ? { ...area.orbitCharacters } : {},
+    ...(summary !== "" ? { summary } : {})
   };
 };
 
@@ -574,7 +593,12 @@ export const draftScatterGroups = (scene: LibraryScene): readonly ScatterGroup[]
   const pack = draftPack(scene) ?? {};
   return GROUPS.map((group) => {
     const area = areaOf(pack, group);
-    return { group, pcs: membersBySlot(area.centerCharacters), npcs: membersBySlot(area.orbitCharacters) };
+    return {
+      group,
+      pcs: membersBySlot(area.centerCharacters),
+      npcs: membersBySlot(area.orbitCharacters),
+      ...(area.summary ? { summary: area.summary } : {})
+    };
   });
 };
 

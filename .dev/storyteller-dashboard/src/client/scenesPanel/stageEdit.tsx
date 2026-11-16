@@ -430,6 +430,29 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
               style={{ left: center.u * w - radius, top: center.v * h - radius, width: radius * 2, height: radius * 2 }}
             />
             <span className="lab-scatter-label" style={{ left: center.u * w, top: center.v * h + radius + 4 }}>Group {entry.group}</span>
+            <input
+              className="lab-scatter-summary"
+              style={{ left: center.u * w, top: center.v * h + radius + 22 }}
+              type="text"
+              maxLength={48}
+              placeholder="Group title…"
+              defaultValue={entry.summary ?? ""}
+              key={`summary-${entry.group}-${entry.summary ?? ""}`}
+              onClick={(event) => event.stopPropagation()}
+              onPointerDown={(event) => event.stopPropagation()}
+              onBlur={(event) => {
+                const summary = event.currentTarget.value.trim();
+                if (summary === (entry.summary ?? "")) {
+                  return;
+                }
+                scenes({ op: "scatterSummary", group: entry.group, summary });
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.currentTarget.blur();
+                }
+              }}
+            />
             {members.map((member, index) => {
               const angle = (index / Math.max(members.length, 1)) * Math.PI * 2 - Math.PI / 2;
               const ring = members.length === 1 ? 0 : radius * 0.6;
