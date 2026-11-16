@@ -20,14 +20,14 @@ Pins live in [`.dev/storyteller-dashboard/agent/lab-notes.json`](../../../.dev/s
 1. Each pin should be fully addressed in sequence, with a commit to the master branch upon completion before moving onto the next pin.
 2. The agent should not wait for the user between pins, but proceed to work through them all until they are all resolved, subject to the conditions outlined below for skipping a pin.
 3. Before beginning work on a pin, the agent should articulate whether the pin is a feature or a bug fix. If it is a bug fix, **the agent MUST diagnose the cause of the bug before proceeding to implement a fix, and MUST include a description of the diagnosed error in the commit message.** Under no circumstances should the agent implement a hack, work-around, or other means of implementation that doesn't address the root cause of the erroneous behavior. If the agent is unable to diagnose the cause of the bug, the agent should skip implementing that pin and move to the next, then report to the user which pins it was unable to adequately resolve as part of the agent's final report to the user.
-4. Before beginning work on a pin, the agent should assess whether the pin warrants use of Planning mode, and switch autonomously from Agent mode to Planning mode in such cases. Rule #2 still applies, however: Once the agent has planned their implementation of the pin, they should autonomously switch back to agent mode and implement the plan without waiting for user instruction.
+4. **Stay in Agent mode for the whole `/dashboard` run.** Do **not** call `SwitchMode` → Plan (or any other mode). Plan mode’s confirm gates and mode-switch cards pause the queue, which conflicts with rule #2. For complex pins, still plan — but do it **in Agent**: a short in-chat plan (root cause or intent, owning files, steps), then implement immediately with no author “go ahead.”
 5. The agent should also skip pins where the author's intentions are unclear or the agent is unsure how to proceed, then ask clarifying questions as part of the final report to the author (along with reporting pins that were skipped because a bug was unable to be diagnosed).
 
 ## Do not wait
 
-Between pins, after a plan is ready, and after a skip decision: **continue immediately.** Do not ask “should I do the next pin?”, “want me to commit?”, or “ready to implement?”. Do **not** pause the queue mid-run to ask clarifying questions — save those for the final report.
+Between pins, after an in-chat plan is ready, and after a skip decision: **continue immediately.** Do not ask “should I do the next pin?”, “want me to commit?”, or “ready to implement?”. Do **not** pause the queue mid-run to ask clarifying questions — save those for the final report.
 
-Cursor may show a mode-switch approval card when calling `SwitchMode` — that is fine. Do **not** add a separate chat pause for author direction once the mode is active.
+Do **not** enter Cursor Plan mode, call `CreatePlan`, or wait on plan-confirmation UI during `/dashboard`.
 
 ## Startup
 
@@ -49,25 +49,13 @@ Hints:
 - Text starts with `[BUG]` or describes broken/wrong current behavior → **bug fix**
 - Asks to add, change, or extend intended behavior → **feature**
 
-### B. Planning mode gate
+### B. In-Agent plan when complex (never leave Agent mode)
 
-Ask: does this pin need Planning mode?
+Stay in **Agent** for every pin. When intent is clear but the work is complex enough that coding blind would thrash — multiple architectures, several subsystems (dashboard + Lua bridge + scene library, large new panel, etc.) — write a **short plan in chat** for this pin only (root cause or intent, files, steps), then implement immediately.
 
-**Switch to Plan** (`SwitchMode` → `plan`) when intent is clear but any of these apply:
+If the **author’s intent** is unclear, or you are unsure how to proceed: **skip** (do not invent a plan and guess). Note clarifying questions for the final report and continue.
 
-- Multiple plausible architectures or technical trade-offs
-- Touches several subsystems (dashboard + Lua bridge + scene library, large new panel, etc.)
-- Implementation shape is complex enough that coding blind would thrash
-
-If the **author’s intent** is unclear, or you are unsure how to proceed: **skip** (do not Plan-mode a guess). Note clarifying questions for the final report and continue.
-
-**Stay in Agent** for small, diagnosed bug fixes and straightforward UI tweaks with an obvious owning file.
-
-If you switched to Plan:
-
-1. Write a short implementation plan for **this pin only**
-2. **Immediately** `SwitchMode` → `agent`
-3. Implement without waiting for “go ahead”
+Small diagnosed bug fixes and straightforward UI tweaks with an obvious owning file need no written plan — classify, diagnose (if bug), implement.
 
 ### C. Bug fixes — diagnose first
 
@@ -137,6 +125,6 @@ When the queue is done, report in plain English:
 - Guessing when intent is unclear, or shipping a “best guess” feature
 - Fixing a bug without stating the root cause
 - Shipping a workaround instead of a root-cause fix
-- Staying in Plan mode after the plan is written
+- Entering Cursor Plan mode / `SwitchMode` / `CreatePlan` during `/dashboard` (pauses the queue)
 - Creating Linear issues for dashboard-only pin work
 - Stealing keyboard focus with Playwright relaunch / tab switching mid-batch
