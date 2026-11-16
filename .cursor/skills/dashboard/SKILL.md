@@ -21,10 +21,11 @@ Pins live in [`.dev/storyteller-dashboard/agent/lab-notes.json`](../../../.dev/s
 2. The agent should not wait for the user between pins, but proceed to work through them all until they are all resolved, subject to the conditions outlined below for skipping a pin.
 3. Before beginning work on a pin, the agent should articulate whether the pin is a feature or a bug fix. If it is a bug fix, **the agent MUST diagnose the cause of the bug before proceeding to implement a fix, and MUST include a description of the diagnosed error in the commit message.** Under no circumstances should the agent implement a hack, work-around, or other means of implementation that doesn't address the root cause of the erroneous behavior. If the agent is unable to diagnose the cause of the bug, the agent should skip implementing that pin and move to the next, then report to the user which pins it was unable to adequately resolve as part of the agent's final report to the user.
 4. Before beginning work on a pin, the agent should assess whether the pin warrants use of Planning mode, and switch autonomously from Agent mode to Planning mode in such cases. Rule #2 still applies, however: Once the agent has planned their implementation of the pin, they should autonomously switch back to agent mode and implement the plan without waiting for user instruction.
+5. The agent should also skip pins where the author's intentions are unclear or the agent is unsure how to proceed, then ask clarifying questions as part of the final report to the author (along with reporting pins that were skipped because a bug was unable to be diagnosed).
 
 ## Do not wait
 
-Between pins, after a plan is ready, and after a skip decision: **continue immediately.** Do not ask “should I do the next pin?”, “want me to commit?”, or “ready to implement?”.
+Between pins, after a plan is ready, and after a skip decision: **continue immediately.** Do not ask “should I do the next pin?”, “want me to commit?”, or “ready to implement?”. Do **not** pause the queue mid-run to ask clarifying questions — save those for the final report.
 
 Cursor may show a mode-switch approval card when calling `SwitchMode` — that is fine. Do **not** add a separate chat pause for author direction once the mode is active.
 
@@ -52,11 +53,13 @@ Hints:
 
 Ask: does this pin need Planning mode?
 
-**Switch to Plan** (`SwitchMode` → `plan`) when any of these apply:
+**Switch to Plan** (`SwitchMode` → `plan`) when intent is clear but any of these apply:
 
-- Multiple plausible architectures or product trade-offs
+- Multiple plausible architectures or technical trade-offs
 - Touches several subsystems (dashboard + Lua bridge + scene library, large new panel, etc.)
-- Scope is ambiguous enough that coding blind would thrash
+- Implementation shape is complex enough that coding blind would thrash
+
+If the **author’s intent** is unclear, or you are unsure how to proceed: **skip** (do not Plan-mode a guess). Note clarifying questions for the final report and continue.
 
 **Stay in Agent** for small, diagnosed bug fixes and straightforward UI tweaks with an obvious owning file.
 
@@ -108,26 +111,30 @@ If Lua shipped too, mention `TOR-XXX (label)` in the body when an issue exists.
 
 ## Skipping
 
-Skip (leave pin open, do not commit a partial hack) when:
+Skip (leave pin open, do not commit a partial hack or guessed feature) when:
 
 - Bug pin: root cause not diagnosed
-- Blocked on author-only facts you cannot infer (ask once in the final report — do not stall the whole queue)
+- Author’s intentions are unclear
+- You are unsure how to proceed (product choice, ownership, expected behavior, or safe implementation path)
 
-Ambiguous product wording on a **feature** pin: choose the smallest reading that matches existing dashboard patterns, note the assumption in the commit body / `reply`, and continue. Only skip if implementation would be reckless without an answer.
+For every skipped pin, record **why** and, when intent/uncertainty is the reason, one or more **plain-English clarifying questions** for the final report. Do not stall the queue to wait for answers.
 
 ## Final report (required)
 
 When the queue is done, report in plain English:
 
 1. **Resolved** — pin id + one-line what shipped + commit subject/hash
-2. **Skipped** — pin id + why (especially undiagnosed bugs)
-3. **Still open** — anything left in `lab-notes.json`
-4. **Author follow-up** — Save & Play / multiclient checks only when Lua shipped; otherwise Playwright/dev-server notes if useful
+2. **Skipped — undiagnosed bugs** — pin id + what you tried + what is still unknown
+3. **Skipped — unclear / unsure** — pin id + short why + **clarifying questions** the author can answer
+4. **Still open** — anything left in `lab-notes.json`
+5. **Author follow-up** — Save & Play / multiclient checks only when Lua shipped; otherwise Playwright/dev-server notes if useful
 
 ## Anti-patterns
 
 - Batching several pins into one commit
 - Waiting for author approval between pins
+- Pausing mid-queue to ask clarifying questions (put them in the final report)
+- Guessing when intent is unclear, or shipping a “best guess” feature
 - Fixing a bug without stating the root cause
 - Shipping a workaround instead of a root-cause fix
 - Staying in Plan mode after the plan is written
