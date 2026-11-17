@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ClientRole } from "./engine/types";
+import { Atmosphere } from "./components/Atmosphere";
 import { GameView } from "./components/GameView";
 import { Home } from "./components/Home";
 import { SoloPlay } from "./components/SoloPlay";
@@ -28,17 +29,23 @@ export default function App() {
     return () => window.removeEventListener("popstate", onNav);
   }, []);
 
-  if (route.kind === "solo") return <SoloPlay />;
-  if (route.kind === "game") {
-    if (!route.token) {
-      return (
-        <div className="page error">
-          <h1>Deck of Complications</h1>
-          <p>This join link is missing its token.</p>
-        </div>
-      );
-    }
-    return <GameView roomId={route.roomId} role={route.role} token={route.token} />;
-  }
-  return <Home />;
+  return (
+    <>
+      <Atmosphere />
+      {route.kind === "solo" ? (
+        <SoloPlay />
+      ) : route.kind === "game" ? (
+        !route.token ? (
+          <div className="page error">
+            <h1>Deck of Complications</h1>
+            <p>This join link is missing its token.</p>
+          </div>
+        ) : (
+          <GameView roomId={route.roomId} role={route.role} token={route.token} />
+        )
+      ) : (
+        <Home />
+      )}
+    </>
+  );
 }

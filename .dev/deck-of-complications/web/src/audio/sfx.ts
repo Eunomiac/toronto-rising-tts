@@ -3,6 +3,7 @@
 export type SfxName =
   | "deal"
   | "flip"
+  | "burn"
   | "enhance"
   | "negate"
   | "discard"
@@ -107,6 +108,12 @@ export function playSfx(name: SfxName) {
     case "flip":
       tone(420, 0.12, "sine", 0.045, 280);
       break;
+    case "burn": {
+      tone(180, 0.08, "sawtooth", 0.02, 90);
+      setTimeout(() => tone(320, 0.14, "triangle", 0.03, 160), 40);
+      setTimeout(() => tone(90, 0.1, "sine", 0.025), 120);
+      break;
+    }
     case "enhance":
       tone(520, 0.1, "triangle", 0.04);
       setTimeout(() => tone(780, 0.14, "sine", 0.035), 40);

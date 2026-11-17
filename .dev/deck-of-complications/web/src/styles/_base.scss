@@ -18,11 +18,54 @@ body {
   font-family: var(--font-body);
   font-size: 1.15rem;
   line-height: 1.45;
-  background:
-    radial-gradient(ellipse at top, rgba(139, 30, 30, 0.18), transparent 55%),
-    radial-gradient(ellipse at bottom, rgba(201, 162, 74, 0.08), transparent 50%),
-    linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 45%, var(--felt-deep) 100%);
-  background-attachment: fixed;
+  background: var(--ink);
+  overflow-x: hidden;
+}
+
+/* Full-bleed animated atmosphere — behind the tipped table. */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #050203;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(139, 30, 30, 0.25), transparent 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(12, 8, 6, 0.85), transparent 50%),
+      linear-gradient(180deg, #0a0404 0%, #120606 100%);
+  }
+
+  .atmosphere-particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 1;
+    mix-blend-mode: screen;
+    filter: saturate(1.15) contrast(1.05);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, transparent 30%, rgba(5, 2, 3, 0.55) 100%);
+    pointer-events: none;
+  }
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 button,
@@ -51,4 +94,12 @@ a {
 code {
   font-size: 0.9em;
   color: var(--gold-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere .atmosphere-particles {
+    animation: none;
+    /* Freeze on first frame visually by lowering blend if UA still animates webp */
+    opacity: 0.45;
+  }
 }

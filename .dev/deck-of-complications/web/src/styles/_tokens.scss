@@ -17,4 +17,26 @@
   --font-body: "Cormorant Garamond", "Georgia", serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Fake table lighting — used by contact shadows / glare */
+  --light-x: -18%;
+  --light-y: -28%;
+  --table-tip-x: 26deg;
+  --table-tip-y: -6deg;
+  --ember: #ffb347;
+  --ember-hot: #ff6a1a;
+}
+
+@media (max-width: 900px), (max-height: 700px) {
+  :root {
+    --table-tip-x: 12deg;
+    --table-tip-y: -3deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --table-tip-x: 0deg;
+    --table-tip-y: 0deg;
+  }
 }

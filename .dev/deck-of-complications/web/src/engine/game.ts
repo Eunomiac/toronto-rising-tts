@@ -342,7 +342,8 @@ export function armSelect(g: GameState) {
 }
 
 export function selectCard(g: GameState, id: string | null) {
-  if (g.mode !== "select" && g.mode !== "confirm") return false;
+  // Web ST UX: allow picking a face-up card without arming a separate "Force Select" mode.
+  if (g.ended || g.mode === "ended") return false;
   if (id == null) {
     g.selected = null;
     touch(g);

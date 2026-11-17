@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import catalogJson from "../../public/data/catalog.json";
 import {
   adjust,
-  armSelect,
   cancelConfirm,
   candidates,
   confirmEnd,
@@ -25,9 +24,8 @@ import type { CatalogCard, ClientRole, GameState } from "../engine/types";
 import type { GameIntent } from "../protocol";
 import { playSfx, unlockAudio } from "../audio/sfx";
 import { Board } from "./Board";
-import { Controls } from "./Controls";
 import { MuteButton } from "./MuteButton";
-import { Totals } from "./Totals";
+import { SessionStrip } from "./SessionStrip";
 
 const catalog = (catalogJson as { cards: CatalogCard[] }).cards;
 
@@ -45,7 +43,7 @@ function newSolo(margin: number): GameState {
 }
 
 export function SoloPlay() {
-  const [role, setRole] = useState<ClientRole>("storyteller");
+  const [role, setRole] = useState<ClientRole>("player");
   const [margin, setMargin] = useState(-3);
   const [game, setGame] = useState<GameState | null>(null);
 
@@ -87,7 +85,6 @@ export function SoloPlay() {
           resumePlay(g);
           break;
         case "forceSelect":
-          armSelect(g);
           break;
         case "select":
           selectCard(g, intent.cardId);
@@ -138,7 +135,6 @@ export function SoloPlay() {
       <header className="top-bar">
         <div>
           <h1>Deck of Complications</h1>
-          <p className="subtitle">Solo practice — local engine, no room server</p>
         </div>
         <div className="solo-tools">
           <label>
@@ -147,8 +143,8 @@ export function SoloPlay() {
               value={role}
               onChange={(e) => setRole(e.target.value as ClientRole)}
             >
-              <option value="storyteller">Storyteller</option>
               <option value="player">Player</option>
+              <option value="storyteller">Storyteller</option>
             </select>
           </label>
           <label>
@@ -171,19 +167,23 @@ export function SoloPlay() {
           </button>
         </div>
       </header>
-      <Totals view={view} />
-      <Board
-        view={view}
-        role={role}
-        onFlip={(cardId) => {
-          void unlockAudio().then(() => {
-            playSfx("flip");
-            apply({ op: "flip", cardId });
-          });
-        }}
-        onSelect={(cardId) => apply({ op: "select", cardId })}
-      />
-      <Controls role={role} view={view} onIntent={apply} />
+      <div className="game-stage">
+        <div className="game-main">
+          <SessionStrip role={role} view={view} onIntent={apply} />
+          <Board
+            view={view}
+            role={role}
+            onFlip={(cardId) => {
+              void unlockAudio().then(() => {
+                playSfx("burn");
+                apply({ op: "flip", cardId });
+              });
+            }}
+            onSelect={(cardId) => apply({ op: "select", cardId })}
+            onIntent={apply}
+          />
+        </div>
+      </div>
     </div>
   );
 }
