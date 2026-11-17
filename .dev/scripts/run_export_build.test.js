@@ -26,6 +26,7 @@ test("FULL validates the Player Map before save bundling and publishes last", ()
     ["node", ".tools/tts-save/bundle-into-save.js"],
     ["node", ".tools/tts-save/build-session-start.js", "--full"],
     ["npm", "player-map:publish"],
+    ["npm", "complications:web:publish"],
   ]);
 });
 
@@ -35,7 +36,15 @@ test("FULL can skip only the final Player Map publication for offline diagnosis"
 
   assert.equal(calls.some((call) => call[1] === "player-map:check"), true);
   assert.equal(calls.some((call) => call[1] === "player-map:publish"), false);
-  assert.deepEqual(calls.at(-1), ["node", ".tools/tts-save/build-session-start.js", "--full"]);
+  assert.deepEqual(calls.at(-1), ["npm", "complications:web:publish"]);
+});
+
+test("FULL can skip Complications web publication", () => {
+  const { calls, actions } = recorder();
+  runFullPipeline({ TR_SKIP_COMPLICATIONS_WEB_PUBLISH: "1" }, actions);
+
+  assert.equal(calls.some((call) => call[1] === "player-map:publish"), true);
+  assert.equal(calls.some((call) => call[1] === "complications:web:publish"), false);
 });
 
 test("runNpm refuses script names that would break the fixed shell command", () => {

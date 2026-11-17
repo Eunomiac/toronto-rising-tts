@@ -28,11 +28,26 @@ https://toronto-rising-complications.toronto-rising-player-map.workers.dev
 
 ## Deploy (Cloudflare)
 
+From this folder:
+
 ```bash
 npx wrangler login
 npx wrangler secret put HOST_SECRET
 # PUBLIC_ORIGIN is set in wrangler.jsonc
-npm run deploy
+npm run deploy          # assets + catalog + build + wrangler deploy
 ```
+
+From the repo root (preferred):
+
+```bash
+npm run complications:web:assets    # sync ../assets → public/assets (gitignored)
+npm run complications:web:build     # catalog + assets + vite build
+npm run complications:web:deploy    # build + publish
+npm run complications:web:publish   # wrangler deploy only (dist already built)
+```
+
+`npm run build:full` runs `complications:web:build` during tooling and
+`complications:web:publish` at the end (after Player Map publish). Skip with
+`TR_SKIP_COMPLICATIONS_WEB_PUBLISH=1`.
 
 Linear: **TOR-796**.

@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "lint": "oxlint",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy"
+    "publish": "wrangler deploy",
+    "deploy": "npm run build && npm run publish"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
