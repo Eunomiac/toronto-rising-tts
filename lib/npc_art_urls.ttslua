@@ -212,7 +212,7 @@ local Art = {
   },
   averyInnis = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/10229963829857063553/E6ADADC2B1B55760E84BBC6AE87DE99A159280A1/", back = FIGURINE_BACK },
-    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/10025770463462722122/F172250CADC1306E21E26154C406FDBD282DFA89/", back = "https://steamusercontent-a.akamaihd.net/ugc/14751588297842908738/CB765E923A83F187B73F4D07B811EFEA8743FDEC/" },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/18034199533612150893/BF963BC3F2E3F27D0BFCD1B046AFC195BDED1669/", back = "https://steamusercontent-a.akamaihd.net/ugc/14751588297842908738/CB765E923A83F187B73F4D07B811EFEA8743FDEC/" },
   },
   bacchusGiovanni = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/10601845337896570789/73FACDF9FFC48358C3E7EF0783F9A570BAB00A2F/", back = FIGURINE_BACK },
