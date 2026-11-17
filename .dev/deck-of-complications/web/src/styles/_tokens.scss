@@ -1,0 +1,39 @@
+:root {
+  --ink: #0c0806;
+  --ink-soft: #1a1210;
+  --felt: #1b2a1f;
+  --felt-deep: #101a14;
+  --blood: #8b1e1e;
+  --blood-bright: #c43a3a;
+  --gold: #c9a24a;
+  --gold-soft: #e6d3a3;
+  --cream: #f3e6d0;
+  --smoke: rgba(243, 230, 208, 0.72);
+  --panel: rgba(12, 8, 6, 0.78);
+  --panel-border: rgba(201, 162, 74, 0.35);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --radius: 14px;
+  --font-display: "Cinzel", "Palatino Linotype", Palatino, serif;
+  --font-body: "Cormorant Garamond", "Georgia", serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  --light-x: -18%;
+  --light-y: -28%;
+  --table-tip-x: 14deg;
+  --table-tip-y: 0deg;
+  --ember: #ffb347;
+  --ember-hot: #ff6a1a;
+}
+
+@media (max-width: 900px), (max-height: 700px) {
+  :root {
+    --table-tip-x: 12deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --table-tip-x: 10deg;
+  }
+}

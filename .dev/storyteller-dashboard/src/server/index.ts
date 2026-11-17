@@ -27,6 +27,11 @@ import { dashboardTtsBridge } from "./ttsExecuteLua.js";
 import { ttsEventHub } from "./ttsEvents.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 import { stripJsonComments } from "../shared/compulsionText.js";
+import {
+  createComplicationsRoom,
+  fetchComplicationsRoomState,
+  type ComplicationsTarget
+} from "./complicationsWeb.js";
 
 loadEnvFile();
 const config = getConfig();
@@ -557,6 +562,81 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     }
     const result = await dashboardTtsBridge.executeLua(script);
     sendJson(response, 200, result);
+    return;
+  }
+
+  if (request.method === "POST" && pathname === "/api/complications/create") {
+    try {
+      const body = await readRequestJson(request);
+      const target = (body as { target?: ComplicationsTarget } | null)?.target;
+      if (
+        !target ||
+        typeof target.color !== "string" ||
+        typeof target.rollId !== "string" ||
+        typeof target.rollType !== "string" ||
+        typeof target.playerLabel !== "string" ||
+        typeof target.margin !== "number"
+      ) {
+        sendJson(response, 400, { error: "Request must include a complete target roll." });
+        return;
+      }
+      const created = await createComplicationsRoom(target);
+      sendJson(response, 200, created);
+    } catch (error: unknown) {
+      sendJson(response, 500, {
+        error: error instanceof Error ? error.message : "Could not create Complications room."
+      });
+    }
+    return;
+  }
+
+  if (request.method === "GET" && pathname.startsWith("/api/complications/room/")) {
+    const roomId = decodeURIComponent(pathname.slice("/api/complications/room/".length));
+    if (!roomId) {
+      sendJson(response, 400, { error: "Missing room id." });
+      return;
+    }
+    try {
+      const state = await fetchComplicationsRoomState(roomId);
+      sendJson(response, 200, state);
+    } catch (error: unknown) {
+      sendJson(response, 500, {
+        error: error instanceof Error ? error.message : "Could not read Complications room."
+      });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && pathname === "/api/complications/apply") {
+    try {
+      const body = (await readRequestJson(request)) as {
+        roomId?: string;
+        color?: string;
+        rollId?: string;
+        finalTotal?: number;
+      } | null;
+      if (!body?.roomId || !body.color || !body.rollId || typeof body.finalTotal !== "number") {
+        sendJson(response, 400, { error: "roomId, color, rollId, and finalTotal are required." });
+        return;
+      }
+      const color = JSON.stringify(body.color);
+      const rollId = JSON.stringify(body.rollId);
+      const roomId = JSON.stringify(body.roomId);
+      const total = Number(body.finalTotal);
+      const script = [
+        `local Rolls=require('core.complications_rolls')`,
+        `local target,err=Rolls.capture(${color},${rollId})`,
+        `if not target then return {ok=false,error=tostring(err)} end`,
+        `local finishErr=Rolls.finish(target,${total},${roomId})`,
+        `return {ok=finishErr==nil,error=finishErr and tostring(finishErr) or nil}`
+      ].join("\n");
+      const result = await dashboardTtsBridge.executeLua(script);
+      sendJson(response, 200, result);
+    } catch (error: unknown) {
+      sendJson(response, 500, {
+        error: error instanceof Error ? error.message : "Could not apply Complications result."
+      });
+    }
     return;
   }
 

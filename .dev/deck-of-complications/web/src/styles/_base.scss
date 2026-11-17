@@ -1,0 +1,111 @@
+@use "tokens";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  line-height: 1.45;
+  background: var(--ink);
+  overflow-x: hidden;
+}
+
+/* Full-bleed animated atmosphere — always the whole window, not the board. */
+.atmosphere {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* Behind #root content — z-index:0 covered the home page text and looked empty. */
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: #050203;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(139, 30, 30, 0.25), transparent 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(12, 8, 6, 0.85), transparent 50%),
+      linear-gradient(180deg, #0a0404 0%, #120606 100%);
+  }
+
+  .atmosphere-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    object-fit: cover;
+    object-position: center;
+    opacity: 1;
+    mix-blend-mode: screen;
+    filter: saturate(1.15) contrast(1.05);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, transparent 30%, rgba(5, 2, 3, 0.55) 100%);
+    pointer-events: none;
+  }
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--gold-soft);
+
+  &:hover {
+    color: var(--gold);
+  }
+}
+
+code {
+  font-size: 0.9em;
+  color: var(--gold-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere .atmosphere-particles {
+    animation: none;
+    /* Freeze on first frame visually by lowering blend if UA still animates webp */
+    opacity: 0.45;
+  }
+}

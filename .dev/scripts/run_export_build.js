@@ -39,11 +39,17 @@ function runFullPipeline(env, actions = { run, runNpm }) {
   actions.run(".tools/tts-save/bundle-into-save.js", env);
   actions.run(".tools/tts-save/build-session-start.js", env, ["--full"]);
   // Publication is deliberately the final external side effect. The escape
-  // hatch is for CI/offline diagnosis, not the author's normal FULL workflow.
+  // hatches are for CI/offline diagnosis, not the author's normal FULL workflow.
   if (env.TR_SKIP_PLAYER_MAP_PUBLISH === "1") {
     console.log("[player-map] Publication skipped by TR_SKIP_PLAYER_MAP_PUBLISH=1.");
   } else {
     actions.runNpm("player-map:publish", env);
+  }
+  // Complications web dist was built in tooling-after-exports (assets + catalog + vite).
+  if (env.TR_SKIP_COMPLICATIONS_WEB_PUBLISH === "1") {
+    console.log("[complications-web] Publication skipped by TR_SKIP_COMPLICATIONS_WEB_PUBLISH=1.");
+  } else {
+    actions.runNpm("complications:web:publish", env);
   }
 }
 async function main() {

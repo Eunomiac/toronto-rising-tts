@@ -647,6 +647,10 @@ pump=function()
 end
 local function begin(g) announce(g); pump() end
 function D.start(color,rollId)
+    -- Web app is the live minigame (TOR-796). Keep this entry for emergency rollback only.
+    if S.getStateVal('complicationsUseTtsBoard') ~= true then
+        return 'The Deck of Complications now runs in the browser. Use Play Deck of Complications on the Storyteller Dashboard (web room). Physical decks remain for one-off single-card draws.'
+    end
     if game() then return 'A Complications game is already live.' end
     local target,err=require('core.complications_rolls').capture(color,rollId)
     if not target then return err end
