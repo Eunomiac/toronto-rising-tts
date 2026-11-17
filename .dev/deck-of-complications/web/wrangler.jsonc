@@ -22,6 +22,6 @@
     }
   ],
   "vars": {
-    "PUBLIC_ORIGIN": "http://127.0.0.1:8787"
+    "PUBLIC_ORIGIN": "https://toronto-rising-complications.toronto-rising-player-map.workers.dev"
   }
 }

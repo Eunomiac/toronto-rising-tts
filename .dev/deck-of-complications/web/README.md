@@ -19,12 +19,19 @@ Multiplayer locally:
 2. `npm run build && npm run dev:worker` (serves API + built assets on :8787).
 3. `POST /api/create` with header `x-host-secret` and JSON body `{ "target": { "color":"Red","rollId":"r1","rollType":"launch","playerLabel":"Test","margin":-3 } }`.
 
+## Live URL
+
+https://toronto-rising-complications.toronto-rising-player-map.workers.dev
+
+- Solo practice: `/solo`
+- Dashboard needs `COMPLICATIONS_API_URL` + `COMPLICATIONS_HOST_SECRET` in `.dev/storyteller-dashboard/.env`
+
 ## Deploy (Cloudflare)
 
 ```bash
 npx wrangler login
 npx wrangler secret put HOST_SECRET
-# set PUBLIC_ORIGIN var to your worker URL after first deploy
+# PUBLIC_ORIGIN is set in wrangler.jsonc
 npm run deploy
 ```
 

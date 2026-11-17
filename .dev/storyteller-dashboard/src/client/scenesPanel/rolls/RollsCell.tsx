@@ -35,6 +35,11 @@ import {
   withLocalPools,
   type RollOptionsDraft
 } from "./view";
+import {
+  applyComplicationsWebResult,
+  readPendingComplications,
+  startComplicationsWebGame
+} from "./complicationsWebClient";
 
 /**
  * The Scenes tab's Rolls cell: every Storyteller roll control. Each PC roll and the live NPC roll is a compact
@@ -367,8 +372,55 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
     ? [{ key: "broadcast", icon: "broadcast", label: "Broadcast again", tone: "gold", keep: true, onClick: () => send({ op: "broadcast", color }) }]
     : [];
   if (roll.canStartComplications && roll.rollId) {
-    actions.push({ key: "complications", icon: "cards", label: "Play Deck of Complications", tone: "gold", keep: true,
-      onClick: () => send({ op: "complications", color, rollId: roll.rollId! }) });
+    actions.push({
+      key: "complications",
+      icon: "cards",
+      label: "Play Deck of Complications",
+      tone: "gold",
+      keep: true,
+      onClick: () => {
+        void (async () => {
+          try {
+            const pending = await startComplicationsWebGame(roll);
+            const openSt = window.confirm(
+              `Complications room ready for ${pending.playerLabel}.\n\nOK opens the Storyteller board.\nCancel leaves you here — the player link is still copied.`,
+            );
+            try {
+              await navigator.clipboard.writeText(pending.playerUrl);
+            } catch {
+              window.prompt("Copy this player join link:", pending.playerUrl);
+            }
+            if (openSt) window.open(pending.stUrl, "_blank", "noopener,noreferrer");
+          } catch (error: unknown) {
+            window.alert(
+              error instanceof Error ? error.message : "Could not start Complications.",
+            );
+          }
+        })();
+      },
+    });
+    const pending = readPendingComplications();
+    if (pending && pending.rollId === roll.rollId) {
+      actions.push({
+        key: "complications-apply",
+        icon: "cards",
+        label: "Apply Complications result",
+        tone: "gold",
+        keep: true,
+        onClick: () => {
+          void (async () => {
+            try {
+              await applyComplicationsWebResult(pending);
+              window.alert("Complications total applied to the roll.");
+            } catch (error: unknown) {
+              window.alert(
+                error instanceof Error ? error.message : "Could not apply the result.",
+              );
+            }
+          })();
+        },
+      });
+    }
   }
   return (
     <RollCard
