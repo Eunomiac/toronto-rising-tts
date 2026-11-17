@@ -20,7 +20,8 @@
 
   --light-x: -18%;
   --light-y: -28%;
-  --table-tip-x: 14deg;
+  /* TEMP: flatten the table until responsive sizing is settled. Restore ~14deg after. */
+  --table-tip-x: 0deg;
   --table-tip-y: 0deg;
   --board-thickness: 22px;
   --ember: #ffb347;
@@ -29,13 +30,6 @@
 
 @media (max-width: 900px), (max-height: 700px) {
   :root {
-    --table-tip-x: 12deg;
     --board-thickness: 14px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --table-tip-x: 10deg;
   }
 }

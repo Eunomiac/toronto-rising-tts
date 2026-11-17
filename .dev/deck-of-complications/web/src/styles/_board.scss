@@ -1,8 +1,8 @@
 /*
-  Board sizing (layout, then tip):
+  Board sizing (TEMP: flat — no 3D tip):
   1. Fixed aspect for a 5×2 of 630×879 cards (+ a little pad/gap).
   2. Grow with plain vw/vh so browser chrome / taskbar shrink the board.
-  3. Tip (rotateX) only after that size is set.
+  Tip/rock stay off until this fit is trusted, then restore rotateX.
 */
 
 .playmat-wrap {
@@ -44,14 +44,13 @@
     5×2 of 630×879 faces + pad/gap units → 3242 / 1808.
     Plain min(vw, vh×ratio) so the board always tracks the real window.
     (Keep the ratio inlined — a custom-prop "3242 / 1808" breaks calc().)
+    92% leaves a little margin; bump after tip returns if bloom needs room.
   */
   position: relative;
   box-sizing: border-box;
   aspect-ratio: 3242 / 1808;
-  width: min(86vw, calc(86vh * 3242 / 1808));
+  width: min(92vw, calc(92vh * 3242 / 1808));
   height: auto;
-  /* Tip near-edge bloom — nudge up so gaps match. */
-  margin-top: -2vh;
   transform-style: preserve-3d;
   transform: rotateX(var(--table-tip-x));
   transform-origin: 50% 50%;
@@ -229,7 +228,7 @@
 @media (max-width: 700px) and (orientation: portrait) {
   .board-stack {
     aspect-ratio: 1408 / 4547;
-    width: min(86vw, calc(86vh * 1408 / 4547));
+    width: min(92vw, calc(92vh * 1408 / 4547));
   }
 }
 
