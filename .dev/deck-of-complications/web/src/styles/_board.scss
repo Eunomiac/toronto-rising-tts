@@ -15,10 +15,6 @@
 }
 
 .table-stage {
-  /* 5*630+4*14+2*18  /  2*879+14+2*18 */
-  --board-ar: 3242 / 1808;
-  /* Leave a little room so the tipped projection still fits. */
-  --board-fit: 0.86;
   --board-pad: 1.15%;
   --board-gap: 0.75%;
 
@@ -44,18 +40,18 @@
 }
 
 .board-stack {
+  /*
+    5×2 of 630×879 faces + pad/gap units → 3242 / 1808.
+    Plain min(vw, vh×ratio) so the board always tracks the real window.
+    (Keep the ratio inlined — a custom-prop "3242 / 1808" breaks calc().)
+  */
   position: relative;
   box-sizing: border-box;
-  aspect-ratio: var(--board-ar);
-  width: min(
-    calc(100vw * var(--board-fit)),
-    calc(100vh * var(--board-fit) * var(--board-ar))
-  );
+  aspect-ratio: 3242 / 1808;
+  width: min(86vw, calc(86vh * 3242 / 1808));
   height: auto;
-  max-width: calc(100vw * var(--board-fit));
-  max-height: calc(100vh * var(--board-fit));
-  /* Tip makes the near edge bloom downward — nudge up so gaps match. */
-  margin-top: -3.5vh;
+  /* Tip near-edge bloom — nudge up so gaps match. */
+  margin-top: -2vh;
   transform-style: preserve-3d;
   transform: rotateX(var(--table-tip-x));
   transform-origin: 50% 50%;
@@ -231,9 +227,9 @@
 }
 
 @media (max-width: 700px) and (orientation: portrait) {
-  .table-stage {
-    /* 2×5 of the same face + pad/gap units */
-    --board-ar: 1408 / 4547;
+  .board-stack {
+    aspect-ratio: 1408 / 4547;
+    width: min(86vw, calc(86vh * 1408 / 4547));
   }
 }
 
