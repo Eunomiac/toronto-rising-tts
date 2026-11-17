@@ -1,0 +1,1062 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-17T01:41:53.995Z",
+  "cards": [
+    {
+      "index": 1,
+      "name": "A Matter of Pride",
+      "category": "",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "01-a-matter-of-pride"
+    },
+    {
+      "index": 2,
+      "name": "A Moment of Despair",
+      "category": "",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "02-a-moment-of-despair"
+    },
+    {
+      "index": 3,
+      "name": "A Moment of Insight",
+      "category": "Benefit",
+      "rarity": "Rare",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "03-a-moment-of-insight"
+    },
+    {
+      "index": 4,
+      "name": "A Moment of Inspiration",
+      "category": "Benefit",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "04-a-moment-of-inspiration"
+    },
+    {
+      "index": 5,
+      "name": "Absolution",
+      "category": "Benefit",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "05-absolution"
+    },
+    {
+      "index": 6,
+      "name": "At Cross Purposes",
+      "category": "Project",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "06-at-cross-purposes"
+    },
+    {
+      "index": 7,
+      "name": "Blood Rush",
+      "category": "Beast, the",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "07-blood-rush"
+    },
+    {
+      "index": 8,
+      "name": "Breakthrough",
+      "category": "Benefit",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "08-breakthrough"
+    },
+    {
+      "index": 9,
+      "name": "Buzzkill",
+      "category": "",
+      "rarity": "Uncommon",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "09-buzzkill"
+    },
+    {
+      "index": 10,
+      "name": "Cathexis",
+      "category": "Attention",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": false,
+        "discipline": false,
+        "willpowerRoll": false,
+        "launch": true,
+        "goal": false
+      },
+      "imageStem": "10-cathexis"
+    },
+    {
+      "index": 11,
+      "name": "Cognitive Dissonance",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "11-cognitive-dissonance"
+    },
+    {
+      "index": 12,
+      "name": "Collateral Damage",
+      "category": "Humanity",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "12-collateral-damage"
+    },
+    {
+      "index": 13,
+      "name": "Costly Blunder",
+      "category": "",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "13-costly-blunder"
+    },
+    {
+      "index": 14,
+      "name": "Crisis Management",
+      "category": "Project",
+      "rarity": "Rare",
+      "value": 3,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "14-crisis-management"
+    },
+    {
+      "index": 15,
+      "name": "Ennui",
+      "category": "Humanity",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "15-ennui"
+    },
+    {
+      "index": 16,
+      "name": "Espionage",
+      "category": "Benefit",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "16-espionage"
+    },
+    {
+      "index": 17,
+      "name": "Exhausted",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "17-exhausted"
+    },
+    {
+      "index": 18,
+      "name": "Faith",
+      "category": "Complication",
+      "rarity": "Common",
+      "value": 0,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "18-faith"
+    },
+    {
+      "index": 19,
+      "name": "Fake News",
+      "category": "Debilitation",
+      "rarity": "Rare",
+      "value": 3,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "19-fake-news"
+    },
+    {
+      "index": 20,
+      "name": "False Lead",
+      "category": "Project",
+      "rarity": "Uncommon",
+      "value": 3,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": false,
+        "discipline": false,
+        "willpowerRoll": false,
+        "launch": true,
+        "goal": false
+      },
+      "imageStem": "20-false-lead"
+    },
+    {
+      "index": 21,
+      "name": "Fan the Flames",
+      "category": "Attention",
+      "rarity": "Rare",
+      "value": 3,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "21-fan-the-flames"
+    },
+    {
+      "index": 22,
+      "name": "Favors",
+      "category": "Prestation",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "22-favors"
+    },
+    {
+      "index": 23,
+      "name": "Field Work",
+      "category": "Blood, the",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "23-field-work"
+    },
+    {
+      "index": 24,
+      "name": "Friction",
+      "category": "Attention",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "24-friction"
+    },
+    {
+      "index": 25,
+      "name": "Guilt By Association",
+      "category": "Debilitation",
+      "rarity": "Rare",
+      "value": 3,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "25-guilt-by-association"
+    },
+    {
+      "index": 26,
+      "name": "Heavy Lies the Crown",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "26-heavy-lies-the-crown"
+    },
+    {
+      "index": 27,
+      "name": "Immortal Clay",
+      "category": "Humanity",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "27-immortal-clay"
+    },
+    {
+      "index": 28,
+      "name": "Impending Doom",
+      "category": "",
+      "rarity": "Uncommon",
+      "value": 0,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "28-impending-doom"
+    },
+    {
+      "index": 29,
+      "name": "In A Bind",
+      "category": "",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": false,
+        "discipline": false,
+        "willpowerRoll": false,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "29-in-a-bind"
+    },
+    {
+      "index": 30,
+      "name": "In the Red",
+      "category": "",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": false,
+        "discipline": false,
+        "willpowerRoll": false,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "30-in-the-red"
+    },
+    {
+      "index": 31,
+      "name": "Irresistible Opportunity",
+      "category": "Attention",
+      "rarity": "Rare",
+      "value": 3,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "31-irresistible-opportunity"
+    },
+    {
+      "index": 32,
+      "name": "Loose Lips",
+      "category": "Attention",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": false,
+        "discipline": false,
+        "willpowerRoll": false,
+        "launch": true,
+        "goal": false
+      },
+      "imageStem": "32-loose-lips"
+    },
+    {
+      "index": 33,
+      "name": "Mental Block",
+      "category": "Debilitation",
+      "rarity": "Uncommon",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "33-mental-block"
+    },
+    {
+      "index": 34,
+      "name": "Micromanagement",
+      "category": "Blood, the",
+      "rarity": "Uncommon",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "34-micromanagement"
+    },
+    {
+      "index": 35,
+      "name": "Miles To Go",
+      "category": "",
+      "rarity": "Uncommon",
+      "value": -2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "35-miles-to-go"
+    },
+    {
+      "index": 36,
+      "name": "Necessary Evils",
+      "category": "Humanity",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "36-necessary-evils"
+    },
+    {
+      "index": 37,
+      "name": "Obsessed",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "37-obsessed"
+    },
+    {
+      "index": 38,
+      "name": "Options",
+      "category": "Complication",
+      "rarity": "Common",
+      "value": 0,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "38-options"
+    },
+    {
+      "index": 39,
+      "name": "Overwhelmed",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "39-overwhelmed"
+    },
+    {
+      "index": 40,
+      "name": "Powderkeg",
+      "category": "",
+      "rarity": "Very Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "40-powderkeg"
+    },
+    {
+      "index": 41,
+      "name": "Preoccupied",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "41-preoccupied"
+    },
+    {
+      "index": 42,
+      "name": "Prolonged Absence",
+      "category": "Debilitation",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "42-prolonged-absence"
+    },
+    {
+      "index": 43,
+      "name": "Pyrrhic Victory",
+      "category": "Project",
+      "rarity": "Rare",
+      "value": 4,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": false,
+        "discipline": false,
+        "willpowerRoll": false,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "43-pyrrhic-victory"
+    },
+    {
+      "index": 44,
+      "name": "Reckless Gamble",
+      "category": "Complication",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "44-reckless-gamble"
+    },
+    {
+      "index": 45,
+      "name": "Repeat Mistakes",
+      "category": "",
+      "rarity": "Uncommon",
+      "value": 0,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "45-repeat-mistakes"
+    },
+    {
+      "index": 46,
+      "name": "Reverie",
+      "category": "",
+      "rarity": "Rare",
+      "value": "X",
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "46-reverie"
+    },
+    {
+      "index": 47,
+      "name": "Ripple Effects",
+      "category": "Complication",
+      "rarity": "Uncommon",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "47-ripple-effects"
+    },
+    {
+      "index": 48,
+      "name": "Rocky Start",
+      "category": "",
+      "rarity": "Common",
+      "value": -2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "48-rocky-start"
+    },
+    {
+      "index": 49,
+      "name": "Silent Beneficiary",
+      "category": "",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "49-silent-beneficiary"
+    },
+    {
+      "index": 50,
+      "name": "Spread Thin",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "50-spread-thin"
+    },
+    {
+      "index": 51,
+      "name": "Tangled Webs",
+      "category": "Attention",
+      "rarity": "Rare",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": false,
+        "discipline": false,
+        "willpowerRoll": false,
+        "launch": true,
+        "goal": false
+      },
+      "imageStem": "51-tangled-webs"
+    },
+    {
+      "index": 52,
+      "name": "The Beast Ascendant",
+      "category": "Beast, the",
+      "rarity": "Uncommon",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "52-the-beast-ascendant"
+    },
+    {
+      "index": 53,
+      "name": "The Beast Despotic",
+      "category": "Beast, the",
+      "rarity": "Uncommon",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "53-the-beast-despotic"
+    },
+    {
+      "index": 54,
+      "name": "The Beast Insatiable",
+      "category": "Beast, the",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "54-the-beast-insatiable"
+    },
+    {
+      "index": 55,
+      "name": "The Beast Insensate",
+      "category": "Beast, the",
+      "rarity": "Common",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "55-the-beast-insensate"
+    },
+    {
+      "index": 56,
+      "name": "The Beast Perilous",
+      "category": "Beast, the",
+      "rarity": "Common",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "56-the-beast-perilous"
+    },
+    {
+      "index": 57,
+      "name": "The Beast Rampant",
+      "category": "Beast, the",
+      "rarity": "Common",
+      "value": 2,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "57-the-beast-rampant"
+    },
+    {
+      "index": 58,
+      "name": "The Beast Ravenous",
+      "category": "Beast, the",
+      "rarity": "Uncommon",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "58-the-beast-ravenous"
+    },
+    {
+      "index": 59,
+      "name": "The Beast Scorned",
+      "category": "Beast, the",
+      "rarity": "Common",
+      "value": 3,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "59-the-beast-scorned"
+    },
+    {
+      "index": 60,
+      "name": "The Rule of Three",
+      "category": "Complication",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "60-the-rule-of-three"
+    },
+    {
+      "index": 61,
+      "name": "Tilted",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "61-tilted"
+    },
+    {
+      "index": 62,
+      "name": "Triage",
+      "category": "Complication",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "62-triage"
+    },
+    {
+      "index": 63,
+      "name": "Tunnel Vision",
+      "category": "Complication",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "63-tunnel-vision"
+    },
+    {
+      "index": 64,
+      "name": "Under the Bus",
+      "category": "",
+      "rarity": "Common",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "64-under-the-bus"
+    },
+    {
+      "index": 65,
+      "name": "Unfinished Business",
+      "category": "Complication",
+      "rarity": "Uncommon",
+      "value": 1,
+      "requiresPause": true,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "65-unfinished-business"
+    },
+    {
+      "index": 66,
+      "name": "Weight of the World",
+      "category": "Debilitation",
+      "rarity": "Common",
+      "value": 2,
+      "requiresPause": false,
+      "rollTypes": {
+        "standard": true,
+        "discipline": true,
+        "willpowerRoll": true,
+        "launch": true,
+        "goal": true
+      },
+      "imageStem": "66-weight-of-the-world"
+    }
+  ]
+}

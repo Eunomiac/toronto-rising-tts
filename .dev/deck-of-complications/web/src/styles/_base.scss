@@ -1,0 +1,54 @@
+@use "tokens";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  line-height: 1.45;
+  background:
+    radial-gradient(ellipse at top, rgba(139, 30, 30, 0.18), transparent 55%),
+    radial-gradient(ellipse at bottom, rgba(201, 162, 74, 0.08), transparent 50%),
+    linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 45%, var(--felt-deep) 100%);
+  background-attachment: fixed;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--gold-soft);
+
+  &:hover {
+    color: var(--gold);
+  }
+}
+
+code {
+  font-size: 0.9em;
+  color: var(--gold-soft);
+}
