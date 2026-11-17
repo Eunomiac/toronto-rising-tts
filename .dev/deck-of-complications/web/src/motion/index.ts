@@ -135,39 +135,34 @@ export function dealFromAbove(opts: {
   });
 }
 
+/** Same rise the physical flip opens with — hover uses a smaller copy. */
+const FLIP_RAISE = { y: -48, z: 60, scale: 1.06 } as const;
+const HOVER_RAISE = { y: -14, z: 18, scale: 1.02 } as const;
+
 /**
- * Face-down: rise a little off the board (perpendicular to the plane → +z),
- * not slide along it (no y). Animate the flipper/shadow only so the button's
- * layout box stays put and hover cannot flicker on/off.
+ * Face-down hover: same off-board raise as the start of physicalFlip
+ * (y + z + scale on the slot), just a shorter distance.
  */
 export function magneticLift(el: Element | null, on: boolean) {
   if (!el) return;
   const root = el as HTMLElement;
-  const flipper = (root.querySelector(".card-flipper") as HTMLElement | null) || root;
-  const shadow = root.querySelector(".card-shadow") as HTMLElement | null;
-  const targets = shadow ? [flipper, shadow] : [flipper];
+  // Undo any older flipper-only lift so it cannot fight the slot raise.
+  const flipper = root.querySelector(".card-flipper");
+  if (flipper) gsap.set(flipper, { y: 0, z: 0, scale: 1 });
 
   if (prefersReducedMotion()) {
-    gsap.set(targets, { y: 0, z: 0, scale: 1, clearProps: "transform" });
+    gsap.set(root, { y: 0, z: 0, scale: 1 });
     return;
   }
 
-  gsap.killTweensOf(targets);
-  gsap.to(flipper, {
-    y: 0,
-    z: on ? 36 : 0,
-    scale: on ? 1.045 : 1,
-    duration: on ? 0.18 : 0.26,
+  gsap.killTweensOf(root);
+  gsap.to(root, {
+    y: on ? HOVER_RAISE.y : 0,
+    z: on ? HOVER_RAISE.z : 0,
+    scale: on ? HOVER_RAISE.scale : 1,
+    duration: on ? 0.22 : 0.26,
     ease: on ? "power2.out" : "power2.in",
   });
-  if (shadow) {
-    gsap.to(shadow, {
-      opacity: on ? 0.7 : 0.4,
-      scale: on ? 1.08 : 1,
-      duration: on ? 0.18 : 0.26,
-      ease: on ? "power2.out" : "power2.in",
-    });
-  }
 }
 
 /** Real face art is 630×879 (not the old 416×542 authoring note). */
@@ -333,10 +328,12 @@ export function physicalFlip(
       onDone?.();
     },
   });
+  // Same raise language as magneticLift, full flip distance.
+  gsap.killTweensOf(slotEl);
   tl.to(slotEl, {
-    y: -48,
-    z: 60,
-    scale: 1.06,
+    y: FLIP_RAISE.y,
+    z: FLIP_RAISE.z,
+    scale: FLIP_RAISE.scale,
     duration: 0.22,
     ease: "power2.out",
   });
