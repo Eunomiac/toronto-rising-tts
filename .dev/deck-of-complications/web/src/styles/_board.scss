@@ -219,13 +219,15 @@
     transform: rotateY(180deg);
   }
 
-  /* Must beat .face-front img rules — overlays are full-card art. */
+  /* Same box + object-fit as .card-face so 630×879 overlays align 1:1. */
   .face-front img.card-overlay {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
     object-position: center;
     pointer-events: none;
   }
