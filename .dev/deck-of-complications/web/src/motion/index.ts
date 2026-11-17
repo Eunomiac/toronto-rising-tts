@@ -155,9 +155,9 @@ export function magneticLift(el: Element | null, on: boolean) {
 export const CARD_ASPECT = 879 / 630;
 
 /**
- * Face-up read hover: clone leaps to screen-facing pose; dims stage.
- * The source slot stays an invisible hit target (opacity only — never autoAlpha,
- * which would drop pointer events and cause hover flicker).
+ * Face-up read hover: enlarge + flatten toward the player, anchored on the
+ * slot's screen position (does not fly to viewport center).
+ * Source slot stays an opacity-only hit plate so hover cannot flicker.
  */
 export function leapToRead(opts: {
   source: HTMLElement;
@@ -178,22 +178,33 @@ export function leapToRead(opts: {
   clone.innerHTML = `<img src="${img}" alt="" draggable="false" />`;
   document.body.appendChild(clone);
 
-  // Foreshortened getBoundingClientRect height is wrong for portrait art —
-  // keep true card aspect from the visual width.
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // True portrait from visual width (projected rect height is foreshortened).
   const startW = Math.max(rect.width, 1);
   const startH = startW * CARD_ASPECT;
-  const startX = rect.left + rect.width / 2 - startW / 2;
-  const startY = rect.top + rect.height / 2 - startH / 2;
+  const startX = cx - startW / 2;
+  const startY = cy - startH / 2;
 
-  const maxH = window.innerHeight * 0.82;
-  let targetW = Math.min(400, window.innerWidth * 0.36);
+  // Grow in place (~1.55×), then soft-clamp so edges stay near the cursor/slot.
+  let targetW = startW * 1.55;
   let targetH = targetW * CARD_ASPECT;
+  const pad = 12;
+  const maxW = Math.min(window.innerWidth - pad * 2, startW * 1.75);
+  const maxH = Math.min(window.innerHeight - pad * 2, startH * 1.75);
+  if (targetW > maxW) {
+    targetW = maxW;
+    targetH = targetW * CARD_ASPECT;
+  }
   if (targetH > maxH) {
     targetH = maxH;
     targetW = targetH / CARD_ASPECT;
   }
-  const targetX = window.innerWidth / 2 - targetW / 2;
-  const targetY = window.innerHeight / 2 - targetH / 2;
+  let targetX = cx - targetW / 2;
+  let targetY = cy - targetH / 2;
+  targetX = Math.min(Math.max(pad, targetX), window.innerWidth - targetW - pad);
+  targetY = Math.min(Math.max(pad, targetY), window.innerHeight - targetH - pad);
 
   gsap.set(clone, {
     position: "fixed",
@@ -203,43 +214,41 @@ export function leapToRead(opts: {
     height: startH,
     x: startX,
     y: startY,
-    rotateX: 16,
+    rotateX: 14,
     rotateY: 0,
+    z: 0,
     zIndex: 80,
     borderRadius: 10,
     overflow: "visible",
-    boxShadow: "0 30px 80px rgba(0,0,0,0.65)",
+    boxShadow: "0 28px 70px rgba(0,0,0,0.6)",
   });
-  // Opacity only — keep the slot as a stable hit plate under the cursor.
   gsap.set(source, { opacity: 0 });
 
+  const pose = {
+    width: targetW,
+    height: targetH,
+    x: targetX,
+    y: targetY,
+    rotateX: 0,
+    rotateY: 0,
+  };
+
   if (prefersReducedMotion()) {
-    gsap.set(clone, {
-      width: targetW,
-      height: targetH,
-      x: targetX,
-      y: targetY,
-      rotateX: 0,
-    });
+    gsap.set(clone, pose);
   } else {
     gsap.to(clone, {
-      width: targetW,
-      height: targetH,
-      x: targetX,
-      y: targetY,
-      rotateX: 0,
-      rotateY: 0,
-      duration: 0.48,
+      ...pose,
+      duration: 0.42,
       ease: "power3.out",
     });
   }
 
   const dismiss = () => {
     const home = source.getBoundingClientRect();
+    const hcx = home.left + home.width / 2;
+    const hcy = home.top + home.height / 2;
     const homeW = Math.max(home.width, 1);
     const homeH = homeW * CARD_ASPECT;
-    const homeX = home.left + home.width / 2 - homeW / 2;
-    const homeY = home.top + home.height / 2 - homeH / 2;
     const finish = () => {
       clone.remove();
       gsap.set(source, { clearProps: "opacity" });
@@ -254,10 +263,10 @@ export function leapToRead(opts: {
     gsap.to(clone, {
       width: homeW,
       height: homeH,
-      x: homeX,
-      y: homeY,
-      rotateX: 16,
-      duration: 0.38,
+      x: hcx - homeW / 2,
+      y: hcy - homeH / 2,
+      rotateX: 14,
+      duration: 0.34,
       ease: "power2.in",
       onComplete: finish,
     });
