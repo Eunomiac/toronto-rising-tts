@@ -14,41 +14,51 @@ export function pressFeedback(el: Element | null) {
   );
 }
 
-/**
- * Rest tip degrees. TEMP: forced flat (0) while board responsive sizing is tuned.
- * Restore the pitched values (~14 / 12 / 10) when re-enabling the 3D table.
- */
+/** Rest tip — mostly pitch toward the viewer, no static yaw skew. */
 export function tableRestTip(): { x: number; y: number } {
-  return { x: 0, y: 0 };
+  if (typeof window === "undefined") return { x: 14, y: 0 };
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return { x: 10, y: 0 };
+  }
+  if (window.matchMedia("(max-width: 900px), (max-height: 700px)").matches) {
+    return { x: 12, y: 0 };
+  }
+  return { x: 14, y: 0 };
 }
 
 export function introTable(stage: Element | null) {
   if (!stage) return;
+  const tip = tableRestTip();
   if (prefersReducedMotion()) {
-    gsap.set(stage, { rotateX: 0, rotateY: 0, rotateZ: 0, y: 0, autoAlpha: 1 });
+    gsap.set(stage, { rotateX: tip.x, rotateY: 0, rotateZ: 0, y: 0, autoAlpha: 1 });
     return;
   }
-  // Flat fade/settle — no tip while sizing is being verified.
   gsap.fromTo(
     stage,
-    { rotateX: 0, rotateY: 0, rotateZ: 0, y: 24, autoAlpha: 0.4 },
+    { rotateX: tip.x + 16, rotateY: 0, rotateZ: 0, y: 80, autoAlpha: 0.4 },
     {
-      rotateX: 0,
+      rotateX: tip.x,
       rotateY: 0,
       rotateZ: 0,
       y: 0,
       autoAlpha: 1,
-      duration: 0.7,
+      duration: 1.05,
       ease: "power3.out",
     },
   );
 }
 
-/** Gentle rock in 3D — TEMP disabled (flat board) until sizing is settled. */
+/** Gentle rock in 3D — pauses cleanly via returned tween. */
 export function tableRock(table: Element | null): gsap.core.Timeline | null {
-  if (!table) return null;
-  gsap.set(table, { rotateX: 0, rotateY: 0, rotateZ: 0, y: 0, transformOrigin: "50% 50%" });
-  return null;
+  if (!table || prefersReducedMotion()) return null;
+  const tip = tableRestTip();
+  gsap.set(table, { rotateX: tip.x, rotateY: 0, rotateZ: 0, transformOrigin: "50% 50%" });
+  const tl = gsap.timeline({ repeat: -1, defaults: { ease: "sine.inOut" } });
+  tl.to(table, { rotateX: tip.x + 1.2, rotateY: 1.5, rotateZ: 0.25, duration: 3.4 })
+    .to(table, { rotateX: tip.x - 0.6, rotateY: -1.4, rotateZ: -0.2, duration: 3.8 })
+    .to(table, { rotateX: tip.x + 0.5, rotateY: 0.8, rotateZ: 0.12, duration: 3.0 })
+    .to(table, { rotateX: tip.x, rotateY: 0, rotateZ: 0, duration: 2.8 });
+  return tl;
 }
 
 export function floatBob(els: Element[]): gsap.core.Timeline | null {

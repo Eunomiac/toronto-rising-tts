@@ -20,16 +20,23 @@
 
   --light-x: -18%;
   --light-y: -28%;
-  /* TEMP: flatten the table until responsive sizing is settled. Restore ~14deg after. */
-  --table-tip-x: 0deg;
+  --table-tip-x: 14deg;
   --table-tip-y: 0deg;
-  --board-thickness: 22px;
+  /* Thin under-lip — just enough to read as board edge, not a second plane. */
+  --board-thickness: 6px;
   --ember: #ffb347;
   --ember-hot: #ff6a1a;
 }
 
 @media (max-width: 900px), (max-height: 700px) {
   :root {
-    --board-thickness: 14px;
+    --table-tip-x: 12deg;
+    --board-thickness: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --table-tip-x: 10deg;
   }
 }
