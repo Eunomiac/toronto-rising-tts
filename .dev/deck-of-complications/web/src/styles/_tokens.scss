@@ -22,8 +22,6 @@
   --light-y: -28%;
   --table-tip-x: 14deg;
   --table-tip-y: 0deg;
-  /* Thin under-lip — just enough to read as board edge, not a second plane. */
-  --board-thickness: 6px;
   --ember: #ffb347;
   --ember-hot: #ff6a1a;
 }
@@ -31,7 +29,6 @@
 @media (max-width: 900px), (max-height: 700px) {
   :root {
     --table-tip-x: 12deg;
-    --board-thickness: 5px;
   }
 }
 
