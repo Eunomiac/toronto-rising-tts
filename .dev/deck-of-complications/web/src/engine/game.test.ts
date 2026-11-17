@@ -3,12 +3,15 @@ import {
   adjust,
   confirmEnd,
   createGame,
-  discardSelected,
+  discardCard,
+  pickRandomSelected,
   publicView,
   reveal,
+  setCardValue,
   totals,
   toggleEnhance,
   toggleNegate,
+  toggleSelect,
   restrictCategory,
 } from "./game";
 import type { CatalogCard, TargetRoll } from "./types";
@@ -179,9 +182,9 @@ describe("enhance / negate / discard", () => {
     a.enhanced = true;
     b.zone = "slot";
     b.up = true;
-    g.selected = a.id;
+    g.selectedIds = [a.id];
     g.mode = "select";
-    toggleNegate(g, () => 0);
+    toggleNegate(g, a.id, () => 0);
     expect(a.negated).toBe(true);
     expect(a.enhanced).toBe(false);
     expect(b.enhanced).toBe(true);
@@ -191,9 +194,9 @@ describe("enhance / negate / discard", () => {
     const g = createGame(target, catalog, () => 0);
     const id = g.slots[1]!;
     g.cards[id].up = true;
-    g.selected = id;
+    g.selectedIds = [id];
     g.mode = "select";
-    discardSelected(g, () => 0);
+    discardCard(g, id, () => 0);
     expect(g.cards[id].zone).toBe("discard");
     expect(g.slots[1]).toBeTruthy();
     expect(g.slots[1]).not.toBe(id);
@@ -231,12 +234,47 @@ function deckIdsSnapshot(g: ReturnType<typeof createGame>) {
 }
 
 describe("toggleEnhance", () => {
-  it("enhances the selected card", () => {
+  it("enhances the card and clears without passing", () => {
+    const g = createGame(target, catalog, () => 0);
+    const id = g.slots[1]!;
+    const other = g.slots[2]!;
+    g.cards[id].up = true;
+    g.cards[other].up = true;
+    toggleEnhance(g, id);
+    expect(g.cards[id].enhanced).toBe(true);
+    toggleEnhance(g, id);
+    expect(g.cards[id].enhanced).toBe(false);
+    expect(g.cards[other].enhanced).toBe(false);
+  });
+});
+
+describe("multi-select / revalue", () => {
+  it("toggles selection and picks random among selected", () => {
+    const g = createGame(target, catalog, () => 0);
+    const a = g.slots[1]!;
+    const b = g.slots[2]!;
+    g.cards[a].up = true;
+    g.cards[b].up = true;
+    toggleSelect(g, a);
+    toggleSelect(g, b);
+    expect(g.selectedIds.sort()).toEqual([a, b].sort());
+    const winner = pickRandomSelected(g, () => 0);
+    expect(winner).toBeTruthy();
+    expect(g.highlightId).toBe(winner);
+    expect(g.selectedIds).toContain(winner!);
+  });
+
+  it("clears revalue when the same value is chosen again", () => {
     const g = createGame(target, catalog, () => 0);
     const id = g.slots[1]!;
     g.cards[id].up = true;
-    g.selected = id;
-    toggleEnhance(g);
-    expect(g.cards[id].enhanced).toBe(true);
+    g.cards[id].printedValue = 3;
+    g.cards[id].value = 3;
+    setCardValue(g, id, -2);
+    expect(g.cards[id].revalued).toBe(true);
+    expect(g.cards[id].value).toBe(-2);
+    setCardValue(g, id, -2);
+    expect(g.cards[id].revalued).toBe(false);
+    expect(g.cards[id].value).toBe(3);
   });
 });

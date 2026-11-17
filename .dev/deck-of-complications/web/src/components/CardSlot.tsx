@@ -22,6 +22,7 @@ function overlaySrc(value: number): string {
 export function CardSlot({
   slot,
   selected,
+  highlighted,
   canFlip,
   storyteller,
   playerChrome,
@@ -33,6 +34,7 @@ export function CardSlot({
 }: {
   slot: Slot | null;
   selected: boolean;
+  highlighted?: boolean;
   canFlip: boolean;
   storyteller: boolean;
   playerChrome: boolean;
@@ -44,14 +46,25 @@ export function CardSlot({
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const wasUp = useRef(slot?.up ?? false);
-  const wasEnhanced = useRef(false);
-  const wasNegated = useRef(false);
+  const wasEnhanced = useRef(!!slot?.enhanced);
+  const wasNegated = useRef(!!slot?.negated);
+  const trackedId = useRef(slot?.id ?? null);
   const longPress = useRef<number | null>(null);
   const flipping = useRef(false);
 
+  // Reset transition trackers when this button hosts a different card id.
   useEffect(() => {
     if (!slot) return;
-    // Remote / remount: card became face-up without a local click.
+    if (trackedId.current !== slot.id) {
+      trackedId.current = slot.id;
+      wasUp.current = slot.up;
+      wasEnhanced.current = slot.enhanced;
+      wasNegated.current = slot.negated;
+    }
+  }, [slot]);
+
+  useEffect(() => {
+    if (!slot) return;
     if (slot.up && !wasUp.current) {
       wasUp.current = true;
       flipping.current = true;
@@ -67,15 +80,19 @@ export function CardSlot({
 
   useEffect(() => {
     if (!slot) return;
-    if (slot.enhanced && !wasEnhanced.current) enhancePulse(ref.current);
+    if (slot.enhanced && !wasEnhanced.current) {
+      enhancePulse(ref.current);
+    }
     wasEnhanced.current = slot.enhanced;
-  }, [slot]);
+  }, [slot?.id, slot?.enhanced]);
 
   useEffect(() => {
     if (!slot) return;
-    if (slot.negated && !wasNegated.current) negateFlash(ref.current);
+    if (slot.negated && !wasNegated.current) {
+      negateFlash(ref.current);
+    }
     wasNegated.current = slot.negated;
-  }, [slot]);
+  }, [slot?.id, slot?.negated]);
 
   if (!slot) {
     return <div className="card-slot empty" aria-hidden />;
@@ -98,6 +115,7 @@ export function CardSlot({
         slot.up || wasUp.current ? "face-up" : "face-down",
         slot.up || wasUp.current ? "is-flipped" : "",
         selected && storyteller ? "selected" : "",
+        highlighted ? "highlight-pick" : "",
         canFlip ? "flippable" : "",
         playerChrome ? "player-chrome" : "",
       ]
@@ -109,7 +127,6 @@ export function CardSlot({
         if (!slot.up && canFlip) {
           flipping.current = true;
           const el = ref.current;
-          // Populate face just-in-time, then animate the physical flip before committing state.
           physicalFlip(el, faceSrc, () => {
             wasUp.current = true;
             flipping.current = false;

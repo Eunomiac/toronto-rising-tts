@@ -2,22 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import catalogJson from "../../public/data/catalog.json";
 import {
   adjust,
+  armSelect,
   cancelConfirm,
   candidates,
+  clearSelection,
   confirmEnd,
   createGame,
-  discardSelected,
+  discardCard,
   maybeAutoEnd,
+  pickRandomSelected,
   publicView,
   requestStop,
   resumePlay,
   reveal,
   selectCard,
+  setAdjust,
   setCardValue,
+  setMargin,
   setModeStop,
   toggleCategories,
   toggleEnhance,
   toggleNegate,
+  toggleSelect,
   type PublicGameView,
 } from "../engine/game";
 import type { CatalogCard, ClientRole, GameState } from "../engine/types";
@@ -44,7 +50,7 @@ function newSolo(margin: number): GameState {
 
 export function SoloPlay() {
   const [role, setRole] = useState<ClientRole>("player");
-  const [margin, setMargin] = useState(-3);
+  const [margin, setMarginUi] = useState(-3);
   const [game, setGame] = useState<GameState | null>(null);
 
   useEffect(() => {
@@ -84,18 +90,43 @@ export function SoloPlay() {
           resumePlay(g);
           break;
         case "forceSelect":
+          armSelect(g);
+          break;
+        case "toggleSelect":
+          toggleSelect(g, intent.cardId);
+          break;
+        case "clearSelection":
+          clearSelection(g);
           break;
         case "select":
           selectCard(g, intent.cardId);
           break;
         case "enhance":
-          toggleEnhance(g);
+          toggleEnhance(g, intent.cardId);
           break;
         case "negate":
-          toggleNegate(g);
+          toggleNegate(g, intent.cardId);
           break;
         case "discard":
-          discardSelected(g);
+          discardCard(g, intent.cardId);
+          break;
+        case "setValue":
+          setCardValue(g, intent.cardId, intent.value);
+          break;
+        case "pickRandomSelected":
+          pickRandomSelected(g);
+          break;
+        case "adjust":
+          adjust(g, intent.delta);
+          break;
+        case "setAdjust":
+          setAdjust(g, intent.value);
+          break;
+        case "setMargin":
+          setMargin(g, intent.value);
+          break;
+        case "toggleAutoDiscard":
+          toggleCategories(g);
           break;
         case "random": {
           const list = candidates(g, intent.mode);
@@ -105,15 +136,6 @@ export function SoloPlay() {
           }
           break;
         }
-        case "adjust":
-          adjust(g, intent.delta);
-          break;
-        case "setValue":
-          setCardValue(g, intent.value);
-          break;
-        case "toggleAutoDiscard":
-          toggleCategories(g);
-          break;
       }
       return g;
     });
@@ -148,7 +170,7 @@ export function SoloPlay() {
           <input
             type="number"
             value={margin}
-            onChange={(e) => setMargin(Number(e.target.value))}
+            onChange={(e) => setMarginUi(Number(e.target.value))}
           />
         </label>
         <button
@@ -172,7 +194,7 @@ export function SoloPlay() {
             apply({ op: "flip", cardId });
           });
         }}
-        onSelect={(cardId) => apply({ op: "select", cardId })}
+        onToggleSelect={(cardId) => apply({ op: "toggleSelect", cardId })}
         onIntent={apply}
       />
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import type { ClientRole } from "../engine/types";
@@ -11,6 +11,7 @@ gsap.registerPlugin(useGSAP);
 
 function signed(n: number): string {
   if (n > 0) return `+${n}`;
+  if (n === 0) return "+0";
   return String(n);
 }
 
@@ -26,6 +27,71 @@ function statusFor(view: PublicGameView, role: ClientRole): string | null {
   return null;
 }
 
+function parseSignedInput(raw: string): number | null {
+  const t = raw.trim().replace(/^\+/, "");
+  if (t === "" || t === "-") return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
+function HoldEndButton({ onComplete }: { onComplete: () => void }) {
+  const [pct, setPct] = useState(0);
+  const holding = useRef(false);
+  const raf = useRef(0);
+  const started = useRef(0);
+
+  function stopHold(done: boolean) {
+    holding.current = false;
+    cancelAnimationFrame(raf.current);
+    if (done) {
+      setPct(100);
+      onComplete();
+      window.setTimeout(() => setPct(0), 200);
+    } else {
+      setPct(0);
+    }
+  }
+
+  function tick(now: number) {
+    if (!holding.current) return;
+    const p = Math.min(1, (now - started.current) / 900);
+    setPct(p * 100);
+    if (p >= 1) {
+      stopHold(true);
+      return;
+    }
+    raf.current = requestAnimationFrame(tick);
+  }
+
+  function startHold() {
+    holding.current = true;
+    started.current = performance.now();
+    raf.current = requestAnimationFrame(tick);
+  }
+
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+
+  return (
+    <button
+      type="button"
+      className="st-btn st-hold-end"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        (e.currentTarget as HTMLButtonElement).setPointerCapture(e.pointerId);
+        startHold();
+      }}
+      onPointerUp={() => stopHold(false)}
+      onPointerCancel={() => stopHold(false)}
+      onPointerLeave={() => {
+        if (holding.current) stopHold(false);
+      }}
+    >
+      <span className="st-hold-fill" style={{ width: `${pct}%` }} />
+      <span className="st-hold-label">End Game</span>
+    </button>
+  );
+}
+
 export function FloatingHud({
   role,
   view,
@@ -38,6 +104,16 @@ export function FloatingHud({
   const root = useRef<HTMLDivElement>(null);
   const prevTotal = useRef(view.totals.complicationsTotal);
   const status = statusFor(view, role);
+  const [marginDraft, setMarginDraft] = useState(signed(view.totals.originalMargin));
+  const [modifyDraft, setModifyDraft] = useState(signed(view.adjust));
+
+  useEffect(() => {
+    setMarginDraft(signed(view.totals.originalMargin));
+  }, [view.totals.originalMargin]);
+
+  useEffect(() => {
+    setModifyDraft(signed(view.adjust));
+  }, [view.adjust]);
 
   useGSAP(
     () => {
@@ -64,22 +140,20 @@ export function FloatingHud({
       if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
       e.preventDefault();
       if (role === "player") void fireIntent({ op: "stop" }, onIntent);
-      else if (view.mode === "select") void fireIntent({ op: "resume" }, onIntent);
       else if (view.mode === "confirm") void fireIntent({ op: "confirmEnd" }, onIntent);
-      else void fireIntent({ op: "stop" }, onIntent);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [role, view.ended, view.mode, onIntent]);
 
-  const stopLabel =
-    role === "player"
-      ? "Stop"
-      : view.mode === "select"
-        ? "Resume"
-        : view.mode === "confirm"
-          ? "Confirm"
-          : "Stop";
+  const marginTone =
+    view.totals.originalMargin < 0
+      ? "tone-red"
+      : "tone-gold";
+  const modifyTone =
+    view.adjust < 0 ? "tone-red" : view.adjust > 0 ? "tone-gold" : "tone-grey";
+  const stHasControl = view.mode === "select" || view.mode === "confirm";
+  const hasSelection = view.selectedIds.length > 0;
 
   return (
     <div className={`floating-hud role-${role}`} ref={root}>
@@ -102,18 +176,13 @@ export function FloatingHud({
         </p>
       )}
 
-      {!view.ended && (
+      {role === "player" && !view.ended && (
         <button
           type="button"
           className="float-stop"
-          onClick={() => {
-            if (role === "player") void fireIntent({ op: "stop" }, onIntent);
-            else if (view.mode === "select") void fireIntent({ op: "resume" }, onIntent);
-            else if (view.mode === "confirm") void fireIntent({ op: "confirmEnd" }, onIntent);
-            else void fireIntent({ op: "stop" }, onIntent);
-          }}
+          onClick={() => void fireIntent({ op: "stop" }, onIntent)}
         >
-          {stopLabel}
+          Stop
         </button>
       )}
 
@@ -127,32 +196,85 @@ export function FloatingHud({
         </button>
       )}
 
-      {role === "storyteller" && (
-        <div className="float-st-tools">
-          <button
-            type="button"
-            className="float-gear"
-            title="Toggle auto-discard"
-            onClick={() => void fireIntent({ op: "toggleAutoDiscard" }, onIntent)}
-          >
-            {view.autoDiscard ? "Auto-disc On" : "Auto-disc Off"}
-          </button>
-          <div className="float-adjust">
+      {role === "storyteller" && !view.ended && (
+        <>
+          <div className="st-panel st-panel-left">
+            <div className="st-field">
+              <label htmlFor="st-margin">Margin</label>
+              <input
+                id="st-margin"
+                className={marginTone}
+                value={marginDraft}
+                onChange={(e) => setMarginDraft(e.target.value)}
+                onBlur={() => {
+                  const n = parseSignedInput(marginDraft);
+                  if (n == null) {
+                    setMarginDraft(signed(view.totals.originalMargin));
+                    return;
+                  }
+                  void fireIntent({ op: "setMargin", value: n }, onIntent);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                }}
+              />
+            </div>
+            <div className="st-field">
+              <label htmlFor="st-modify">Modify</label>
+              <input
+                id="st-modify"
+                className={modifyTone}
+                value={modifyDraft}
+                onChange={(e) => setModifyDraft(e.target.value)}
+                onBlur={() => {
+                  const n = parseSignedInput(modifyDraft);
+                  if (n == null) {
+                    setModifyDraft(signed(view.adjust));
+                    return;
+                  }
+                  void fireIntent({ op: "setAdjust", value: n }, onIntent);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                }}
+              />
+            </div>
             <button
               type="button"
-              onClick={() => void fireIntent({ op: "adjust", delta: -1 }, onIntent)}
+              className={`st-btn ${stHasControl ? "neutral" : "danger"}`}
+              onClick={() => {
+                if (stHasControl) void fireIntent({ op: "resume" }, onIntent);
+                else void fireIntent({ op: "forceSelect" }, onIntent);
+              }}
             >
-              −
+              {stHasControl ? "Pass Back" : "Take Control"}
             </button>
-            <span>{signed(view.adjust)}</span>
             <button
               type="button"
-              onClick={() => void fireIntent({ op: "adjust", delta: 1 }, onIntent)}
+              className="st-btn neutral"
+              disabled={!hasSelection}
+              onClick={() => {
+                if (!hasSelection) return;
+                void fireIntent({ op: "pickRandomSelected" }, onIntent);
+              }}
             >
-              +
+              {hasSelection ? "Pick Random" : "Select Card(s)"}
             </button>
           </div>
-        </div>
+
+          <div className="st-panel st-panel-right">
+            <button
+              type="button"
+              className={`st-btn ${view.autoDiscard ? "on" : "neutral"}`}
+              onClick={() => void fireIntent({ op: "toggleAutoDiscard" }, onIntent)}
+            >
+              {view.autoDiscard ? "Category Discard On" : "Category Discard Off"}
+            </button>
+            <HoldEndButton
+              onComplete={() => void fireIntent({ op: "confirmEnd" }, onIntent)}
+            />
+          </div>
+        </>
       )}
 
       {view.ended && (

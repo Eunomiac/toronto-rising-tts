@@ -13,14 +13,20 @@ export type GameIntent =
   | { op: "cancelConfirm" }
   | { op: "resume" }
   | { op: "forceSelect" }
-  | { op: "select"; cardId: string | null }
-  | { op: "enhance" }
-  | { op: "negate" }
-  | { op: "discard" }
-  | { op: "random"; mode: "all" | "normal" | "enhanced" }
+  | { op: "toggleSelect"; cardId: string }
+  | { op: "clearSelection" }
+  | { op: "enhance"; cardId: string }
+  | { op: "negate"; cardId: string }
+  | { op: "discard"; cardId: string }
+  | { op: "setValue"; cardId: string; value: number }
+  | { op: "pickRandomSelected" }
   | { op: "adjust"; delta: number }
-  | { op: "setValue"; value: number }
-  | { op: "toggleAutoDiscard" };
+  | { op: "setAdjust"; value: number }
+  | { op: "setMargin"; value: number }
+  | { op: "toggleAutoDiscard" }
+  /** @deprecated legacy single-select; kept only if old clients linger */
+  | { op: "select"; cardId: string | null }
+  | { op: "random"; mode: "all" | "normal" | "enhanced" };
 
 /** Messages room → client */
 export type ServerMessage =

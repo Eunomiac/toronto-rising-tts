@@ -73,7 +73,10 @@ export interface GameState {
   adjust: number;
   autoDiscard: boolean;
   mode: GameMode;
-  selected: string | null;
+  /** Face-up cards the Storyteller has multi-selected (yellow outline). */
+  selectedIds: string[];
+  /** Brief Pick Random winner flash; cleared on next unrelated mutation if desired. */
+  highlightId: string | null;
   last: string | null;
   exhausted: boolean;
   /** Next flip should be enhanced (conservation of enhancement). */

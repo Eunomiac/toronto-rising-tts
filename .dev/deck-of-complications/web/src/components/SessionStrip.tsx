@@ -21,7 +21,7 @@ function statusLine(view: PublicGameView, role: ClientRole): string {
     return "The Storyteller is resolving a card effect…";
   }
   if (role === "player") return "Flip a card, or stop when you are ready.";
-  return "Click a face-up card for actions · right-click or long-press for the ring.";
+  return "Left-click selects · right-click opens the ring menu.";
 }
 
 export function SessionStrip({

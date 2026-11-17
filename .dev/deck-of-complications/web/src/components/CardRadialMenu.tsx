@@ -4,22 +4,36 @@ import { menuFan } from "../motion";
 import { fireIntent } from "../lib/fireIntent";
 import { playSfx, unlockAudio } from "../audio/sfx";
 
-const ITEMS: { op: GameIntent; label: string; angle: number }[] = [
-  { op: { op: "enhance" }, label: "Enhance", angle: -90 },
-  { op: { op: "negate" }, label: "Negate", angle: -18 },
-  { op: { op: "discard" }, label: "Discard", angle: 54 },
-  { op: { op: "random", mode: "normal" }, label: "Random", angle: 126 },
-  { op: { op: "select", cardId: null }, label: "Clear", angle: 198 },
+const REVALUE_ROWS: number[][] = [
+  [-5, -4, -3, -2, -1],
+  [0],
+  [1, 2, 3, 4, 5],
+  [6, 7, 8, 9, 10],
 ];
+
+function chipLabel(n: number): string {
+  if (n > 0) return `+${n}`;
+  return String(n);
+}
 
 export function CardRadialMenu({
   x,
   y,
+  cardId,
+  enhanced,
+  negated,
+  value,
+  revalued,
   onIntent,
   onClose,
 }: {
   x: number;
   y: number;
+  cardId: string;
+  enhanced: boolean;
+  negated: boolean;
+  value: number;
+  revalued: boolean;
   onIntent: (intent: GameIntent) => void;
   onClose: () => void;
 }) {
@@ -42,7 +56,10 @@ export function CardRadialMenu({
     };
   }, [onClose]);
 
-  const radius = 78;
+  function act(intent: GameIntent) {
+    void fireIntent(intent, onIntent);
+    onClose();
+  }
 
   return (
     <div
@@ -53,25 +70,50 @@ export function CardRadialMenu({
       aria-label="Card actions"
     >
       <div className="radial-hub" aria-hidden />
-      {ITEMS.map((item) => {
-        const rad = (item.angle * Math.PI) / 180;
-        const tx = Math.cos(rad) * radius;
-        const ty = Math.sin(rad) * radius;
-        return (
-          <button
-            key={item.label}
-            type="button"
-            className="radial-item"
-            style={{ transform: `translate(${tx}px, ${ty}px)` }}
-            onClick={() => {
-              void fireIntent(item.op, onIntent);
-              onClose();
-            }}
-          >
-            {item.label}
-          </button>
-        );
-      })}
+
+      <div className="radial-revalue" role="group" aria-label="Revalue">
+        {REVALUE_ROWS.map((row) => (
+          <div key={row.join(",")} className="radial-revalue-row">
+            {row.map((n) => {
+              const active = revalued && value === n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  className={`radial-chip${active ? " active" : ""}`}
+                  onClick={() => act({ op: "setValue", cardId, value: n })}
+                >
+                  {chipLabel(n)}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      <div className="radial-actions">
+        <button
+          type="button"
+          className={`radial-pill${enhanced ? " active" : ""}`}
+          onClick={() => act({ op: "enhance", cardId })}
+        >
+          Enhance
+        </button>
+        <button
+          type="button"
+          className={`radial-pill${negated ? " active" : ""}`}
+          onClick={() => act({ op: "negate", cardId })}
+        >
+          Negate
+        </button>
+        <button
+          type="button"
+          className="radial-pill danger"
+          onClick={() => act({ op: "discard", cardId })}
+        >
+          Discard
+        </button>
+      </div>
     </div>
   );
 }

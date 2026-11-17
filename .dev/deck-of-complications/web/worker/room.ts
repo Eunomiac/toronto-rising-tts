@@ -5,20 +5,25 @@ import {
   armSelect,
   cancelConfirm,
   candidates,
+  clearSelection,
   confirmEnd,
   createGame,
-  discardSelected,
+  discardCard,
   maybeAutoEnd,
+  pickRandomSelected,
   publicView,
   requestStop,
   resumePlay,
   reveal,
   selectCard,
+  setAdjust,
   setCardValue,
+  setMargin,
   setModeStop,
   toggleCategories,
   toggleEnhance,
   toggleNegate,
+  toggleSelect,
   type PublicGameView,
 } from "../src/engine/game";
 import type { CatalogCard, ClientRole, GameState, TargetRoll } from "../src/engine/types";
@@ -229,22 +234,42 @@ export class GameRoom extends Server<RoomEnv> {
         if (role !== "storyteller") throw new Error("ST only");
         armSelect(g);
         break;
+      case "toggleSelect":
+        if (role !== "storyteller") throw new Error("ST only");
+        if (!toggleSelect(g, intent.cardId)) throw new Error("Cannot select that card.");
+        break;
+      case "clearSelection":
+        if (role !== "storyteller") throw new Error("ST only");
+        clearSelection(g);
+        break;
       case "select":
         if (role !== "storyteller") throw new Error("ST only");
         if (!selectCard(g, intent.cardId)) throw new Error("Cannot select that card.");
         break;
       case "enhance":
         if (role !== "storyteller") throw new Error("ST only");
-        if (!toggleEnhance(g)) throw new Error("Select a face-up card first.");
+        if (!toggleEnhance(g, intent.cardId)) throw new Error("Cannot enhance that card.");
         break;
       case "negate":
         if (role !== "storyteller") throw new Error("ST only");
-        if (!toggleNegate(g)) throw new Error("Select a face-up card first.");
+        if (!toggleNegate(g, intent.cardId)) throw new Error("Cannot negate that card.");
         break;
       case "discard":
         if (role !== "storyteller") throw new Error("ST only");
-        if (!discardSelected(g)) throw new Error("Select a face-up card first.");
+        if (!discardCard(g, intent.cardId)) throw new Error("Cannot discard that card.");
         break;
+      case "setValue":
+        if (role !== "storyteller") throw new Error("ST only");
+        if (!setCardValue(g, intent.cardId, intent.value)) {
+          throw new Error("Cannot revalue that card.");
+        }
+        break;
+      case "pickRandomSelected": {
+        if (role !== "storyteller") throw new Error("ST only");
+        const winner = pickRandomSelected(g);
+        if (!winner) throw new Error("Select at least one face-up card first.");
+        break;
+      }
       case "random": {
         if (role !== "storyteller") throw new Error("ST only");
         const list = candidates(g, intent.mode);
@@ -257,9 +282,13 @@ export class GameRoom extends Server<RoomEnv> {
         if (role !== "storyteller") throw new Error("ST only");
         adjust(g, intent.delta);
         break;
-      case "setValue":
+      case "setAdjust":
         if (role !== "storyteller") throw new Error("ST only");
-        if (!setCardValue(g, intent.value)) throw new Error("Select a face-up card first.");
+        setAdjust(g, intent.value);
+        break;
+      case "setMargin":
+        if (role !== "storyteller") throw new Error("ST only");
+        setMargin(g, intent.value);
         break;
       case "toggleAutoDiscard":
         if (role !== "storyteller") throw new Error("ST only");

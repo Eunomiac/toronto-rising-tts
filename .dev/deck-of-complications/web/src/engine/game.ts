@@ -54,7 +54,8 @@ export function createGame(
     adjust: 0,
     autoDiscard: true,
     mode: "stop",
-    selected: null,
+    selectedIds: [],
+    highlightId: null,
     last: null,
     exhausted: false,
     enhanceNext: false,
@@ -239,33 +240,42 @@ export function reveal(
     g.enhanceNext = false;
   }
   if (pause) {
-    g.selected = id;
+    g.selectedIds = [id];
     g.mode = "select";
   } else {
-    g.selected = null;
+    g.selectedIds = [];
     g.mode = "stop";
   }
+  g.highlightId = null;
   restrictCategory(g, c.category, rng);
   touch(g);
   return { ok: true, pause };
 }
 
-export function discardSelected(g: GameState, rng: Rng = Math.random): boolean {
-  const id = g.selected;
-  const c = id ? g.cards[id] : null;
+function removeFromSelection(g: GameState, id: string) {
+  g.selectedIds = g.selectedIds.filter((x) => x !== id);
+  if (g.highlightId === id) g.highlightId = null;
+}
+
+export function discardCard(
+  g: GameState,
+  cardId: string,
+  rng: Rng = Math.random,
+): boolean {
+  const c = g.cards[cardId];
   if (!c || c.zone !== "slot" || !c.up) return false;
-  const slot = clearSlotOf(g, id!);
-  if (c.enhanced) passEnhancement(g, id!, rng);
+  const slot = clearSlotOf(g, cardId);
+  if (c.enhanced) passEnhancement(g, cardId, rng);
   c.zone = "discard";
   c.up = false;
   c.negated = false;
-  g.selected = null;
+  removeFromSelection(g, cardId);
   g.mode = "select";
   if (c.category !== "") {
     const matching = Object.keys(g.cards)
       .filter(
         (other) =>
-          other !== id &&
+          other !== cardId &&
           g.cards[other].zone === "discard" &&
           g.cards[other].category === c.category,
       )
@@ -280,6 +290,13 @@ export function discardSelected(g: GameState, rng: Rng = Math.random): boolean {
   }
   touch(g);
   return true;
+}
+
+/** @deprecated use discardCard */
+export function discardSelected(g: GameState, rng: Rng = Math.random): boolean {
+  const id = g.selectedIds[0];
+  if (!id) return false;
+  return discardCard(g, id, rng);
 }
 
 export function toggleCategories(g: GameState, rng: Rng = Math.random) {
@@ -329,52 +346,78 @@ export function candidates(
 
 export function setModeStop(g: GameState) {
   g.mode = "stop";
-  g.selected = null;
+  g.selectedIds = [];
+  g.highlightId = null;
   touch(g);
 }
 
+/** Storyteller takes control (player waits). */
 export function armSelect(g: GameState) {
   if (g.ended) return;
-  if (g.last && g.cards[g.last]?.zone === "slot") g.selected = g.last;
-  else g.selected = null;
   g.mode = "select";
+  g.highlightId = null;
   touch(g);
 }
 
+export function clearSelection(g: GameState) {
+  g.selectedIds = [];
+  g.highlightId = null;
+  touch(g);
+}
+
+/** Toggle a face-up card in/out of the Storyteller multi-select set. */
+export function toggleSelect(g: GameState, cardId: string): boolean {
+  if (g.ended || g.mode === "ended") return false;
+  const c = g.cards[cardId];
+  if (!c || c.zone !== "slot" || !c.up) return false;
+  if (g.selectedIds.includes(cardId)) {
+    g.selectedIds = g.selectedIds.filter((x) => x !== cardId);
+  } else {
+    g.selectedIds = [...g.selectedIds, cardId];
+  }
+  g.highlightId = null;
+  touch(g);
+  return true;
+}
+
+/** Legacy single-select (sets selectedIds to one id or clears). */
 export function selectCard(g: GameState, id: string | null) {
-  // Web ST UX: allow picking a face-up card without arming a separate "Force Select" mode.
   if (g.ended || g.mode === "ended") return false;
   if (id == null) {
-    g.selected = null;
+    g.selectedIds = [];
+    g.highlightId = null;
     touch(g);
     return true;
   }
   const c = g.cards[id];
   if (!c || c.zone !== "slot" || !c.up) return false;
-  g.selected = id;
+  g.selectedIds = [id];
+  g.highlightId = null;
   touch(g);
   return true;
 }
 
-export function toggleEnhance(g: GameState, rng: Rng = Math.random) {
-  const id = g.selected;
-  const c = id ? g.cards[id] : null;
+/**
+ * Toggle enhance on a face-up card.
+ * Off path clears only — does not pass enhancement to another card.
+ */
+export function toggleEnhance(g: GameState, cardId: string): boolean {
+  const c = g.cards[cardId];
   if (!c || c.zone !== "slot" || !c.up) return false;
-  if (c.enhanced) {
-    passEnhancement(g, id!, rng);
-  } else {
-    c.enhanced = true;
-  }
+  c.enhanced = !c.enhanced;
   touch(g);
   return true;
 }
 
-export function toggleNegate(g: GameState, rng: Rng = Math.random) {
-  const id = g.selected;
-  const c = id ? g.cards[id] : null;
+export function toggleNegate(
+  g: GameState,
+  cardId: string,
+  rng: Rng = Math.random,
+): boolean {
+  const c = g.cards[cardId];
   if (!c || c.zone !== "slot" || !c.up) return false;
   const next = !c.negated;
-  if (next && c.enhanced) passEnhancement(g, id!, rng);
+  if (next && c.enhanced) passEnhancement(g, cardId, rng);
   c.negated = next;
   touch(g);
   return true;
@@ -385,14 +428,55 @@ export function adjust(g: GameState, delta: number) {
   touch(g);
 }
 
-export function setCardValue(g: GameState, value: number) {
-  const id = g.selected;
-  const c = id ? g.cards[id] : null;
+export function setAdjust(g: GameState, value: number) {
+  g.adjust = value;
+  touch(g);
+}
+
+export function setMargin(g: GameState, value: number) {
+  g.target.margin = value;
+  touch(g);
+}
+
+/**
+ * Set or clear a revalue. Clicking the same active value again restores the printed base.
+ */
+export function setCardValue(
+  g: GameState,
+  cardId: string,
+  value: number,
+): boolean {
+  const c = g.cards[cardId];
   if (!c || c.zone !== "slot" || !c.up) return false;
-  c.value = value;
-  c.revalued = true;
+  if (c.revalued && c.value === value) {
+    c.revalued = false;
+    c.value =
+      typeof c.printedValue === "number" && Number.isFinite(c.printedValue)
+        ? c.printedValue
+        : 0;
+  } else {
+    c.value = value;
+    c.revalued = true;
+  }
   touch(g);
   return true;
+}
+
+/** Random among multi-selected face-up cards; pulses that winner. */
+export function pickRandomSelected(
+  g: GameState,
+  rng: Rng = Math.random,
+): string | null {
+  const eligible = g.selectedIds.filter((id) => {
+    const c = g.cards[id];
+    return c && c.zone === "slot" && c.up;
+  });
+  if (!eligible.length) return null;
+  const winner = pickRandom(eligible, rng);
+  g.highlightId = winner;
+  g.mode = "select";
+  touch(g);
+  return winner;
 }
 
 export function requestStop(g: GameState) {
@@ -407,7 +491,8 @@ export function confirmEnd(g: GameState): PublicTotals {
   g.ended = true;
   g.mode = "ended";
   g.finalTotal = t.complicationsTotal;
-  g.selected = null;
+  g.selectedIds = [];
+  g.highlightId = null;
   touch(g);
   return t;
 }
@@ -422,7 +507,8 @@ export function cancelConfirm(g: GameState) {
 export function resumePlay(g: GameState) {
   if (g.ended) return;
   g.mode = "stop";
-  g.selected = null;
+  g.selectedIds = [];
+  g.highlightId = null;
   touch(g);
 }
 
@@ -448,7 +534,8 @@ export function publicView(g: GameState) {
     id: g.id,
     target: g.target,
     mode: g.mode,
-    selected: g.selected,
+    selectedIds: [...g.selectedIds],
+    highlightId: g.highlightId,
     last: g.last,
     adjust: g.adjust,
     autoDiscard: g.autoDiscard,

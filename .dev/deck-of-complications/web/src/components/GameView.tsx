@@ -62,7 +62,7 @@ export function GameView({
             sendIntent({ op: "flip", cardId });
           });
         }}
-        onSelect={(cardId) => sendIntent({ op: "select", cardId })}
+        onToggleSelect={(cardId) => sendIntent({ op: "toggleSelect", cardId })}
         onIntent={sendIntent}
       />
       {error && <p className="banner error">{error}</p>}

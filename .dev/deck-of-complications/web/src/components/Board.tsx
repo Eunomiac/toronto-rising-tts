@@ -9,11 +9,11 @@ import {
   discardOffBoard,
   introTable,
   leapToRead,
+  selectionPulse,
   tableRock,
 } from "../motion";
 import { playSfx } from "../audio/sfx";
 import { CardSlot } from "./CardSlot";
-import { CardActionPopover } from "./CardActionPopover";
 import { CardRadialMenu } from "./CardRadialMenu";
 
 gsap.registerPlugin(useGSAP);
@@ -22,31 +22,32 @@ export function Board({
   view,
   role,
   onFlip,
-  onSelect,
+  onToggleSelect,
   onIntent,
 }: {
   view: PublicGameView;
   role: ClientRole;
   onFlip: (cardId: string) => void;
-  onSelect: (cardId: string) => void;
+  onToggleSelect: (cardId: string) => void;
   onIntent: (intent: GameIntent) => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const tableRef = useRef<HTMLDivElement>(null); // board-stack — tipped + rocked
+  const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const dealtFor = useRef<string | null>(null);
   const rockRef = useRef<gsap.core.Timeline | null>(null);
   const prevSlots = useRef<(string | null)[]>([]);
   const leapDismiss = useRef<(() => void) | null>(null);
+  const lastHighlight = useRef<string | null>(null);
 
-  const [popover, setPopover] = useState<DOMRect | null>(null);
-  const [radial, setRadial] = useState<{ x: number; y: number } | null>(null);
+  const [radial, setRadial] = useState<{
+    x: number;
+    y: number;
+    cardId: string;
+  } | null>(null);
 
-  const closeMenus = useCallback(() => {
-    setPopover(null);
-    setRadial(null);
-  }, []);
+  const closeMenus = useCallback(() => setRadial(null), []);
 
   const pauseRock = useCallback(() => {
     rockRef.current?.pause();
@@ -90,7 +91,6 @@ export function Board({
     { scope: rootRef, dependencies: [view.id] },
   );
 
-  // Discard / refill: cards that leave a slot slide off the bottom.
   useEffect(() => {
     const prev = prevSlots.current;
     const next = view.slots.map((s) => s?.id ?? null);
@@ -100,7 +100,6 @@ export function Board({
           const el = gridRef.current?.querySelectorAll(".card-slot")[i];
           if (el && !el.classList.contains("empty")) {
             discardOffBoard(el, () => {
-              // Replacement card drops in after abyss exit.
               const replacement = gridRef.current?.querySelectorAll(".card-slot")[i];
               if (replacement && !replacement.classList.contains("empty")) {
                 dealFromAbove({
@@ -125,6 +124,15 @@ export function Board({
     [],
   );
 
+  useEffect(() => {
+    if (!view.highlightId || view.highlightId === lastHighlight.current) return;
+    lastHighlight.current = view.highlightId;
+    const idx = view.slots.findIndex((s) => s?.id === view.highlightId);
+    if (idx < 0) return;
+    const el = gridRef.current?.querySelectorAll(".card-slot")[idx];
+    if (el) selectionPulse(el);
+  }, [view.highlightId, view.slots]);
+
   const canFlip =
     !view.ended &&
     view.mode === "stop" &&
@@ -133,6 +141,9 @@ export function Board({
 
   const storyteller = role === "storyteller";
   const playerChrome = role === "player";
+  const radialSlot = radial
+    ? view.slots.find((s) => s?.id === radial.cardId)
+    : null;
 
   return (
     <div className="playmat-wrap" ref={rootRef}>
@@ -145,29 +156,30 @@ export function Board({
                 <CardSlot
                   key={slot?.id ?? `empty-${index}`}
                   slot={slot}
-                  selected={!!slot && slot.id === view.selected}
+                  selected={
+                    !!slot && view.selectedIds.includes(slot.id)
+                  }
+                  highlighted={!!slot && slot.id === view.highlightId}
                   canFlip={!!slot && !slot.up && canFlip}
                   storyteller={storyteller}
                   playerChrome={playerChrome}
                   onFlip={() => slot && onFlip(slot.id)}
                   onSelect={() => {
-                    if (!slot?.up) return;
-                    if (storyteller) {
-                      onSelect(slot.id);
-                      const el = gridRef.current?.querySelectorAll(".card-slot")[index];
-                      if (el) setPopover(el.getBoundingClientRect());
-                      setRadial(null);
-                    }
+                    if (!slot?.up || !storyteller) return;
+                    onToggleSelect(slot.id);
+                    setRadial(null);
                   }}
                   onContextMenu={(e) => {
                     if (!slot?.up || !storyteller) return;
-                    onSelect(slot.id);
-                    setRadial({ x: e.clientX, y: e.clientY });
-                    setPopover(null);
+                    setRadial({
+                      x: e.clientX,
+                      y: e.clientY,
+                      cardId: slot.id,
+                    });
                   }}
                   onFaceUpEnter={(el) => {
-                    if (storyteller) return; // ST uses click menus; leap is player read aid
-                    if (leapDismiss.current) return; // already reading — keep stable
+                    if (storyteller) return;
+                    if (leapDismiss.current) return;
                     pauseRock();
                     const { dismiss } = leapToRead({
                       source: el,
@@ -189,21 +201,15 @@ export function Board({
         </div>
       </div>
 
-      {storyteller && popover && view.selected && (
-        <CardActionPopover
-          view={view}
-          anchor={popover}
-          onIntent={(intent) => {
-            onIntent(intent);
-            if (intent.op === "discard" || intent.op === "select") closeMenus();
-          }}
-          onClose={closeMenus}
-        />
-      )}
-      {storyteller && radial && (
+      {storyteller && radial && radialSlot && (
         <CardRadialMenu
           x={radial.x}
           y={radial.y}
+          cardId={radial.cardId}
+          enhanced={radialSlot.enhanced}
+          negated={radialSlot.negated}
+          value={radialSlot.value}
+          revalued={radialSlot.revalued}
           onIntent={onIntent}
           onClose={closeMenus}
         />

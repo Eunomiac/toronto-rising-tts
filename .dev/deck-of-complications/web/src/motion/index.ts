@@ -418,6 +418,28 @@ export function negateFlash(el: Element | null) {
   );
 }
 
+/** Pick Random winner — gold outline pulse visible to ST and player. */
+export function selectionPulse(el: Element | null) {
+  if (!el || prefersReducedMotion()) {
+    el?.classList.add("highlight-pick");
+    window.setTimeout(() => el?.classList.remove("highlight-pick"), 900);
+    return;
+  }
+  el.classList.add("highlight-pick");
+  gsap.fromTo(
+    el,
+    { filter: "brightness(1)" },
+    {
+      filter: "brightness(1.25)",
+      duration: 0.18,
+      yoyo: true,
+      repeat: 3,
+      ease: "power1.inOut",
+      onComplete: () => el.classList.remove("highlight-pick"),
+    },
+  );
+}
+
 export function totalsPunch(el: Element | null) {
   if (!el || prefersReducedMotion()) return;
   gsap.fromTo(

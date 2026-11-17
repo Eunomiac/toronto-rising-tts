@@ -23,6 +23,11 @@ export async function fireIntent(
       playSfx("confirm");
       break;
     case "adjust":
+    case "setAdjust":
+    case "setMargin":
+    case "setValue":
+    case "toggleSelect":
+    case "pickRandomSelected":
       playSfx("tick");
       break;
     case "flip":
