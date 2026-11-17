@@ -437,6 +437,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## UI Panels
 
+- [x] **Deck of Complications public web app:** Chronicle-table Vite/React app with GSAP + subtle SFX; Cloudflare Durable Object rooms; Dashboard create/apply handoff; TTS board start gated off (decks remain for one-off draws). Live at `toronto-rising-complications.toronto-rising-player-map.workers.dev`. Pending Save & Play / live play pass. _(TOR-796)_
 - [x] **Location icon hold shows site hub overview:** District cards live under `assets/Districts`; site hub art under `assets/Site Hubs` is synced to Global Custom UI. Hover still shows District + Site cards; click-and-hold on a hub site shows the hub image. Pending Save & Play. _(TOR-784)_
 - [x] **Held site hub overview fills screen height:** Location dock defaults use height 1080 with preserveAspect so the hub image is full-screen tall while the icon is held. Pending Save & Play. _(TOR-786)_
 - [x] **Storyteller Refresh UI performs a complete Global UI rewrite:** The debug-toolbar button now uses the same full remount and post-mount reconciliation path as staged onboarding, so it can clear stale client overlays. Pending Save & Play. _(TOR-757)_
