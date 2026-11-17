@@ -12,7 +12,7 @@
   width: 100%;
   /* Milder tip so cards keep readable portrait proportions. */
   perspective: 1800px;
-  perspective-origin: 50% 58%;
+  perspective-origin: 50% 62%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,7 +68,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(0.55rem, 1.3cqh, 1rem) clamp(0.55rem, 1.2cqw, 1rem);
+  padding: clamp(0.35rem, 0.9cqh, 0.7rem) clamp(0.45rem, 1cqw, 0.85rem);
   border-radius: calc(var(--radius) + 4px);
   border: 1px solid rgba(201, 162, 74, 0.35);
   box-shadow:
@@ -96,14 +96,12 @@
 .slot-grid {
   --gap: clamp(0.2rem, 0.6cqw, 0.45rem);
   /*
-    Height-first sizing: two portrait rows claim most of the stage height,
-    then width is derived from the true 416:542 card ratio and capped to fit.
-    (Do not reassign a custom property to a min() of itself — that cycles to 0.)
+    Height-first: fill nearly all stage height with two portrait rows,
+    width from real face art 630×879, then capped to five columns.
   */
-  /* Face art is 630×879. */
-  --card-h-ideal: min(26rem, calc((100cqh - 2.5rem - var(--gap)) / 2));
+  --card-h-ideal: calc((100cqh - 1.1rem - var(--gap)) / 2);
   --card-w-from-h: calc(var(--card-h-ideal) * 630 / 879);
-  --card-w-max: calc((100cqw - 1.5rem - 4 * var(--gap)) / 5);
+  --card-w-max: calc((100cqw - 1.25rem - 4 * var(--gap)) / 5);
   --card-w: min(var(--card-w-from-h), var(--card-w-max));
   --card-h: calc(var(--card-w) * 879 / 630);
 
@@ -118,7 +116,7 @@
   overflow: visible;
 
   @media (max-width: 700px) and (orientation: portrait) {
-    --card-h-ideal: min(12rem, calc((100cqh - 3rem - 4 * var(--gap)) / 5));
+    --card-h-ideal: calc((100cqh - 2rem - 4 * var(--gap)) / 5);
     --card-w-from-h: calc(var(--card-h-ideal) * 630 / 879);
     --card-w-max: calc((100cqw - 1rem - var(--gap)) / 2);
     --card-w: min(var(--card-w-from-h), var(--card-w-max));
@@ -128,10 +126,10 @@
 }
 
 .page.game.role-player .slot-grid {
-  --gap: clamp(0.16rem, 0.5cqw, 0.35rem);
-  --card-h-ideal: min(30rem, calc((100cqh - 1.75rem - var(--gap)) / 2));
+  --gap: clamp(0.14rem, 0.45cqw, 0.3rem);
+  --card-h-ideal: calc((100cqh - 0.65rem - var(--gap)) / 2);
   --card-w-from-h: calc(var(--card-h-ideal) * 630 / 879);
-  --card-w-max: calc((100cqw - 1rem - 4 * var(--gap)) / 5);
+  --card-w-max: calc((100cqw - 0.85rem - 4 * var(--gap)) / 5);
   --card-w: min(var(--card-w-from-h), var(--card-w-max));
   --card-h: calc(var(--card-w) * 879 / 630);
 }
@@ -209,7 +207,8 @@
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center;
       pointer-events: none;
     }
   }
@@ -231,7 +230,8 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     pointer-events: none;
   }
 }
@@ -239,14 +239,15 @@
 .leap-clone {
   pointer-events: none;
   transform-style: preserve-3d;
-  /* Width+height are set explicitly by GSAP to 416:542 — do not also set
+  /* Width+height are set explicitly by GSAP to face aspect — do not also set
      aspect-ratio here or the browser will fight the tween and crop the art. */
   overflow: visible;
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: contain;
+    object-position: center;
     border-radius: 10px;
     display: block;
     pointer-events: none;
