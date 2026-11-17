@@ -303,15 +303,16 @@ export function physicalFlip(
   }
   const flipper = slotEl.querySelector(".card-flipper") as HTMLElement | null;
   const front = slotEl.querySelector(".face-front") as HTMLElement | null;
+  // Only update the React-owned face image — never insert a second <img>
+  // (a leftover base face was covering enhanced art after ST enhance).
   if (front && faceSrc) {
-    let frontImg = front.querySelector("img") as HTMLImageElement | null;
-    if (!frontImg) {
-      frontImg = document.createElement("img");
-      frontImg.alt = "";
-      frontImg.draggable = false;
-      front.insertBefore(frontImg, front.firstChild);
+    const frontImg = front.querySelector("img.card-face") as HTMLImageElement | null;
+    if (frontImg) frontImg.src = faceSrc;
+    for (const orphan of Array.from(
+      front.querySelectorAll("img:not(.card-face):not(.card-overlay)"),
+    )) {
+      orphan.remove();
     }
-    frontImg.src = faceSrc;
   }
 
   if (!flipper || prefersReducedMotion()) {

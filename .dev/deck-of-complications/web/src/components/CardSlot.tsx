@@ -185,9 +185,8 @@ export function CardSlot({
           <img src="/assets/card-back.webp" alt="" draggable={false} />
         </div>
         <div className="face-front">
-          {(slot.up || wasUp.current) && (
-            <img src={faceSrc} alt="" draggable={false} />
-          )}
+          {/* Always mounted so flip/enhance share one image node (no orphan base face). */}
+          <img className="card-face" src={faceSrc} alt="" draggable={false} />
           {(slot.up || wasUp.current) && slot.negated && (
             <img
               className="card-overlay negated"
