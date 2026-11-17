@@ -29,7 +29,8 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0;
+  /* Behind #root content — z-index:0 covered the home page text and looked empty. */
+  z-index: -1;
   pointer-events: none;
   overflow: hidden;
   background: #050203;

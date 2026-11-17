@@ -13,14 +13,14 @@ export function Home() {
       <ul className="links">
         <li>
           <a
-            href="/solo"
+            href="/"
             onClick={(e) => {
               e.preventDefault();
-              window.history.pushState({}, "", "/solo");
+              window.history.pushState({}, "", "/");
               window.dispatchEvent(new PopStateEvent("popstate"));
             }}
           >
-            Solo practice board
+            Practice board
           </a>{" "}
           — local deal, no multiplayer server.
         </li>

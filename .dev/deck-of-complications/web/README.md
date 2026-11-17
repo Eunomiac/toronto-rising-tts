@@ -23,7 +23,8 @@ Multiplayer locally:
 
 https://toronto-rising-complications.toronto-rising-player-map.workers.dev
 
-- Solo practice: `/solo`
+- Practice board: `/` or `/solo`
+- Join info: `/about`
 - Dashboard needs `COMPLICATIONS_API_URL` + `COMPLICATIONS_HOST_SECRET` in `.dev/storyteller-dashboard/.env`
 
 ## Deploy (Cloudflare)

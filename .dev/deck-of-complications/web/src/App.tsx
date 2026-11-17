@@ -14,10 +14,13 @@ function parseRoute() {
     const token = params.get("token") || "";
     return { kind: "game" as const, roomId: gameMatch[1], role, token };
   }
-  if (path === "/solo" || path.startsWith("/solo/")) {
+  if (path === "/solo" || path.startsWith("/solo/") || path === "/" || path === "") {
     return { kind: "solo" as const };
   }
-  return { kind: "home" as const };
+  if (path === "/about" || path.startsWith("/about/")) {
+    return { kind: "home" as const };
+  }
+  return { kind: "solo" as const };
 }
 
 export default function App() {
