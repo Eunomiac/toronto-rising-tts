@@ -58,6 +58,12 @@
     padding: 0;
     gap: 0;
     position: relative;
+
+    /* Leap clones are fixed to the viewport; keep stage children from clipping cards. */
+    .playmat-wrap,
+    .table-stage {
+      overflow: visible;
+    }
   }
 
   .banner.error {

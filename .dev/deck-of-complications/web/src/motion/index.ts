@@ -16,14 +16,14 @@ export function pressFeedback(el: Element | null) {
 
 /** Rest tip — mostly pitch toward the viewer, no static yaw skew. */
 export function tableRestTip(): { x: number; y: number } {
-  if (typeof window === "undefined") return { x: 18, y: 0 };
+  if (typeof window === "undefined") return { x: 14, y: 0 };
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    return { x: 12, y: 0 };
+    return { x: 10, y: 0 };
   }
   if (window.matchMedia("(max-width: 900px), (max-height: 700px)").matches) {
-    return { x: 14, y: 0 };
+    return { x: 12, y: 0 };
   }
-  return { x: 18, y: 0 };
+  return { x: 14, y: 0 };
 }
 
 export function introTable(stage: Element | null) {
@@ -151,9 +151,13 @@ export function magneticLift(el: Element | null, on: boolean) {
   });
 }
 
+/** Real face art is 630×879 (not the old 416×542 authoring note). */
+export const CARD_ASPECT = 879 / 630;
+
 /**
  * Face-up read hover: clone leaps to screen-facing pose; dims stage.
- * Returns a cleanup that returns the card home.
+ * The source slot stays an invisible hit target (opacity only — never autoAlpha,
+ * which would drop pointer events and cause hover flicker).
  */
 export function leapToRead(opts: {
   source: HTMLElement;
@@ -167,33 +171,47 @@ export function leapToRead(opts: {
     "";
 
   dimRoot?.classList.add("stage-dimmed");
+  source.classList.add("leap-source");
 
   const clone = document.createElement("div");
   clone.className = "leap-clone";
   clone.innerHTML = `<img src="${img}" alt="" draggable="false" />`;
   document.body.appendChild(clone);
 
-  const targetW = Math.min(360, window.innerWidth * 0.38);
-  const targetH = targetW * (542 / 416);
+  // Foreshortened getBoundingClientRect height is wrong for portrait art —
+  // keep true card aspect from the visual width.
+  const startW = Math.max(rect.width, 1);
+  const startH = startW * CARD_ASPECT;
+  const startX = rect.left + rect.width / 2 - startW / 2;
+  const startY = rect.top + rect.height / 2 - startH / 2;
+
+  const maxH = window.innerHeight * 0.82;
+  let targetW = Math.min(400, window.innerWidth * 0.36);
+  let targetH = targetW * CARD_ASPECT;
+  if (targetH > maxH) {
+    targetH = maxH;
+    targetW = targetH / CARD_ASPECT;
+  }
   const targetX = window.innerWidth / 2 - targetW / 2;
-  const targetY = window.innerHeight / 2 - targetH / 2 - 20;
+  const targetY = window.innerHeight / 2 - targetH / 2;
 
   gsap.set(clone, {
     position: "fixed",
     left: 0,
     top: 0,
-    width: rect.width,
-    height: rect.height,
-    x: rect.left,
-    y: rect.top,
-    rotateX: 18,
+    width: startW,
+    height: startH,
+    x: startX,
+    y: startY,
+    rotateX: 16,
     rotateY: 0,
     zIndex: 80,
     borderRadius: 10,
-    overflow: "hidden",
+    overflow: "visible",
     boxShadow: "0 30px 80px rgba(0,0,0,0.65)",
   });
-  gsap.set(source, { autoAlpha: 0 });
+  // Opacity only — keep the slot as a stable hit plate under the cursor.
+  gsap.set(source, { opacity: 0 });
 
   if (prefersReducedMotion()) {
     gsap.set(clone, {
@@ -218,9 +236,14 @@ export function leapToRead(opts: {
 
   const dismiss = () => {
     const home = source.getBoundingClientRect();
+    const homeW = Math.max(home.width, 1);
+    const homeH = homeW * CARD_ASPECT;
+    const homeX = home.left + home.width / 2 - homeW / 2;
+    const homeY = home.top + home.height / 2 - homeH / 2;
     const finish = () => {
       clone.remove();
-      gsap.set(source, { autoAlpha: 1 });
+      gsap.set(source, { clearProps: "opacity" });
+      source.classList.remove("leap-source");
       dimRoot?.classList.remove("stage-dimmed");
       opts.onDone?.();
     };
@@ -229,11 +252,11 @@ export function leapToRead(opts: {
       return;
     }
     gsap.to(clone, {
-      width: home.width,
-      height: home.height,
-      x: home.left,
-      y: home.top,
-      rotateX: 18,
+      width: homeW,
+      height: homeH,
+      x: homeX,
+      y: homeY,
+      rotateX: 16,
       duration: 0.38,
       ease: "power2.in",
       onComplete: finish,

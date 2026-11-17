@@ -20,7 +20,7 @@
 
   --light-x: -18%;
   --light-y: -28%;
-  --table-tip-x: 18deg;
+  --table-tip-x: 14deg;
   --table-tip-y: 0deg;
   --board-thickness: 22px;
   --ember: #ffb347;
@@ -29,13 +29,13 @@
 
 @media (max-width: 900px), (max-height: 700px) {
   :root {
-    --table-tip-x: 14deg;
-    --board-thickness: 12px;
+    --table-tip-x: 12deg;
+    --board-thickness: 14px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --table-tip-x: 12deg;
+    --table-tip-x: 10deg;
   }
 }

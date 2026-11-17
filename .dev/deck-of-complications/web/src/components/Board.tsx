@@ -167,8 +167,8 @@ export function Board({
                   }}
                   onFaceUpEnter={(el) => {
                     if (storyteller) return; // ST uses click menus; leap is player read aid
+                    if (leapDismiss.current) return; // already reading — keep stable
                     pauseRock();
-                    leapDismiss.current?.();
                     const { dismiss } = leapToRead({
                       source: el,
                       dimRoot: stageRef.current,
@@ -176,8 +176,10 @@ export function Board({
                     leapDismiss.current = dismiss;
                   }}
                   onFaceUpLeave={() => {
-                    leapDismiss.current?.();
+                    if (!leapDismiss.current) return;
+                    const dismiss = leapDismiss.current;
                     leapDismiss.current = null;
+                    dismiss();
                     resumeRock();
                   }}
                 />
