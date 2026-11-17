@@ -24,8 +24,8 @@ import type { CatalogCard, ClientRole, GameState } from "../engine/types";
 import type { GameIntent } from "../protocol";
 import { playSfx, unlockAudio } from "../audio/sfx";
 import { Board } from "./Board";
+import { FloatingHud } from "./FloatingHud";
 import { MuteButton } from "./MuteButton";
-import { SessionStrip } from "./SessionStrip";
 
 const catalog = (catalogJson as { cards: CatalogCard[] }).cards;
 
@@ -50,7 +50,6 @@ export function SoloPlay() {
   useEffect(() => {
     setGame(newSolo(margin));
     void unlockAudio().then(() => playSfx("deal"));
-    // mount only
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -130,60 +129,52 @@ export function SoloPlay() {
   }
 
   return (
-    <div className={`page game solo role-${role}`}>
+    <div className={`page game immersive solo role-${role}`}>
       <MuteButton />
-      <header className="top-bar">
-        <div>
-          <h1>Deck of Complications</h1>
-        </div>
-        <div className="solo-tools">
-          <label>
-            Act as
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as ClientRole)}
-            >
-              <option value="player">Player</option>
-              <option value="storyteller">Storyteller</option>
-            </select>
-          </label>
-          <label>
-            Margin
-            <input
-              type="number"
-              value={margin}
-              onChange={(e) => setMargin(Number(e.target.value))}
-            />
-          </label>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              void unlockAudio().then(() => playSfx("deal"));
-              setGame(newSolo(margin));
-            }}
+      {/* Solo practice only — hidden from real player sessions */}
+      <div className="solo-dev-tools">
+        <label>
+          Act as
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as ClientRole)}
           >
-            Redeal
-          </button>
-        </div>
-      </header>
-      <div className="game-stage">
-        <div className="game-main">
-          <SessionStrip role={role} view={view} onIntent={apply} />
-          <Board
-            view={view}
-            role={role}
-            onFlip={(cardId) => {
-              void unlockAudio().then(() => {
-                playSfx("burn");
-                apply({ op: "flip", cardId });
-              });
-            }}
-            onSelect={(cardId) => apply({ op: "select", cardId })}
-            onIntent={apply}
+            <option value="player">Player</option>
+            <option value="storyteller">Storyteller</option>
+          </select>
+        </label>
+        <label>
+          Margin
+          <input
+            type="number"
+            value={margin}
+            onChange={(e) => setMargin(Number(e.target.value))}
           />
-        </div>
+        </label>
+        <button
+          type="button"
+          onClick={() => {
+            void unlockAudio().then(() => playSfx("deal"));
+            setGame(newSolo(margin));
+          }}
+        >
+          Redeal
+        </button>
       </div>
+
+      <FloatingHud role={role} view={view} onIntent={apply} />
+      <Board
+        view={view}
+        role={role}
+        onFlip={(cardId) => {
+          void unlockAudio().then(() => {
+            playSfx("burn");
+            apply({ op: "flip", cardId });
+          });
+        }}
+        onSelect={(cardId) => apply({ op: "select", cardId })}
+        onIntent={apply}
+      />
     </div>
   );
 }

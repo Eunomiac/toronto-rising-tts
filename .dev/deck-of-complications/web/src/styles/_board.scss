@@ -3,7 +3,6 @@
   min-height: 0;
   width: 100%;
   display: flex;
-  flex-direction: column;
   position: relative;
 }
 
@@ -11,40 +10,70 @@
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  perspective: 1400px;
-  perspective-origin: 50% 45%;
+  perspective: 1600px;
+  perspective-origin: 50% 55%;
   display: flex;
   align-items: center;
   justify-content: center;
   container-type: size;
   container-name: board;
+  transition: filter 0.35s ease;
+
+  &.stage-dimmed {
+    filter: brightness(0.42);
+
+    .board-stack {
+      filter: brightness(0.85);
+    }
+  }
+}
+
+.board-stack {
+  position: relative;
+  width: min(98cqw, 98%);
+  height: auto;
+  transform-style: preserve-3d;
+  /* Tip + rock are applied here so thickness lip stays glued to the board. */
+  transform: rotateX(var(--table-tip-x));
+  transform-origin: 50% 72%;
+}
+
+.board-thickness {
+  position: absolute;
+  left: 0.2%;
+  right: 0.2%;
+  top: 100%;
+  height: var(--board-thickness);
+  margin-top: -2px;
+  border-radius: 0 0 14px 14px;
+  background: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 35%, #000 100%);
+  box-shadow:
+    0 10px 0 #000,
+    0 28px 48px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .playmat {
   position: relative;
-  width: min(96%, 1100px);
+  z-index: 1;
+  width: 100%;
   height: auto;
-  max-height: none;
-  flex: 0 0 auto;
   transform-style: preserve-3d;
-  transform: rotateX(var(--table-tip-x)) rotateY(var(--table-tip-y));
-  transform-origin: 50% 65%;
+  transform: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.45rem, 1.2cqh, 0.85rem);
-  padding: clamp(0.65rem, 1.8cqh, 1.1rem) clamp(0.65rem, 1.8cqw, 1.35rem);
-  border-radius: calc(var(--radius) + 6px);
-  border: 1px solid rgba(201, 162, 74, 0.4);
+  padding: clamp(0.4rem, 1cqh, 0.75rem) clamp(0.4rem, 1cqw, 0.75rem);
+  border-radius: calc(var(--radius) + 4px);
+  border: 1px solid rgba(201, 162, 74, 0.35);
   box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 200, 120, 0.06) inset,
-    0 -1px 0 rgba(255, 220, 160, 0.12) inset;
+    0 0 0 1px rgba(255, 200, 120, 0.05) inset,
+    0 -1px 0 rgba(255, 220, 160, 0.1) inset;
   overflow: visible;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(201, 162, 74, 0.14), transparent 50%),
-    radial-gradient(ellipse at var(--light-x) var(--light-y), rgba(255, 180, 100, 0.12), transparent 45%),
+    radial-gradient(ellipse at 50% 0%, rgba(201, 162, 74, 0.12), transparent 50%),
     linear-gradient(160deg, #4a1616 0%, #2a0c0c 45%, #1a0808 100%);
 
   &::before {
@@ -55,123 +84,18 @@
     background-image: url(/assets/playmat.webp);
     background-size: cover;
     background-position: center;
-    opacity: 0.22;
+    opacity: 0.2;
     mix-blend-mode: soft-light;
     pointer-events: none;
   }
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 8%;
-    right: 8%;
-    bottom: -18px;
-    height: 28px;
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), transparent 70%);
-    filter: blur(6px);
-    pointer-events: none;
-    z-index: -1;
-  }
-}
-
-.board-props {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  width: min(100%, calc(5 * var(--card-w, 8rem) + 4 * var(--gap, 0.5rem)));
-  justify-content: space-between;
-  align-items: flex-end;
-  pointer-events: none;
-}
-
-.deck-prop,
-.discard-prop {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.deck-box {
-  --deck-h: 14px;
-  position: relative;
-  width: clamp(2.4rem, 5.5cqw, 3.4rem);
-  aspect-ratio: 416 / 542;
-  transform-style: preserve-3d;
-  transform: rotateX(8deg) rotateY(-18deg);
-
-  .band-low & { --deck-h: 10px; }
-  .band-mid & { --deck-h: 18px; }
-  .band-full & { --deck-h: 28px; }
-  .band-empty & { opacity: 0.35; --deck-h: 4px; }
-
-  .face {
-    position: absolute;
-    inset: 0;
-    border-radius: 4px;
-  }
-
-  .top {
-    background: url(/assets/card-back.webp) center / cover;
-    transform: translateZ(calc(var(--deck-h) / 2));
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
-  }
-
-  .front {
-    height: var(--deck-h);
-    top: auto;
-    bottom: 0;
-    background: linear-gradient(180deg, #e8d4b0, #c4a574 40%, #8a6a3e);
-    transform: rotateX(-90deg);
-    transform-origin: bottom center;
-    border-radius: 0 0 3px 3px;
-  }
-
-  .side {
-    width: var(--deck-h);
-    left: auto;
-    right: 0;
-    background: linear-gradient(90deg, #d2b88a, #9a7a48);
-    transform: rotateY(90deg);
-    transform-origin: right center;
-    border-radius: 0 3px 3px 0;
-  }
-}
-
-.discard-prop {
-  .discard-card {
-    position: absolute;
-    bottom: 1.4rem;
-    width: clamp(2rem, 4.5cqw, 2.8rem);
-    aspect-ratio: 416 / 542;
-    background: url(/assets/card-back.webp) center / cover;
-    border-radius: 4px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  }
-}
-
-.deck-plaque {
-  font-family: var(--font-display);
-  font-size: clamp(0.55rem, 1.2cqw, 0.72rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold-soft);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  background: linear-gradient(180deg, rgba(80, 50, 20, 0.85), rgba(30, 18, 8, 0.9));
-  border: 1px solid rgba(201, 162, 74, 0.45);
-  border-radius: 999px;
-  padding: 0.15rem 0.55rem;
-  margin-top: 0.15rem;
 }
 
 .slot-grid {
-  --gap: clamp(0.35rem, 1.1cqw, 0.8rem);
-  /* Width-first: never squash portrait card art. Height budget caps width. */
+  --gap: clamp(0.18rem, 0.55cqw, 0.4rem);
   --card-w: min(
-    11.5rem,
-    calc((100cqw - 2rem - 4 * var(--gap)) / 5),
-    calc((100cqh - 5.5rem - var(--gap)) / 2 * 416 / 542)
+    14.5rem,
+    calc((100cqw - 1.5rem - 4 * var(--gap)) / 5),
+    calc((100cqh - 2.25rem - var(--gap)) / 2 * 416 / 542)
   );
 
   position: relative;
@@ -181,22 +105,24 @@
   grid-auto-rows: auto;
   gap: var(--gap);
   transform-style: preserve-3d;
+  margin: 0 auto;
 
   @media (max-width: 700px) and (orientation: portrait) {
     --card-w: min(
-      9rem,
+      9.5rem,
       calc((100cqw - 1rem - var(--gap)) / 2),
-      calc((100cqh - 5rem - 4 * var(--gap)) / 5 * 416 / 542)
+      calc((100cqh - 3rem - 4 * var(--gap)) / 5 * 416 / 542)
     );
     grid-template-columns: repeat(2, var(--card-w));
   }
 }
 
 .page.game.role-player .slot-grid {
+  --gap: clamp(0.12rem, 0.4cqw, 0.28rem);
   --card-w: min(
-    13rem,
-    calc((100cqw - 1.25rem - 4 * var(--gap)) / 5),
-    calc((100cqh - 4.75rem - var(--gap)) / 2 * 416 / 542)
+    18rem,
+    calc((100cqw - 0.9rem - 4 * var(--gap)) / 5),
+    calc((100cqh - 1.25rem - var(--gap)) / 2 * 416 / 542)
   );
 }
 
@@ -209,68 +135,79 @@
   aspect-ratio: 416 / 542;
   height: auto;
   background: transparent;
-  border-radius: 10px;
+  border-radius: 8px;
   transform-style: preserve-3d;
   overflow: visible;
+  cursor: pointer;
 
   &.empty {
-    visibility: visible;
     background: rgba(0, 0, 0, 0.28);
     box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.55);
-    border-radius: 10px;
     pointer-events: none;
   }
 
-  &.flippable {
-    cursor: pointer;
-
-    &:focus-visible {
-      outline: 2px solid var(--gold);
-      outline-offset: 3px;
-    }
+  &.player-chrome.selected,
+  &.player-chrome:focus-visible {
+    outline: none;
+    box-shadow: none;
   }
 
-  &.selected {
-    .card-face,
-    .card-back {
-      box-shadow:
-        0 0 0 2px var(--gold),
-        0 0 28px rgba(201, 162, 74, 0.55);
-    }
+  &.selected:not(.player-chrome) .card-flipper {
+    box-shadow: 0 0 0 2px var(--gold);
+  }
+
+  &:focus-visible:not(.player-chrome) {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
   }
 
   .card-shadow {
     position: absolute;
-    left: 8%;
-    right: 8%;
-    bottom: -10%;
-    height: 18%;
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), transparent 70%);
+    left: 10%;
+    right: 10%;
+    bottom: -8%;
+    height: 16%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5), transparent 70%);
     filter: blur(4px);
-    opacity: 0.35;
+    opacity: 0.4;
     pointer-events: none;
     z-index: 0;
   }
 
-  .card-face,
-  .card-back {
+  .card-flipper {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    transform-style: preserve-3d;
     border-radius: 8px;
-    pointer-events: none;
-    z-index: 1;
   }
 
-  .card-glare {
+  .face-back,
+  .face-front {
     position: absolute;
     inset: 0;
     border-radius: 8px;
-    pointer-events: none;
-    z-index: 3;
-    mix-blend-mode: soft-light;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+  }
+
+  .face-back {
+    transform: rotateY(0deg);
+  }
+
+  .face-front {
+    transform: rotateY(180deg);
+  }
+
+  &.is-flipped .card-flipper {
+    transform: rotateY(180deg);
   }
 
   .card-overlay {
@@ -280,40 +217,23 @@
     height: 100%;
     object-fit: cover;
     pointer-events: none;
-    z-index: 4;
   }
 }
 
-.ember-sparks {
-  position: absolute;
-  inset: 0;
+.leap-clone {
   pointer-events: none;
-  z-index: 5;
+  transform-style: preserve-3d;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+  }
 }
 
-.ember-spark {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0%, var(--ember) 40%, var(--ember-hot) 70%, transparent 100%);
-  box-shadow: 0 0 8px var(--ember-hot);
-}
-
-.flight-layer {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 40;
-}
-
+.ember-sparks,
+.flight-layer,
 .flight-card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border-radius: 8px;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
-  will-change: transform;
+  display: none;
 }

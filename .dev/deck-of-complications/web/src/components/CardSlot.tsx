@@ -1,14 +1,18 @@
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from "react";
 import type { PublicGameView } from "../engine/game";
 import {
-  burnReveal,
   enhancePulse,
+  magneticLift,
   negateFlash,
+  physicalFlip,
   pressFeedback,
-  selectLift,
 } from "../motion";
 
 type Slot = NonNullable<PublicGameView["slots"][number]>;
+
+function faceSrcFor(slot: Slot): string {
+  return `/assets/cards/${slot.imageStem}${slot.enhanced ? "_enhanced" : ""}.webp`;
+}
 
 function overlaySrc(value: number): string {
   if (value < 0) return `/assets/overlays/overlay-revalue-neg${Math.abs(value)}.webp`;
@@ -20,38 +24,46 @@ export function CardSlot({
   selected,
   canFlip,
   storyteller,
+  playerChrome,
   onFlip,
   onSelect,
   onContextMenu,
-  onInspect,
+  onFaceUpEnter,
+  onFaceUpLeave,
 }: {
   slot: Slot | null;
   selected: boolean;
   canFlip: boolean;
   storyteller: boolean;
+  playerChrome: boolean;
   onFlip: () => void;
   onSelect: () => void;
   onContextMenu: (e: ReactMouseEvent | { clientX: number; clientY: number; preventDefault(): void }) => void;
-  onInspect: () => void;
+  onFaceUpEnter: (el: HTMLButtonElement) => void;
+  onFaceUpLeave: () => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
-  const wasUp = useRef(false);
+  const wasUp = useRef(slot?.up ?? false);
   const wasEnhanced = useRef(false);
   const wasNegated = useRef(false);
-  const [glare, setGlare] = useState({ x: 50, y: 40 });
   const longPress = useRef<number | null>(null);
+  const flipping = useRef(false);
 
   useEffect(() => {
     if (!slot) return;
+    // Remote / remount: card became face-up without a local click.
     if (slot.up && !wasUp.current) {
-      burnReveal(ref.current);
+      wasUp.current = true;
+      flipping.current = true;
+      physicalFlip(ref.current, faceSrcFor(slot), () => {
+        flipping.current = false;
+      });
+      return;
     }
-    wasUp.current = slot.up;
+    if (slot.up && wasUp.current) {
+      ref.current?.classList.add("is-flipped");
+    }
   }, [slot]);
-
-  useEffect(() => {
-    selectLift(ref.current, selected);
-  }, [selected]);
 
   useEffect(() => {
     if (!slot) return;
@@ -69,7 +81,7 @@ export function CardSlot({
     return <div className="card-slot empty" aria-hidden />;
   }
 
-  const faceSrc = `/assets/cards/${slot.imageStem}${slot.enhanced ? "_enhanced" : ""}.webp`;
+  const faceSrc = faceSrcFor(slot);
   const showRevalue =
     slot.up &&
     slot.revalued &&
@@ -83,19 +95,29 @@ export function CardSlot({
       type="button"
       className={[
         "card-slot",
-        slot.up ? "face-up" : "face-down",
-        selected ? "selected" : "",
+        slot.up || wasUp.current ? "face-up" : "face-down",
+        slot.up || wasUp.current ? "is-flipped" : "",
+        selected && storyteller ? "selected" : "",
         canFlip ? "flippable" : "",
+        playerChrome ? "player-chrome" : "",
       ]
         .filter(Boolean)
         .join(" ")}
       onClick={() => {
+        if (flipping.current) return;
         pressFeedback(ref.current);
-        if (!slot.up && canFlip) onFlip();
-        else if (slot.up) onSelect();
-      }}
-      onDoubleClick={() => {
-        if (slot.up) onInspect();
+        if (!slot.up && canFlip) {
+          flipping.current = true;
+          const el = ref.current;
+          // Populate face just-in-time, then animate the physical flip before committing state.
+          physicalFlip(el, faceSrc, () => {
+            wasUp.current = true;
+            flipping.current = false;
+            onFlip();
+          });
+          return;
+        }
+        if (slot.up) onSelect();
       }}
       onContextMenu={(e) => {
         if (!storyteller || !slot.up) return;
@@ -115,62 +137,56 @@ export function CardSlot({
       onPointerUp={() => {
         if (longPress.current) window.clearTimeout(longPress.current);
       }}
+      onPointerEnter={() => {
+        if (!ref.current) return;
+        if (!slot.up && !wasUp.current) {
+          magneticLift(ref.current, true);
+          return;
+        }
+        if (slot.up || wasUp.current) {
+          onFaceUpEnter(ref.current);
+        }
+      }}
       onPointerLeave={() => {
         if (longPress.current) window.clearTimeout(longPress.current);
+        if (!slot.up && !wasUp.current) {
+          magneticLift(ref.current, false);
+          return;
+        }
+        onFaceUpLeave();
       }}
-      onPointerMove={(e) => {
-        if (!slot.up || !ref.current) return;
-        const r = ref.current.getBoundingClientRect();
-        setGlare({
-          x: ((e.clientX - r.left) / r.width) * 100,
-          y: ((e.clientY - r.top) / r.height) * 100,
-        });
-      }}
-      disabled={slot.up ? false : !canFlip}
+      disabled={slot.up || wasUp.current ? false : !canFlip}
       aria-label={
-        slot.up
+        slot.up || wasUp.current
           ? `${slot.name}${slot.enhanced ? " (enhanced)" : ""}${slot.negated ? " (negated)" : ""}`
           : `Face-down complication in slot ${slot.slot}`
       }
     >
       <span className="card-shadow" aria-hidden />
-      <img
-        className="card-face"
-        src={faceSrc}
-        alt=""
-        draggable={false}
-        style={{ opacity: slot.up ? 1 : 0 }}
-      />
-      <img
-        className="card-back"
-        src="/assets/card-back.webp"
-        alt=""
-        draggable={false}
-        style={{ opacity: slot.up ? 0 : 1 }}
-      />
-      {slot.up && (
-        <span
-          className="card-glare"
-          style={{
-            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,240,200,0.35), transparent 45%)`,
-          }}
-          aria-hidden
-        />
-      )}
-      {slot.up && slot.negated && (
-        <img
-          className="card-overlay negated"
-          src="/assets/overlays/overlay-negated.webp"
-          alt=""
-        />
-      )}
-      {showRevalue && (
-        <img
-          className="card-overlay revalue"
-          src={overlaySrc(slot.value)}
-          alt=""
-        />
-      )}
+      <div className="card-flipper">
+        <div className="face-back">
+          <img src="/assets/card-back.webp" alt="" draggable={false} />
+        </div>
+        <div className="face-front">
+          {(slot.up || wasUp.current) && (
+            <img src={faceSrc} alt="" draggable={false} />
+          )}
+          {(slot.up || wasUp.current) && slot.negated && (
+            <img
+              className="card-overlay negated"
+              src="/assets/overlays/overlay-negated.webp"
+              alt=""
+            />
+          )}
+          {showRevalue && (
+            <img
+              className="card-overlay revalue"
+              src={overlaySrc(slot.value)}
+              alt=""
+            />
+          )}
+        </div>
+      </div>
     </button>
   );
 }
