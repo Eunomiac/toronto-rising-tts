@@ -1,46 +1,36 @@
 /*
   Board sizing (layout, then tip):
-  1. Board aspect = five cards across × two down (630×879 faces),
-     plus a little pad/gap baked into the ratio.
-  2. Grow the board as large as it can while keeping that aspect
-     and staying inside the stage (with a small tip margin).
-  3. Grid fills the board; cards fill their cells with contain.
-  4. Only then is rotateX applied on .board-stack.
+  1. Fixed aspect for a 5×2 of 630×879 cards (+ a little pad/gap).
+  2. Grow with plain vw/vh so browser chrome / taskbar shrink the board.
+  3. Tip (rotateX) only after that size is set.
 */
 
 .playmat-wrap {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
+  height: 100%;
   display: flex;
   position: relative;
 }
 
 .table-stage {
-  /*
-    Face: 630×879. Landscape board for 5×2 with modest pad/gap units:
-      W = 5*630 + 4*14 + 2*18 = 3242
-      H = 2*879 + 1*14 + 2*18 = 1808
-    Tip margin leaves room for perspective bloom after rotateX.
-  */
-  --face-w: 630;
-  --face-h: 879;
+  /* 5*630+4*14+2*18  /  2*879+14+2*18 */
   --board-ar: 3242 / 1808;
-  --tip-fit: 0.92;
+  /* Leave a little room so the tipped projection still fits. */
+  --board-fit: 0.86;
   --board-pad: 1.15%;
   --board-gap: 0.75%;
-  --card-ar: var(--face-w) / var(--face-h);
 
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
+  height: 100%;
   perspective: 1800px;
   perspective-origin: 50% 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  container-type: size;
-  container-name: board;
   transition: filter 0.35s ease;
   overflow: visible;
 
@@ -54,24 +44,18 @@
 }
 
 .board-stack {
-  /*
-    Tip pivots from the board center so the projected box stays balanced.
-    A small upward layout nudge offsets the near-edge bloom + thickness lip
-    that would otherwise leave all free space above the board.
-  */
-  --board-lift: -5vh;
-
   position: relative;
   box-sizing: border-box;
   aspect-ratio: var(--board-ar);
   width: min(
-    calc(100cqw * var(--tip-fit)),
-    calc(100cqh * var(--tip-fit) * var(--board-ar))
+    calc(100vw * var(--board-fit)),
+    calc(100vh * var(--board-fit) * var(--board-ar))
   );
   height: auto;
-  max-width: calc(100cqw * var(--tip-fit));
-  max-height: calc(100cqh * var(--tip-fit));
-  margin-top: var(--board-lift);
+  max-width: calc(100vw * var(--board-fit));
+  max-height: calc(100vh * var(--board-fit));
+  /* Tip makes the near edge bloom downward — nudge up so gaps match. */
+  margin-top: -3.5vh;
   transform-style: preserve-3d;
   transform: rotateX(var(--table-tip-x));
   transform-origin: 50% 50%;

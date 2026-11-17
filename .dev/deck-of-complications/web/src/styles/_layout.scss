@@ -52,12 +52,14 @@
   }
 
   &.game.immersive {
-    height: 100dvh;
-    max-height: 100dvh;
+    height: 100vh;
+    max-height: 100vh;
     overflow: hidden;
     padding: 0;
     gap: 0;
     position: relative;
+    display: flex;
+    flex-direction: column;
 
     /* Leap clones are fixed to the viewport; keep stage children from clipping cards. */
     .playmat-wrap,
