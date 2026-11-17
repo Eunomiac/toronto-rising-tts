@@ -125,19 +125,39 @@ export function dealFromAbove(opts: {
   });
 }
 
-/** Face-down: tiny magnetic lift toward cursor. */
+/**
+ * Face-down: rise a little off the board (perpendicular to the plane → +z),
+ * not slide along it (no y). Animate the flipper/shadow only so the button's
+ * layout box stays put and hover cannot flicker on/off.
+ */
 export function magneticLift(el: Element | null, on: boolean) {
   if (!el) return;
+  const root = el as HTMLElement;
+  const flipper = (root.querySelector(".card-flipper") as HTMLElement | null) || root;
+  const shadow = root.querySelector(".card-shadow") as HTMLElement | null;
+  const targets = shadow ? [flipper, shadow] : [flipper];
+
   if (prefersReducedMotion()) {
-    gsap.set(el, { y: 0, z: 0 });
+    gsap.set(targets, { y: 0, z: 0, scale: 1, clearProps: "transform" });
     return;
   }
-  gsap.to(el, {
-    y: on ? -10 : 0,
-    z: on ? 18 : 0,
-    duration: on ? 0.18 : 0.28,
+
+  gsap.killTweensOf(targets);
+  gsap.to(flipper, {
+    y: 0,
+    z: on ? 36 : 0,
+    scale: on ? 1.045 : 1,
+    duration: on ? 0.18 : 0.26,
     ease: on ? "power2.out" : "power2.in",
   });
+  if (shadow) {
+    gsap.to(shadow, {
+      opacity: on ? 0.7 : 0.4,
+      scale: on ? 1.08 : 1,
+      duration: on ? 0.18 : 0.26,
+      ease: on ? "power2.out" : "power2.in",
+    });
+  }
 }
 
 /** Real face art is 630×879 (not the old 416×542 authoring note). */
