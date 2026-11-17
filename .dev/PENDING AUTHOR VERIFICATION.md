@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-796 — Deck of Complications public web app
+
+> **Agent-assessment note:** Create-room API smoke-tested on the live Worker. Full play + Apply-to-roll still needs your Dashboard and Save & Play pass.
+
+**How to verify:** Restart the Storyteller Dashboard (so it picks up `COMPLICATIONS_API_URL` / `COMPLICATIONS_HOST_SECRET`). Save & Play. On an eligible failed PC roll, click **Play Deck of Complications**. Confirm the Storyteller board opens and the player join link is copied. On a phone or second browser, open the player link, flip cards, then Stop; on the Storyteller board Confirm End. Back on the Dashboard, click **Apply Complications result** and confirm the roll margin updates. Optionally open https://toronto-rising-complications.toronto-rising-player-map.workers.dev/solo for solo practice without a room. Physical decks should still be usable for one-off draws; the old TTS board deal should refuse unless `complicationsUseTtsBoard` is set.
+
 #### 🟡 TOR-795 — END / INTERMISSION stage XP award controls
 
 > **Agent-assessment note:** Typecheck passed for the IdleBoard panel. Live XP log writes and disconnected greying need Save & Play.
