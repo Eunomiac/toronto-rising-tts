@@ -52,7 +52,7 @@ export function introTable(stage: Element | null) {
 export function tableRock(table: Element | null): gsap.core.Timeline | null {
   if (!table || prefersReducedMotion()) return null;
   const tip = tableRestTip();
-  gsap.set(table, { rotateX: tip.x, rotateY: 0, rotateZ: 0, transformOrigin: "50% 70%" });
+  gsap.set(table, { rotateX: tip.x, rotateY: 0, rotateZ: 0, transformOrigin: "50% 50%" });
   const tl = gsap.timeline({ repeat: -1, defaults: { ease: "sine.inOut" } });
   // Subtle rock around a centered rest pose (no permanent yaw skew).
   tl.to(table, { rotateX: tip.x + 1.2, rotateY: 1.5, rotateZ: 0.25, duration: 3.4 })

@@ -1,3 +1,13 @@
+/*
+  Board sizing (layout, then tip):
+  1. Board aspect = five cards across × two down (630×879 faces),
+     plus a little pad/gap baked into the ratio.
+  2. Grow the board as large as it can while keeping that aspect
+     and staying inside the stage (with a small tip margin).
+  3. Grid fills the board; cards fill their cells with contain.
+  4. Only then is rotateX applied on .board-stack.
+*/
+
 .playmat-wrap {
   flex: 1 1 auto;
   min-height: 0;
@@ -7,12 +17,25 @@
 }
 
 .table-stage {
+  /*
+    Face: 630×879. Landscape board for 5×2 with modest pad/gap units:
+      W = 5*630 + 4*14 + 2*18 = 3242
+      H = 2*879 + 1*14 + 2*18 = 1808
+    Tip margin leaves room for perspective bloom after rotateX.
+  */
+  --face-w: 630;
+  --face-h: 879;
+  --board-ar: 3242 / 1808;
+  --tip-fit: 0.92;
+  --board-pad: 1.15%;
+  --board-gap: 0.75%;
+  --card-ar: var(--face-w) / var(--face-h);
+
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  /* Milder tip so cards keep readable portrait proportions. */
   perspective: 1800px;
-  perspective-origin: 50% 62%;
+  perspective-origin: 50% 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,14 +54,27 @@
 }
 
 .board-stack {
+  /*
+    Tip pivots from the board center so the projected box stays balanced.
+    A small upward layout nudge offsets the near-edge bloom + thickness lip
+    that would otherwise leave all free space above the board.
+  */
+  --board-lift: -5vh;
+
   position: relative;
-  /* Height-first: grow the board toward the viewport, then tip. */
-  width: auto;
-  max-width: 98cqw;
+  box-sizing: border-box;
+  aspect-ratio: var(--board-ar);
+  width: min(
+    calc(100cqw * var(--tip-fit)),
+    calc(100cqh * var(--tip-fit) * var(--board-ar))
+  );
   height: auto;
+  max-width: calc(100cqw * var(--tip-fit));
+  max-height: calc(100cqh * var(--tip-fit));
+  margin-top: var(--board-lift);
   transform-style: preserve-3d;
   transform: rotateX(var(--table-tip-x));
-  transform-origin: 50% 70%;
+  transform-origin: 50% 50%;
 }
 
 .board-thickness {
@@ -60,15 +96,11 @@
 .playmat {
   position: relative;
   z-index: 1;
-  width: auto;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--board-pad);
   transform-style: preserve-3d;
-  transform: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(0.35rem, 0.9cqh, 0.7rem) clamp(0.45rem, 1cqw, 0.85rem);
   border-radius: calc(var(--radius) + 4px);
   border: 1px solid rgba(201, 162, 74, 0.35);
   box-shadow:
@@ -94,44 +126,22 @@
 }
 
 .slot-grid {
-  --gap: clamp(0.2rem, 0.6cqw, 0.45rem);
-  /*
-    Height-first: fill nearly all stage height with two portrait rows,
-    width from real face art 630×879, then capped to five columns.
-  */
-  --card-h-ideal: calc((100cqh - 1.1rem - var(--gap)) / 2);
-  --card-w-from-h: calc(var(--card-h-ideal) * 630 / 879);
-  --card-w-max: calc((100cqw - 1.25rem - 4 * var(--gap)) / 5);
-  --card-w: min(var(--card-w-from-h), var(--card-w-max));
-  --card-h: calc(var(--card-w) * 879 / 630);
-
   position: relative;
   z-index: 2;
+  width: 100%;
+  height: 100%;
   display: grid;
-  grid-template-columns: repeat(5, var(--card-w));
-  grid-auto-rows: var(--card-h);
-  gap: var(--gap);
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: var(--board-gap);
   transform-style: preserve-3d;
-  margin: 0 auto;
+  margin: 0;
   overflow: visible;
 
   @media (max-width: 700px) and (orientation: portrait) {
-    --card-h-ideal: calc((100cqh - 2rem - 4 * var(--gap)) / 5);
-    --card-w-from-h: calc(var(--card-h-ideal) * 630 / 879);
-    --card-w-max: calc((100cqw - 1rem - var(--gap)) / 2);
-    --card-w: min(var(--card-w-from-h), var(--card-w-max));
-    --card-h: calc(var(--card-w) * 879 / 630);
-    grid-template-columns: repeat(2, var(--card-w));
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(5, 1fr);
   }
-}
-
-.page.game.role-player .slot-grid {
-  --gap: clamp(0.14rem, 0.45cqw, 0.3rem);
-  --card-h-ideal: calc((100cqh - 0.65rem - var(--gap)) / 2);
-  --card-w-from-h: calc(var(--card-h-ideal) * 630 / 879);
-  --card-w-max: calc((100cqw - 0.85rem - 4 * var(--gap)) / 5);
-  --card-w: min(var(--card-w-from-h), var(--card-w-max));
-  --card-h: calc(var(--card-w) * 879 / 630);
 }
 
 .card-slot {
@@ -139,9 +149,10 @@
   appearance: none;
   border: 0;
   padding: 0;
-  width: var(--card-w);
-  height: var(--card-h);
-  aspect-ratio: 630 / 879;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
   background: transparent;
   border-radius: 8px;
   transform-style: preserve-3d;
@@ -155,7 +166,6 @@
   }
 
   &.leap-source {
-    /* Invisible hit plate — must keep pointer events. */
     cursor: pointer;
   }
 
@@ -236,11 +246,16 @@
   }
 }
 
+@media (max-width: 700px) and (orientation: portrait) {
+  .table-stage {
+    /* 2×5 of the same face + pad/gap units */
+    --board-ar: 1408 / 4547;
+  }
+}
+
 .leap-clone {
   pointer-events: none;
   transform-style: preserve-3d;
-  /* Width+height are set explicitly by GSAP to face aspect — do not also set
-     aspect-ratio here or the browser will fight the tween and crop the art. */
   overflow: visible;
 
   img {
