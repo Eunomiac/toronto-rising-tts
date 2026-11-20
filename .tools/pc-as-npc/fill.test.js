@@ -123,6 +123,16 @@ test("unmatched Ancilla warns", () => {
   assert.match(warnings[0], /Not A Real Power/);
 });
 
+test("roleplay notes fill right pane; blank hides", () => {
+  const withNotes = fillNpcSheet({ ...ren, "Roleplay Notes": "Speak softly." });
+  assert.equal(withNotes.elements.npc_roleplay_notes_label.text, "Roleplay Notes");
+  assert.equal(withNotes.elements.npc_roleplay_notes.text, "Speak softly.");
+  const overridden = fillNpcSheet(ren, { tracker: { roleplayNotes: "From assignment" } });
+  assert.equal(overridden.elements.npc_roleplay_notes.text, "From assignment");
+  const blank = fillNpcSheet({ Name: "X", Kind: "Mortal" });
+  assert.equal(blank.elements.npc_roleplay_notes.active, false);
+});
+
 test("trackers use glyphs; Hunger hides for mortal", () => {
   assert.equal(paintHunger(2, loadTemplate().trackerGlyphs), "●●○○○");
   assert.equal(paintBoxes(4, 1, 1, loadTemplate().trackerGlyphs), "╳╱□□");

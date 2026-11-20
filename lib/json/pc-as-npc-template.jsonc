@@ -342,6 +342,21 @@
     "ifEmpty": "HIDE"
   },
   {
+    "id": "npc_roleplay_notes_label",
+    "dataKeys": ["Roleplay Notes"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Roleplay Notes",
+    "ifEmpty": "HIDE",
+    "notes": "Right pane. Live assignment may override via tracker.roleplayNotes."
+  },
+  {
+    "id": "npc_roleplay_notes",
+    "dataKeys": ["Roleplay Notes"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "{{data.Roleplay Notes}}",
+    "ifEmpty": "HIDE"
+  },
+  {
     "id": "npc_advantages_label",
     "dataKeys": ["Advantages"],
     "emptyVals": [["", "~", "0"]],

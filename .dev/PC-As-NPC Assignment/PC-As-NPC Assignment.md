@@ -115,7 +115,7 @@ Frozen role lists for tests: `.tools/pc-as-npc/selective-hide.json`.
 ### Show
 
 - NPC figurine at that chair (or Scatter group center as a PC)
-- That seat's `G.CSHEET_NPC_<COLOR>` sheet at page-1 pose, filled from the template
+- That seat's `G.CSHEET_NPC_<COLOR>` **double-wide** sheet (centered between that seat's PAGE_1 and PAGE_2), filled from the template — left pane combat/powers, right pane Advantages + Roleplay Notes
 
 ## Scatter
 
@@ -129,7 +129,12 @@ NPCs may be assigned to Scatter PCs. The player moves between Scatter groups lik
 
 ## Physical NPC sheet objects
 
-Five seat-bound tiles `CSHEET_NPC_<COLOR>` live in the save, parked at hide Y (−200) with `HiddenObject` + `<Color>Object`, registered in `guids.ttslua`, `LockedObjects`, `ClickableSeatControls`, `TableSourceObjects.player` (`CSHEET_NPC`), and `ObjectPositions.CSHEET_NPC`. Inject tool: `.tools/tts-save/inject-csheet-npc-sheets.js`.
+Five seat-bound **double-wide** tiles `CSHEET_NPC_<COLOR>` live in the save:
+
+- Cloned from `CSHEET_PAGE_1_<COLOR>` art/scripts; `scaleX` is twice a PC page; XZ is the midpoint of that seat's PAGE_1 and PAGE_2 (interior edges of the two-page pair); parked at hide Y (−200)
+- XmlUI root matches PC `page_root` scale/pose with width ×2 (left + right panes)
+- Tags: `HiddenObject` + `<Color>Object`; registered in `guids.ttslua`, `LockedObjects`, `ClickableSeatControls`, `TableSourceObjects.player` (`CSHEET_NPC`), and `ObjectPositions.CSHEET_NPC`
+- Inject: `npm run tts-save:inject-csheet-npc -- --saveName 230` (add `--replace` to refresh pose/size if already injected)
 
 ## Tests (no TTS)
 

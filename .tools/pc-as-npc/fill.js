@@ -370,6 +370,18 @@ function fillNpcSheet(row, opts = {}) {
   noteBlock("npc_methuselah_label", "npc_methuselah_", 3, data["Methuselah Power(s)"], "Methuselah Powers");
   noteBlock("npc_specialAbilities_label", "npc_special_ability_", 3, data["Special Abilities"], "Special Abilities");
 
+  const roleplay =
+    (opts.tracker && typeof opts.tracker.roleplayNotes === "string" && opts.tracker.roleplayNotes) ||
+    data["Roleplay Notes"] ||
+    "";
+  if (blank(roleplay)) {
+    hide(elements, "npc_roleplay_notes_label");
+    hide(elements, "npc_roleplay_notes");
+  } else {
+    showText(elements, "npc_roleplay_notes_label", "Roleplay Notes");
+    showText(elements, "npc_roleplay_notes", String(roleplay).trim());
+  }
+
   const adv = splitPipe(data.Advantages);
   if (adv.length === 0) {
     hide(elements, "npc_advantages_label");
