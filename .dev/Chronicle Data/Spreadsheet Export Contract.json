@@ -186,7 +186,7 @@
     },
     {
       "name": "EXPORT_LOCATIONS_SITES",
-      "rangeAtVerification": "DX4:EX3001",
+      "rangeAtVerification": "DM3:EP3000",
       "headers": [
         "Key",
         "Name",
@@ -214,7 +214,10 @@
         "Requested Skybox Key",
         "Source Location Audio",
         "Source Music Key",
-        "Is Silent?"
+        "Is Silent?",
+        "Map Icon",
+        "X",
+        "Y"
       ],
       "source": "Districts & Sites: authored SITES plus environment rules",
       "verifiedRows": 186,
