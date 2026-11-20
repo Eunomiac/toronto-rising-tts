@@ -417,11 +417,15 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
             ? (data.trackers as Record<string, NpcTrackerRecord>)
             : {},
         npcConditions: normalizeNpcConditions(data.npcConditions),
-        scatter: asList<Record<string, unknown>>(data.scatter).map((group) => ({
-          group: Number(group.group),
-          pcs: asList<ScatterMember>(group.pcs),
-          npcs: asList<ScatterMember>(group.npcs)
-        })),
+        scatter: asList<Record<string, unknown>>(data.scatter).map((group) => {
+          const summary = typeof group.summary === "string" ? group.summary.trim() : "";
+          return {
+            group: Number(group.group),
+            pcs: asList<ScatterMember>(group.pcs),
+            npcs: asList<ScatterMember>(group.npcs),
+            ...(summary !== "" ? { summary } : {})
+          };
+        }),
         spotlightOrder: asList<string>(data.spotlightOrder)
       };
     default:

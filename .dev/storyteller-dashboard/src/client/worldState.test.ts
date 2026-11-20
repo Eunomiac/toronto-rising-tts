@@ -41,6 +41,21 @@ describe("applyWorldEvent", () => {
     expect(sound.soundscape?.lanes).toEqual([]);
   });
 
+  it("keeps Scatter group summaries from the seats push", () => {
+    const state = applyWorldEvent({}, {
+      topic: "seats",
+      data: {
+        seats: {},
+        stage: {},
+        spotlightOrder: {},
+        generics: {},
+        scatter: [{ group: 2, pcs: {}, npcs: {}, summary: "Court garden" }],
+        trackers: []
+      }
+    });
+    expect(state.seats?.scatter).toEqual([{ group: 2, pcs: [], npcs: [], summary: "Court garden" }]);
+  });
+
   it("reads the rolls slice, with Lua empty tables as empty lists and missing flags as false", () => {
     const empty = applyWorldEvent({}, { topic: "rolls", data: { pcs: {}, storyteller: { canInitiate: true, slots: {} }, werewolves: {}, oblivionSeats: {} } });
     expect(empty.rolls).toEqual({ pcs: [], storyteller: { canInitiate: true, slots: [] }, werewolves: [], oblivionSeats: [] });
