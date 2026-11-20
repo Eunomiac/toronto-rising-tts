@@ -27,10 +27,17 @@
     if (files.length > 1000) { alert("Please use at most 1,000 SVG files per document."); return; }
 
     var destination = null;
-    var source = null;
     var completed = 0;
     var currentName = "";
     var step = "creating the document";
+    var logFile = new File(Folder.temp + "/toronto-rising-icon-import.log");
+
+    function report(message) {
+        step = message;
+        if (!logFile.open("a")) throw new Error("Cannot write import progress to " + logFile.fsName);
+        logFile.writeln(currentName + ": " + message);
+        logFile.close();
+    }
 
     // Traverse direct children only, so compound subpaths are collected once.
     // Refuse artwork whose appearance would be lost by flattening to paths.
@@ -72,43 +79,12 @@
     }
 
     try {
+        report("starting a new import");
         destination = app.documents.add(DocumentColorSpace.RGB, SIZE, SIZE);
         var firstLayer = destination.layers[0];
         for (var index = 0; index < files.length; index++) {
             currentName = File.decode(files[index].name);
-            step = "opening the SVG";
-            source = app.open(files[index]);
-            step = "reading the SVG paths";
-            var paths = [];
-            for (var li = 0; li < source.layers.length; li++) {
-                collectPaths(source.layers[li], paths);
-            }
-            if (!paths.length) throw new Error("No visible vector paths found.");
-            // A compound path shares one appearance. Material icons are flat,
-            // single-colour fills. Stop rather than silently recolour other SVGs.
-            if (paths.length > 1) {
-                for (var pi = 0; pi < paths.length; pi++) {
-                    if (!paths[pi].filled || paths[pi].stroked ||
-                        !sameColor(paths[0].fillColor, paths[pi].fillColor) ||
-                        paths[pi].evenodd !== paths[0].evenodd) {
-                        throw new Error("Multiple paths must have the same solid fill and fill rule, with no strokes.");
-                    }
-                }
-            }
-
-            // Assemble compounds inside the source document first. Illustrator
-            // requires the source document to be active for cross-document copies.
-            step = "building the compound path";
-            var sourceArtwork = paths[0];
-            if (paths.length > 1) {
-                sourceArtwork = source.layers[0].compoundPathItems.add();
-                for (var p = 0; p < paths.length; p++) {
-                    paths[p].duplicate(sourceArtwork, ElementPlacement.PLACEATEND);
-                }
-            }
-
-            step = "creating the artboard and layer";
-            app.activeDocument = destination;
+            report("creating the artboard and layer");
             var x = (index % COLUMNS) * (SIZE + GAP);
             var y = -Math.floor(index / COLUMNS) * (SIZE + GAP);
             var rect = [x, y, x + SIZE, y - SIZE];
@@ -122,17 +98,48 @@
             layer.name = currentName;
             destination.activeLayer = layer;
 
-            step = "copying the artwork into the new document";
-            app.activeDocument = source;
-            var artwork = sourceArtwork.duplicate(layer, ElementPlacement.PLACEATEND);
-            app.activeDocument = destination;
-            artwork.name = currentName;
-            step = "closing the source SVG without saving";
-            source.close(SaveOptions.DONOTSAVECHANGES);
-            source = null;
+            // Import in-place: no source document, cross-document copies, or
+            // document close calls. embed() replaces the linked item with vectors.
+            report("placing the SVG");
+            var placed = layer.placedItems.add();
+            placed.file = files[index];
+            report("embedding the SVG as editable vectors");
+            placed.embed();
+            report("reading the embedded paths");
+            var importedRoots = [];
+            for (var ri = 0; ri < layer.pageItems.length; ri++) {
+                if (layer.pageItems[ri].parent === layer) importedRoots.push(layer.pageItems[ri]);
+            }
+            var paths = [];
+            collectPaths(layer, paths);
+            if (!paths.length) throw new Error("No visible vector paths found.");
+            // A compound path shares one appearance. Material icons are flat,
+            // single-colour fills. Stop rather than silently recolour other SVGs.
+            if (paths.length > 1) {
+                for (var pi = 0; pi < paths.length; pi++) {
+                    if (!paths[pi].filled || paths[pi].stroked ||
+                        !sameColor(paths[0].fillColor, paths[pi].fillColor) ||
+                        paths[pi].evenodd !== paths[0].evenodd) {
+                        throw new Error("Multiple paths must have the same solid fill and fill rule, with no strokes.");
+                    }
+                }
+            }
 
-            app.activeDocument = destination;
-            step = "sizing and centering the artwork";
+            report("building the named vector object");
+            var artwork;
+            if (paths.length > 1) {
+                artwork = layer.compoundPathItems.add();
+                for (var p = 0; p < paths.length; p++) {
+                    paths[p].duplicate(artwork, ElementPlacement.PLACEATEND);
+                }
+            } else artwork = paths[0].duplicate(layer, ElementPlacement.PLACEATEND);
+            artwork.name = currentName;
+            // Snapshot above prevents iteration over a live collection while
+            // duplicating/removing items. Keep only the new named object.
+            report("removing the original import wrappers");
+            for (var root = 0; root < importedRoots.length; root++) importedRoots[root].remove();
+
+            report("sizing and centering the artwork");
             var bounds = artwork.geometricBounds;
             var width = bounds[2] - bounds[0];
             var height = bounds[1] - bounds[3];
@@ -143,16 +150,19 @@
             artwork.translate(x + SIZE / 2 - (bounds[0] + bounds[2]) / 2,
                 y - SIZE / 2 - (bounds[1] + bounds[3]) / 2);
             completed++;
+            report("finished icon " + completed + " of " + files.length);
         }
         destination.selection = null;
         destination.artboards.setActiveArtboardIndex(0);
+        destination.views[0].centerPoint = [SIZE / 2, -SIZE / 2];
+        destination.views[0].zoom = 2;
         app.redraw();
         alert("Imported " + completed + " icons, each with a named object, layer and artboard.\n\nNames include .svg. Artwork colours are preserved.\nUse File > Save As to save your new Illustrator document.");
     } catch (error) {
-        if (source) source.close(SaveOptions.DONOTSAVECHANGES);
         if (destination) app.activeDocument = destination;
         alert("Stopped at " + currentName + " while " + step + ":\n" + error.message +
             (error.line ? "\nScript line: " + error.line : "") +
-            "\n\nCompleted icons: " + completed + ". The partial document remains open for inspection. Source SVGs were not changed.");
+            "\n\nCompleted icons: " + completed + ". The partial document remains open for inspection. Source SVGs were not changed." +
+            "\n\nProgress log: " + logFile.fsName);
     }
 }());
