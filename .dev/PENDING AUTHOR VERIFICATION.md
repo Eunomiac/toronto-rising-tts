@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-803 — NPC sheets twice as wide as two PC pages (scaleX double-count)
+
+> **Agent-assessment note:** Inject unit tests expect PAGE_1 scaleX (not ×2). Live width after re-inject still needs File → Load.
+
+**How to verify:** Close TTS (or switch save slot). Run `npm run tts-save:inject-csheet-npc -- --saveName 230 --replace`, then File → Load. Each NPC sheet should be about as wide as that seat’s page 1 and page 2 together — not twice that span.
+
 #### 🟡 TOR-801 — Scatter PC HUD: group title above NPC list with spacing
 
 > **Agent-assessment note:** Template/Lua set title above the NPC list with a blank-line spacer. Live strip layout still needs Save & Play.
@@ -59,7 +65,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 > **Agent-assessment note:** Node fill/inject/registration tests pass. Dashboard Vitest covers assign commands and draft seat edits. Live confirm → TTS seat push, Unassign, and File → Load of injected `CSHEET_NPC_*` tiles still need your Save & Play / load pass. Selective hide of PC pile objects and Memoriam roster-drop assign are not finished yet.
 
-**How to verify:** Restart the Storyteller Dashboard. With TTS closed, inject (or refresh) the double-wide sheets: `npm run tts-save:inject-csheet-npc -- --saveName 230 --replace`, then File → Load. Confirm each `CSHEET_NPC_*` sits at Y −200, is twice as wide as a PC page, and is centered between that seat’s page 1 and page 2. Save & Play for scripts. On Scenes, drag an NPC onto a seated PC — confirm opens with Roleplay Notes; Confirm / Unassign as before.
+**How to verify:** Restart the Storyteller Dashboard. With TTS closed, inject (or refresh) the double-wide sheets: `npm run tts-save:inject-csheet-npc -- --saveName 230 --replace`, then File → Load. Confirm each `CSHEET_NPC_*` sits at Y −200, is about as wide as that seat’s page 1 and page 2 together (not twice that span), and is centered between those pages. Save & Play for scripts. On Scenes, drag an NPC onto a seated PC — confirm opens with Roleplay Notes; Confirm / Unassign as before.
 
 #### 🟡 TOR-796 — Deck of Complications public web app
 

@@ -5,7 +5,8 @@
  * One-shot inject of CSHEET_NPC_<COLOR> tiles (TOR-95).
  *
  * Double-wide Custom_Tile: clones PAGE_1 shape, centers XZ between PAGE_1 and PAGE_2
- * (interior edges of the two-page PC sheet pair), scaleX = 2 × PAGE_1.scaleX, Y = hide.
+ * (interior edges of the two-page PC sheet pair), keeps PAGE_1 scaleX/scaleZ (the NPC face
+ * image is already double-wide aspect — doubling scaleX was making sheets 4× one page), Y = hide.
  *
  * Pure helpers: planInject(save, opts) → patches; applyInject(save, patches).
  * CLI resolves Documents TS_Save_* via resolve-save-path, backs up under backupDir, writes save.
@@ -71,7 +72,8 @@ function findByGmNotes(save, gmNotes) {
 }
 
 /**
- * Double-wide pose: midpoint of PAGE_1 + PAGE_2 XZ, scaleX × 2, hide Y.
+ * Double-wide pose: midpoint of PAGE_1 + PAGE_2 XZ, same scale as PAGE_1, hide Y.
+ * World width comes from the double-wide face image aspect + XmlUI width 3090 — not scaleX×2.
  * @param {object} page1
  * @param {object} page2
  * @returns {object} Transform
@@ -85,7 +87,7 @@ function doubleWideTransform(page1, page2) {
     posX: (Number(t1.posX) + Number(t2.posX)) / 2,
     posY: HIDE_Y,
     posZ: (Number(t1.posZ) + Number(t2.posZ)) / 2,
-    scaleX: scaleX * 2,
+    scaleX,
     scaleY: t1.scaleY != null ? t1.scaleY : 1,
     scaleZ: t1.scaleZ != null ? t1.scaleZ : scaleX,
   };

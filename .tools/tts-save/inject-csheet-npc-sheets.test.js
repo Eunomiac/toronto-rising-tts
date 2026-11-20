@@ -56,7 +56,7 @@ function minimalSave() {
   };
 }
 
-test("doubleWideTransform centers between pages and doubles scaleX", () => {
+test("doubleWideTransform centers between pages and keeps PAGE_1 scaleX", () => {
   const t = doubleWideTransform(
     { Transform: { posX: -6.15, posY: 3.2, posZ: -90, scaleX: 8, scaleY: 1, scaleZ: 8, rotY: 180 } },
     { Transform: { posX: 6.15, posY: 3.2, posZ: -90.001, scaleX: 8, scaleY: 1, scaleZ: 8, rotY: 180 } }
@@ -64,7 +64,7 @@ test("doubleWideTransform centers between pages and doubles scaleX", () => {
   assert.equal(t.posX, 0);
   assert.equal(t.posY, HIDE_Y);
   assert.ok(Math.abs(t.posZ - (-90.0005)) < 1e-6);
-  assert.equal(t.scaleX, 16);
+  assert.equal(t.scaleX, 8);
   assert.equal(t.scaleZ, 8);
   assert.equal(t.rotY, 180);
 });
@@ -76,7 +76,7 @@ test("planInject creates five double-wide parked NPC sheets", () => {
   assert.equal(plan.removeGuids.length, 0);
   for (const clone of plan.clones) {
     assert.equal(clone.Transform.posY, HIDE_Y);
-    assert.equal(clone.Transform.scaleX, 16);
+    assert.equal(clone.Transform.scaleX, 8);
     assert.ok(clone.Tags.includes("HiddenObject"));
     assert.match(clone.GMNotes, /^CSHEET_NPC_/);
     assert.equal(clone.XmlUI, NPC_XML);
