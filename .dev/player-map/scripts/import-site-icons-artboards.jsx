@@ -30,6 +30,7 @@
     var source = null;
     var completed = 0;
     var currentName = "";
+    var step = "creating the document";
 
     // Traverse direct children only, so compound subpaths are collected once.
     // Refuse artwork whose appearance would be lost by flattening to paths.
@@ -75,7 +76,9 @@
         var firstLayer = destination.layers[0];
         for (var index = 0; index < files.length; index++) {
             currentName = File.decode(files[index].name);
+            step = "opening the SVG";
             source = app.open(files[index]);
+            step = "reading the SVG paths";
             var paths = [];
             for (var li = 0; li < source.layers.length; li++) {
                 collectPaths(source.layers[li], paths);
@@ -93,6 +96,18 @@
                 }
             }
 
+            // Assemble compounds inside the source document first. Illustrator
+            // requires the source document to be active for cross-document copies.
+            step = "building the compound path";
+            var sourceArtwork = paths[0];
+            if (paths.length > 1) {
+                sourceArtwork = source.layers[0].compoundPathItems.add();
+                for (var p = 0; p < paths.length; p++) {
+                    paths[p].duplicate(sourceArtwork, ElementPlacement.PLACEATEND);
+                }
+            }
+
+            step = "creating the artboard and layer";
             app.activeDocument = destination;
             var x = (index % COLUMNS) * (SIZE + GAP);
             var y = -Math.floor(index / COLUMNS) * (SIZE + GAP);
@@ -107,19 +122,17 @@
             layer.name = currentName;
             destination.activeLayer = layer;
 
-            var artwork;
-            if (paths.length === 1) {
-                artwork = paths[0].duplicate(layer, ElementPlacement.PLACEATEND);
-            } else {
-                artwork = layer.compoundPathItems.add();
-                for (var p = 0; p < paths.length; p++) {
-                    paths[p].duplicate(artwork, ElementPlacement.PLACEATEND);
-                }
-            }
+            step = "copying the artwork into the new document";
+            app.activeDocument = source;
+            var artwork = sourceArtwork.duplicate(layer, ElementPlacement.PLACEATEND);
+            app.activeDocument = destination;
             artwork.name = currentName;
+            step = "closing the source SVG without saving";
             source.close(SaveOptions.DONOTSAVECHANGES);
             source = null;
 
+            app.activeDocument = destination;
+            step = "sizing and centering the artwork";
             var bounds = artwork.geometricBounds;
             var width = bounds[2] - bounds[0];
             var height = bounds[1] - bounds[3];
@@ -138,7 +151,8 @@
     } catch (error) {
         if (source) source.close(SaveOptions.DONOTSAVECHANGES);
         if (destination) app.activeDocument = destination;
-        alert("Stopped at " + currentName + ":\n" + error.message +
+        alert("Stopped at " + currentName + " while " + step + ":\n" + error.message +
+            (error.line ? "\nScript line: " + error.line : "") +
             "\n\nCompleted icons: " + completed + ". The partial document remains open for inspection. Source SVGs were not changed.");
     }
 }());
