@@ -37,6 +37,7 @@ import {
   type StageReminderContext,
   type StageReminderStore
 } from "./stageReminders";
+import { isFeedbackXpDoneForSession, markFeedbackXpDoneForSession } from "./feedbackXpSession";
 import { XpAwardPanel } from "./xpAwardPanel";
 
 /**
@@ -689,7 +690,20 @@ export const IdleBoard = ({
     setStore(next);
     writeStageReminderStore(next);
   };
-  const xpPhase = phase === "End" || phase === "Intermission" ? phase : null;
+  const firstDowntimeFeedback =
+    phase === "Play"
+    && (subPhase ?? "Main") === "Downtime"
+    && sessionNum !== undefined
+    && !isFeedbackXpDoneForSession(sessionNum);
+  useEffect(() => {
+    if (!firstDowntimeFeedback || sessionNum === undefined) {
+      return;
+    }
+    return () => {
+      markFeedbackXpDoneForSession(sessionNum);
+    };
+  }, [firstDowntimeFeedback, sessionNum]);
+  const xpPhase = phase === "End" ? "End" : firstDowntimeFeedback ? "Feedback" : null;
   return (
     <div className={`lab-board wide idle${xpPhase ? " has-xp" : ""}`} style={{ width: w, height: h }}>
       {reminders.length > 0 ? (

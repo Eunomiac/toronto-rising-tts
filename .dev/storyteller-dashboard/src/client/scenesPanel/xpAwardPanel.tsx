@@ -59,7 +59,8 @@ const SeatRow = ({
 );
 
 /**
- * END / INTERMISSION stage XP awards. Uses the sheet bridge (`xpAppend` / `xpAppendAll`).
+ * END stage XP awards, plus Feedback XP on the first Play / Downtime idle stage of a session.
+ * Uses the sheet bridge (`xpAppend` / `xpAppendAll`).
  * "Not connected" means a disconnected PC (`absentFromSession`), not narrative absence.
  */
 export const XpAwardPanel = ({
@@ -67,7 +68,7 @@ export const XpAwardPanel = ({
   seats,
   apply
 }: {
-  phase: "End" | "Intermission";
+  phase: "End" | "Feedback";
   seats: readonly SeatSketch[];
   apply: (command: ApplyCommand) => void;
 }): ReactElement => {
@@ -86,7 +87,7 @@ export const XpAwardPanel = ({
     apply({ op: "xpAppendAll", color: seed, amount, description: desc, includeDisconnected: true });
   };
 
-  if (phase === "Intermission") {
+  if (phase === "Feedback") {
     return (
       <div className="lab-xp-panel">
         <h3 className="lab-xp-title">Session XP</h3>

@@ -19,6 +19,7 @@ import {
 } from "./glance";
 import { ScenePreview } from "./preview";
 import { PersonalDueList } from "./personalConditions";
+import { isFeedbackXpDoneForSession } from "./feedbackXpSession";
 import { requestRollControl } from "./dnd/rollControls";
 import { DndUiContext } from "./dnd/uiContext";
 import type { DndUiHooks } from "./dnd/apply";
@@ -397,6 +398,11 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   // Memoriam has no library scene but runs on the scene clock (set to its own date).
   const inMemoriam = phase?.phase === "Play" && phase.subPhase === "Memoriam";
   const inDowntime = phase?.phase === "Play" && phase.subPhase === "Downtime";
+  const showXpIdle =
+    phase?.phase === "End"
+    || (inDowntime
+      && phase.sessionNum !== undefined
+      && !isFeedbackXpDoneForSession(phase.sessionNum));
   const sceneActive = (scene?.liveKey !== undefined || inMemoriam) && clock?.activeClock === "scene";
   const sceneNow = sceneActive && clock ? clockNow(clock, now) : undefined;
   const sceneAt = sceneNow ? toDate(sceneNow) : null;
@@ -810,9 +816,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           </Box>
           <StageQueue right={1920 - STRIP_X - STAGE_W + 3 * G} top={STAGE_Y + 36} connected={connected} live={queueView} />
           <div
-            className={`scenes-alerts${scene?.liveKey === undefined && !inMemoriam && (phase?.phase === "End" || phase?.phase === "Intermission") ? " is-xp-idle" : ""}`}
+            className={`scenes-alerts${scene?.liveKey === undefined && !inMemoriam && showXpIdle ? " is-xp-idle" : ""}`}
             style={
-              scene?.liveKey === undefined && !inMemoriam && (phase?.phase === "End" || phase?.phase === "Intermission")
+              scene?.liveKey === undefined && !inMemoriam && showXpIdle
                 ? { right: 1920 - STRIP_X - STAGE_W + 16, top: STAGE_Y + 40 }
                 : { left: STRIP_X + STAGE_W / 2, top: STAGE_Y + 40 }
             }
