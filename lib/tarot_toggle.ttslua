@@ -337,7 +337,8 @@ drawTopCardFaceUpOnDeck = function(buttonGuid, token)
         return
     end
     local yaw = (deckRot and deckRot.y) or 0
-    local cardPos = { x = deckPos.x, y = deckPos.y + 0.2, z = deckPos.z }
+    -- One world unit above the deck so the card drops into place (pin 8 / TOR-790 follow-up).
+    local cardPos = { x = deckPos.x, y = deckPos.y + 1, z = deckPos.z }
     local cardRot = { x = 0, y = yaw, z = 0 }
     deck.takeObject({
         position = cardPos,
@@ -351,14 +352,14 @@ drawTopCardFaceUpOnDeck = function(buttonGuid, token)
             if card.is_face_down == true and card.flip ~= nil then
                 card.flip()
             end
-            if card.setPosition ~= nil then
-                card.setPosition(cardPos)
-            end
             if card.setRotation ~= nil then
                 card.setRotation(cardRot)
             end
+            if card.setLock ~= nil then
+                card.setLock(false)
+            end
             card.interactable = true
-            print("[TarotToggle] Consult: top card drawn face-up onto the deck.")
+            print("[TarotToggle] Consult: top card drawn face-up above the deck to drop.")
         end,
     })
 end

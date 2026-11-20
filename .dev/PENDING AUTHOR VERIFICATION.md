@@ -93,9 +93,9 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### 🟡 TOR-790 — Pink Tarot right-click consult: shuffle, draw, flip face-up
 
-> **Agent-assessment note:** Host can confirm Global consult logs and that a loose card sits on the deck; face-up orientation and feel still need Save & Play.
+> **Agent-assessment note:** Host can confirm Global consult logs and that a loose card drops from +1Y onto the deck; face-up orientation and feel still need Save & Play.
 
-**How to verify:** Save & Play. As Pink (or Host as Black): left-click still shows/hides the Tarot set, and hide returns loose cards to the deck. Right-click while hidden should reveal, shuffle, and leave one face-up card on the deck. Right-click again while shown should scoop, reshuffle, and draw a new face-up card.
+**How to verify:** Save & Play. As Pink (or Host as Black): left-click still shows/hides the Tarot set, and hide returns loose cards to the deck. Right-click while hidden should reveal, shuffle, and drop one face-up card from about one unit above the deck. Right-click again while shown should scoop, reshuffle, and draw a new face-up card the same way.
 
 #### 🟡 TOR-789 — Scene transitions scramble Discipline hands across seats
 
