@@ -22,6 +22,8 @@
     "csheetPage6": ["f36758", "f4d6b6", "515b16", "555372", "1c72c5"],
     "csheetPage7": ["35df08", "8e7623", "edb0b1", "f38d69", "f85e4f"],
     "csheetPage8": ["07ead9", "511c50", "f93aea", "645189", "ceb48e"],
+    // CSHEET_NPC_BROWN / ORANGE / RED / PINK / PURPLE (Play-as-NPC double-wide sheets)
+    "csheetNpc": ["eb8b3c", "2cfc7c", "6c80ed", "0fede4", "470570"],
     // SEAT_FIGURE_BROWN / ORANGE / RED / PINK / PURPLE (PC seat figurines)
     "pcSeatFigurines": ["1c5b18", "e1a378", "1e70cf", "390349", "923872"],
     // SPOTLIGHT_FIGURE_BROWN / ORANGE / RED / PINK / PURPLE (same players, same order)
@@ -405,6 +407,18 @@
       },
       "filenameToNameSearchPattern": "^CSHEET PAGE BACK\\.webp$",
       "filenameToNameReplacePattern": "back"
+    },
+    {
+      // Play-as-NPC double-wide face shared by all five CSHEET_NPC_* tiles (TOR-95).
+      "id": "csheetNpcFace",
+      "folder": "CSheets/Faces",
+      "output": "ObjectImage",
+      "field": "CustomImage.ImageURL",
+      "objects": {
+        "npcSheet": "csheetNpc"
+      },
+      "filenameToNameSearchPattern": "^NPC SHEET\\.webp$",
+      "filenameToNameReplacePattern": "npcSheet"
     },
     {
       // Blood Potency decal art for Pages 1–2 (lib/blood_potency_constants.ttslua → AttachedDecal urls).

@@ -134,6 +134,7 @@ Five seat-bound **double-wide** tiles `CSHEET_NPC_<COLOR>` live in the save:
 - Cloned from `CSHEET_PAGE_1_<COLOR>` art/scripts; `scaleX` is twice a PC page; XZ is the midpoint of that seat's PAGE_1 and PAGE_2 (interior edges of the two-page pair); parked at hide Y (−200)
 - XmlUI root matches PC `page_root` scale/pose with width ×2 (left + right panes)
 - Tags: `HiddenObject` + `<Color>Object`; registered in `guids.ttslua`, `LockedObjects`, `ClickableSeatControls`, `TableSourceObjects.player` (`CSHEET_NPC`), and `ObjectPositions.CSHEET_NPC`
+- Face art: `assets/CSheets/Faces/NPC SHEET.webp` via cloud job `csheetNpcFace` (`npm run cloud-asset-sync -- --job csheetNpcFace` after the file is on Steam Cloud)
 - Inject: `npm run tts-save:inject-csheet-npc -- --saveName 230` (add `--replace` to refresh pose/size if already injected)
 
 ## Tests (no TTS)
