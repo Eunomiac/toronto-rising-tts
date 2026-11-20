@@ -581,6 +581,12 @@ SkyboxesCatalog.Skyboxes = {
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/10796138586767082321/C74AA114E07E7FB7F42FBA3C36F4B9ABBC1ED273/"
   },
+  CLGreatHallLockdown = {
+    key = "CLGreatHallLockdown",
+    display = "CLGreatHall Lockdown",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10457995416643947358/4869FE09D68D00BFE8B5C80BFF7C0C52D7F907AA/"
+  },
 }
 
 SkyboxesCatalog.GenericSkyboxes = {

@@ -392,6 +392,18 @@ LocationsCatalog.Sites = {
     isTopFogActive = false,
     offsetXY = "-254.33 441.43",
   },
+  CLStables = {
+    name = "Casa Loma: Stables",
+    district = Districts.DupontByTheCastle,
+    soundscape = {
+      backgroundMusic = { playlist = "casaLoma" },
+      location = { playlist = "location", track = "cityPark" },
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    isTopFogActive = false,
+    offsetXY = "-254.33 441.43",
+  },
   CLTerrace = {
     name = "Casa Loma: Moonlit Terrace",
     skybox = "CLTerrace",

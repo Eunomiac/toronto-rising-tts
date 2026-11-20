@@ -2928,6 +2928,10 @@ local Art = {
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/17987240642371623789/FE643E86FA1347B1495DBCC567F81C89124E4046/", back = "https://steamusercontent-a.akamaihd.net/ugc/14132128366908836700/C24E483D375E0156CEE7E9FE733D63A49AEB59C8/" },
     genericLabel = "Veteran",
   },
+  robin = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/15114071228702144205/54A00B3F881098E81EBDC395A3E41E34B2C1C9D2/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/14813947166898932814/C17F89174DF41E63A89EB498BFCA398D1CDAD0FA/", back = "https://steamusercontent-a.akamaihd.net/ugc/18028834457734111012/306D3CDAB3FA9D8AB54C182BDC6FC68BB651C819/" },
+  },
   rosie = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/15889828356291007433/ED4C53A91344638017270FA6C7054B3DE39D9F7E/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12663405422126908191/93F4D8EE9A9D12CCB1C6893663E25C917EE85A61/", back = "https://steamusercontent-a.akamaihd.net/ugc/15985285373077459669/3DC2AC9ECC6A1DD479E7E4945C7E44BEA3A3FC19/" },
@@ -3063,6 +3067,10 @@ local Art = {
   suyin = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/18029927057493717287/2A862B47E3A919D1439A4EB75761EA7C52CCE9A8/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/9934540372115178825/D705100C51022F8DEF443F3B35E51C1A12003179/", back = "https://steamusercontent-a.akamaihd.net/ugc/9275920580576026926/F640ECD61F5FE1CD9ED4E0B364120CE4497840F8/" },
+  },
+  sylvain = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/11837605477907667063/C124B4DC2CF685AFD1D8259F7B95368A762EF0B2/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/18398873843637382683/19A54BB097DDE2AE2AAD00DDBBD3E2397D130217/", back = "https://steamusercontent-a.akamaihd.net/ugc/9814195005850341465/F746BCE55369638E86949D30CB22F5918D19C616/" },
   },
   technicalTransport_01 = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/14400677336429814996/F9FC5133D71D453CE20BFEB79D73D106984F77FD/", back = FIGURINE_BACK },

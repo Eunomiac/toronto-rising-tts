@@ -485,6 +485,13 @@
           "size": 327364
         },
         {
+          "path": "Sites/siteCard_CLStables.webp",
+          "name": "siteCard_CLStables",
+          "sha1": "D34BF8483003E6CDDEADA0DEDA537A7E72C41EBC",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15559664039125272677/D34BF8483003E6CDDEADA0DEDA537A7E72C41EBC/",
+          "size": 217926
+        },
+        {
           "path": "Sites/siteCard_CLTerrace.webp",
           "name": "siteCard_CLTerrace",
           "sha1": "2763029D95FCE4C71E52D17B8688B8EF5BC6F5D2",
@@ -1745,9 +1752,9 @@
         {
           "path": "Site Hubs/siteHub_CasaLoma.webp",
           "name": "siteHub_CasaLoma",
-          "sha1": "312A61B82BF4585998BC4368EB584F3ECACA75C7",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11454893957897722695/312A61B82BF4585998BC4368EB584F3ECACA75C7/",
-          "size": 1283362
+          "sha1": "161C2118E22E27CF9D86DA8BC5B1D162AE97A3FD",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10720817041556482213/161C2118E22E27CF9D86DA8BC5B1D162AE97A3FD/",
+          "size": 1389390
         },
         {
           "path": "Site Hubs/siteHub_GiovanniEstate.webp",
@@ -2140,37 +2147,37 @@
         {
           "path": "HUD/Session Splash Overlays/overlay_characterIntroImage_aishe.webp",
           "name": "overlay_characterIntroImage_aishe",
-          "sha1": "E31BCD35C9990CF94E0CF00D8FDBD5B745C7DC3C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12891993124887055690/E31BCD35C9990CF94E0CF00D8FDBD5B745C7DC3C/",
-          "size": 334428
+          "sha1": "6D28FE0B34962C885B13E28DC59E43CB62EED99A",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12329960464772126227/6D28FE0B34962C885B13E28DC59E43CB62EED99A/",
+          "size": 443080
         },
         {
           "path": "HUD/Session Splash Overlays/overlay_characterIntroImage_blackCaesar.webp",
           "name": "overlay_characterIntroImage_blackCaesar",
-          "sha1": "FF33BC0A1DB055681B830E3390442A4BE05A6406",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17801402483675784875/FF33BC0A1DB055681B830E3390442A4BE05A6406/",
-          "size": 263806
+          "sha1": "60055E75BAEE472B6E5D2AA2DEEFEC88ABA16346",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16800578504354512181/60055E75BAEE472B6E5D2AA2DEEFEC88ABA16346/",
+          "size": 512730
         },
         {
           "path": "HUD/Session Splash Overlays/overlay_characterIntroImage_fomorach.webp",
           "name": "overlay_characterIntroImage_fomorach",
-          "sha1": "344FE624F9E97D1C2F5E32C85421BB9A34B67F17",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14763487077315082133/344FE624F9E97D1C2F5E32C85421BB9A34B67F17/",
-          "size": 260110
+          "sha1": "30ADBAD2DA53F66719B7153448D92DDC2F06F17E",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11833976734462211568/30ADBAD2DA53F66719B7153448D92DDC2F06F17E/",
+          "size": 523024
         },
         {
           "path": "HUD/Session Splash Overlays/overlay_characterIntroImage_lordLucien.webp",
           "name": "overlay_characterIntroImage_lordLucien",
-          "sha1": "3F4F951F7D2321CF96F922C154B31461C7247F2B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9582070533396673638/3F4F951F7D2321CF96F922C154B31461C7247F2B/",
-          "size": 241400
+          "sha1": "B7CB26EAEBBD218F7888E994B34F0B2DFA9718AF",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15472424379026733312/B7CB26EAEBBD218F7888E994B34F0B2DFA9718AF/",
+          "size": 402358
         },
         {
           "path": "HUD/Session Splash Overlays/overlay_characterIntroImage_rashid.webp",
           "name": "overlay_characterIntroImage_rashid",
-          "sha1": "7649CFBD9C298CA04CDE74E90F32F235B6AC53A8",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14601868439611411867/7649CFBD9C298CA04CDE74E90F32F235B6AC53A8/",
-          "size": 235626
+          "sha1": "2F168BF0A5070AAD9C10CB4EE67D6244C4EA4BBB",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10968579484125496175/2F168BF0A5070AAD9C10CB4EE67D6244C4EA4BBB/",
+          "size": 407330
         },
         {
           "path": "HUD/Session Splash Overlays/overlay_sessionEndSplash_3.webp",
@@ -5470,6 +5477,13 @@
           "sha1": "D95D9D7CBDDAC114D24A623C25227DF3EF408168",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/10679418373003125036/D95D9D7CBDDAC114D24A623C25227DF3EF408168/",
           "size": 11331955
+        },
+        {
+          "path": "Skyboxes/skybox_CLGreatHallLockdown.jpg",
+          "name": "CLGreatHallLockdown",
+          "sha1": "4869FE09D68D00BFE8B5C80BFF7C0C52D7F907AA",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10457995416643947358/4869FE09D68D00BFE8B5C80BFF7C0C52D7F907AA/",
+          "size": 20854240
         },
         {
           "path": "Skyboxes/skybox_CLGrounds.jpg",
@@ -9337,6 +9351,19 @@
         }
       ]
     },
+    "csheetNpcFace": {
+      "output": "ObjectImage",
+      "folder": "CSheets/Faces",
+      "rows": [
+        {
+          "path": "CSheets/Faces/NPC SHEET.webp",
+          "name": "npcSheet",
+          "sha1": "3ACAFEAAE696D782A9B84ECCFE62D95E2AD98E74",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15833852924490757118/3ACAFEAAE696D782A9B84ECCFE62D95E2AD98E74/",
+          "size": 339112
+        }
+      ]
+    },
     "bloodPotencyDecals": {
       "output": "LuaModule",
       "folder": "CSheets/Blood Potency",
@@ -10627,6 +10654,13 @@
           "size": 76462
         },
         {
+          "path": "NPC Art/Figurines/Named/npc_robin.webp",
+          "name": "rollFigure_robin",
+          "sha1": "54A00B3F881098E81EBDC395A3E41E34B2C1C9D2",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15114071228702144205/54A00B3F881098E81EBDC395A3E41E34B2C1C9D2/",
+          "size": 62616
+        },
+        {
           "path": "NPC Art/Figurines/Named/npc_rosie.webp",
           "name": "rollFigure_rosie",
           "sha1": "ED4C53A91344638017270FA6C7054B3DE39D9F7E",
@@ -10723,6 +10757,13 @@
           "sha1": "2A862B47E3A919D1439A4EB75761EA7C52CCE9A8",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/18029927057493717287/2A862B47E3A919D1439A4EB75761EA7C52CCE9A8/",
           "size": 99038
+        },
+        {
+          "path": "NPC Art/Figurines/Named/npc_sylvain.webp",
+          "name": "rollFigure_sylvain",
+          "sha1": "C124B4DC2CF685AFD1D8259F7B95368A762EF0B2",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/11837605477907667063/C124B4DC2CF685AFD1D8259F7B95368A762EF0B2/",
+          "size": 50454
         },
         {
           "path": "NPC Art/Figurines/Named/npc_terenceMerik_1900.webp",
@@ -23092,6 +23133,20 @@
           "size": 20168
         },
         {
+          "path": "NPC Art/Tokens/npcToken_robin.back.webp",
+          "name": "robin.back",
+          "sha1": "306D3CDAB3FA9D8AB54C182BDC6FC68BB651C819",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/18028834457734111012/306D3CDAB3FA9D8AB54C182BDC6FC68BB651C819/",
+          "size": 8942
+        },
+        {
+          "path": "NPC Art/Tokens/npcToken_robin.front.webp",
+          "name": "robin.front",
+          "sha1": "C17F89174DF41E63A89EB498BFCA398D1CDAD0FA",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14813947166898932814/C17F89174DF41E63A89EB498BFCA398D1CDAD0FA/",
+          "size": 20938
+        },
+        {
           "path": "NPC Art/Tokens/npcToken_rosie.back.webp",
           "name": "rosie.back",
           "sha1": "3DC2AC9ECC6A1DD479E7E4945C7E44BEA3A3FC19",
@@ -23510,6 +23565,20 @@
           "sha1": "D705100C51022F8DEF443F3B35E51C1A12003179",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/9934540372115178825/D705100C51022F8DEF443F3B35E51C1A12003179/",
           "size": 33334
+        },
+        {
+          "path": "NPC Art/Tokens/npcToken_sylvain.back.webp",
+          "name": "sylvain.back",
+          "sha1": "F746BCE55369638E86949D30CB22F5918D19C616",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9814195005850341465/F746BCE55369638E86949D30CB22F5918D19C616/",
+          "size": 9460
+        },
+        {
+          "path": "NPC Art/Tokens/npcToken_sylvain.front.webp",
+          "name": "sylvain.front",
+          "sha1": "19A54BB097DDE2AE2AAD00DDBBD3E2397D130217",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/18398873843637382683/19A54BB097DDE2AE2AAD00DDBBD3E2397D130217/",
+          "size": 20654
         },
         {
           "path": "NPC Art/Tokens/npcToken_technicalTransport_01.back.webp",
