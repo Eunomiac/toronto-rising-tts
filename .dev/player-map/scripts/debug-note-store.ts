@@ -162,7 +162,8 @@ export function createDebugNoteStore(filePath: string) {
     remove: (id: number): Promise<DebugNoteFile> => serial(async () => {
       const file = await read();
       requireNote(file, id);
-      return write({ ...file, notes: file.notes.filter((note) => note.id !== id) });
+      const notes = file.notes.filter((note) => note.id !== id);
+      return write({ nextId: notes.length === 0 ? 1 : file.nextId, notes });
     }),
   };
 }

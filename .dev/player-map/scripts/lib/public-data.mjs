@@ -1,4 +1,6 @@
 const DISTRICT_FIELDS = ['Key', 'Name', 'Hunting Difficulty', 'Resonance Plus', 'Resonance Minus'];
+const SITE_FIELDS = ['Key', 'Name', 'Subtitle', 'District', 'Map Icon', 'X', 'Y'];
+const PUBLIC_SITE_PROPERTIES = ['districtKey', 'hub', 'icon', 'key', 'name'];
 const RESONANCES = new Set(['choleric', 'ischemic', 'melancholic', 'mercurial', 'phlegmatic', 'primal', 'sanguine']);
 const PUBLIC_DISTRICT_PROPERTIES = new Set([
   'key',
@@ -39,12 +41,9 @@ export function validatePublicDataPolicy(policy) {
     || !Array.isArray(policy.districtFields)
     || !sameMembers(policy.districtFields, DISTRICT_FIELDS)
     || !Array.isArray(policy.sheetOnlyDistricts)
-    || !Array.isArray(policy.siteFields)
+    || !sameMembers(policy.siteFields, SITE_FIELDS)
     || !Array.isArray(policy.publicSiteKeys)) {
     throw new Error('Invalid public-data policy');
-  }
-  if (policy.siteFields.length !== 0 || policy.publicSiteKeys.length !== 0) {
-    throw new Error('Public sites require a reviewed non-empty field policy and explicit projection support');
   }
   const exceptionKeys = policy.sheetOnlyDistricts.map(({ key }) => key);
   if (new Set(exceptionKeys).size !== exceptionKeys.length) throw new Error('Duplicate Sheet-only district exception');
@@ -105,9 +104,72 @@ export function joinDistrictFacts(collection, facts, policy) {
   };
 }
 
-export function emptyPublicSites(policy) {
-  validatePublicDataPolicy(policy);
-  return { type: 'FeatureCollection', features: [] };
+export function projectPublicSites(rows, icons, project) {
+  const available = new Set(icons);
+  const individuals = [];
+  const hubs = new Map();
+  for (const row of rows) {
+    const key = String(row.Key ?? '').trim();
+    const name = String(row.Name ?? '').trim();
+    const subtitle = String(row.Subtitle ?? '').trim();
+    const districtKey = String(row.District ?? '').trim();
+    const icon = String(row['Map Icon'] ?? '').trim();
+    const xText = String(row.X ?? '').trim();
+    const yText = String(row.Y ?? '').trim();
+    if (!icon || !xText || !yText) continue;
+    const x = Number(xText);
+    const y = Number(yText);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error(`${key}: invalid map coordinates`);
+    if (!available.has(icon)) throw new Error(`${key}: unknown map icon ${JSON.stringify(icon)}`);
+    if (!name) throw new Error(`${key}: mapped site is missing a name`);
+    const site = { key, name, districtKey, icon, x, y };
+    if (!subtitle) {
+      individuals.push(site);
+      continue;
+    }
+    const group = hubs.get(subtitle) ?? [];
+    group.push(site);
+    hubs.set(subtitle, group);
+  }
+  const features = individuals.map((site) => siteFeature(site, false, project));
+  for (const [subtitle, members] of hubs) {
+    const [first] = members;
+    if (!first || members.some((member) => member.icon !== first.icon || member.x !== first.x || member.y !== first.y)) {
+      throw new Error(`Hub ${JSON.stringify(subtitle)} has conflicting map icons or coordinates`);
+    }
+    const key = hubKey(subtitle);
+    features.push(siteFeature({ ...first, key, name: subtitle }, true, project));
+  }
+  const keys = features.map((feature) => feature.properties.key);
+  if (new Set(keys).size !== keys.length) throw new Error('Duplicate public site key');
+  features.sort((left, right) => left.properties.key.localeCompare(right.properties.key));
+  return { type: 'FeatureCollection', features };
+}
+
+function hubKey(subtitle) {
+  const parts = subtitle.split(/[^A-Za-z0-9]+/).filter(Boolean);
+  const key = parts.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) throw new Error(`Hub ${JSON.stringify(subtitle)} has no usable map key`);
+  return key;
+}
+
+function siteFeature(site, hub, project) {
+  const properties = {
+    key: site.key,
+    name: site.name,
+    districtKey: site.districtKey,
+    icon: site.icon,
+    hub,
+  };
+  if (Object.keys(properties).sort().join(',') !== PUBLIC_SITE_PROPERTIES.join(',')) {
+    throw new Error(`${site.key}: unexpected public site property projection`);
+  }
+  return {
+    type: 'Feature',
+    id: site.key,
+    properties,
+    geometry: { type: 'Point', coordinates: project([site.x, site.y]) },
+  };
 }
 
 export const publicDistrictPropertyNames = Object.freeze([...PUBLIC_DISTRICT_PROPERTIES].sort());

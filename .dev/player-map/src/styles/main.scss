@@ -138,6 +138,7 @@ select,
   --chronicle-north: 0px;
   --chronicle-south: 100%;
   --feather: 48px;
+  --blur-overlap: 18px;
   position: absolute;
   z-index: 1;
   inset: 0;
@@ -153,33 +154,33 @@ select,
 
     &--north {
       top: 0;
-      left: var(--chronicle-west);
-      right: calc(100% - var(--chronicle-east));
-      height: var(--chronicle-north);
+      right: 0;
+      left: 0;
+      height: calc(var(--chronicle-north) + var(--blur-overlap));
       mask-image: linear-gradient(to top, transparent, #000 var(--feather));
     }
 
     &--south {
-      top: var(--chronicle-south);
-      left: var(--chronicle-west);
-      right: calc(100% - var(--chronicle-east));
+      top: calc(var(--chronicle-south) - var(--blur-overlap));
+      right: 0;
       bottom: 0;
+      left: 0;
       mask-image: linear-gradient(to bottom, transparent, #000 var(--feather));
     }
 
     &--west {
-      top: var(--chronicle-north);
-      right: calc(100% - var(--chronicle-west));
-      bottom: calc(100% - var(--chronicle-south));
+      top: calc(var(--chronicle-north) + var(--blur-overlap));
+      right: calc(100% - var(--chronicle-west) - var(--blur-overlap));
+      bottom: calc(100% - var(--chronicle-south) + var(--blur-overlap));
       left: 0;
       mask-image: linear-gradient(to left, transparent, #000 var(--feather));
     }
 
     &--east {
-      top: var(--chronicle-north);
+      top: calc(var(--chronicle-north) + var(--blur-overlap));
       right: 0;
-      bottom: calc(100% - var(--chronicle-south));
-      left: var(--chronicle-east);
+      bottom: calc(100% - var(--chronicle-south) + var(--blur-overlap));
+      left: calc(var(--chronicle-east) - var(--blur-overlap));
       mask-image: linear-gradient(to right, transparent, #000 var(--feather));
     }
   }
@@ -290,140 +291,136 @@ select,
   }
 }
 
-.basemap-mask-overlay {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-
-  &__image {
-    position: absolute;
-    display: block;
-    max-width: none;
-  }
-}
-
-.gsap-sandbox {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  pointer-events: none;
-
-  svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
+@font-face {
+  font-family: 'Penumbra Flare';
+  src: url('/assets/fonts/PENUMBRAFLARESTD-SEMIBOLD.OTF') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
 }
 
 .icon-rail {
+  --rail-stride: 3.9rem;
   position: absolute;
   z-index: 6;
   top: 5.4rem;
   left: 0.85rem;
-  display: grid;
-  gap: 0.85rem;
-  width: max-content;
-  max-width: min(14rem, calc(100vw - 1.5rem));
+  width: 3.15rem;
+  font-family: 'Penumbra Flare', Georgia, serif;
   pointer-events: none;
 
-  &__item {
-    position: relative;
+  &__column {
+    display: grid;
+    gap: 0.75rem;
     pointer-events: auto;
   }
 
-  &__face {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    width: 2.75rem;
-    height: 2.75rem;
-    padding: 0 0.7rem;
-    overflow: hidden;
+  &__button {
+    position: relative;
+    width: 3.15rem;
+    height: 3.15rem;
+    padding: 0;
     border: 0;
-    border-radius: 2px;
-    color: #9a9390;
-    background: #6a1d24;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
+    background: transparent;
     cursor: pointer;
-    transform-origin: center center;
+
+    &.is-open .icon-rail__diamond { background: #8d1c28; }
   }
 
-  &__icon {
-    display: grid;
-    flex: 0 0 auto;
-    width: 1.2rem;
-    height: 1.2rem;
-    place-items: center;
-
-    svg { width: 100%; height: 100%; }
+  &__diamond,
+  &__glyph {
+    position: absolute;
+    display: block;
+    pointer-events: none;
   }
 
-  &__label {
-    flex: 1 1 auto;
-    overflow: hidden;
-    color: $paper;
-    font: 800 0.72rem/1 $sans;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    opacity: 0;
+  &__diamond {
+    inset: 0;
+    background: #6e1520;
+    mask: url('/assets/icons/left_panel/bg_diamond.svg') center / contain no-repeat;
+    -webkit-mask: url('/assets/icons/left_panel/bg_diamond.svg') center / contain no-repeat;
   }
 
-  &__item.is-open &__face {
-    color: $paper;
-    background: #8a1f29;
+  &__glyph {
+    inset: 24%;
+    background: #e6c36a;
+    mask: var(--glyph) center / contain no-repeat;
+    -webkit-mask: var(--glyph) center / contain no-repeat;
   }
 
-  &__body {
-    overflow: hidden;
-    width: 11.5rem;
-    margin-top: 0.15rem;
-    max-height: min(62vh, 34rem);
-    color: #e0b34f;
-    background: rgba(24, 10, 12, 0.96);
+  &__panel {
+    position: absolute;
+    top: calc(var(--rail-open-index) * var(--rail-stride));
+    left: 3.35rem;
+    display: flex;
+    flex-direction: column;
+    width: min(16.25rem, calc(100vw - 5.5rem));
+    max-height: calc(100dvh - 6.5rem - (var(--rail-open-index) * var(--rail-stride)));
+    background: #2a0a0e;
     box-shadow: $shadow;
+    pointer-events: auto;
+
+    &--wide { width: min(24rem, calc(100vw - 5.5rem)); }
+  }
+
+  &__title {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    background: #7c1822;
+    color: #f6efe6;
+    font-size: 1.12rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
   }
 
   &__list {
-    display: grid;
-    gap: 0.05rem;
-    max-height: min(62vh, 34rem);
+    min-height: 0;
     overflow: auto;
-    padding: 0.45rem 0.35rem 0.55rem;
+    padding: 0.2rem 0.55rem 0.35rem;
   }
 
-  &__gap {
-    height: 0.7rem;
-  }
+  &__gap { height: 0.35rem; }
 
   &__option {
     display: block;
     width: 100%;
-    padding: 0.28rem 0.4rem;
+    height: 1.28rem;
+    padding: 0 0.05rem;
     border: 0;
-    color: inherit;
     background: transparent;
-    font: 800 0.68rem/1.25 $sans;
-    letter-spacing: 0.08em;
+    font: 600 0.66rem/1.28rem 'Penumbra Flare', Georgia, serif;
+    letter-spacing: 0.015em;
     text-align: left;
     text-transform: uppercase;
+    white-space: nowrap;
     cursor: pointer;
 
-    &.is-selected { color: $paper; }
+    &--region { color: #d5d0cb; }
+    &--district,
+    &--site { color: #e0b34f; }
+    &--hub { color: #f6efe6; }
+
+    &.is-selected,
+    &:hover:not(:disabled) {
+      color: #fff;
+      transform: scale(1.04);
+      transform-origin: left center;
+    }
 
     &.is-disabled {
-      opacity: 0.35;
+      opacity: 0.38;
       cursor: not-allowed;
     }
   }
 
   &__empty {
     margin: 0;
-    padding: 0.7rem 0.75rem 0.85rem;
+    padding: 0.7rem 0.85rem 0.9rem;
     color: $muted;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
   }
 }
 

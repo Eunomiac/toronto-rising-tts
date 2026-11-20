@@ -1,3 +1,14 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "sketch": "scenes",
+      "x": 534,
+      "y": 393,
+      "text": "When a player left-clicks \"Roll\" to manually roll their dice, the \"Roll\" button should remain visible on their roll control popup. Additionally, if the player left- OR right-clicks the \"Roll\" button after their dice have been dropped onto the table, the dropped dice should be automatically rolled.  Once the dice have been rolled, the \"Roll\" button should be hidden so they can't reroll.",
+      "status": "open",
+      "createdAt": "2026-11-20T11:39:32.597Z",
+      "updatedAt": "2026-11-20T11:39:32.597Z"
+    }
+  ]
 }

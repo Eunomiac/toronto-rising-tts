@@ -18,9 +18,17 @@ export const SECONDARY_STREET_NAMES = ORIENTATION_STREETS
   .filter((street) => street.category === 'orientation')
   .flatMap((street) => street.matchNames);
 
+function streetNameInput(): unknown[] {
+  return ['coalesce', ['get', 'name'], ['get', 'name_en'], ''];
+}
+
+export function orientationStreetNameInput(): unknown[] {
+  return streetNameInput();
+}
+
 export function orientationDisplayNameExpression(category: OrientationStreetCategory) {
   const streets = ORIENTATION_STREETS.filter((street) => street.category === category);
-  const expression: unknown[] = ['match', ['get', 'name']];
+  const expression: unknown[] = ['match', streetNameInput()];
   for (const street of streets) {
     for (const matchName of street.matchNames) {
       expression.push(matchName, street.displayName);

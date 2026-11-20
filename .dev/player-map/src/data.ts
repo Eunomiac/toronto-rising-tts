@@ -24,7 +24,7 @@ const DISTRICT_PROPERTY_KEYS = [
   'resonancePlus', 'sourceElement', 'sourceRingCount',
 ].sort();
 const REGION_PROPERTY_KEYS = ['fillRule', 'key', 'kind', 'name', 'sourceElement', 'sourceRingCount'].sort();
-const SITE_PROPERTY_KEYS = ['districtKey', 'key', 'name'].sort();
+const SITE_PROPERTY_KEYS = ['districtKey', 'hub', 'icon', 'key', 'name'].sort();
 const LABEL_PROPERTY_KEYS = ['key', 'kind', 'name'].sort();
 const PATH_DISTRICT_KEYS = ['huntingDifficulty', 'key', 'name', 'resonanceMinus', 'resonancePlus'].sort();
 const PATH_ROUTE_KEYS = ['covered', 'highway', 'indoor', 'key', 'level', 'name', 'osmId', 'tunnel'].sort();
@@ -122,6 +122,11 @@ function parseSites(value: unknown): PublicSiteCollection {
     const geometry = record(feature.geometry, 'Site geometry');
     exactKeys(properties, SITE_PROPERTY_KEYS, `${String(properties.key)} site`);
     if (feature.type !== 'Feature' || geometry.type !== 'Point' || !finitePosition(geometry.coordinates)) throw new Error('Invalid site feature');
+    nonEmptyString(properties.key, 'Site key');
+    nonEmptyString(properties.name, 'Site name');
+    nonEmptyString(properties.icon, 'Site icon');
+    if (typeof properties.hub !== 'boolean') throw new Error(`${String(properties.key)} site is missing its hub flag`);
+    if (typeof properties.districtKey !== 'string') throw new Error(`${String(properties.key)} site is missing its district`);
   }
   return value as PublicSiteCollection;
 }

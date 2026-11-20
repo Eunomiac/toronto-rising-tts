@@ -3,6 +3,20 @@
   "cities": [
     { "key": "Toronto", "name": "Toronto", "coordinates": [-79.3832, 43.6532] },
     { "key": "Kingston", "name": "Kingston", "coordinates": [-76.4859, 44.2312] },
-    { "key": "Montreal", "name": "Montréal", "coordinates": [-73.5674, 45.5019] }
+    { "key": "Montreal", "name": "Montréal", "coordinates": [-73.5674, 45.5019] },
+    { "key": "Ottawa", "name": "Ottawa", "coordinates": [-75.6972, 45.4215] },
+    { "key": "Windsor", "name": "Windsor", "coordinates": [-83.0369, 42.3149] },
+    { "key": "Hamilton", "name": "Hamilton", "coordinates": [-79.8711, 43.2557] },
+    { "key": "Milwaukee", "name": "Milwaukee", "coordinates": [-87.9065, 43.0389] },
+    { "key": "LosAngeles", "name": "Los Angeles", "coordinates": [-118.2437, 34.0522] },
+    { "key": "NewOrleans", "name": "New Orleans", "coordinates": [-90.0715, 29.9511] },
+    { "key": "Celaya", "name": "Celaya", "coordinates": [-100.8157, 20.5236] },
+    { "key": "Belfast", "name": "Belfast", "coordinates": [-5.9301, 54.5973] },
+    { "key": "Brasov", "name": "Brașov", "coordinates": [25.5887, 45.6427] },
+    { "key": "London", "name": "London", "coordinates": [-0.1276, 51.5072] },
+    { "key": "Istanbul", "name": "Istanbul", "coordinates": [28.9784, 41.0082] },
+    { "key": "Alamut", "name": "Alamut", "coordinates": [50.5864, 36.4469] },
+    { "key": "Paris", "name": "Paris", "coordinates": [2.3522, 48.8566] },
+    { "key": "PortAuPrince", "name": "Port-au-Prince", "coordinates": [-72.3074, 18.5944] }
   ]
 }

@@ -3410,9 +3410,9 @@ prettyPrintTable(draggableData, "draggableData")
       color = "#C9C2B0"
       fontStyle = "Bold"
       fontSize = "16"
-      alignment = "LowerCenter"
+      alignment = "UpperCenter"
       raycastTarget = "false"
-      active = "false"
+      active = "true"
      />
 
   </Defaults>
@@ -3520,8 +3520,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup1_selector_Brown" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup1_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup1_npcList_Brown" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup1_summary_Brown" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
     <VerticalLayout id="scatterModeControlGroup2_container_Brown" class="scatterModeControl_group_container">
@@ -3530,8 +3530,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup2_selector_Brown" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup2_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup2_npcList_Brown" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup2_summary_Brown" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3541,8 +3541,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup3_selector_Brown" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup3_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup3_npcList_Brown" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup3_summary_Brown" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3552,8 +3552,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup4_selector_Brown" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup4_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup4_npcList_Brown" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup4_summary_Brown" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3563,8 +3563,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup5_selector_Brown" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup5_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup5_npcList_Brown" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup5_summary_Brown" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3574,8 +3574,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup6_selector_Brown" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup6_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup6_npcList_Brown" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup6_summary_Brown" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
   </HorizontalLayout>
@@ -3695,9 +3695,9 @@ prettyPrintTable(draggableData, "draggableData")
       color = "#C9C2B0"
       fontStyle = "Bold"
       fontSize = "16"
-      alignment = "LowerCenter"
+      alignment = "UpperCenter"
       raycastTarget = "false"
-      active = "false"
+      active = "true"
      />
 
   </Defaults>
@@ -3805,8 +3805,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup1_selector_Orange" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup1_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup1_npcList_Orange" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup1_summary_Orange" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
     <VerticalLayout id="scatterModeControlGroup2_container_Orange" class="scatterModeControl_group_container">
@@ -3815,8 +3815,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup2_selector_Orange" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup2_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup2_npcList_Orange" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup2_summary_Orange" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3826,8 +3826,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup3_selector_Orange" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup3_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup3_npcList_Orange" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup3_summary_Orange" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3837,8 +3837,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup4_selector_Orange" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup4_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup4_npcList_Orange" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup4_summary_Orange" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3848,8 +3848,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup5_selector_Orange" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup5_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup5_npcList_Orange" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup5_summary_Orange" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -3859,8 +3859,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup6_selector_Orange" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup6_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup6_npcList_Orange" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup6_summary_Orange" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
   </HorizontalLayout>
@@ -3980,9 +3980,9 @@ prettyPrintTable(draggableData, "draggableData")
       color = "#C9C2B0"
       fontStyle = "Bold"
       fontSize = "16"
-      alignment = "LowerCenter"
+      alignment = "UpperCenter"
       raycastTarget = "false"
-      active = "false"
+      active = "true"
      />
 
   </Defaults>
@@ -4090,8 +4090,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup1_selector_Red" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup1_summary_Red" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup1_npcList_Red" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup1_summary_Red" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
     <VerticalLayout id="scatterModeControlGroup2_container_Red" class="scatterModeControl_group_container">
@@ -4100,8 +4100,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup2_selector_Red" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup2_summary_Red" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup2_npcList_Red" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup2_summary_Red" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4111,8 +4111,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup3_selector_Red" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup3_summary_Red" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup3_npcList_Red" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup3_summary_Red" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4122,8 +4122,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup4_selector_Red" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup4_summary_Red" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup4_npcList_Red" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup4_summary_Red" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4133,8 +4133,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup5_selector_Red" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup5_summary_Red" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup5_npcList_Red" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup5_summary_Red" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4144,8 +4144,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup6_selector_Red" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup6_summary_Red" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup6_npcList_Red" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup6_summary_Red" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
   </HorizontalLayout>
@@ -4265,9 +4265,9 @@ prettyPrintTable(draggableData, "draggableData")
       color = "#C9C2B0"
       fontStyle = "Bold"
       fontSize = "16"
-      alignment = "LowerCenter"
+      alignment = "UpperCenter"
       raycastTarget = "false"
-      active = "false"
+      active = "true"
      />
 
   </Defaults>
@@ -4375,8 +4375,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup1_selector_Pink" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup1_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup1_npcList_Pink" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup1_summary_Pink" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
     <VerticalLayout id="scatterModeControlGroup2_container_Pink" class="scatterModeControl_group_container">
@@ -4385,8 +4385,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup2_selector_Pink" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup2_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup2_npcList_Pink" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup2_summary_Pink" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4396,8 +4396,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup3_selector_Pink" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup3_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup3_npcList_Pink" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup3_summary_Pink" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4407,8 +4407,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup4_selector_Pink" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup4_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup4_npcList_Pink" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup4_summary_Pink" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4418,8 +4418,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup5_selector_Pink" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup5_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup5_npcList_Pink" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup5_summary_Pink" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4429,8 +4429,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup6_selector_Pink" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup6_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup6_npcList_Pink" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup6_summary_Pink" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
   </HorizontalLayout>
@@ -4550,9 +4550,9 @@ prettyPrintTable(draggableData, "draggableData")
       color = "#C9C2B0"
       fontStyle = "Bold"
       fontSize = "16"
-      alignment = "LowerCenter"
+      alignment = "UpperCenter"
       raycastTarget = "false"
-      active = "false"
+      active = "true"
      />
 
   </Defaults>
@@ -4660,8 +4660,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup1_selector_Purple" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup1_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup1_npcList_Purple" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup1_summary_Purple" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
     <VerticalLayout id="scatterModeControlGroup2_container_Purple" class="scatterModeControl_group_container">
@@ -4670,8 +4670,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup2_selector_Purple" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup2_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup2_npcList_Purple" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup2_summary_Purple" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4681,8 +4681,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup3_selector_Purple" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup3_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup3_npcList_Purple" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup3_summary_Purple" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4692,8 +4692,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup4_selector_Purple" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup4_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup4_npcList_Purple" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup4_summary_Purple" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4703,8 +4703,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup5_selector_Purple" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup5_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup5_npcList_Purple" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup5_summary_Purple" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -4714,8 +4714,8 @@ prettyPrintTable(draggableData, "draggableData")
           <Image id="scatterModeControlGroup6_selector_Purple" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup6_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup6_npcList_Purple" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup6_summary_Purple" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
   </HorizontalLayout>

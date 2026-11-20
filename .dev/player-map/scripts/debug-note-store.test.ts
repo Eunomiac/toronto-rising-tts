@@ -43,6 +43,23 @@ describe('debug note store', () => {
     expect(JSON.parse(await readFile(filePath, 'utf8'))).toEqual(result);
   });
 
+  it('starts again at 1 after the last note is cleared', async () => {
+    const store = createDebugNoteStore(filePath);
+    await store.add(parseDebugNoteCreate({
+      anchor: { kind: 'map', longitude: -79.38, latitude: 43.67 },
+      text: 'Temporary note.',
+      context,
+    }));
+    const cleared = await store.remove(1);
+    expect(cleared).toEqual({ nextId: 1, notes: [] });
+    const next = await store.add(parseDebugNoteCreate({
+      anchor: { kind: 'map', longitude: -79.38, latitude: 43.67 },
+      text: 'The next note.',
+      context,
+    }));
+    expect(next.notes.map((note) => note.id)).toEqual([1]);
+  });
+
   it('updates status and agent replies without losing reproduction context', async () => {
     const store = createDebugNoteStore(filePath);
     await store.add(parseDebugNoteCreate({

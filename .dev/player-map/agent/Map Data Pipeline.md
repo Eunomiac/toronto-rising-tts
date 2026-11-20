@@ -52,7 +52,7 @@ build step and must not silently replace the SVG.
 Use the existing production ranges in the Toronto Rising workbook:
 
 - `EXPORT_LOCATIONS_DISTRICTS` — 36 records and 21 fields under the current contract
-- `EXPORT_LOCATIONS_SITES` — site content and runtime metadata under the current contract
+- `EXPORT_LOCATIONS_SITES` — site content and runtime metadata under the current contract, including `Map Icon`, `X`, and `Y` for later icon placement. The map build does not read those three fields yet.
 
 The district export deliberately includes four non-geographical runtime districts in addition to the 32 mapped districts. A reviewed coverage manifest must identify those exceptions; the pipeline must not assume that every Sheet district requires a polygon or silently ignore an unmatched key.
 
@@ -139,8 +139,10 @@ Generate PATH from a dated OpenStreetMap snapshot using a deliberately broad,
 checked-in downtown catchment. Include every mapped pedestrian route in that
 catchment that is identified as indoor, underground, tunnelled, covered, or on
 a negative level. Candidate route types include corridors, footways, pedestrian
-ways, stairs, and escalators. Do not require official PATH branding or graph
-connectivity; disconnected fragments reinforce the intended fiction.
+ways, stairs, and escalators. Do not require official PATH branding. After
+extraction, keep only the longest chain of ways that touch one another and drop
+the stray fragments, so the published network reads as one connected underground
+system.
 
 The extraction rules are the source of truth. Keep only a small reviewed
 exclusion list for obvious false positives rather than curating the network way
@@ -172,6 +174,12 @@ map needs, clips routes to the reviewed catchment, derives a wider selectable
 corridor for each route, and records the query hash plus every included OSM
 element ID in the manifest. Both generation and browser loading fail on empty,
 malformed, out-of-bounds, count-mismatched, or provenance-mismatched data.
+
+## Orientation streets
+
+Yonge, the Gardiner, the Don Valley Parkway, Bloor, Dundas, Front, Spadina, Ossington, and St. Clair are drawn from a dated OpenStreetMap extract, not from the live street tiles. Those tiles keep the road names on a label layer. That layer's geometry is broken into short pieces and leaves the smaller streets out when the map is zoomed out, which is why the highlighted streets had gaps. The map draws `public/generated/orientation-streets.geojson` instead.
+
+`npm run streets:refresh` from `.dev/player-map` updates the extract. Ordinary builds read `data/source/orientation-streets-osm.json` and do not call Overpass. The build fails if any street in `data/orientation-streets.json` has no matching way.
 
 ## Georeferencing
 
@@ -278,12 +286,7 @@ snapshot but are deliberately exempt from the 32 surface-polygon join. PATH
 will receive its separately generated network geometry; the other three are
 runtime abstractions without Player Map geometry.
 
-No site is public yet. `sites.geojson` is intentionally generated as an empty
-feature collection, and the policy's site allowlist is empty. The sites export
-contains room-level and unrevealed chronicle data without a sufficiently clear
-player-visibility flag, so publishing it wholesale would violate the privacy
-boundary. Adding a site later requires both an explicit reviewed key and an
-explicit field projection; changing the allowlist alone fails the build.
+A site appears on the map only when its export row has a map icon and both X and Y. Rows without those three values stay out of `sites.geojson`. Rows that share a Subtitle are one hub: one icon, one coordinate, and the subtitle as the public name. The published properties are only `key`, `name`, `districtKey`, `icon`, and `hub`. Aspect text, resonance, conditions, sound, and the rest of the sites sheet stay in the private snapshot.
 
 Domain-control values, aspects, conditions, sites, and future NPC-activity fields must not be assumed public merely because they exist in a link-viewable Sheet. Add them only through an explicit decision. New Sheet columns do not automatically enter the Player Map.
 
@@ -300,8 +303,12 @@ contract. It chooses the snapshot in this order:
 Use `npm run data:refresh` to force a fresh fetch while developing the Player
 Map. The manifest records the snapshot mode, workbook ID, fetch time, export
 names, source-row hash, safe fields, row counts, and reviewed Sheet-only
-exceptions. Player browsers still load only generated files and never contact
-Google Sheets.
+exceptions. `snapshotMode` is provenance for the process that last wrote the
+files: FULL records `shared-snapshot`. A later local `npm run dev` reads the
+same Dashboard cache and would call that run `validated-cache`. The freshness
+check ignores that label, so a successful FULL does not look stale when the
+local map starts. Player browsers still load only generated files and never
+contact Google Sheets.
 
 If some rows or values change visibility during play, a static public file is insufficient. Those values must be served through an authenticated API that returns only what the current player is allowed to know.
 

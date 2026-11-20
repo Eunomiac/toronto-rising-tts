@@ -2,9 +2,8 @@
  * Author playground for GSAP experiments on the Player Map.
  *
  * MapLibre district/region fills are WebGL, not DOM/SVG nodes, so they cannot
- * be passed directly to gsap.to(...). Use `targets` for real DOM nodes and the
- * projected sandbox SVG (`targets.sandbox`) for animation trials. Winning looks
- * can later be reproduced with MapLibre paint/feature-state helpers.
+ * be passed directly to gsap.to(...). Use `targets` for real DOM nodes. Winning
+ * looks can later be reproduced with MapLibre paint/feature-state helpers.
  */
 import gsap from 'gsap';
 
@@ -18,11 +17,6 @@ function collectTargets(): GsapTargetMap {
     const key = element.dataset.gsap;
     if (!key) continue;
     next[key] = element;
-  }
-  for (const element of document.querySelectorAll<SVGElement>('[data-gsap-sandbox]')) {
-    const key = element.dataset.gsapSandbox;
-    if (!key) continue;
-    next[`sandbox.${key}`] = element;
   }
   return next;
 }

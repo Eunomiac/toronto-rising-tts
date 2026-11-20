@@ -18,10 +18,6 @@ vi.mock('./MapView', () => ({
   ),
 }));
 
-vi.mock('./GsapSandboxOverlay', () => ({
-  GsapSandboxOverlay: () => null,
-}));
-
 const feature = {
   type: 'Feature' as const,
   geometry: {

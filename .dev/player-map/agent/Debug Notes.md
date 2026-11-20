@@ -21,7 +21,7 @@ Status:
 
 ## Author workflow
 
-1. Start the local map with `npm run dev` from `.dev/player-map`.
+1. Start the local map with Run Task → **PLAYER MAP**, or `npm run dev` from `.dev/player-map`. The public Cloudflare map does not include Debug notes.
 2. Open **Debug notes** in the lower-left corner.
 3. Choose **Add note**, then click the map or the interface element you want to discuss.
 4. Write the instruction and press Enter to save. Use Shift+Enter for another line.
@@ -43,8 +43,9 @@ selected District, and current map camera as reproduction context.
 
 The local API at `/api/debug-notes` supports GET, POST, PATCH, and DELETE while
 Vite is running. Direct edits to the tracked JSON file are appropriate for
-agent replies and carefully reviewed cleanup. Preserve `nextId` so note numbers
-are never silently reused.
+agent replies and carefully reviewed cleanup. Deleting one note keeps `nextId`
+so the remaining numbers stay put. Clearing the last note resets `nextId` to 1,
+so the next note the author adds is numbered 1 again.
 
 ## Production boundary
 

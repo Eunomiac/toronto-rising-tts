@@ -6,6 +6,8 @@ Public address: <https://toronto-rising-player-map.toronto-rising-player-map.wor
 
 ## Local development
 
+**From Cursor / VS Code:** Run Task → **PLAYER MAP**. Checks map data, starts the local server at `http://127.0.0.1:5173`, and opens the **Cursor** Chrome profile (`npm run player-map:dev` from the repo root). That local server is the one with **Debug notes**. The public map on Cloudflare does not include them. A Full build already regenerates this map data from the same Sheet snapshot as the rest of the chronicle; the local task only checks that those files are still current.
+
 ```powershell
 cd .dev/player-map
 npm install
@@ -37,10 +39,10 @@ must not be edited by hand.
 
 `data/public-data-policy.json` is the explicit player-data privacy boundary.
 The current public district facts are name, hunting difficulty, and positive
-and negative resonance. `public/generated/sites.geojson` is intentionally
-empty until individual player-visible sites and their allowed fields are
-reviewed. Generated district, region, site, and provenance files must not be
-edited by hand.
+and negative resonance. A site is public only when the export gives it a map
+icon and X/Y coordinates. The generated site then carries its name, district,
+icon, and whether it is a hub. Generated district, region, site, and provenance
+files must not be edited by hand.
 
 PATH uses the reviewed extraction configuration in `data/path-network.json`
 and the dated OpenStreetMap response in
@@ -68,20 +70,20 @@ the four region overlays and the selectable districts (including PATH; Sewers
 and Subway stay disabled until implemented). Orientation streets are always on
 and follow `data/orientation-streets.json` (Primary first, then Orientation),
 not the basemap's automatic road labels. PATH uses a fixed yellow legend over
-the lake when that layer is on. Revealed sites will later fill the Sites menu;
-Domains stays empty for now. Non-default layer choices use the `layers` URL
-parameter so a shared link restores the same view.
+the lake when that layer is on. Mapped sites are listed in the Sites menu and
+drawn with their icons. Domains stays empty for now. Non-default layer choices
+use the `layers` URL parameter so a shared link restores the same view.
 
-Zooming out seamlessly shows provincial city markers (Toronto, Kingston,
-Montréal) from `data/provincial-cities.json` and hides the chronicle-edge
-blur; there is no separate Province button.
+Zooming out shows the distant city markers from `data/provincial-cities.json`
+as red dots, the same treatment as Toronto, Kingston, and Montréal. The
+chronicle-edge blur hides once the view is wide enough; there is no separate
+Province button.
 
 Rare fictional basemap changes use reviewed masks in `data/basemap-masks.json`
 (polygon masks and georeferenced image overlays such as Giovanni Estate).
 Generated mask GeoJSON must not be edited by hand.
 
-Author GSAP experiments live in `src/gsap-effects.ts`, with a small projected
-SVG sandbox for four neighboring districts. See `agent/GSAP Effects.md`.
+Author GSAP experiments live in `src/gsap-effects.ts`. See `agent/GSAP Effects.md`.
 
 ## Visual calibration
 

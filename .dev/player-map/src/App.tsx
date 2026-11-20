@@ -9,8 +9,6 @@ import {
   type VisualCalibration,
 } from './calibration';
 import { DistrictPanel } from './DistrictPanel';
-import { BasemapMaskOverlay } from './BasemapMaskOverlay';
-import { GsapSandboxOverlay } from './GsapSandboxOverlay';
 import { IconRail } from './IconRail';
 import { MapView, type BasemapMaskImage } from './MapView';
 import {
@@ -45,6 +43,7 @@ export function App() {
   const [selectedKey, setSelectedKey] = useState<string | null>(() => selectedDistrictFromUrl(window.location.search));
   const [layerVisibility, setLayerVisibility] = useState(() => layerVisibilityFromUrl(window.location.search));
   const [regionVisibility, setRegionVisibility] = useState<RegionVisibility>({});
+  const [toggledSiteKeys, setToggledSiteKeys] = useState<string[]>([]);
   const [visualCalibration, setVisualCalibration] = useState(DEFAULT_VISUAL_CALIBRATION);
   const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
   const [map, setMap] = useState<Map | null>(null);
@@ -139,6 +138,23 @@ export function App() {
     setSelectedKey(null);
     window.history.replaceState(null, '', updateDistrictInUrl(null));
   }, []);
+  const toggleSite = useCallback((key: string) => {
+    setToggledSiteKeys((current) => (
+      current.includes(key) ? current.filter((item) => item !== key) : [...current, key]
+    ));
+  }, []);
+  const focusSite = useCallback((key: string) => {
+    const feature = data?.sites.features.find((item) => item.properties.key === key);
+    const coordinates = feature?.geometry.type === 'Point' ? feature.geometry.coordinates : null;
+    const lng = coordinates?.[0];
+    const lat = coordinates?.[1];
+    if (!map || lng === undefined || lat === undefined) return;
+    map.easeTo({
+      center: [lng, lat],
+      zoom: Math.max(map.getZoom(), 15),
+      duration: 700,
+    });
+  }, [data, map]);
   const toggleRegion = useCallback((key: string) => {
     setRegionVisibility((current) => {
       const next = { ...current, [key]: !current[key] };
@@ -176,28 +192,30 @@ export function App() {
         cityMarkers={data.cityMarkers}
         basemapMasks={data.basemapMasks}
         basemapMaskLabels={data.basemapMaskLabels}
+        basemapMaskImages={basemapMaskImages}
         pathBounds={data.manifest.pathNetwork.bounds}
         chronicleBounds={data.manifest.bounds}
         layerVisibility={layerVisibility}
         regionVisibility={regionVisibility}
         selectedKey={validSelectedKey}
+        toggledSiteKeys={toggledSiteKeys}
         onSelect={selectDistrict}
         onMapReady={setMap}
       />
-      <BasemapMaskOverlay map={map} images={basemapMaskImages} />
       {!calibrationMode ? (
-        <>
-          <GsapSandboxOverlay map={map} districts={calibratedDistricts ?? data.districts} />
-          <IconRail
-            regions={data.regions.features.map((feature) => feature.properties)}
-            districts={data.districts.features.map((feature) => feature.properties)}
-            pathDistrict={data.pathDistrict}
-            regionVisibility={regionVisibility}
-            selectedDistrictKey={validSelectedKey}
-            onToggleRegion={toggleRegion}
-            onSelectDistrict={selectDistrict}
-          />
-        </>
+        <IconRail
+          regions={data.regions.features.map((feature) => feature.properties)}
+          districts={data.districts.features.map((feature) => feature.properties)}
+          pathDistrict={data.pathDistrict}
+          regionVisibility={regionVisibility}
+          selectedDistrictKey={validSelectedKey}
+          sites={data.sites.features.map((feature) => feature.properties)}
+          toggledSiteKeys={toggledSiteKeys}
+          onToggleRegion={toggleRegion}
+          onSelectDistrict={selectDistrict}
+          onToggleSite={toggleSite}
+          onFocusHub={focusSite}
+        />
       ) : null}
       {calibrationMode ? (
         <CalibrationPanel

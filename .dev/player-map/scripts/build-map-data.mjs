@@ -6,9 +6,10 @@ import { fileURLToPath } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import pointOnFeature from '@turf/point-on-feature';
 import { normalizeDistrictCollection } from './lib/normalize-districts.mjs';
+import { buildOrientationStreets } from './lib/orientation-streets.mjs';
 import { buildPathNetwork } from './lib/path-network.mjs';
 import { renderMapDiagnosticsHtml } from './lib/map-diagnostics.mjs';
-import { emptyPublicSites, joinDistrictFacts, projectDistrictRows, validatePublicDataPolicy } from './lib/public-data.mjs';
+import { joinDistrictFacts, projectDistrictRows, projectPublicSites, validatePublicDataPolicy } from './lib/public-data.mjs';
 import {
   createVisualCalibrationTransform,
   fitAffineCalibration,
@@ -28,6 +29,8 @@ const priorityPath = path.join(root, 'data/district-priority.json');
 const publicDataPolicyPath = path.join(root, 'data/public-data-policy.json');
 const pathNetworkConfigPath = path.join(root, 'data/path-network.json');
 const pathNetworkSnapshotPath = path.join(root, 'data/source/osm-path-snapshot.json');
+const orientationStreetConfigPath = path.join(root, 'data/orientation-streets.json');
+const orientationStreetSnapshotPath = path.join(root, 'data/source/orientation-streets-osm.json');
 const provincialCitiesPath = path.join(root, 'data/provincial-cities.json');
 const basemapMasksPath = path.join(root, 'data/basemap-masks.json');
 const normalizationDiagnosticsPath = path.join(root, 'data/diagnostics/normalization.json');
@@ -109,6 +112,10 @@ const sheetSiteRows = dataOf(sheetSnapshot, 'LOCATIONS_SITES');
 const publicDistrictFacts = projectDistrictRows(sheetDistrictRows, publicDataPolicy);
 const pathFacts = publicDistrictFacts.find((district) => district.key === 'PATH');
 const pathNetwork = buildPathNetwork(pathNetworkSnapshot, pathNetworkConfig, pathFacts);
+const orientationStreets = buildOrientationStreets(
+  JSON.parse(await fs.readFile(orientationStreetConfigPath, 'utf8')),
+  JSON.parse(await fs.readFile(orientationStreetSnapshotPath, 'utf8')),
+);
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '',
@@ -334,7 +341,12 @@ const { collection: normalizedDistricts, diagnostics: normalizationDiagnostics, 
 );
 const districts = joinDistrictFacts(normalizedDistricts, publicDistrictFacts, publicDataPolicy);
 const regions = transformCollection(baseRegions, visualTransform);
-const sites = emptyPublicSites(publicDataPolicy);
+const siteIconFiles = await fs.readdir(path.join(root, 'public/assets/icons/sites'));
+const sites = projectPublicSites(
+  sheetSiteRows,
+  siteIconFiles.filter((file) => file.endsWith('.svg')).map((file) => file.slice(0, -'.svg'.length)),
+  (source) => projectSourcePoint(source).map(roundCoordinate),
+);
 validatePolygonCollection(districts, 'district');
 validatePolygonCollection(regions, 'region');
 const labels = buildLabelCollection([districts, regions]);
@@ -440,7 +452,7 @@ if (manifest.counts.pathRoutes === 0 || manifest.counts.pathEntrances === 0
   || manifest.counts.pathInteractionCorridors !== manifest.counts.pathRoutes || manifest.counts.pathLabels !== 1) {
   throw new Error('Unexpected PATH network counts');
 }
-if (manifest.counts.cityMarkers !== 3) throw new Error('Unexpected provincial city marker count');
+if (manifest.counts.cityMarkers !== 17) throw new Error('Unexpected provincial city marker count');
 if (manifest.counts.basemapMasks !== basemapMasks.masks.length
   || manifest.counts.basemapMaskLabels !== basemapMasks.masks.length) {
   throw new Error('Unexpected basemap mask count');
@@ -468,16 +480,29 @@ const outputs = [
   ['city-markers.geojson', cityMarkers],
   ['basemap-masks.geojson', basemapMaskPolygons],
   ['basemap-mask-labels.geojson', basemapMaskLabels],
+  ['orientation-streets.geojson', orientationStreets],
   ['map-data-manifest.json', manifest],
 ];
 const calibrationSummary = `${manifest.calibration.rootMeanSquareErrorMetres} m control RMS${manifest.calibration.validationRootMeanSquareErrorMetres === null ? '' : `, ${manifest.calibration.validationRootMeanSquareErrorMetres} m validation RMS`}`;
 const visualDiagnosticsHtml = renderMapDiagnosticsHtml(bounds);
 
+// snapshotMode records which loader path last wrote the files. FULL writes
+// shared-snapshot; a later local check reads that same Dashboard cache and
+// would label the run validated-cache. The label is not map content.
+const withoutSnapshotMode = (value) => {
+  const copy = structuredClone(value);
+  if (copy?.sheet) delete copy.sheet.snapshotMode;
+  return copy;
+};
+
 if (checkOnly) {
   for (const [filename, value] of outputs) {
     const existing = JSON.parse(await fs.readFile(path.join(outputDirectory, filename), 'utf8'));
     const expected = structuredClone(value);
-    if (JSON.stringify(existing) !== JSON.stringify(expected)) throw new Error(`${filename} is stale; run npm run data:build`);
+    const comparable = filename === 'map-data-manifest.json' ? withoutSnapshotMode : (item) => item;
+    if (JSON.stringify(comparable(existing)) !== JSON.stringify(comparable(expected))) {
+      throw new Error(`${filename} is stale; run npm run data:build`);
+    }
   }
   const existingDiagnostics = JSON.parse(await fs.readFile(normalizationDiagnosticsPath, 'utf8'));
   if (JSON.stringify(existingDiagnostics) !== JSON.stringify(normalizationDiagnostics)) {

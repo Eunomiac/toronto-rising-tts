@@ -8,8 +8,7 @@ Read this when:
 
 Source of truth:
 - playground: `src/gsap-effects.ts`
-- projected sandbox overlay: `src/GsapSandboxOverlay.tsx`
-- menu motion: `src/IconRail.tsx`
+- menu: `src/IconRail.tsx`
 
 Status:
 - current
@@ -19,11 +18,9 @@ Status:
 GSAP targets DOM and SVG elements. MapLibre district and region fills are drawn
 in WebGL, so they are not available as `gsap.to(...)` targets.
 
-Use:
+Use `targets` for real UI nodes (`data-gsap` attributes). The old gold sandbox
+drawn over Bay Street Financial, Yonge Street, West Queen West, and the
+Waterfront is not part of the map.
 
-- `targets` for real UI nodes (`data-gsap` attributes)
-- `targets['sandbox.<DistrictKey>']` for the four projected sandbox paths
-  (Bay Street Financial, Yonge Street, West Queen West, The Waterfront)
-
-Edit `main()` in `src/gsap-effects.ts` to try looks. Winning sandbox effects can
-later be reproduced with MapLibre paint properties or feature-state by an agent.
+Edit `main()` in `src/gsap-effects.ts` to try looks. Winning effects can later
+be reproduced with MapLibre paint properties or feature-state.

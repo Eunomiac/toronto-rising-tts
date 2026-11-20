@@ -29,6 +29,14 @@
       "reason": "Narrative transit network with no approved public geometry snapshot."
     }
   ],
-  "siteFields": [],
+  "siteFields": [
+    "Key",
+    "Name",
+    "Subtitle",
+    "District",
+    "Map Icon",
+    "X",
+    "Y"
+  ],
   "publicSiteKeys": []
 }

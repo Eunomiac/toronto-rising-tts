@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { IconRail } from './IconRail';
@@ -48,5 +48,68 @@ describe('IconRail', () => {
     expect(onSelectDistrict).toHaveBeenCalledWith('Rosedale');
     expect(screen.getByRole('button', { name: 'The Sewers' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'The Subway' })).toBeDisabled();
+  });
+
+  it('sorts districts by name and ignores a leading The', async () => {
+    cleanup();
+    const user = userEvent.setup();
+    render(
+      <IconRail
+        regions={[]}
+        districts={[
+          { key: 'Bay', name: 'The Bay St. Financial District', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 4, resonancePlus: 'choleric', resonanceMinus: 'melancholic' },
+          { key: 'Annex', name: 'The Annex', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 5, resonancePlus: 'sanguine', resonanceMinus: 'choleric' },
+          { key: 'Yorkville', name: 'Yorkville', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 6, resonancePlus: 'phlegmatic', resonanceMinus: 'melancholic' },
+        ]}
+        pathDistrict={{ key: 'PATH', name: 'P.A.T.H.', huntingDifficulty: 4, resonancePlus: 'phlegmatic', resonanceMinus: 'choleric' }}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Map Layers/i }));
+    const names = screen.getAllByRole('button').filter((button) => button.className.includes('icon-rail__option')).map((button) => button.textContent);
+    expect(names).toEqual([
+      'The Annex',
+      'The Bay St. Financial District',
+      'P.A.T.H.',
+      'The Sewers',
+      'The Subway',
+      'Yorkville',
+    ]);
+  });
+
+  it('groups hub sites above the other sites and toggles only the others', async () => {
+    cleanup();
+    const onToggleSite = vi.fn();
+    const onFocusHub = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <IconRail
+        regions={[]}
+        districts={[]}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        sites={[
+          { key: 'Cafe', name: 'The Cafe', districtKey: 'Yorkville', icon: 'cafe', hub: false },
+          { key: 'CasaLoma', name: 'Casa Loma', districtKey: 'Wychwood', icon: 'hub_castle', hub: true },
+          { key: 'Annex', name: 'The Annex Library', districtKey: 'TheAnnex', icon: 'library', hub: false },
+        ]}
+        toggledSiteKeys={['Cafe']}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+        onToggleSite={onToggleSite}
+        onFocusHub={onFocusHub}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Sites/i }));
+    const names = screen.getAllByRole('button').filter((button) => button.className.includes('icon-rail__option')).map((button) => button.textContent);
+    expect(names).toEqual(['Casa Loma', 'The Annex Library', 'The Cafe']);
+    await user.click(screen.getByRole('button', { name: 'Casa Loma' }));
+    expect(onFocusHub).toHaveBeenCalledWith('CasaLoma');
+    expect(onToggleSite).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'The Annex Library' }));
+    expect(onToggleSite).toHaveBeenCalledWith('Annex');
   });
 });

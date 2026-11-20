@@ -28,6 +28,8 @@ export interface PublicSiteProperties {
   key: string;
   name: string;
   districtKey: string;
+  icon: string;
+  hub: boolean;
 }
 
 export interface MapLabelProperties {

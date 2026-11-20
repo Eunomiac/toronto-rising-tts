@@ -27,6 +27,78 @@ function polygonCoordinatesAreValid(coordinates, type) {
   ));
 }
 
+const SNAP_DEGREES = 0.00002;
+
+function snapKey(longitude, latitude) {
+  return `${Math.round(longitude / SNAP_DEGREES)}:${Math.round(latitude / SNAP_DEGREES)}`;
+}
+
+function lineLengthDegrees(coordinates, type) {
+  const lines = type === 'LineString' ? [coordinates] : coordinates;
+  let length = 0;
+  for (const line of lines) {
+    for (let index = 1; index < line.length; index += 1) {
+      length += Math.hypot(line[index][0] - line[index - 1][0], line[index][1] - line[index - 1][1]);
+    }
+  }
+  return length;
+}
+
+function findRoot(parent, index) {
+  let cursor = index;
+  while (parent[cursor] !== cursor) {
+    parent[cursor] = parent[parent[cursor]];
+    cursor = parent[cursor];
+  }
+  return cursor;
+}
+
+/** Keep the longest chain of PATH ways that touch. Stray fragments are dropped. */
+export function largestConnectedRoutes(features) {
+  if (features.length <= 1) return features;
+  const parent = features.map((_, index) => index);
+  const owners = new Map();
+  features.forEach((feature, index) => {
+    const lines = feature.geometry.type === 'LineString'
+      ? [feature.geometry.coordinates]
+      : feature.geometry.coordinates;
+    const seen = new Set();
+    for (const line of lines) {
+      for (const position of line) {
+        const key = snapKey(position[0], position[1]);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const owner = owners.get(key);
+        if (owner === undefined) owners.set(key, index);
+        else {
+          const left = findRoot(parent, owner);
+          const right = findRoot(parent, index);
+          if (left !== right) parent[right] = left;
+        }
+      }
+    }
+  });
+  const groups = new Map();
+  features.forEach((feature, index) => {
+    const root = findRoot(parent, index);
+    const group = groups.get(root);
+    if (group) group.push(feature);
+    else groups.set(root, [feature]);
+  });
+  let best = features;
+  let bestLength = -1;
+  for (const group of groups.values()) {
+    const length = group.reduce((sum, feature) => (
+      sum + lineLengthDegrees(feature.geometry.coordinates, feature.geometry.type)
+    ), 0);
+    if (length > bestLength) {
+      best = group;
+      bestLength = length;
+    }
+  }
+  return best;
+}
+
 function publicTag(tags, key) {
   const value = tags?.[key];
   return typeof value === 'string' && value.trim() ? value.trim() : null;
@@ -142,7 +214,10 @@ export function buildPathNetwork(snapshotValue, configValue, districtFacts) {
     }
   }
 
-  if (routeFeatures.length === 0 || entranceFeatures.length === 0 || interactionFeatures.length !== routeFeatures.length) {
+  const connectedRoutes = largestConnectedRoutes(routeFeatures);
+  const connectedIds = new Set(connectedRoutes.map((feature) => feature.properties.osmId));
+  const connectedInteraction = interactionFeatures.filter((feature) => connectedIds.has(feature.properties.osmId));
+  if (connectedRoutes.length === 0 || entranceFeatures.length === 0 || connectedInteraction.length !== connectedRoutes.length) {
     throw new Error('PATH snapshot did not produce the required routes, entrances, and corridors');
   }
   if (!pointInside(config.labelPoint, bbox)) throw new Error('PATH label point lies outside its reviewed bounds');
@@ -165,9 +240,9 @@ export function buildPathNetwork(snapshotValue, configValue, districtFacts) {
   };
   return {
     district,
-    routes: { type: 'FeatureCollection', features: routeFeatures },
+    routes: { type: 'FeatureCollection', features: connectedRoutes },
     entrances: { type: 'FeatureCollection', features: entranceFeatures },
-    interaction: { type: 'FeatureCollection', features: interactionFeatures },
+    interaction: { type: 'FeatureCollection', features: connectedInteraction },
     label,
     provenance: {
       fetchedAt: snapshot.fetchedAt,
@@ -175,7 +250,7 @@ export function buildPathNetwork(snapshotValue, configValue, districtFacts) {
       endpoint: snapshot.endpoint,
       bounds: config.bounds,
       querySha256: createHash('sha256').update(snapshot.query).digest('hex'),
-      routeElementIds: routeFeatures.map((feature) => feature.properties.osmId),
+      routeElementIds: connectedRoutes.map((feature) => feature.properties.osmId),
       entranceElementIds: entranceFeatures.map((feature) => feature.properties.osmId),
       excludedWayIds: [...config.excludedWayIds],
       attribution: config.attribution,

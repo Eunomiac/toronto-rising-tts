@@ -46,6 +46,17 @@ test('rejects malformed source geometry before publication', () => {
   assert.throws(() => validatePathSnapshot(malformed), /Invalid OpenStreetMap PATH snapshot/);
 });
 
+test('drops PATH ways that do not touch the longest connected network', () => {
+  const fragmented = structuredClone(snapshot);
+  fragmented.elements.push(
+    { type: 'way', id: 11, tags: { highway: 'footway' }, geometry: [{ lon: -79.37, lat: 43.65 }, { lon: -79.365, lat: 43.652 }] },
+    { type: 'way', id: 12, tags: { highway: 'footway' }, geometry: [{ lon: -79.395, lat: 43.648 }, { lon: -79.392, lat: 43.648 }] },
+  );
+  const result = buildPathNetwork(fragmented, config, facts);
+  assert.deepEqual(result.provenance.routeElementIds, [10, 11]);
+  assert.equal(result.interaction.features.length, 2);
+});
+
 test('clips route geometry to the reviewed PATH bounds', () => {
   const crossing = structuredClone(snapshot);
   crossing.elements[0].geometry = [{ lon: -79.41, lat: 43.65 }, { lon: -79.37, lat: 43.65 }];

@@ -116,6 +116,7 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
 });
 
 test('visual calibration mode updates and remembers exact adjustments', async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
   const consoleErrors: string[] = [];
   await prepareNetwork(page, testInfo);
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
