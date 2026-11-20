@@ -17,9 +17,12 @@
   <Text class="npc_sect_status" fontSize="24" alignment="MiddleLeft" />
   <Text class="npc_clan_status" fontSize="24" alignment="MiddleRight" />
   <Text class="npc_section_label" fontSize="30" preferredHeight="40" alignment="MiddleLeft" color="#c5c799" />
-  <Text class="npc_tracker_label" fontSize="22" preferredWidth="120" alignment="MiddleLeft" />
-  <Text class="npc_tracker_glyphs" fontSize="28" alignment="MiddleLeft" />
-  <HorizontalLayout class="npc_trackers_row" preferredHeight="36" spacing="12" childForceExpandWidth="false" childForceExpandHeight="false" childAlignment="MiddleLeft" />
+  <Text class="npc_tracker_label" fontSize="22" preferredWidth="100" alignment="MiddleLeft" />
+  <HorizontalLayout class="npc_tracker_block" preferredHeight="36" spacing="6" childForceExpandWidth="false" childForceExpandHeight="false" childAlignment="MiddleLeft" />
+  <HorizontalLayout class="npc_tracker_slots" preferredHeight="36" spacing="2" childForceExpandWidth="false" childForceExpandHeight="false" childAlignment="MiddleLeft" />
+  <Image class="npc_tracker_dot" preferredHeight="28" preferredWidth="28" preserveAspect="true" raycastTarget="false" active="false" />
+  <Image class="npc_tracker_box" preferredHeight="32" preferredWidth="32" preserveAspect="true" raycastTarget="false" active="false" />
+  <HorizontalLayout class="npc_trackers_row" preferredHeight="36" spacing="16" childForceExpandWidth="false" childForceExpandHeight="false" childAlignment="MiddleLeft" />
   <HorizontalLayout class="npc_standard_pool_row" preferredHeight="34" spacing="16" childForceExpandWidth="true" childForceExpandHeight="false" />
   <Text class="npc_standard_pool" fontSize="24" alignment="MiddleCenter" />
   <HorizontalLayout class="npc_exceptional_pool_columns" preferredHeight="120" spacing="12" childForceExpandWidth="true" childForceExpandHeight="false" />
@@ -58,12 +61,48 @@
 
       <Text id="npc_trackers_label" class="npc_section_label">Trackers</Text>
       <HorizontalLayout id="db_npc_trackersRow" class="npc_trackers_row">
-        <Text id="npc_hunger_label" class="npc_tracker_label">Hunger</Text>
-        <Text id="npc_hunger" class="npc_tracker_glyphs">●○○○○</Text>
-        <Text id="npc_health_label" class="npc_tracker_label">Health</Text>
-        <Text id="npc_health" class="npc_tracker_glyphs">□□□□□</Text>
-        <Text id="npc_willpower_label" class="npc_tracker_label">Willpower</Text>
-        <Text id="npc_willpower" class="npc_tracker_glyphs">□□□□</Text>
+        <!-- Hunger: Custom UI assets dot_blank / dot_red (cloud job csheetSharedDotsBlankRed). -->
+        <HorizontalLayout id="npc_hunger" class="npc_tracker_block">
+          <Text id="npc_hunger_label" class="npc_tracker_label">Hunger</Text>
+          <HorizontalLayout id="db_npc_hunger_slots" class="npc_tracker_slots">
+            <Image id="npc_hunger_1" class="npc_tracker_dot" image="dot_blank" />
+            <Image id="npc_hunger_2" class="npc_tracker_dot" image="dot_blank" />
+            <Image id="npc_hunger_3" class="npc_tracker_dot" image="dot_blank" />
+            <Image id="npc_hunger_4" class="npc_tracker_dot" image="dot_blank" />
+            <Image id="npc_hunger_5" class="npc_tracker_dot" image="dot_blank" />
+          </HorizontalLayout>
+        </HorizontalLayout>
+        <!-- Health / Willpower: box_white / box_grey_slash / box_red_x (cloud job csheetSharedBoxes). -->
+        <HorizontalLayout id="npc_health" class="npc_tracker_block">
+          <Text id="npc_health_label" class="npc_tracker_label">Health</Text>
+          <HorizontalLayout id="db_npc_health_slots" class="npc_tracker_slots">
+            <Image id="npc_health_1" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_2" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_3" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_4" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_5" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_6" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_7" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_8" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_9" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_health_10" class="npc_tracker_box" image="box_white" />
+          </HorizontalLayout>
+        </HorizontalLayout>
+        <HorizontalLayout id="npc_willpower" class="npc_tracker_block">
+          <Text id="npc_willpower_label" class="npc_tracker_label">Willpower</Text>
+          <HorizontalLayout id="db_npc_willpower_slots" class="npc_tracker_slots">
+            <Image id="npc_willpower_1" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_2" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_3" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_4" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_5" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_6" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_7" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_8" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_9" class="npc_tracker_box" image="box_white" />
+            <Image id="npc_willpower_10" class="npc_tracker_box" image="box_white" />
+          </HorizontalLayout>
+        </HorizontalLayout>
       </HorizontalLayout>
 
       <Text id="npc_standardPools_label" class="npc_section_label">Standard Pools</Text>

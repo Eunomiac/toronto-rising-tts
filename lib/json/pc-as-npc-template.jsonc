@@ -12,15 +12,17 @@
  * - parseAs "powersDisciplineRows" builds one row per Discipline (label + name Texts + close).
  * - Ancilla Power(s) is not a sheet section; it overlays tooltips onto matching power names.
  * - tooltipLookup / ancillaTooltipOverlay fill the XmlUI tooltip="" attribute.
- * - Shape: { trackerGlyphs, elements }. Legacy bare arrays still load via load-template.js.
+ * - Shape: { trackerImages, elements }. Legacy bare arrays still load via load-template.js.
+ * - Tracker slots are XmlUI Images; names must match Object Custom UI assets on CSHEET_NPC_*
+ *   (cloud jobs csheetSharedDotsBlankRed + csheetSharedBoxes → assets/CSheets/Shared).
  */
 {
-  "trackerGlyphs": {
-    "hungerEmpty": "○",
-    "hungerFilled": "●",
-    "boxEmpty": "□",
-    "boxSuperficial": "╱",
-    "boxAggravated": "╳"
+  "trackerImages": {
+    "hungerEmpty": "dot_blank",
+    "hungerFilled": "dot_red",
+    "boxEmpty": "box_white",
+    "boxSuperficial": "box_grey_slash",
+    "boxAggravated": "box_red_x"
   },
   "elements": [
   {
@@ -28,7 +30,7 @@
     "dataKeys": ["Health", "Willpower", "Kind"],
     "textTemplate": "Trackers",
     "ifAllEmpty": "HIDE",
-    "notes": "Also hide when Kind is non-vampire and Health/Willpower empty. Filler refreshes glyphs when live trackers change."
+    "notes": "Also hide when Kind is non-vampire and Health/Willpower empty. Filler refreshes slot images when live trackers change."
   },
   {
     "id": "npc_hunger_label",
@@ -40,10 +42,12 @@
   {
     "id": "npc_hunger",
     "dataKeys": ["Kind"],
-    "parseAs": "hungerTracker",
+    "parseAs": "hungerTrackerImages",
+    "slotPrefix": "npc_hunger",
     "length": 5,
     "ifEmpty": "HIDE",
-    "showWhenKind": ["vampire"]
+    "showWhenKind": ["vampire"],
+    "notes": "Group + npc_hunger_1..5 Images (dot_blank empty / dot_red filled)."
   },
   {
     "id": "npc_health_label",
@@ -55,10 +59,13 @@
   {
     "id": "npc_health",
     "dataKeys": ["Health"],
-    "parseAs": "boxTracker",
+    "parseAs": "boxTrackerImages",
+    "slotPrefix": "npc_health",
     "maxKey": "Health",
+    "maxSlots": 10,
     "emptyVals": [["", "~", "0"]],
-    "ifEmpty": "HIDE"
+    "ifEmpty": "HIDE",
+    "notes": "Group + npc_health_1..10 Images (box_white / box_grey_slash / box_red_x)."
   },
   {
     "id": "npc_willpower_label",
@@ -70,10 +77,13 @@
   {
     "id": "npc_willpower",
     "dataKeys": ["Willpower"],
-    "parseAs": "boxTracker",
+    "parseAs": "boxTrackerImages",
+    "slotPrefix": "npc_willpower",
     "maxKey": "Willpower",
+    "maxSlots": 10,
     "emptyVals": [["", "~", "0"]],
-    "ifEmpty": "HIDE"
+    "ifEmpty": "HIDE",
+    "notes": "Group + npc_willpower_1..10 Images."
   },
   {
     "id": "npc_name_title",

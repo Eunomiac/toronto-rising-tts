@@ -8,8 +8,8 @@ const {
   fillNpcSheet,
   parsePowersHierarchy,
   powerDisplayName,
-  paintBoxes,
-  paintHunger,
+  paintBoxSlots,
+  paintHungerSlots,
   listXmlIds,
   loadTemplate,
 } = require("./fill.js");
@@ -133,18 +133,41 @@ test("roleplay notes fill right pane; blank hides", () => {
   assert.equal(blank.elements.npc_roleplay_notes.active, false);
 });
 
-test("trackers use glyphs; Hunger hides for mortal", () => {
-  assert.equal(paintHunger(2, loadTemplate().trackerGlyphs), "●●○○○");
-  assert.equal(paintBoxes(4, 1, 1, loadTemplate().trackerGlyphs), "╳╱□□");
+test("trackers use Shared Custom UI images; Hunger hides for mortal", () => {
+  const images = loadTemplate().trackerImages;
+  assert.deepEqual(paintHungerSlots(2, images), [
+    "dot_red",
+    "dot_red",
+    "dot_blank",
+    "dot_blank",
+    "dot_blank",
+  ]);
+  assert.deepEqual(paintBoxSlots(4, 1, 1, images).slice(0, 4), [
+    "box_red_x",
+    "box_grey_slash",
+    "box_white",
+    "box_white",
+  ]);
+  assert.equal(paintBoxSlots(4, 1, 1, images)[4], null);
+
   const vamp = fillNpcSheet(ren, {
     tracker: { healthSuperficial: 1, healthAggravated: 0, willpowerSuperficial: 0, willpowerAggravated: 0, hunger: 2 },
   });
-  assert.equal(vamp.elements.npc_hunger.text, "●●○○○");
-  assert.equal(vamp.elements.npc_health.text, "╱□□□□□");
+  assert.equal(vamp.elements.npc_hunger.active, true);
+  assert.equal(vamp.elements.npc_hunger_1.image, "dot_red");
+  assert.equal(vamp.elements.npc_hunger_2.image, "dot_red");
+  assert.equal(vamp.elements.npc_hunger_3.image, "dot_blank");
+  assert.equal(vamp.elements.npc_health_1.image, "box_grey_slash");
+  assert.equal(vamp.elements.npc_health_2.image, "box_white");
+  assert.equal(vamp.elements.npc_health_7.active, false);
+
   const mortal = fillNpcSheet({ Kind: "Mortal", Health: "5", Willpower: "3" });
   assert.equal(mortal.elements.npc_hunger.active, false);
   assert.equal(mortal.elements.npc_hunger_label.active, false);
-  assert.equal(mortal.elements.npc_health.text, "□□□□□");
+  assert.equal(mortal.elements.npc_hunger_1.active, false);
+  assert.equal(mortal.elements.npc_health_1.image, "box_white");
+  assert.equal(mortal.elements.npc_health_5.image, "box_white");
+  assert.equal(mortal.elements.npc_health_6.active, false);
 });
 
 test("template fill ids are subset of npc_sheet.xml ids", () => {
@@ -155,6 +178,7 @@ test("template fill ids are subset of npc_sheet.xml ids", () => {
     assert.ok(xmlIds.has(id), `missing xml id: ${id}`);
   }
   const template = loadTemplate();
-  assert.equal(template.trackerGlyphs.hungerFilled, "●");
+  assert.equal(template.trackerImages.hungerFilled, "dot_red");
+  assert.equal(template.trackerImages.hungerEmpty, "dot_blank");
   assert.ok(template.elements.some((e) => e.id === "npc_hunger"));
 });

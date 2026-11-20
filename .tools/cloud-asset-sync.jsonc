@@ -344,7 +344,7 @@
       "id": "csheetSharedBoxes",
       "folder": "CSheets/Shared",
       "output": "ObjectCustomUIAssets",
-      "targets": ["csheetPage4", "csheetPage5"],
+      "targets": ["csheetPage4", "csheetPage5", "csheetNpc"],
       "ownsAllRows": true,
       "filenameToNameSearchPattern": "^box_(.*)\\.webp$",
       "filenameToNameReplacePattern": "box_$1"
@@ -360,11 +360,11 @@
       "filenameToNameReplacePattern": "dot_$1"
     },
     {
-      // Page 1 has its own red dot.
+      // Page 1 has its own red dot. NPC sheets use blank/red for Hunger (TOR-95).
       "id": "csheetSharedDotsBlankRed",
       "folder": "CSheets/Shared",
       "output": "ObjectCustomUIAssets",
-      "targets": ["csheetPage2", "csheetPage3", "csheetPage4", "csheetPage5"],
+      "targets": ["csheetPage2", "csheetPage3", "csheetPage4", "csheetPage5", "csheetNpc"],
       "ownsAllRows": true,
       "filenameToNameSearchPattern": "^dot_(blank|red)\\.webp$",
       "filenameToNameReplacePattern": "dot_$1"

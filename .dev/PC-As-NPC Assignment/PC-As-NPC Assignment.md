@@ -124,7 +124,8 @@ NPCs may be assigned to Scatter PCs. The player moves between Scatter groups lik
 ## Trackers
 
 - Max Health / Willpower from export; Hunger/Rage from live `npc_trackers` for `npcCharacterKey`.
-- Face sheet shows ASCII tracks (configurable glyphs in `pc-as-npc-template.jsonc` → `trackerGlyphs`).
+- Face sheet uses Shared Custom UI images (`pc-as-npc-template.jsonc` → `trackerImages`): Hunger `dot_blank` / `dot_red`; Health & Willpower `box_white` / `box_grey_slash` / `box_red_x`.
+- Those assets land on the five `CSHEET_NPC_*` tiles via cloud jobs `csheetSharedDotsBlankRed` and `csheetSharedBoxes` (`assets/CSheets/Shared`).
 - PC Hunger / XP stay on the PC. NPC-body damage does not convert onto the PC on unassign / Memoriam exit.
 
 ## Physical NPC sheet objects

@@ -2,13 +2,15 @@
 
 /**
  * Pure PC-as-NPC sheet fill engine (no TTS).
- * Returns { elements: { [id]: { text?, active?, tooltip?, warn? } }, warnings: string[] }
+ * Returns { elements: { [id]: { text?, active?, image?, tooltip?, warn? } }, warnings: string[] }
  */
 
-const { loadTemplate, defaultGlyphs } = require("./load-template.js");
+const { loadTemplate, defaultTrackerImages } = require("./load-template.js");
 
 const EMPTY = new Set(["", "~", "0"]);
 const HIDE_Y = -200;
+const HUNGER_SLOTS = 5;
+const BOX_SLOTS = 10;
 
 function blank(v) {
   return v == null || EMPTY.has(String(v).trim());
@@ -92,21 +94,33 @@ function parsePowersHierarchy(powersRaw) {
   return groups;
 }
 
-function paintBoxes(max, superficial, aggravated, glyphs) {
-  const size = Math.max(0, Number(max) || 0);
+/**
+ * @returns {(string|null)[]} length slotCount; null = inactive slot past max
+ */
+function paintBoxSlots(max, superficial, aggravated, images, slotCount = BOX_SLOTS) {
+  const size = Math.max(0, Math.min(slotCount, Number(max) || 0));
   const agg = Math.min(size, Math.max(0, Number(aggravated) || 0));
   const sup = Math.min(size - agg, Math.max(0, Number(superficial) || 0));
-  const empty = size - agg - sup;
-  return (
-    glyphs.boxAggravated.repeat(agg) +
-    glyphs.boxSuperficial.repeat(sup) +
-    glyphs.boxEmpty.repeat(empty)
-  );
+  /** @type {(string|null)[]} */
+  const out = [];
+  for (let i = 0; i < slotCount; i++) {
+    if (i >= size) out.push(null);
+    else if (i < agg) out.push(images.boxAggravated);
+    else if (i < agg + sup) out.push(images.boxSuperficial);
+    else out.push(images.boxEmpty);
+  }
+  return out;
 }
 
-function paintHunger(current, glyphs) {
-  const filled = Math.min(5, Math.max(0, Number(current) || 0));
-  return glyphs.hungerFilled.repeat(filled) + glyphs.hungerEmpty.repeat(5 - filled);
+/** @returns {string[]} length 5 — Custom UI asset names */
+function paintHungerSlots(current, images) {
+  const filled = Math.min(HUNGER_SLOTS, Math.max(0, Number(current) || 0));
+  /** @type {string[]} */
+  const out = [];
+  for (let i = 0; i < HUNGER_SLOTS; i++) {
+    out.push(i < filled ? images.hungerFilled : images.hungerEmpty);
+  }
+  return out;
 }
 
 function setEl(elements, id, patch) {
@@ -114,11 +128,28 @@ function setEl(elements, id, patch) {
 }
 
 function hide(elements, id) {
-  setEl(elements, id, { active: false, text: "" });
+  setEl(elements, id, { active: false, text: "", image: undefined });
 }
 
 function showText(elements, id, text, extra = {}) {
   setEl(elements, id, { active: true, text: text == null ? "" : String(text), ...extra });
+}
+
+function showImage(elements, id, image) {
+  setEl(elements, id, { active: true, image: String(image), text: "" });
+}
+
+function applyImageSlots(elements, prefix, slotImages) {
+  for (let i = 0; i < slotImages.length; i++) {
+    const id = `${prefix}_${i + 1}`;
+    const image = slotImages[i];
+    if (image == null) hide(elements, id);
+    else showImage(elements, id, image);
+  }
+}
+
+function hideImageSlots(elements, prefix, count) {
+  for (let i = 1; i <= count; i++) hide(elements, `${prefix}_${i}`);
 }
 
 /**
@@ -130,10 +161,10 @@ function showText(elements, id, text, extra = {}) {
  */
 function fillNpcSheet(row, opts = {}) {
   const template = opts.template || loadTemplate();
-  const glyphs = { ...defaultGlyphs(), ...(template.trackerGlyphs || {}) };
+  const images = { ...defaultTrackerImages(), ...(template.trackerImages || {}) };
   const data = normalizeRow(row);
   const warnings = [];
-  /** @type {Record<string, { text?: string, active?: boolean, tooltip?: string }>} */
+  /** @type {Record<string, { text?: string, active?: boolean, image?: string, tooltip?: string }>} */
   const elements = {};
 
   const disciplines = opts.disciplines || [];
@@ -147,7 +178,7 @@ function fillNpcSheet(row, opts = {}) {
     return [hit.Description, hit.System, hit.Duration].filter((x) => x && String(x).trim()).join("\n\n");
   };
 
-  // --- Trackers (always from glyphs + tracker/export) ---
+  // --- Trackers (Custom UI Images + tracker/export) ---
   const kind = String((opts.tracker && opts.tracker.kind) || data.Kind || "").toLowerCase();
   const healthMax = Number((opts.tracker && opts.tracker.healthMax) ?? data.Health) || 0;
   const willMax = Number((opts.tracker && opts.tracker.willpowerMax) ?? data.Willpower) || 0;
@@ -157,50 +188,63 @@ function fillNpcSheet(row, opts = {}) {
     hide(elements, "npc_trackers_label");
     hide(elements, "npc_hunger_label");
     hide(elements, "npc_hunger");
+    hideImageSlots(elements, "npc_hunger", HUNGER_SLOTS);
     hide(elements, "npc_health_label");
     hide(elements, "npc_health");
+    hideImageSlots(elements, "npc_health", BOX_SLOTS);
     hide(elements, "npc_willpower_label");
     hide(elements, "npc_willpower");
+    hideImageSlots(elements, "npc_willpower", BOX_SLOTS);
   } else {
     showText(elements, "npc_trackers_label", "Trackers");
     if (kind === "vampire") {
       showText(elements, "npc_hunger_label", "Hunger");
-      showText(elements, "npc_hunger", paintHunger((opts.tracker && opts.tracker.hunger) ?? 1, glyphs));
+      setEl(elements, "npc_hunger", { active: true });
+      applyImageSlots(
+        elements,
+        "npc_hunger",
+        paintHungerSlots((opts.tracker && opts.tracker.hunger) ?? 1, images)
+      );
     } else {
       hide(elements, "npc_hunger_label");
       hide(elements, "npc_hunger");
+      hideImageSlots(elements, "npc_hunger", HUNGER_SLOTS);
     }
     if (healthMax > 0) {
       showText(elements, "npc_health_label", "Health");
-      showText(
+      setEl(elements, "npc_health", { active: true });
+      applyImageSlots(
         elements,
         "npc_health",
-        paintBoxes(
+        paintBoxSlots(
           healthMax,
           (opts.tracker && opts.tracker.healthSuperficial) || 0,
           (opts.tracker && opts.tracker.healthAggravated) || 0,
-          glyphs
+          images
         )
       );
     } else {
       hide(elements, "npc_health_label");
       hide(elements, "npc_health");
+      hideImageSlots(elements, "npc_health", BOX_SLOTS);
     }
     if (willMax > 0) {
       showText(elements, "npc_willpower_label", "Willpower");
-      showText(
+      setEl(elements, "npc_willpower", { active: true });
+      applyImageSlots(
         elements,
         "npc_willpower",
-        paintBoxes(
+        paintBoxSlots(
           willMax,
           (opts.tracker && opts.tracker.willpowerSuperficial) || 0,
           (opts.tracker && opts.tracker.willpowerAggravated) || 0,
-          glyphs
+          images
         )
       );
     } else {
       hide(elements, "npc_willpower_label");
       hide(elements, "npc_willpower");
+      hideImageSlots(elements, "npc_willpower", BOX_SLOTS);
     }
   }
 
@@ -396,7 +440,7 @@ function fillNpcSheet(row, opts = {}) {
 
   // Ancilla never has its own sheet section — overlay only (no npc_ancilla_* ids).
 
-  return { elements, warnings, glyphs, hideY: HIDE_Y };
+  return { elements, warnings, trackerImages: images, hideY: HIDE_Y };
 }
 
 function listXmlIds(xmlText) {
@@ -412,8 +456,10 @@ module.exports = {
   loadTemplate,
   parsePowersHierarchy,
   powerDisplayName,
-  paintBoxes,
-  paintHunger,
+  paintBoxSlots,
+  paintHungerSlots,
   listXmlIds,
   blank,
+  HUNGER_SLOTS,
+  BOX_SLOTS,
 };

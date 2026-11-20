@@ -51,25 +51,36 @@ function loadTemplate(templatePath) {
   const raw = fs.readFileSync(file, "utf8");
   const parsed = JSON.parse(stripJsonc(raw));
   if (Array.isArray(parsed)) {
-    return { trackerGlyphs: defaultGlyphs(), elements: parsed };
+    return { trackerImages: defaultTrackerImages(), elements: parsed };
   }
   if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.elements)) {
-    throw new Error("pc-as-npc-template.jsonc must be { trackerGlyphs, elements } or a legacy elements array");
+    throw new Error(
+      "pc-as-npc-template.jsonc must be { trackerImages, elements } or a legacy elements array"
+    );
   }
+  const legacyGlyphs = parsed.trackerGlyphs && typeof parsed.trackerGlyphs === "object" ? parsed.trackerGlyphs : {};
+  const images = parsed.trackerImages && typeof parsed.trackerImages === "object" ? parsed.trackerImages : {};
   return {
-    trackerGlyphs: { ...defaultGlyphs(), ...(parsed.trackerGlyphs || {}) },
+    trackerImages: { ...defaultTrackerImages(), ...legacyGlyphs, ...images },
     elements: parsed.elements,
   };
 }
 
-function defaultGlyphs() {
+/** Custom UI asset names on CSHEET_NPC_* (assets/CSheets/Shared via cloud sync). */
+function defaultTrackerImages() {
   return {
-    hungerEmpty: "○",
-    hungerFilled: "●",
-    boxEmpty: "□",
-    boxSuperficial: "╱",
-    boxAggravated: "╳",
+    hungerEmpty: "dot_blank",
+    hungerFilled: "dot_red",
+    boxEmpty: "box_white",
+    boxSuperficial: "box_grey_slash",
+    boxAggravated: "box_red_x",
   };
 }
 
-module.exports = { loadTemplate, stripJsonc, defaultGlyphs };
+module.exports = {
+  loadTemplate,
+  stripJsonc,
+  defaultTrackerImages,
+  /** @deprecated use defaultTrackerImages */
+  defaultGlyphs: defaultTrackerImages,
+};
