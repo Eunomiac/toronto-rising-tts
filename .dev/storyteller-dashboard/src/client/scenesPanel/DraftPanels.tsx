@@ -22,7 +22,7 @@ import {
   withPlacements,
   withScatterPack
 } from "./library";
-import { isScatter, lightingPreset, liveSeats, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
+import { isScatter, lightingPreset, liveSeats, liveTokens, sceneConditions, soundView, toDate, weatherAxes } from "./liveScene";
 import { useControlBoardSnaps } from "./roster";
 import { ADD_CORNER, freeSlotNear, stageSpots } from "./stage";
 import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
@@ -69,7 +69,9 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange, o
   onPreload: () => void;
 }): ReactElement => {
   const box = previewLayout(w, h);
-  const tableSeats = useWorldState().seats?.seats ?? [];
+  const world = useWorldState();
+  const tableSeats = world.seats?.seats ?? [];
+  const liveLevels = world.soundscape ? soundView(world.soundscape).levels : undefined;
   const { snaps } = useControlBoardSnaps();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
   const scatterGroups = useMemo(() => draftScatterGroups(withScatterPack(draft, tableSeats, packs)), [draft, tableSeats, packs]);
@@ -164,7 +166,11 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange, o
         />
       </Box>
       <Box {...box.sound}>
-        <SoundMixer indoors={indoors} sceneAmbience={site?.locationTrack ? ambientLabel(site.locationTrack) : "Silent"} live={draftSoundView(draft)} />
+        <SoundMixer
+          indoors={indoors}
+          sceneAmbience={site?.locationTrack ? ambientLabel(site.locationTrack) : "Silent"}
+          live={draftSoundView(draft, site, liveLevels)}
+        />
       </Box>
       <Box {...box.aspects} className="lab-aspects-box lab-borderless">
         {location && <AspectRow location={location} />}

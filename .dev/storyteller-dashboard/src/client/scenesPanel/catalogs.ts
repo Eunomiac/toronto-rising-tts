@@ -28,6 +28,8 @@ export type CatalogSite = {
   readonly isIndoors: boolean | null;
   readonly skybox: string | null;
   readonly locationTrack: string | null;
+  /** Site `soundscape.backgroundMusic.playlist` (e.g. `casaLoma`); null when the site uses the default mood. */
+  readonly backgroundMusic: string | null;
   readonly conditions: readonly string[];
   /** The Site card image: the save's `siteCard_<key>` UI asset, else the repo copy; null when neither exists. */
   readonly cardUrl: string | null;

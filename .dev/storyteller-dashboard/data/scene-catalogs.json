@@ -957,6 +957,15 @@
       ]
     },
     {
+      "characterKey": "robin",
+      "fullName": "Robin",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_robin.webp",
+      "variantOfUnique": "",
+      "pickerGroups": []
+    },
+    {
       "characterKey": "rosie",
       "fullName": "Rosie",
       "isPC": false,
@@ -1098,6 +1107,15 @@
       "pickerGroups": [
         "theLine"
       ]
+    },
+    {
+      "characterKey": "sylvain",
+      "fullName": "Sylvain",
+      "isPC": false,
+      "catalog": true,
+      "filename": "npc_sylvain.webp",
+      "variantOfUnique": "",
+      "pickerGroups": []
     },
     {
       "characterKey": "terry",
@@ -1519,6 +1537,7 @@
       "isIndoors": true,
       "skybox": "AnarchBar",
       "locationTrack": "diveBar",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13081696467584931546/5AA2CD1A3A29817F6271B60F61C987A903402C00/"
     },
@@ -1530,6 +1549,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10291167107956008636/455C0DAD16C1260EA6EE48565C90E2BC66629B84/"
     },
@@ -1541,6 +1561,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17682768755663964318/14FA9E461FF83EBF19D68153D5A33F6B00270415/"
     },
@@ -1552,6 +1573,7 @@
       "isIndoors": false,
       "skybox": "AptStreetside",
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [
         "scaryStain"
       ],
@@ -1565,6 +1587,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15758131692833245630/C716753FF053EA20E299E7B7C28C6B2EBB444D9C/"
     },
@@ -1576,6 +1599,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "autoShop",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15439823998153879241/FDE30BB3C8B7EDDF427821FF6DCCA94E3507EB5D/"
     },
@@ -1587,6 +1611,7 @@
       "isIndoors": false,
       "skybox": "BackAlley1",
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14721907599095066798/822B9FE1022B64292CF7AF8686A2E51134864E7C/"
     },
@@ -1598,6 +1623,7 @@
       "isIndoors": false,
       "skybox": "BackAlley2",
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12814252601652651628/F4C622F54F5153031A3DBBB1D9BA0ED163CA0F02/"
     },
@@ -1609,6 +1635,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15912271154581652433/AE054FD2B1F0E870199B3EF676ECFFD678A45429/"
     },
@@ -1620,6 +1647,7 @@
       "isIndoors": true,
       "skybox": "BayTower",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15903092992804222997/AA2095D570B35E68D2937B38F0DDAB0EB5303C91/"
     },
@@ -1631,6 +1659,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "bar",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17552416536251421052/D576A45069B0C441D4E5D8A97BF1598C17B4E438/"
     },
@@ -1642,6 +1671,7 @@
       "isIndoors": true,
       "skybox": "BillyBishopAirport",
       "locationTrack": "airport",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17714610563887162641/44AB23BEA8BE71B2371230E549F0B3706F4EBB7D/"
     },
@@ -1653,6 +1683,7 @@
       "isIndoors": true,
       "skybox": "BillyBishopFerry",
       "locationTrack": "waterside",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10631006524551778096/CAD469034FC0055723AF044FB130B834E03F3AC0/"
     },
@@ -1664,6 +1695,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14974861730899041648/61A9131E300D1CDA9EC1FA9FE50E3BDE05A1813C/"
     },
@@ -1675,6 +1707,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14257532969452795841/C2BF1AE37E8241988F91D092F7F553F36F117736/"
     },
@@ -1686,6 +1719,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "citySuburb",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18340338702350862923/F67ED22921818B916A8EF380E82A9A64B6AC879C/"
     },
@@ -1697,6 +1731,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "computer",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17262992322450819031/784BB81BC4880EA6D1BA0A717519C5B92D492BE9/"
     },
@@ -1708,6 +1743,7 @@
       "isIndoors": false,
       "skybox": "CLGrounds",
       "locationTrack": "citySuburb",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17622759322743933219/FF00BD11A8B04E20A52B9774084257E6BB2D404F/"
     },
@@ -1719,6 +1755,7 @@
       "isIndoors": true,
       "skybox": "CLGallery",
       "locationTrack": "softIndoor",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10060939573858257664/FE32C266F3674E33DFEE7C44791A09A2D06DE326/"
     },
@@ -1730,6 +1767,7 @@
       "isIndoors": true,
       "skybox": "CLGreatHall",
       "locationTrack": "softIndoor",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11902171055596266811/41E7FAA1D30FFF7E6B15B46A3AAC80CB404F744D/"
     },
@@ -1741,6 +1779,7 @@
       "isIndoors": true,
       "skybox": "CLDrawingRoom",
       "locationTrack": "library",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11047302558706566423/949252F3289FB1F9DEFB1AC0CFD008D1DE2FF100/"
     },
@@ -1752,6 +1791,7 @@
       "isIndoors": false,
       "skybox": "CLTerrace",
       "locationTrack": "cityPark",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17094093481581629038/2763029D95FCE4C71E52D17B8688B8EF5BC6F5D2/"
     },
@@ -1763,8 +1803,21 @@
       "isIndoors": true,
       "skybox": "CLOverlook",
       "locationTrack": "softIndoor",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9507198820346289623/B041614ABF15AA9FB6696D27D6720E4F58E81117/"
+    },
+    {
+      "key": "CLStables",
+      "name": "Casa Loma: Stables",
+      "districtKey": "DupontByTheCastle",
+      "isTopFogActive": false,
+      "isIndoors": false,
+      "skybox": null,
+      "locationTrack": "cityPark",
+      "backgroundMusic": "casaLoma",
+      "conditions": [],
+      "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15559664039125272677/D34BF8483003E6CDDEADA0DEDA537A7E72C41EBC/"
     },
     {
       "key": "CLLibrary",
@@ -1774,6 +1827,7 @@
       "isIndoors": true,
       "skybox": "CLLibrary",
       "locationTrack": "library",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13035904169711960635/CDD68B51492933F0B495A2137D3A897568B21119/"
     },
@@ -1785,6 +1839,7 @@
       "isIndoors": true,
       "skybox": "CLVestibule",
       "locationTrack": "softIndoor",
+      "backgroundMusic": "casaLoma",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13214851184675212664/9759564F3157A9EF0CD677ED1E0B7AAE7DCF356D/"
     },
@@ -1796,6 +1851,7 @@
       "isIndoors": false,
       "skybox": "Cemetery",
       "locationTrack": "eerieForest",
+      "backgroundMusic": null,
       "conditions": [
         "noObvRouseDice"
       ],
@@ -1809,6 +1865,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "hospital",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15428955390576722244/5E9D690598F2F0CF85013BA86B5C758949C97DD9/"
     },
@@ -1820,6 +1877,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10214192414670784643/0B1DC20C7187C4DEF4981BC519C24F379515B832/"
     },
@@ -1831,6 +1889,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12034567949922502456/D0DCB5CB76651ABBC66B445393B2805C95D6F4BE/"
     },
@@ -1842,6 +1901,7 @@
       "isIndoors": true,
       "skybox": "CityApt1",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13872048446047443754/873D649D0CB6DFF19839D86663E62A1D42DD5CBA/"
     },
@@ -1853,6 +1913,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15079633641302175591/4B8C174B4751292993778B101AC420DF9FEB72D8/"
     },
@@ -1864,6 +1925,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10644918728032945202/390412EF21AA89ED2645A11CC4D0E73B2881FCB9/"
     },
@@ -1875,6 +1937,7 @@
       "isIndoors": true,
       "skybox": "CityHall",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18322467490224965687/459D2B225737FF998066F0E10E39CD35A915A632/"
     },
@@ -1886,6 +1949,7 @@
       "isIndoors": false,
       "skybox": "CityPark",
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15200787871174947948/9568C36F7854D3AB55E82A19F8E452EA7F3FD106/"
     },
@@ -1897,6 +1961,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "rooftop",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13424884619976961956/BCA50B4CDA1873341CC41117E81E9A31369970A3/"
     },
@@ -1908,6 +1973,7 @@
       "isIndoors": true,
       "skybox": "CoachHouseEmbassy",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13573616444816609343/C60B2A95C61E4CDA7803050393B5498E2FF138CC/"
     },
@@ -1919,6 +1985,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "eerieForest",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11013532223775851652/0FC0107353B5955135A062374035212A49204527/"
     },
@@ -1930,6 +1997,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10308036553459907138/756E70BD5C2AFD5E04393ACE6ADEEF402A1D9ACA/"
     },
@@ -1941,6 +2009,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11266064858953840316/9CE77A1343E916604D6CDD7D8BD6AE8374608AE0/"
     },
@@ -1952,6 +2021,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "urbanDark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10529055296116284202/D06C9907D91615C4084C10551114E60387881A70/"
     },
@@ -1963,6 +2033,7 @@
       "isIndoors": false,
       "skybox": "Docks",
       "locationTrack": "waterside",
+      "backgroundMusic": null,
       "conditions": [
         "setHungerWPReroll"
       ],
@@ -1976,6 +2047,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12633699774824014224/7CA6ECC96549B935498C5487648A3BCE1DD2433D/"
     },
@@ -1987,6 +2059,7 @@
       "isIndoors": true,
       "skybox": "HemovoreResearch",
       "locationTrack": "hospital",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13953990785447019703/67D92116F8C7C0949642778BCCB04D688E38833A/"
     },
@@ -1998,6 +2071,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14584657121699863625/F2B959B2E51BAE411EBC23CBBB95210EA121645E/"
     },
@@ -2009,6 +2083,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16484445503812206197/C58E032230DFC21DE3013FACA6C51AA7FCF04006/"
     },
@@ -2020,6 +2095,7 @@
       "isIndoors": true,
       "skybox": "EatonCentre",
       "locationTrack": "indoorMarket",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14431857042701921651/82858662C9C61FCD858487AAC69B9B2A652651FB/"
     },
@@ -2031,6 +2107,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10745602867892649300/454A0A3AFE5CA8B91601D7994BBCD96FC92B7A15/"
     },
@@ -2042,6 +2119,7 @@
       "isIndoors": true,
       "skybox": "BrickWorks",
       "locationTrack": "eerieForest",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11173070644198467561/8CB791F57B8E48D16B6B530AD8E23E9B65A9128A/"
     },
@@ -2053,6 +2131,7 @@
       "isIndoors": true,
       "skybox": "EvergreenPalisades",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [
         "scaryWPReroll"
       ],
@@ -2066,6 +2145,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11330502158616557944/3685ED987CEC803F7D12DFEA50A2D3CEAD8894E4/"
     },
@@ -2077,6 +2157,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "diveBar",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12751314100660905250/B1559CCCD3F70CD9FFF424768A928F8A2479FCC3/"
     },
@@ -2088,6 +2169,7 @@
       "isIndoors": true,
       "skybox": "FireSaleChantry",
       "locationTrack": "ritualRoom",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9662294867247937544/E07761E670C2E995B2D75F0AD1E289098903B890/"
     },
@@ -2099,6 +2181,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "cityWalking",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13827528470243339465/53E4779618AB354EF013BEE1D564C86E97C0B009/"
     },
@@ -2110,6 +2193,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11362489701438313434/8F477E1519A48D1B4EDF2FCB624FA6A865A78A5B/"
     },
@@ -2121,6 +2205,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "diveBar",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12516322865799617588/831D93CA748F6D47E8DDCD7EC9FAE95B7025E227/"
     },
@@ -2132,6 +2217,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17001851453397901954/88F13DCF573DD85B160593B273BBD3A0C1126235/"
     },
@@ -2143,6 +2229,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17926651470097265727/D3B83B15C7441F320AE014D878BA3F94CF39BAC9/"
     },
@@ -2154,6 +2241,7 @@
       "isIndoors": false,
       "skybox": "GraffitiAlley",
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9715206949432367306/E42B20AB53E3CB061AAC1773986E024A856E9896/"
     },
@@ -2165,6 +2253,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10762535650833096346/891BF61661B8E35F8C05D89D5D7DCEAFE058AAFB/"
     },
@@ -2176,6 +2265,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10808917457683170047/AAB41C8D5489AB78B5352FBEBEDF3BFDBD0CA9A6/"
     },
@@ -2187,6 +2277,7 @@
       "isIndoors": true,
       "skybox": "Distillery",
       "locationTrack": "industry",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15497399868053924113/A0562F8AD70D253EE32D0EB21C404F50A1EC722E/"
     },
@@ -2198,6 +2289,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "indoorMarket",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9618229570984403358/6CE478F35E8A7969504915A4CE2A2D69CA9B888D/"
     },
@@ -2209,6 +2301,7 @@
       "isIndoors": true,
       "skybox": "SickKids",
       "locationTrack": "hospital",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13199083363227583664/FEADFEC7FE96C94AE339F73E135F32A9C227BA92/"
     },
@@ -2220,6 +2313,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "library",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11155454279642206007/3A1FC2F33BDE641D5EAFEC89BA2E2C05F1A8F364/"
     },
@@ -2231,6 +2325,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "autoShop",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9940357210762835952/FE4256E40F9899F21FBACA7F0D464670AD712E67/"
     },
@@ -2242,6 +2337,7 @@
       "isIndoors": false,
       "skybox": "Kensington",
       "locationTrack": "cityWalking",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14163807288996482586/B8D1BDE596E7DE44FE1B6D543ECD385B9D0265BD/"
     },
@@ -2253,6 +2349,7 @@
       "isIndoors": true,
       "skybox": "Keyhouse",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12203224968943375033/30CEFD5CBEFF6589227A5C416D5ECE1281F18DF0/"
     },
@@ -2264,6 +2361,7 @@
       "isIndoors": true,
       "skybox": "Laboratory",
       "locationTrack": "laboratory",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14828668264881823682/739CA3A3F3D2110AA1F0FFECECCD240F02E8A6C2/"
     },
@@ -2275,6 +2373,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10259822547951959097/DE0A4C38C0EDB78643C0F2821CB8AB9B6FFB6F5C/"
     },
@@ -2286,6 +2385,7 @@
       "isIndoors": true,
       "skybox": "Library",
       "locationTrack": "library",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9919628854715487720/3F8752A02E6EB605F40B2B5FE40CC7AB9AB7800A/"
     },
@@ -2297,6 +2397,7 @@
       "isIndoors": false,
       "skybox": "Limousine",
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12796762680722212106/3354D8F2D2779DFDF41B87C0964A2C7F8D6A4352/"
     },
@@ -2308,6 +2409,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "eerieForest",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13865988752421743698/F335D93C3CEDB061B6033EA3E604986AD905F124/"
     },
@@ -2319,6 +2421,7 @@
       "isIndoors": true,
       "skybox": "Yacht",
       "locationTrack": "waterside",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16469173151769835297/C23856B721BA6E390D35B6AD9D929EB57B064ABC/"
     },
@@ -2330,6 +2433,7 @@
       "isIndoors": true,
       "skybox": "MadinaMasjid",
       "locationTrack": "church",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11045701514790809782/6E76A1A576CE8B23DE8BC32EADF5145095CBA041/"
     },
@@ -2341,6 +2445,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10713088581347882122/06A8791556280B87E08279C541EDB31E539C73D3/"
     },
@@ -2352,6 +2457,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14340619370896757015/C81CBDE5720816FA981BCF33A1B1EE8549B5D7D9/"
     },
@@ -2363,6 +2469,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15836839514748912117/DABEEC4112BBEB34C5B10BBB35C0E6F9CA8DF72A/"
     },
@@ -2374,6 +2481,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "hospital",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9799708224272577142/4EA9C80409732890F93AF5B7C820434147590A98/"
     },
@@ -2385,6 +2493,7 @@
       "isIndoors": true,
       "skybox": "Nightclub1",
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13167237874192621950/CD9AE2E4A9055F69FC9BB1537CD1CEC7C8E6F422/"
     },
@@ -2396,6 +2505,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13359854321537312175/2DBEFF1412C4DE744FDF8D277E2840C7886BE39A/"
     },
@@ -2407,6 +2517,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14233774809238332441/A9A3CE23E8A0EAB6F4C0E9260F410571EDA51CB3/"
     },
@@ -2418,6 +2529,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17018915804215439737/AEA331E85D89345DEF34063E46C2ADC1890E3136/"
     },
@@ -2429,6 +2541,7 @@
       "isIndoors": true,
       "skybox": "Office",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17480618942823405111/34C41B07B7A2A322631B7E74298377935450A296/"
     },
@@ -2440,6 +2553,7 @@
       "isIndoors": true,
       "skybox": "OldOsgoodeHall",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14138946283187119705/F836C4BCFC5E525A2A8B7C73BEE76D522F1B49A7/"
     },
@@ -2451,6 +2565,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "waterside",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14239394564661534859/10BAA52EA9624F755F96DFD1C9BF4F4D2255F48D/"
     },
@@ -2462,6 +2577,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "eerieForest",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14197799667113847009/48B1E0E930C4C0D92A1F1227BCE3FFCCE583F6A8/"
     },
@@ -2473,6 +2589,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14715477245156923860/39523E1362ABCAF252E575BBBB5C5A962B2F3604/"
     },
@@ -2484,6 +2601,7 @@
       "isIndoors": true,
       "skybox": "PenthouseApt1",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14843260655662497240/044DFF2A5EE16A207E4CC258FCA1812683BFEE1C/"
     },
@@ -2495,6 +2613,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9409363627576037062/9AE1AB1F4894E1652F0E61D97985CBE2A30D38B6/"
     },
@@ -2506,6 +2625,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13110730960091559829/24F27581251D9F9AA94153DB8668A6A2430E6363/"
     },
@@ -2517,6 +2637,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12662717804609145982/A55E6FFDF3838F6CACD322AFCF03A9E246712A7D/"
     },
@@ -2528,6 +2649,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "hospital",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18232732129225064571/CCE9264CA6246526C16EF8225BFB214862E69C4B/"
     },
@@ -2539,6 +2661,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18097814540965611541/703EBA9E8A0F69F6F7DD973030FA06623FF9ABA5/"
     },
@@ -2550,6 +2673,7 @@
       "isIndoors": true,
       "skybox": "Ravenwing",
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18275136209744376380/00B6D0F95854AC6BBCE9E2FFF9C2DF1339F59D09/"
     },
@@ -2561,6 +2685,7 @@
       "isIndoors": true,
       "skybox": "ReconciliationHouse",
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12832178425244147377/4A4844C49300DB74BBFDC773F9E513FB5B3E5819/"
     },
@@ -2572,6 +2697,7 @@
       "isIndoors": true,
       "skybox": "RedemptionHouse",
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [
         "resolveHalved"
       ],
@@ -2585,6 +2711,7 @@
       "isIndoors": true,
       "skybox": "REMState",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16698271315571170778/CE251016A35E749CAE50193C350FD26EFF3BFE5F/"
     },
@@ -2596,6 +2723,7 @@
       "isIndoors": true,
       "skybox": "RemembranceHouse",
       "locationTrack": "church",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16109452523892629814/42F9D0258A6D2E74CF4CA1ACA30653A615DE323A/"
     },
@@ -2607,6 +2735,7 @@
       "isIndoors": true,
       "skybox": "RevelationHouse",
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12706450287707511330/CC8AECFB33284FBDC648AC6FE0270ABB99E90A49/"
     },
@@ -2618,6 +2747,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13403874656998178159/F6710ADCCC95C9DBADAF4682481B1968BD675024/"
     },
@@ -2629,6 +2759,7 @@
       "isIndoors": false,
       "skybox": "Rooftop",
       "locationTrack": "rooftop",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17345703830283559310/02E01244F31C984CB0A1545A9C347BDC5A434025/"
     },
@@ -2640,6 +2771,7 @@
       "isIndoors": false,
       "skybox": "ROMLoadingZone",
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11250486707039532861/916FE86BD02E56BC1EE7D9AE352941856406C742/"
     },
@@ -2651,6 +2783,7 @@
       "isIndoors": true,
       "skybox": "ROMC5Lounge",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15766954550757761764/DA2A484C5EAC612DFC31846C3271731A2F8930FC/"
     },
@@ -2662,6 +2795,7 @@
       "isIndoors": true,
       "skybox": "ROMRotunda",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13888176639841851301/B15814CBE21895EF276632D1C585987AA1E50C1E/"
     },
@@ -2673,6 +2807,7 @@
       "isIndoors": true,
       "skybox": "ROMSpiritHouse",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16565149852709122525/32A76D6E41884FD424DD6CF7F18750E7CA4E394B/"
     },
@@ -2684,6 +2819,7 @@
       "isIndoors": true,
       "skybox": "ROMHallOfExtinction",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10931043906673149137/5D00DBE1B92B93923B80FD84E660FCAC9D23061D/"
     },
@@ -2695,6 +2831,7 @@
       "isIndoors": true,
       "skybox": "RunDownApt1",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9936921732377850287/4C08F5026D9AD291213B529A8CBAE4FD1A8060C1/"
     },
@@ -2706,6 +2843,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17708216006813875683/8EF6F662B4D0E9BDFD6F2A2F0814FA5462DB528D/"
     },
@@ -2717,6 +2855,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [
         "bestialReset"
       ],
@@ -2730,6 +2869,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16496542707778225685/A59DE632E83583439EAE572446175A1E4F196BDD/"
     },
@@ -2741,6 +2881,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13889802651067721581/672BA8A7F16C093F0CD4C9CC7EA4AC2F7FFB39A2/"
     },
@@ -2752,6 +2893,7 @@
       "isIndoors": false,
       "skybox": "SecludedDeadEnd",
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10548799602903946581/29AC1BDD8145EF79190A7E491F9A649367964142/"
     },
@@ -2763,6 +2905,7 @@
       "isIndoors": true,
       "skybox": "SewerTunnel1",
       "locationTrack": "sewers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17978884772715855729/4130CAC06B860BC477BAE28DC59DFB0609B3EC47/"
     },
@@ -2774,6 +2917,7 @@
       "isIndoors": true,
       "skybox": "SewerTunnel2",
       "locationTrack": "sewers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10227705670694734946/E8C6FEC331A6BB3EBA565F1F53F2EDE9767AB72F/"
     },
@@ -2785,6 +2929,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11270053042198815206/960A7E958B5EAA676D8F70A4F59AA63D39F65AA2/"
     },
@@ -2796,6 +2941,7 @@
       "isIndoors": false,
       "skybox": "Sidewalk1",
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17534193553085607616/88EE58567785F7A377F63FC45C2155F8AB778500/"
     },
@@ -2807,6 +2953,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11388414709724894498/91C2D9070ACC0C321193CD56EA396A469B8085E9/"
     },
@@ -2818,6 +2965,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16195581960230226810/70AFB446E31B689D44D9655468431427D28CE3DF/"
     },
@@ -2829,6 +2977,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "diveBar",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13503527578801187842/9254A510AE11555EC45AAB1E37070460CCDD5EB2/"
     },
@@ -2840,6 +2989,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "diveBar",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12921586500759033534/D00D2101449707241357D38BFD35DC730C1859F6/"
     },
@@ -2851,6 +3001,7 @@
       "isIndoors": true,
       "skybox": "StLawrenceMarket",
       "locationTrack": "indoorMarket",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14819037183411649055/49C18C8B6D222242FF7A2510CB4D0625711C0162/"
     },
@@ -2862,6 +3013,7 @@
       "isIndoors": true,
       "skybox": "StMichaelsCathedral",
       "locationTrack": "church",
+      "backgroundMusic": null,
       "conditions": [
         "remorseBonus2"
       ],
@@ -2875,6 +3027,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "hospital",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9701826289074331904/F4DD28382BFC3FAB55560BD4A12A8BD74B7F8931/"
     },
@@ -2886,6 +3039,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17776866791067871221/329D372E1D8C0D1AFA5E520DB2DE1F29A23593C8/"
     },
@@ -2897,6 +3051,7 @@
       "isIndoors": false,
       "skybox": "StreetCorner1",
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [
         "woundToCompulsion"
       ],
@@ -2910,6 +3065,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12865206238490519691/3F3F2DA83D4B71EF703F538F92DC68FE386DF7A3/"
     },
@@ -2921,6 +3077,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "quietCity",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10441712193268257124/2A6C93857740D28083C6CD043AE548034D56F5DB/"
     },
@@ -2932,6 +3089,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "nightclub",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15519686994275211600/0ED4B5BE158D5035757149D0CC5BDF8073939BAD/"
     },
@@ -2943,6 +3101,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10634169636077174118/7736C9C52C69455D60BED7E26BE8A81A7A7361E8/"
     },
@@ -2954,6 +3113,7 @@
       "isIndoors": true,
       "skybox": "SuburbanHouse1",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14975354810076094319/CFC82794EFECB5E186305E2BEB01442AFD5DD9F2/"
     },
@@ -2965,6 +3125,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17221200900684382159/E2BD13A4E40CBC32ACB5F5460ED28F16B5B0A109/"
     },
@@ -2976,6 +3137,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10121924531664224321/7BCB5E33195A22CA56E482DBE9E07F2526885ED8/"
     },
@@ -2987,6 +3149,7 @@
       "isIndoors": true,
       "skybox": "SubwayStation",
       "locationTrack": "subway",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18202971718655384131/104A6EF312EEEC2EBE1E81AF74F88E3AD8A2CCAD/"
     },
@@ -2998,6 +3161,7 @@
       "isIndoors": true,
       "skybox": "SubwayTunnels",
       "locationTrack": "sewers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13989728674474107289/0E499323BD7C64F43B89E249C595C4768730751B/"
     },
@@ -3009,6 +3173,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16214941412169219860/376AD1A0DA4EF78BF915D0EE5DB8D1C68F066B8F/"
     },
@@ -3020,6 +3185,7 @@
       "isIndoors": false,
       "skybox": "Taxi",
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11440761481351318111/9FAB122FB4187F9E0E7BEA171054FE48C5425BA3/"
     },
@@ -3031,6 +3197,7 @@
       "isIndoors": true,
       "skybox": "TeteATete",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12643777245687196661/87F8A1B68EE03561ACE1EB1AFBA501CA6C5842A6/"
     },
@@ -3042,6 +3209,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "whisperGhosts",
+      "backgroundMusic": "gioCatacombs",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10539533174116712429/46648D57427086507E187324012FE56E2D7F0973/"
     },
@@ -3053,6 +3221,7 @@
       "isIndoors": true,
       "skybox": "GEDiningHall",
       "locationTrack": "silent",
+      "backgroundMusic": "gioEstate",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16529769231355195163/5880A96E818D2F202049D81D0DADF3C0597AE4C3/"
     },
@@ -3064,6 +3233,7 @@
       "isIndoors": false,
       "skybox": "GEEstateGrounds",
       "locationTrack": "eerieForest",
+      "backgroundMusic": "gioEstate",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12868022092210173463/CB4DDEE4AC2AD5E553CD7ECCC6447D5A2B38BC4D/"
     },
@@ -3075,6 +3245,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "laboratory",
+      "backgroundMusic": "gioEstate",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9899053763653517375/6F0B48A0C37E26FB9536B6399E9E4C842FFD4960/"
     },
@@ -3086,6 +3257,7 @@
       "isIndoors": true,
       "skybox": "GETowerRoom",
       "locationTrack": "softHum",
+      "backgroundMusic": "gioEstate",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/9679389391421034268/29ABAA808CF258CC42FBC7C54461F61B9BDB8760/"
     },
@@ -3097,6 +3269,7 @@
       "isIndoors": true,
       "skybox": "WarrensAntechamber",
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10807363831907481585/90358292D4CADE278826357BED799DAE5A2DD560/"
     },
@@ -3108,6 +3281,7 @@
       "isIndoors": true,
       "skybox": "WarrensDrakes",
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12739801901664211772/00EEB941C82E4E6771F82F9145127D7D35CB44B9/"
     },
@@ -3119,6 +3293,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": null
     },
@@ -3130,6 +3305,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": null
     },
@@ -3141,6 +3317,7 @@
       "isIndoors": true,
       "skybox": "WarrensLabyrinth",
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11482232539272138515/2033D058570AB2BB6E28B5E8B42C6B8220608B12/"
     },
@@ -3152,6 +3329,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": null
     },
@@ -3163,6 +3341,7 @@
       "isIndoors": true,
       "skybox": "WarrensSpawningPool",
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17530923744056062422/60876AF78CF20D3C9DE6434FDE379834534E8301/"
     },
@@ -3174,6 +3353,7 @@
       "isIndoors": true,
       "skybox": "WarrensTunnelJunction",
       "locationTrack": "warrens",
+      "backgroundMusic": "none",
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17763903214668762803/A595B1B8CDF254097C559DA424B19770E8A44D16/"
     },
@@ -3185,6 +3365,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": null
     },
@@ -3196,6 +3377,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": null
     },
@@ -3207,6 +3389,7 @@
       "isIndoors": true,
       "skybox": "StRegisCouncilChamber",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12582647453183868255/03D2A05E0F9E2556658E8CE2D8661DEAAA19B29B/"
     },
@@ -3218,6 +3401,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": null
     },
@@ -3229,6 +3413,7 @@
       "isIndoors": true,
       "skybox": "StRegisFoyer",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12090777071102935007/8406F52CE7695D31BC5A9D23258147142927D748/"
     },
@@ -3240,6 +3425,7 @@
       "isIndoors": true,
       "skybox": "StRegisGrandSalon",
       "locationTrack": "quietIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14365249536380525908/9735A2C5D303A08AE205A3923B37BD3C47CAFFDA/"
     },
@@ -3251,6 +3437,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": null
     },
@@ -3262,6 +3449,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": null
     },
@@ -3273,6 +3461,7 @@
       "isIndoors": true,
       "skybox": "StRegisRoom101",
       "locationTrack": "computer",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16026359586760847557/37256390B1734663DF2FB4F44BA5993A605E05AD/"
     },
@@ -3284,6 +3473,7 @@
       "isIndoors": true,
       "skybox": "ChantryLibrary",
       "locationTrack": "library",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15380642670040254460/97D9537F32662E0FF1617EBC893EB914A4E131A8/"
     },
@@ -3295,6 +3485,7 @@
       "isIndoors": false,
       "skybox": "ChantryGrounds",
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13141404094239339603/B5E16FDFCA9B73AAAF74215BDCC558ADEEEB28DE/"
     },
@@ -3306,6 +3497,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "church",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17610607805500678864/4A08D620682313C9056EB3A9684DF68E478D39F3/"
     },
@@ -3317,6 +3509,7 @@
       "isIndoors": true,
       "skybox": "ChantryThaumatorium",
       "locationTrack": "ritualRoom",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13982886360406328419/6F75D3670E81D78E992CFACE4584F51319A55553/"
     },
@@ -3328,6 +3521,7 @@
       "isIndoors": true,
       "skybox": "ThreefoldExchange",
       "locationTrack": "apothecary",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12520632566405004176/157A1187DA38DA03E066D9B9320B966C565A01A0/"
     },
@@ -3339,6 +3533,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12262225874201570023/8386034232BEA20F18AEF9D1BE14F43009DFABA5/"
     },
@@ -3350,6 +3545,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "hospital",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15534607772265845603/8A9D32F13C88FBF2E91875EF4A376666E8AE3985/"
     },
@@ -3361,6 +3557,7 @@
       "isIndoors": true,
       "skybox": "TPSHQ",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12527173994569843894/A0E79114D0440DF5BB515A0ECEE857829A1041EA/"
     },
@@ -3372,6 +3569,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "medicalClinic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15577993445257896898/9BA0C76FC25104079E6709B0BB2270159323948A/"
     },
@@ -3383,6 +3581,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "urbanDark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10859847509738438742/EFF81E893871B762C7F72B3C9EAE5016DF427587/"
     },
@@ -3394,6 +3593,7 @@
       "isIndoors": true,
       "skybox": "UnionConcourse",
       "locationTrack": "cityWalking",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17993992845711218385/A162F98DB0A99286C2C0E53E52589F3F4512BCEC/"
     },
@@ -3405,6 +3605,7 @@
       "isIndoors": true,
       "skybox": "UnionGrandClock",
       "locationTrack": "cityWalking",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15351740338898896524/7A13C26F89E75FDD403BCC2290013BEB8952183C/"
     },
@@ -3416,6 +3617,7 @@
       "isIndoors": true,
       "skybox": "UnionLine1",
       "locationTrack": "subway",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17118869771103868344/23DB68E5580661ED08C1858626F900F67B3D5F77/"
     },
@@ -3427,6 +3629,7 @@
       "isIndoors": true,
       "skybox": "UnionSecOffice",
       "locationTrack": "computer",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/18053025793625153559/B96BC57E6F91AB97AEFFDC4ADCB2CD5B76EECA1F/"
     },
@@ -3438,6 +3641,7 @@
       "isIndoors": true,
       "skybox": "UnionServiceCorridor",
       "locationTrack": "softHum",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16840803268670761256/B0D6F19E93EA6A0506774F6B81D3B8A2557A3B45/"
     },
@@ -3449,6 +3653,7 @@
       "isIndoors": true,
       "skybox": "UnionUPExpress",
       "locationTrack": "softIndoor",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17275377036629062526/429E0BF12D27DE4265FF86795B9604203BCBC039/"
     },
@@ -3460,6 +3665,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14361650477995366324/B299F781959E008B31A231EEF900C19F0D910752/"
     },
@@ -3471,6 +3677,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "urbanDark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13170530971367491658/D3AB233F30C5D72C6B642F0AC3601F0447177D51/"
     },
@@ -3482,6 +3689,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16801171302995016126/D1CAFB5C8762977A4C231530BBC8069D4E267F65/"
     },
@@ -3493,6 +3701,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "cityPark",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17757656672523334813/FAA2054D046D432A8114D23879D3A053000DF5E2/"
     },
@@ -3504,6 +3713,7 @@
       "isIndoors": true,
       "skybox": "WealthyEstate1",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16660703996630497350/FE3EFB51E6A5E804918931BA910E2BFD8A6D5595/"
     },
@@ -3515,6 +3725,7 @@
       "isIndoors": true,
       "skybox": "WealthyEstate2",
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12852466340946631039/7AB3E003B902E2F95465446024C7C3C3CCDCC00E/"
     },
@@ -3526,6 +3737,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/17318987291489861364/00B7B598D8442D1C0CFAA3ED684F74B046C337E3/"
     },
@@ -3537,6 +3749,7 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "eerieForest",
+      "backgroundMusic": null,
       "conditions": [
         "toxicRouse"
       ],
@@ -3550,6 +3763,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "diveBar",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13143910740233771748/2D6123701C6219D76A86609EB9FFD5ED52067C54/"
     },
@@ -3561,6 +3775,7 @@
       "isIndoors": false,
       "skybox": "YongeDundasSquare",
       "locationTrack": "cityTraffic",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12690986487837554324/18BF0E24C3860537F31A9935B8DA14B9894487FE/"
     },
@@ -3572,6 +3787,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "silent",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16938263620728880033/47B044E952FD9C86B16363C80395314B6502460B/"
     },
@@ -3583,6 +3799,7 @@
       "isIndoors": true,
       "skybox": null,
       "locationTrack": "cityRevelers",
+      "backgroundMusic": null,
       "conditions": [],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10509621195489727836/4A381BD2DBA0C6B4C22820DCBBDCA7592F308350/"
     }
@@ -4025,6 +4242,10 @@
     {
       "key": "PATH",
       "display": "P.A.T.H."
+    },
+    {
+      "key": "CLGreatHallLockdown",
+      "display": "CLGreatHall Lockdown"
     }
   ],
   "memoriamPeriods": [

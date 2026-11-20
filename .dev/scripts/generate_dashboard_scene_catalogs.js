@@ -781,6 +781,7 @@ function main() {
   const sites = parseTopLevelEntries(extractBlock(locationsSrc, "LocationsCatalog.Sites =")).map((entry) => {
     const districtMatch = entry.body.match(/district\s*=\s*Districts\.([A-Za-z_][A-Za-z0-9_]*)/);
     const soundTrackMatch = entry.body.match(/track\s*=\s*"([^"]+)"/);
+    const backgroundMusicMatch = entry.body.match(/backgroundMusic\s*=\s*\{[^}]*playlist\s*=\s*"([^"]+)"/);
     return {
       key: entry.key,
       name: readStringField(entry.body, "name") || entry.key,
@@ -789,6 +790,7 @@ function main() {
       isIndoors: readBooleanField(entry.body, "isIndoors"),
       skybox: readStringField(entry.body, "skybox"),
       locationTrack: soundTrackMatch ? soundTrackMatch[1] : null,
+      backgroundMusic: backgroundMusicMatch ? backgroundMusicMatch[1] : null,
       conditions: readStringListField(entry.body, "conditions"),
       cardUrl: cardUrls.get(`siteCard_${entry.key}`) ?? null,
     };

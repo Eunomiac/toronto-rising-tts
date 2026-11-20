@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 7,
-      "sketch": "scenes",
-      "x": 1054,
-      "y": 433,
-      "text": "The sound controls for scenes in preview mode do not reflect actual selected playlists or volumes (they show \"Main\" and a full volume control, for example, even when at locations with custom music sound tracks like Casa Loma)",
-      "status": "open",
-      "createdAt": "2026-11-20T10:19:49.027Z",
-      "updatedAt": "2026-11-20T10:19:49.027Z"
-    },
-    {
       "id": 8,
       "sketch": "scenes",
       "x": 1110,

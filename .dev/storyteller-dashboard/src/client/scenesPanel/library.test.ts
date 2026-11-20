@@ -7,6 +7,7 @@ import {
   draftScatterGroups,
   draftSceneSlice,
   draftSeatRows,
+  draftSoundView,
   draftStage,
   draftTable,
   mergeFromTts,
@@ -392,6 +393,20 @@ describe("draft Scatter layout", () => {
     expect(pack.scatter2?.summary).toBe("Court garden");
     const clearedTitle = applyToDraft(titled, { op: "scatterSummary", group: 2, summary: "   " });
     expect((clearedTitle.sessionScene.scatterPlacements as Record<string, { summary?: string }>).scatter2?.summary).toBeUndefined();
+  });
+
+  it("preview sound falls back to the site playlist when narrative is still main", () => {
+    const draft = scene("elysium", {
+      sessionScene: {
+        siteKey: "CLGreatHall",
+        soundscapeNarrative: { backgroundMusic: "main" },
+        clock: { isPresentDay: true }
+      }
+    });
+    expect(draftSoundView(draft, { backgroundMusic: "casaLoma", locationTrack: "softIndoor" }).playlist).toBe("Casa Loma");
+    expect(draftSoundView(draft, { backgroundMusic: "casaLoma" }, { music: 8, location: 5, featured: 0, rain: 0, wind: 0, thunder: 100 }).levels.music).toBe(8);
+    const overridden = applyToDraft(draft, { op: "musicMood", mood: "melancholy" });
+    expect(draftSoundView(overridden, { backgroundMusic: "casaLoma" }).playlist).toBe("Melancholy");
   });
 
   it("puts NPCs who only stood in groups onto free stage packs when the table leaves Scatter", () => {

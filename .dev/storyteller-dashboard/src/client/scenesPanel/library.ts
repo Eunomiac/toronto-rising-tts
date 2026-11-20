@@ -560,18 +560,37 @@ export const draftSceneSlice = (scene: LibraryScene, indoors: boolean): SceneSli
 
 const LANES: readonly SoundLane[] = ["music", "location", "featured", "rain", "wind", "thunder"];
 
-/** The draft's authored music and ambience as the mixer's view (volumes are the table's, not the scene's). */
-export const draftSoundView = (scene: LibraryScene): SoundView => {
+export type DraftSoundSite = {
+  readonly backgroundMusic?: string | null;
+  readonly locationTrack?: string | null;
+};
+
+/**
+ * The draft's music and ambience as the mixer's view. Playlist follows an explicit scene narrative choice;
+ * when the narrative is empty or still the default `main`, the site's background playlist wins (Casa Loma →
+ * `casaLoma`, and so on). Volumes use the live table lanes when provided (scenes do not author volumes).
+ */
+export const draftSoundView = (
+  scene: LibraryScene,
+  site?: DraftSoundSite,
+  liveLevels?: Readonly<Record<SoundLane, number>>
+): SoundView => {
   const narrative = narrativeOf(scene);
-  const music = str(narrative.backgroundMusic);
-  const ambient = str(narrative.location);
+  const authoredMusic = str(narrative.backgroundMusic);
+  const siteMusic = str(site?.backgroundMusic ?? undefined);
+  const music =
+    authoredMusic !== undefined && authoredMusic !== "main"
+      ? authoredMusic
+      : siteMusic ?? authoredMusic ?? "main";
+  const ambient = str(narrative.location) ?? str(site?.locationTrack ?? undefined);
+  const levels = liveLevels ?? (Object.fromEntries(LANES.map((lane) => [lane, 100])) as Record<SoundLane, number>);
   return {
-    playlist: playlistLabel(music ?? "main"),
+    playlist: playlistLabel(music),
     musicPlaying: true,
     featuredKey: undefined,
     featuredPlaying: false,
     ambient,
-    levels: Object.fromEntries(LANES.map((lane) => [lane, 100])) as Record<SoundLane, number>,
+    levels,
     playing: Object.fromEntries(LANES.map((lane) => [lane, lane === "music" || (lane === "location" && ambient !== undefined)])) as Record<SoundLane, boolean>
   };
 };
