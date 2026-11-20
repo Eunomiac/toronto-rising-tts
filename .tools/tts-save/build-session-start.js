@@ -140,8 +140,17 @@ async function publishPendingReview(plan, review, dryRun) {
   const skip = plan.report.inheritedDecisions.map((item) => urlKey(item.url));
   if (skyKey && skyRefs.every((ref) => ref.path.length === 1 && ref.path[0] === "SkyURL")) skip.push(skyKey);
   const pending = selectPendingReviewRows(rows, review.csv, skip);
-  if (pending.length !== plan.report.unreviewedUrls) {
-    throw new Error(`Review sheet selection found ${pending.length} assets but the session-start report has ${plan.report.unreviewedUrls} without a decision.`);
+  // Unreviewed URLs can already have blank Manual-decision rows on the sheet.
+  // Pending means "no row yet" — it is normally a subset of unreviewed, not equal.
+  if (pending.length > plan.report.unreviewedUrls) {
+    throw new Error(
+      `Review sheet selection found ${pending.length} assets to append, but the session-start report only has ${plan.report.unreviewedUrls} without a decision.`
+    );
+  }
+  if (pending.length < plan.report.unreviewedUrls) {
+    console.log(
+      `${plan.report.unreviewedUrls - pending.length} current asset URL(s) already have Integrated assets rows with a blank Manual decision; ${pending.length} still need a new row.`
+    );
   }
   if (!pending.length) {
     console.log("Every current asset URL already has a review row.");
