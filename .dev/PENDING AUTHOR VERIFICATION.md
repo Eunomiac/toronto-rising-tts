@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-798 — NPC sheets visible under table despite HiddenObject park
+
+> **Agent-assessment note:** Inject now writes InvisibleTo; startup re-runs hide on tagged NPC sheets. Live under-table invisibility still needs Save & Play.
+
+**How to verify:** Save & Play (you do not need to re-inject for this check). Look under the table at the five NPC sheets — they should be invisible to every seat, including yours as Storyteller. Optional later: re-inject with `--replace` so the save JSON also stores InvisibleTo.
+
 #### 🟡 TOR-797 — Clear session title on End→Intermission; gate Play until titled
 
 > **Agent-assessment note:** Dashboard Vitest covers the blank-title reminder. Live End→Intermission clear of `sessionName` and the greyed Play button still need Save & Play.

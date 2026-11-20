@@ -83,6 +83,8 @@ test("planInject creates five double-wide parked NPC sheets", () => {
     assert.equal(clone.LuaScript, NPC_LUA);
     assert.deepEqual(clone.CustomUIAssets, []);
     assert.equal(clone.Interactable, false);
+    assert.ok(Array.isArray(clone.InvisibleTo) && clone.InvisibleTo.includes("Black"));
+    assert.ok(clone.InvisibleTo.includes("Brown"));
   }
   const brown = plan.clones.find((c) => c.GMNotes === "CSHEET_NPC_BROWN");
   assert.equal(brown.GUID, DEFAULT_GUIDS.BROWN);

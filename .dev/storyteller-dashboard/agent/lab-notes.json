@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 4,
-      "sketch": "scenes",
-      "x": 1012,
-      "y": 595,
-      "text": "NPC Sheets are visible under the table despite being hidden; they should be hidden using the standard functions, which should make them invisible to all players.",
-      "status": "open",
-      "createdAt": "2026-11-20T10:15:56.555Z",
-      "updatedAt": "2026-11-20T10:15:56.555Z"
-    },
-    {
       "id": 5,
       "sketch": "scenes",
       "x": 1004,

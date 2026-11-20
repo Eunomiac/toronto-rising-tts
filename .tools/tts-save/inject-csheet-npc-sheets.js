@@ -25,6 +25,8 @@ const { findExistingConfig } = require("../custom-ui-assets/lib/tts-assets-confi
 
 const COLORS = ["BROWN", "ORANGE", "RED", "PINK", "PURPLE"];
 const HIDE_Y = -200;
+/** Match `O.hideObject` parked visibility (all seated + spectator + Storyteller colors). */
+const PARKED_INVISIBLE_TO = ["White", "Black", "Grey", "Brown", "Orange", "Red", "Pink", "Purple"];
 const NPC_XML = '<Include src="ui/player/csheets/npc_sheet.xml" />';
 const NPC_LUA = 'require("ui.ui_csheet_npc")\n';
 
@@ -157,6 +159,7 @@ function planInject(save, opts = {}) {
       XmlUI: NPC_XML,
       CustomUIAssets: [],
       Interactable: false,
+      InvisibleTo: [...PARKED_INVISIBLE_TO],
     };
     clones.push(clone);
     mappings.push({ color, guid, sourceGuid: page1.GUID, page2Guid: page2.GUID });
@@ -246,6 +249,7 @@ module.exports = {
   DEFAULT_GUIDS,
   COLORS,
   HIDE_Y,
+  PARKED_INVISIBLE_TO,
   NPC_XML,
   NPC_LUA,
 };

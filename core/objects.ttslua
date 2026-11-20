@@ -303,10 +303,33 @@ function O.ApplyLockedAndHiddenFromConstants(options)
     return result
 end
 
+--- Re-apply parked hide protocol for Play-as-NPC sheets that sit at hide Y with the HiddenObject tag
+--- but may have empty InvisibleTo in the save (inject used to omit parked visibility).
+--- @return number how many sheets were re-parked
+function O.reapplyParkedNpcSheetHides()
+    local colors = { "BROWN", "ORANGE", "RED", "PINK", "PURPLE" }
+    local n = 0
+    for i = 1, #colors do
+        local role = "CSHEET_NPC_" .. colors[i]
+        local guid = type(G.GUIDS) == "table" and G.GUIDS[role] or nil
+        if type(guid) == "string" and guid ~= "" then
+            local obj = getObjectFromGUID(guid)
+            if U.isGameObject(obj) and O.isHiddenObject(obj) then
+                if O.hideObject(obj) then
+                    n = n + 1
+                end
+            end
+        end
+    end
+    return n
+end
+
 --- Startup gate entry: lock interactable + apply hidden visibility once objects are ready.
 --- @return table `{ locked: table, hidden: table }`
 function O.ApplyLockedAndHiddenAtStartupGate(deferredGuids)
-    return O.ApplyLockedAndHiddenFromConstants({ warnMissing = true, logSummary = true, deferredGuids = deferredGuids })
+    local result = O.ApplyLockedAndHiddenFromConstants({ warnMissing = true, logSummary = true, deferredGuids = deferredGuids })
+    O.reapplyParkedNpcSheetHides()
+    return result
 end
 
 --- Viewer colors used when a seat is narratively absent (hide from everyone).
