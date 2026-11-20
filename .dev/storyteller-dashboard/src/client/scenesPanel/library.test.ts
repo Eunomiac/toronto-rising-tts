@@ -255,6 +255,21 @@ describe("draft seating", () => {
     expect(draft.sessionScene.seatPresent).toEqual({ Pink: false, NPC1: true });
   });
 
+  it("assigns and clears Play-as-NPC on a PC seat row", () => {
+    const assigned = applyToDraft(seated, {
+      op: "playAsNpc",
+      color: "Red",
+      npcCharacterKey: "drake",
+      roleplayNotes: "Be soft-spoken",
+    });
+    expect(assigned.sessionScene.seatSlots).toMatchObject({
+      Red: { characterKey: "lordLucien", isPlayingNPC: true, npcCharacterKey: "drake", isPresent: true, playAsRoleplayNotes: "Be soft-spoken" },
+    });
+    const cleared = applyToDraft(assigned, { op: "clearPlayAsNpc", color: "Red" });
+    expect(cleared.sessionScene.seatSlots).toMatchObject({ Red: { characterKey: "lordLucien", isPlayingNPC: false } });
+    expect((cleared.sessionScene.seatSlots as Record<string, Record<string, unknown>>).Red).not.toHaveProperty("npcCharacterKey");
+  });
+
   it("moves a seat holder to another chair, swapping with whoever sits there", () => {
     const swapped = applyToDraft(seated, { op: "seatMove", seat: "Red", chair: 6 });
     expect(swapped.sessionScene.seatSlots).toMatchObject({ Red: { tableSlot: 6 }, NPC1: { characterKey: "mara", tableSlot: 1 } });

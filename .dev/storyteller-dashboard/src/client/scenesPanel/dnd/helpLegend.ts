@@ -78,6 +78,7 @@ const ACTION_GLOSS: Readonly<Partial<Record<ActionId, string>>> = {
   activateIntoScene: "Activate / bring into the scene",
   assignTransitionSeat: "Assign in that scene’s transition seating",
   contestedVsPc: "Start a contested roll vs that PC",
+  assignPlayAsNpc: "Assign this NPC for the PC to play",
   duplicateRollToPc: "Duplicate this roll for that PC",
   duplicateNpcRollToPc: "Open that NPC roll for the PC",
   duplicateSecretToPc: "Duplicate as a secret roll for that PC",

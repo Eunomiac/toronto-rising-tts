@@ -333,6 +333,52 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
         { placements }
       );
     }
+    case "playAsNpc": {
+      const slots = draftSeatSlots(scene);
+      const row = slots[command.color];
+      if (!isRecord(row) || typeof row.characterKey !== "string") {
+        return scene;
+      }
+      let next = withSession(scene, {
+        seatSlots: {
+          ...slots,
+          [command.color]: {
+            ...row,
+            isPlayingNPC: true,
+            npcCharacterKey: command.npcCharacterKey,
+            isPresent: true,
+            ...(command.roleplayNotes !== undefined ? { playAsRoleplayNotes: command.roleplayNotes } : {}),
+          },
+        },
+        seatPresent: { ...draftSeatPresent(scene), [command.color]: true },
+      });
+      if (command.displayName !== undefined || command.tier !== undefined) {
+        const membership: Record<string, unknown> = { ...draftMembership(next) };
+        const prior = isRecord(membership[command.npcCharacterKey]) ? membership[command.npcCharacterKey] : {};
+        membership[command.npcCharacterKey] = {
+          ...prior,
+          key: command.npcCharacterKey,
+          ...(command.displayName !== undefined ? { displayName: command.displayName } : {}),
+          ...(command.tier !== undefined ? { tier: command.tier } : {}),
+        };
+        next = withNpcWorld(next, { genericMembership: membership });
+      }
+      return next;
+    }
+    case "clearPlayAsNpc": {
+      const slots = draftSeatSlots(scene);
+      const row = slots[command.color];
+      if (!isRecord(row)) {
+        return scene;
+      }
+      const { npcCharacterKey: _npc, playAsRoleplayNotes: _notes, isPlayingNPC: _playing, ...kept } = row;
+      return withSession(scene, {
+        seatSlots: {
+          ...slots,
+          [command.color]: { ...kept, isPlayingNPC: false },
+        },
+      });
+    }
     case "musicMood":
       return withNarrative(scene, { backgroundMusic: command.mood });
     case "locationMusic":

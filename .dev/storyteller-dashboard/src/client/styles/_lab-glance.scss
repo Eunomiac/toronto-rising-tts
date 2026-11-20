@@ -45,6 +45,53 @@ $lab-live: #4caf6a;
   width: 470px;
 }
 
+.lab-modal.play-as-npc-modal {
+  width: min(520px, 92vw);
+  gap: 8px;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .lab-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  textarea {
+    min-height: 140px;
+    resize: vertical;
+    font: inherit;
+    color: inherit;
+    background: #121218;
+    border: 1px solid #4a4a58;
+    padding: 8px;
+  }
+
+  input[type="text"] {
+    font: inherit;
+    color: inherit;
+    background: #121218;
+    border: 1px solid #4a4a58;
+    padding: 6px 8px;
+  }
+
+  .lab-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .lab-btn.on,
+  .lab-btn.gold {
+    border-color: #c9a227;
+  }
+}
+
 .lab-ambient-pick {
   overflow: hidden;
   text-align: left;

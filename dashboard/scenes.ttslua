@@ -31,6 +31,9 @@
     seatMove          seat, chair         move a seat holder (PC or NPC) to chair 1–9, swapping with whoever sits there
     seatNpc           characterKey, chair seat a named NPC (roster or stage) in an empty chair, lit; leaves the stage
     unseatNpc         seat                clear a named NPC's chair and return them to the roster
+    playAsNpc         color, npcCharacterKey, roleplayNotes?, displayName?, tier?
+                                          PC seat portrays an NPC (Play-as-NPC); stores isPlayingNPC + npcCharacterKey
+    clearPlayAsNpc    color               clear Play-as-NPC on that PC seat
     signalOff         color               put out a PC's signal fire (no-op when it is already out)
     location          districtKey?, siteKey   change the live location behind a blindfold
     skybox            key                 sky override (`none` = the site's own sky)
@@ -338,6 +341,100 @@ local function applyCommand(cmd)
       return "Unknown NPC seat: " .. tostring(cmd.seat)
     end
     return require("core.seat_moves").unseatNpc(cmd.seat)
+  end
+  if op == "playAsNpc" then
+    if not U.isIn(cmd.color, C.PlayerColors) then
+      return "Unknown PC seat: " .. tostring(cmd.color)
+    end
+    if type(cmd.npcCharacterKey) ~= "string" or cmd.npcCharacterKey == "" then
+      return "playAsNpc needs npcCharacterKey."
+    end
+    local slots = S.getStateVal("sessionScene", "seatSlots")
+    if type(slots) ~= "table" then
+      slots = {}
+    end
+    local row = slots[cmd.color]
+    if type(row) ~= "table" or type(row.characterKey) ~= "string" or row.characterKey == "" then
+      return "No PC seated in " .. tostring(cmd.color) .. "."
+    end
+    -- Double-book: remove this NPC from the stage and from any homeland NPC chair.
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) == "table" and type(placements[cmd.npcCharacterKey]) == "table" then
+      local errStage = require("core.npc_stage_apply").applyStageChanges({ [cmd.npcCharacterKey] = { remove = true } })
+      if errStage then
+        return errStage
+      end
+    end
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots") or {}
+    for seatKey, holder in pairs(occupied) do
+      if holder == cmd.npcCharacterKey then
+        local errUnseat = require("core.seat_moves").unseatNpc(seatKey)
+        if errUnseat then
+          return errUnseat
+        end
+      end
+    end
+    if type(cmd.displayName) == "string" or type(cmd.tier) == "string" then
+      local membership = S.getStateVal("sessionScene", "npcWorld", "genericMembership")
+      if type(membership) ~= "table" then
+        membership = {}
+      end
+      local entry = membership[cmd.npcCharacterKey]
+      if type(entry) ~= "table" then
+        entry = { key = cmd.npcCharacterKey }
+      end
+      if type(cmd.displayName) == "string" and cmd.displayName ~= "" then
+        entry.displayName = cmd.displayName
+      end
+      if type(cmd.tier) == "string" and cmd.tier ~= "" then
+        entry.tier = cmd.tier
+      end
+      membership[cmd.npcCharacterKey] = entry
+      S.setStateVal("sessionScene", "npcWorld", "genericMembership", membership)
+    end
+    row.isPlayingNPC = true
+    row.npcCharacterKey = cmd.npcCharacterKey
+    row.isPresent = true
+    if type(cmd.roleplayNotes) == "string" then
+      row.playAsRoleplayNotes = cmd.roleplayNotes
+    end
+    slots[cmd.color] = row
+    S.setStateVal("sessionScene", "seatSlots", slots)
+    local seatPresent = S.getStateVal("sessionScene", "seatPresent")
+    if type(seatPresent) ~= "table" then
+      seatPresent = {}
+    end
+    seatPresent[cmd.color] = true
+    S.setStateVal("sessionScene", "seatPresent", seatPresent)
+    local SceneLibrary = require("core.scene_library")
+    SceneLibrary.syncNpcRoleOverrideFromSeatSlots(S.getStateVal("sessionScene"))
+    require("core.npc_trackers").ensure(cmd.npcCharacterKey)
+    S.validateState()
+    require("dashboard.push").markWorldDirty({ seats = true })
+    return nil
+  end
+  if op == "clearPlayAsNpc" then
+    if not U.isIn(cmd.color, C.PlayerColors) then
+      return "Unknown PC seat: " .. tostring(cmd.color)
+    end
+    local slots = S.getStateVal("sessionScene", "seatSlots")
+    if type(slots) ~= "table" then
+      return nil
+    end
+    local row = slots[cmd.color]
+    if type(row) ~= "table" then
+      return nil
+    end
+    row.isPlayingNPC = false
+    row.npcCharacterKey = nil
+    row.playAsRoleplayNotes = nil
+    slots[cmd.color] = row
+    S.setStateVal("sessionScene", "seatSlots", slots)
+    local SceneLibrary = require("core.scene_library")
+    SceneLibrary.syncNpcRoleOverrideFromSeatSlots(S.getStateVal("sessionScene"))
+    S.validateState()
+    require("dashboard.push").markWorldDirty({ seats = true })
+    return nil
   end
   if op == "npcTracker" then
     return require("core.npc_trackers").applyChange(cmd.key, cmd.which, cmd.mode, cmd.max)

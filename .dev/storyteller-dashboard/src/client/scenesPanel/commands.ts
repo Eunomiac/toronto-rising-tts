@@ -18,7 +18,17 @@ export type SoundLane = "music" | "location" | "featured" | "rain" | "wind" | "t
 export type RainKey = "none" | "rainLight" | "rainHeavy";
 
 /** Who plays whom in a Memoriam; the subject is always listed. */
-export type MemoriamAssignment = { readonly kind: "self" };
+export type MemoriamAssignment =
+  | { readonly kind: "self" }
+  | { readonly kind: "library"; readonly characterKey: string; readonly roleplayNotes?: string }
+  | { readonly kind: "memoriam"; readonly characterKey: string; readonly roleplayNotes?: string }
+  | {
+      readonly kind: "generic";
+      readonly figurineKey: string;
+      readonly displayName: string;
+      readonly tier?: import("../../shared/npcStats").NpcTier;
+      readonly roleplayNotes?: string;
+    };
 
 /** The TTS Memoriam modal's Advance payload (`Memoriam.applyEnter`). */
 export type MemoriamPayload = {
@@ -78,6 +88,16 @@ export type ScenesCommand =
   | { readonly op: "seatMove"; readonly seat: string; readonly chair: number }
   | { readonly op: "seatNpc"; readonly characterKey: string; readonly chair: number }
   | { readonly op: "unseatNpc"; readonly seat: string }
+  /** PC seat portrays an NPC (Play-as-NPC). Live: mutates seatSlots immediately; draft: stores on the row. */
+  | {
+      readonly op: "playAsNpc";
+      readonly color: string;
+      readonly npcCharacterKey: string;
+      readonly roleplayNotes?: string;
+      readonly displayName?: string;
+      readonly tier?: NpcTier;
+    }
+  | { readonly op: "clearPlayAsNpc"; readonly color: string }
   | { readonly op: "signalOff"; readonly color: string }
   | ({
     readonly op: "playScene";

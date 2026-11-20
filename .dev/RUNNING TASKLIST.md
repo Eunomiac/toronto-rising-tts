@@ -590,7 +590,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Timing API merge:** `U.stagger` / `U.chain` / `U.await` (+ `U.cancel`); `Time.time` clocks; unique chain waiters; hard-cut old names. Policy + handoff updated. Author confirmed 2026-08-03. _(TOR-438)_
 - [x] **Join-stress minimal Global XmlUI spike:** Code + staged restore shipped. Multiclient: **1 Assets / 3 Emitters / 4 Figurines OK**; **2 HUD** timed out ? drove **TOR-444**. Staged restore is now 1–3 (the Figurines step was removed with **TOR-707**). Pending re-verify whether reduced Global HUD lets step 2 survive (or makes Arm pipeline unnecessary). _(TOR-439)_
 - [x] **Global XmlUI remount weight:** Dramatic Image-node reduction via stacks/chrome tint/shared visibility. Author confirmed 2026-08-03. See [Global-UI-Image-Stacks](HUDs%20%26%20Overlays/Global-UI-Image-Stacks.md). _(TOR-444)_
-- [ ] **Play as NPC:** Control-board `pc_control_token` seat activate/deactivate (baseline shipped TOR-236); play-as-NPC swaps sheet by tag; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per the scene row contract ([Scene Import Guide](Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) § Seat slots). Unblocked after **TOR-247** (control-board occupancy). _(TOR-95)_
+- [ ] **Play as NPC:** Foundations shipped (fill engine, `CSHEET_NPC_*` inject, Dashboard confirm/Unassign, `playAsNpc`/`clearPlayAsNpc` seat state). **Pending Save & Play** — selective hide/show + live sheet fill + Memoriam roster-drop still open. Lighting exception per the scene row contract ([Scene Import Guide](Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) § Seat slots). _(TOR-95)_
 
 ## Storyteller Dashboard
 

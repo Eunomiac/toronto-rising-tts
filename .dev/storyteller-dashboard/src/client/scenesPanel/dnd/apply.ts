@@ -22,6 +22,8 @@ export type DndUiHooks = {
   readonly openRollControl?: (action: RollControlRequest["action"], payload: DragPayload) => boolean;
   readonly openNpcEdit?: (characterKey: string) => void;
   readonly openNpcTracker?: (characterKey: string) => void;
+  /** Open Play-as-NPC confirm (NPC token dropped on a seated PC). */
+  readonly openPlayAsNpc?: (color: string, npcKey: string) => void;
   readonly openPcSheet?: (color: string) => void;
   readonly openMemoriam?: () => void;
   readonly editPreviewScene?: (sceneKey: string) => void;
@@ -686,6 +688,24 @@ export const applyDndAction = (
     case "convertType":
     case "rerollSelected": {
       if (!ctx.ui?.openRollControl?.(action, payload)) return { ok: false, reason: action === "rerollSelected" ? "Pick dice on the NPC roll before dropping it here." : "This roll does not allow that change at its current phase." };
+      return { ok: true, did: action };
+    }
+
+    case "assignPlayAsNpc": {
+      const npcKey = characterKeyOf(payload);
+      const color =
+        target.dropKind === "pcSeated" && "holderKey" in target
+          ? target.holderKey
+          : target.dropKind === "pcSeated" && "seatKey" in target
+            ? target.seatKey
+            : undefined;
+      if (!npcKey || !color) {
+        return { ok: false, reason: "Drop an NPC onto a seated PC to assign Play as NPC." };
+      }
+      if (!ctx.ui?.openPlayAsNpc) {
+        return { ok: false, reason: "Play as NPC confirm is unavailable here." };
+      }
+      ctx.ui.openPlayAsNpc(color, npcKey);
       return { ok: true, did: action };
     }
 

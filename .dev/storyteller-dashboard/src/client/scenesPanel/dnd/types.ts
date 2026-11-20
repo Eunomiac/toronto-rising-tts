@@ -103,6 +103,7 @@ export type ActionId =
   | "activateIntoScene"
   | "assignTransitionSeat"
   | "contestedVsPc"
+  | "assignPlayAsNpc"
   | "duplicateRollToPc"
   | "duplicateNpcRollToPc"
   | "duplicateSecretToPc"

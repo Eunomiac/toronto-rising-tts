@@ -212,12 +212,14 @@ const LevelRow = ({ which, value, onStep }: { which: "hunger" | "rage"; value: n
  * (left-click a button to add, right-click to remove); left-click Hunger / Rage to raise it, right-click to lower it.
  * Every click goes straight to TTS (`npcTracker`); the pop-up shows the pushed values. Render it inside an `Overlay`.
  */
-export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
+export const NpcTrackerPopup = ({ characterKey, name, at, send, playingColor }: {
   characterKey: string;
   name: string;
   /** Canvas point it opens from; it opens upward in the lower half of the canvas. */
   at: { readonly x: number; readonly y: number; readonly up: boolean };
   send: (command: ScenesCommand) => void;
+  /** When a PC is portraying this NPC, show Unassign for that seat color. */
+  playingColor?: string;
 }): ReactElement => {
   const live = useContext(NpcLiveContext);
   const rollsSend = useContext(RollsCommandContext);
@@ -258,6 +260,15 @@ export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
           <span className="lab-seat-pop-name">{name}</span>
           {!block && <span className="npc-tracker-none" title="Right-click the NPC in the roster → Stats to set its maximums">no stats</span>}
         </span>
+        {playingColor && (
+          <button
+            type="button"
+            className="lab-btn"
+            onClick={() => send({ op: "clearPlayAsNpc", color: playingColor })}
+          >
+            Unassign ({playingColor})
+          </button>
+        )}
         {live.conditions?.[characterKey]?.conditions.map((condition) => (
           <div key={condition.id} className="npc-tracker-none">{condition.label}</div>
         ))}

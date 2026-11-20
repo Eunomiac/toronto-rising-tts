@@ -143,6 +143,18 @@ describe("applyDndAction", () => {
     expect(rolls).toHaveBeenCalledWith({ op: "initiate", color: "Pink", rollType: "discipline" });
   });
 
+  it("opens Play-as-NPC confirm when an NPC is dropped on a seated PC", () => {
+    const openPlayAsNpc = vi.fn();
+    const result = applyDndAction(
+      "assignPlayAsNpc",
+      { dragKind: "npcRoster", characterKey: "drake" },
+      { dropKind: "pcSeated", chair: 1, seatKey: "Pink", holderKey: "Pink" },
+      { scenes: vi.fn(), rolls: vi.fn(), ui: { openPlayAsNpc } }
+    );
+    expect(result.ok).toBe(true);
+    expect(openPlayAsNpc).toHaveBeenCalledWith("Pink", "drake");
+  });
+
   it("never sends NPC-only surge or recalculation commands for a PC roll", () => {
     const rolls = vi.fn();
     const context = { scenes: vi.fn(), rolls };

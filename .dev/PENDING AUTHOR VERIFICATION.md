@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-95 — Play-as-NPC foundations (sheet inject, assign UI, seat state)
+
+> **Agent-assessment note:** Node fill/inject/registration tests pass. Dashboard Vitest covers assign commands and draft seat edits. Live confirm → TTS seat push, Unassign, and File → Load of injected `CSHEET_NPC_*` tiles still need your Save & Play / load pass. Selective hide of PC pile objects and Memoriam roster-drop assign are not finished yet.
+
+**How to verify:** Restart the Storyteller Dashboard. Save & Play (or inject then File → Load `TS_Save_230` if you have not injected yet: `npm run tts-save:inject-csheet-npc -- --saveName 230` with TTS closed). On the Scenes tab, drag a roster or staged NPC onto a seated PC — the Play as NPC confirm should open with Roleplay Notes. Confirm and check that seat push shows the PC playing that NPC; open that NPC’s tracker pop-up and use **Unassign**. Optionally load the save and confirm five HiddenObject NPC sheets sit at Y −200 with `CSHEET_NPC_<COLOR>` GM notes.
+
 #### 🟡 TOR-796 — Deck of Complications public web app
 
 > **Agent-assessment note:** Create-room API smoke-tested on the live Worker. Full play + Apply-to-roll still needs your Dashboard and Save & Play pass.

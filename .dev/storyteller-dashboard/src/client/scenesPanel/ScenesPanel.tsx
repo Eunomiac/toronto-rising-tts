@@ -36,6 +36,9 @@ import { useMemoriamCatalog } from "../memoriamCatalog";
 import { useNpcOverrides } from "../npcOverrides";
 import { useNpcStats, saveNpcStats } from "../npcStats";
 import { NpcTrackerPopup } from "./npcTrackers";
+import { PlayAsNpcModal } from "./playAsNpcModal";
+import { playAsNpcCommand, type PlayAsNpcAsk } from "./playAsNpc";
+import { statBlockFor } from "../../shared/npcStats";
 import { getDndSession } from "./dnd/session";
 import { activeCanvas } from "./sketch";
 import { DndChrome } from "./dnd/DndChrome";
@@ -370,6 +373,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const [dndNotice, setDndNotice] = useState<string | null>(null);
   const [dndEdit, setDndEdit] = useState<NpcConfigTarget | null>(null);
   const [dndTracker, setDndTracker] = useState<{ key: string; name: string; x: number; y: number } | null>(null);
+  const [playAsAsk, setPlayAsAsk] = useState<PlayAsNpcAsk | null>(null);
   const [relocateAsk, setRelocateAsk] = useState<SeatingAsk | null>(null);
   const { catalogs } = useSceneCatalogs();
   const { data: chronicleLocations } = useChronicleLocations();
@@ -604,6 +608,32 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       }).catch((reason: unknown) => setDndNotice(reason instanceof Error ? reason.message : String(reason)));
     },
     openNpcTracker: (key) => { if (seats) setDndTracker({ key, name: characterName(key), ...dropPoint() }); else setDndNotice("Connect to Tabletop Simulator to read this NPC's trackers."); },
+    openPlayAsNpc: (color, npcKey) => {
+      const pc = seats?.seats.find((row) => row.kind === "pc" && row.seat === color);
+      const generic = seats?.generics.find((row) => row.characterKey === npcKey);
+      const isGeneric = generic !== undefined || memoriamCatalog.find((npc) => npc.key === npcKey)?.isGeneric === true;
+      const statsKey = isGeneric ? genericStatsKey(npcKey) : npcKey;
+      const availableTiers = configuredTiers(npcStats?.[statsKey]);
+      const block = npcStats
+        ? statBlockFor(npcStats, {
+            characterKey: npcKey,
+            generic: isGeneric,
+            tier: generic?.tier ?? availableTiers[0],
+            keptId: generic?.keptId,
+          })
+        : undefined;
+      setPlayAsAsk({
+        color,
+        pcName: characterName(pc?.charKey ?? color),
+        npcKey,
+        npcLabel: characterName(npcKey),
+        isGeneric,
+        availableTiers,
+        seedRoleplayNotes: block?.roleplayNotes ?? "",
+        seedDisplayName: generic?.name ?? characterName(npcKey),
+        seedTier: generic?.tier,
+      });
+    },
     removeFromDeck: liveScenes.remove,
     editPreviewScene: library.openPreview,
     archiveScene: (key) => library.setStatus(key, "ended"),
@@ -625,7 +655,27 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <RosterDragGhost />
           <DndChrome scenes={send} rolls={rollCommands.send} ui={dndUi} />
           {dndEdit && <NpcConfigModal target={dndEdit} onClose={() => setDndEdit(null)} />}
-          {dndTracker && <Overlay onClose={() => setDndTracker(null)}><NpcTrackerPopup characterKey={dndTracker.key} name={dndTracker.name} at={{ x: dndTracker.x, y: dndTracker.y, up: dndTracker.y > 520 }} send={send} /></Overlay>}
+          {dndTracker && (
+            <Overlay onClose={() => setDndTracker(null)}>
+              <NpcTrackerPopup
+                characterKey={dndTracker.key}
+                name={dndTracker.name}
+                at={{ x: dndTracker.x, y: dndTracker.y, up: dndTracker.y > 520 }}
+                send={send}
+                playingColor={seats?.seats.find((row) => row.kind === "pc" && row.playingNpcKey === dndTracker.key)?.seat}
+              />
+            </Overlay>
+          )}
+          {playAsAsk && (
+            <PlayAsNpcModal
+              ask={playAsAsk}
+              onClose={() => setPlayAsAsk(null)}
+              onConfirm={(confirm) => {
+                send(playAsNpcCommand(confirm));
+                setPlayAsAsk(null);
+              }}
+            />
+          )}
           <Box x={G} y={G} w={LEFT_W} h={STRIP_H} className="lab-backdrop-box">
             {location && scene ? (
               <LocationPanel

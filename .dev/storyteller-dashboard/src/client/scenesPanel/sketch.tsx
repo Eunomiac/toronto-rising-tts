@@ -960,7 +960,13 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     </div>
     {npcPop && (
       <Overlay onClose={() => setNpcPop(null)}>
-        <NpcTrackerPopup characterKey={npcPop.characterKey} name={npcPop.name} at={npcPop.at} send={command} />
+        <NpcTrackerPopup
+          characterKey={npcPop.characterKey}
+          name={npcPop.name}
+          at={npcPop.at}
+          send={command}
+          playingColor={seatsShown.find((seat) => seat.kind === "pc" && seat.playingNpcKey === npcPop.characterKey)?.color}
+        />
       </Overlay>
     )}
     <span className="lab-board-table top">
