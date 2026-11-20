@@ -6,6 +6,7 @@
 export type ReminderId =
   | "recorder"
   | "scenesPreloaded"
+  | "sessionTitle"
   | "awakening"
   | "darkBetween"
   | "ratsInWalls"
@@ -17,13 +18,15 @@ export type StageReminderContext = {
   readonly phase?: string;
   readonly subPhase?: string;
   readonly sessionNum?: number;
+  /** Live session title from TTS; blank means the Storyteller still needs to type one. */
+  readonly sessionName?: string;
   /** Narrative clock used for dusk→dawn checks (present day / downtime now). */
   readonly now?: Date;
   readonly dusk?: Date;
   readonly dawn?: Date;
 };
 
-type IntermissionFlags = { readonly recorder: boolean; readonly scenesPreloaded: boolean };
+type IntermissionFlags = { readonly recorder: boolean; readonly scenesPreloaded: boolean; readonly sessionTitle: boolean };
 type EndFlags = { readonly darkBetween: boolean; readonly ratsInWalls: boolean; readonly blackCaesar: boolean };
 
 export type StageReminderStore = {
@@ -37,12 +40,13 @@ export type StageReminderStore = {
 const STORAGE_KEY = "tr.dashboard.stageReminders";
 const LEGACY_INTERMISSION_KEY = "tr.dashboard.intermissionRemindersDismissed";
 
-const INTERMISSION_DEFAULT: IntermissionFlags = { recorder: true, scenesPreloaded: true };
+const INTERMISSION_DEFAULT: IntermissionFlags = { recorder: true, scenesPreloaded: true, sessionTitle: true };
 const END_DEFAULT: EndFlags = { darkBetween: true, ratsInWalls: true, blackCaesar: true };
 
 export const REMINDER_TEXT: Readonly<Record<ReminderId, string>> = {
   recorder: "Ensure session recorder is connected",
   scenesPreloaded: "Ensure scenes are preloaded.",
+  sessionTitle: "Enter a title for this session before advancing to Play.",
   awakening: "Confirm players have made their rouse checks for awakening from daysleep.",
   darkBetween: "Ask Aishe for her 'Dark Between the Stars' question.",
   ratsInWalls: "Ask Fomórach for his Rats in the Walls activation roll.",
@@ -70,7 +74,8 @@ const readIntermission = (row: Record<string, unknown> | null): IntermissionFlag
   }
   return {
     recorder: row.recorder !== false,
-    scenesPreloaded: row.scenesPreloaded !== false
+    scenesPreloaded: row.scenesPreloaded !== false,
+    sessionTitle: row.sessionTitle !== false
   };
 };
 
@@ -157,7 +162,7 @@ export const dismissStageReminder = (
   id: ReminderId,
   ctx: StageReminderContext
 ): StageReminderStore => {
-  if (id === "recorder" || id === "scenesPreloaded") {
+  if (id === "recorder" || id === "scenesPreloaded" || id === "sessionTitle") {
     return {
       ...store,
       intermission: { ...store.intermission, [id]: false }
@@ -203,6 +208,10 @@ export const visibleStageReminders = (
     }
     if (store.intermission.scenesPreloaded) {
       push("scenesPreloaded");
+    }
+    const titleBlank = (ctx.sessionName ?? "").trim() === "";
+    if (titleBlank && store.intermission.sessionTitle) {
+      push("sessionTitle");
     }
     return out;
   }

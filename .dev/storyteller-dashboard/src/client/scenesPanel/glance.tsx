@@ -3260,29 +3260,45 @@ const NEXT_PHASE: Record<Phase, Phase> = { Intermission: "Play", Play: "Spotligh
 const ARM_MS = 2500;
 
 /** A button that only acts on a second click (a double-click works too); it disarms itself after a moment. */
-export const ConfirmButton = ({ label, className = "", onConfirm, style, title }: {
+export const ConfirmButton = ({ label, className = "", onConfirm, style, title, disabled = false }: {
   label: string;
   className?: string;
   onConfirm: () => void;
   style?: CSSProperties;
   /** What the button does; "click twice" is added. */
   title?: string;
+  disabled?: boolean;
 }): ReactElement => {
   const [armed, setArmed] = useState(false);
   useEffect(() => {
-    if (!armed) {
+    if (!armed || disabled) {
       return undefined;
     }
     const timer = window.setTimeout(() => setArmed(false), ARM_MS);
     return () => window.clearTimeout(timer);
-  }, [armed]);
+  }, [armed, disabled]);
+  useEffect(() => {
+    if (disabled) {
+      setArmed(false);
+    }
+  }, [disabled]);
   return (
     <button
       type="button"
       className={`${className}${armed ? " armed" : ""}`}
       style={style}
-      title={title ? `${title} (click twice to confirm)` : "Click twice to confirm"}
+      disabled={disabled}
+      title={
+        disabled
+          ? (title ?? "Unavailable")
+          : title
+            ? `${title} (click twice to confirm)`
+            : "Click twice to confirm"
+      }
       onClick={() => {
+        if (disabled) {
+          return;
+        }
         if (armed) {
           setArmed(false);
           onConfirm();
@@ -3560,6 +3576,8 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   const entry = useSceneEntry();
   const phase: Phase = isPhase(live.phase) ? live.phase : "Intermission";
   const session = { number: live.sessionNum ?? 1, title: live.sessionName };
+  const sessionTitleBlank = session.title.trim() === "";
+  const playBlocked = phase === "Intermission" && sessionTitleBlank;
   const subPhase = live.subPhase ?? "Main";
   const command = useScenesCommand();
   const next = NEXT_PHASE[phase];
@@ -3648,7 +3666,14 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
               Scene ▸
             </button>
           ) : null}
-          <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => command({ op: "phaseAdvance" })} />
+          <ConfirmButton
+            key={phase}
+            label={`${next} ▸`}
+            className={`lab-btn primary${playBlocked ? " is-disabled" : ""}`}
+            disabled={playBlocked}
+            title={playBlocked ? "Enter a session title before advancing to Play" : undefined}
+            onConfirm={() => command({ op: "phaseAdvance" })}
+          />
         </span>
       </div>
       <div className="lab-phase-decks">

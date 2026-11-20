@@ -23,12 +23,14 @@ describe("IdleBoard stage reminders", () => {
 
   it("shows Intermission reminders and hides one on click", async () => {
     const user = userEvent.setup();
-    mount({ phase: "Intermission" });
+    mount({ phase: "Intermission", sessionName: "" });
     expect(screen.getByRole("button", { name: /session recorder/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /scenes are preloaded/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /title for this session/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /session recorder/i }));
     expect(screen.queryByRole("button", { name: /session recorder/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /scenes are preloaded/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /title for this session/i })).toBeInTheDocument();
   });
 
   it("shows the awakening reminder in Downtime at night and dismisses it for that night", async () => {

@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-797 — Clear session title on End→Intermission; gate Play until titled
+
+> **Agent-assessment note:** Dashboard Vitest covers the blank-title reminder. Live End→Intermission clear of `sessionName` and the greyed Play button still need Save & Play.
+
+**How to verify:** Save & Play. From End, advance into Intermission. The session number should go up and the session title field should be empty. On the empty stage you should see a reminder to enter a session title. The **Play ▸** button should stay greyed out until you type a title and commit it; after that, Play should advance normally.
+
 #### 🟡 TOR-95 — Play-as-NPC foundations (sheet inject, assign UI, seat state)
 
 > **Agent-assessment note:** Node fill/inject/registration tests pass. Dashboard Vitest covers assign commands and draft seat edits. Live confirm → TTS seat push, Unassign, and File → Load of injected `CSHEET_NPC_*` tiles still need your Save & Play / load pass. Selective hide of PC pile objects and Memoriam roster-drop assign are not finished yet.
@@ -45,9 +51,9 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 #### 🟡 TOR-795 — END / INTERMISSION stage XP award controls
 
-> **Agent-assessment note:** Typecheck passed for the IdleBoard panel. Live XP log writes and disconnected greying need Save & Play.
+> **Agent-assessment note:** Typecheck passed for the IdleBoard panel. Live XP log writes and disconnected greying need Save & Play. Feedback XP now appears on the first Downtime of a session (not Intermission).
 
-**How to verify:** Restart the Storyteller Dashboard, then Save & Play. With no scene on the table in End, the XP panel should sit in the stage centre with reminders on the left. Try Session attendance, End of Story, and a greyed-out disconnected seat on Promoted Team Play. In Intermission, award Provided Feedback to a seat (including a disconnected one).
+**How to verify:** Restart the Storyteller Dashboard, then Save & Play. With no scene on the table in End, the XP panel should sit in the stage centre with reminders on the left. Try Session attendance, End of Story, and a greyed-out disconnected seat on Promoted Team Play. Enter Play, then Downtime with no scene — award Provided Feedback to a seat (including a disconnected one). A later Downtime in the same session number should not show Feedback again.
 
 #### 🟡 TOR-794 — Scatter group title field on Dashboard and player HUD strip
 

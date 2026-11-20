@@ -805,6 +805,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 phase={phase?.phase}
                 subPhase={phase?.subPhase}
                 sessionNum={phase?.sessionNum}
+                sessionName={phase?.sessionName}
                 {...(reminderNow ? { clockNow: reminderNow } : {})}
                 {...(clock?.dusk ? { dusk: toDate(clock.dusk) } : {})}
                 {...(clock?.dawn ? { dawn: toDate(clock.dawn) } : {})}

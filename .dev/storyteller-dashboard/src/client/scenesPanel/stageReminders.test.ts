@@ -12,7 +12,7 @@ import {
 const at = (y: number, m: number, d: number, h: number, min = 0): Date => new Date(y, m - 1, d, h, min);
 
 const emptyStore = (): StageReminderStore => ({
-  intermission: { recorder: true, scenesPreloaded: true },
+  intermission: { recorder: true, scenesPreloaded: true, sessionTitle: true },
   awakeningDismissedNights: {},
   endBySession: {}
 });
@@ -37,14 +37,21 @@ describe("visibleStageReminders", () => {
   const dusk = at(2026, 11, 14, 19, 0);
   const dawn = at(2026, 11, 15, 7, 0);
 
-  it("shows Intermission recorder and preload until dismissed", () => {
+  it("shows Intermission recorder, preload, and session title until dismissed or filled", () => {
     const store = emptyStore();
-    expect(visibleStageReminders({ phase: "Intermission" }, store).map((r) => r.id)).toEqual([
+    expect(visibleStageReminders({ phase: "Intermission", sessionName: "" }, store).map((r) => r.id)).toEqual([
       "recorder",
-      "scenesPreloaded"
+      "scenesPreloaded",
+      "sessionTitle"
     ]);
     const after = dismissStageReminder(store, "recorder", { phase: "Intermission" });
-    expect(visibleStageReminders({ phase: "Intermission" }, after).map((r) => r.id)).toEqual(["scenesPreloaded"]);
+    expect(visibleStageReminders({ phase: "Intermission", sessionName: "" }, after).map((r) => r.id)).toEqual([
+      "scenesPreloaded",
+      "sessionTitle"
+    ]);
+    expect(visibleStageReminders({ phase: "Intermission", sessionName: "The Wake" }, after).map((r) => r.id)).toEqual([
+      "scenesPreloaded"
+    ]);
   });
 
   it("shows awakening on Downtime inside the night", () => {
@@ -139,6 +146,10 @@ describe("sessionStorage round-trip", () => {
 
     const next = dismissStageReminder(migrated, "scenesPreloaded", { phase: "Intermission" });
     writeStageReminderStore(next, storage);
-    expect(readStageReminderStore(storage).intermission).toEqual({ recorder: false, scenesPreloaded: false });
+    expect(readStageReminderStore(storage).intermission).toEqual({
+      recorder: false,
+      scenesPreloaded: false,
+      sessionTitle: true
+    });
   });
 });

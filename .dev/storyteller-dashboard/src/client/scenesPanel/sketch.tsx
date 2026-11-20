@@ -660,6 +660,7 @@ export const IdleBoard = ({
   phase,
   subPhase,
   sessionNum,
+  sessionName,
   clockNow: narrativeNow,
   dusk,
   dawn
@@ -671,6 +672,7 @@ export const IdleBoard = ({
   phase?: string;
   subPhase?: string;
   sessionNum?: number;
+  sessionName?: string;
   clockNow?: Date;
   dusk?: Date;
   dawn?: Date;
@@ -679,6 +681,7 @@ export const IdleBoard = ({
     ...(phase !== undefined ? { phase } : {}),
     ...(subPhase !== undefined ? { subPhase } : {}),
     ...(sessionNum !== undefined ? { sessionNum } : {}),
+    ...(sessionName !== undefined ? { sessionName } : {}),
     ...(narrativeNow ? { now: narrativeNow } : {}),
     ...(dusk ? { dusk } : {}),
     ...(dawn ? { dawn } : {})
