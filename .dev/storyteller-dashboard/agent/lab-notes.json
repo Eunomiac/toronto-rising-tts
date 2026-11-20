@@ -1,26 +1,6 @@
 {
   "notes": [
     {
-      "id": 5,
-      "sketch": "scenes",
-      "x": 1004,
-      "y": 507,
-      "text": "In the scatter mode PC controls, the group title should be moved to be displayed above the list of NPCs at that group, with a spacer added to introduce a space between the title and the NPCs in the group.  Groups without a title should be named with an empty space, to preserve vertical spacing of NPC names",
-      "status": "open",
-      "createdAt": "2026-11-20T10:17:19.731Z",
-      "updatedAt": "2026-11-20T10:18:57.732Z"
-    },
-    {
-      "id": 6,
-      "sketch": "scenes",
-      "x": 875,
-      "y": 563,
-      "text": "After entering a scene in scatter mode with group titles assigned, the group title input fields on the stage should be populated with those group titles (i.e. stage display should be aligned to in-game state)",
-      "status": "open",
-      "createdAt": "2026-11-20T10:17:49.579Z",
-      "updatedAt": "2026-11-20T10:17:49.579Z"
-    },
-    {
       "id": 7,
       "sketch": "scenes",
       "x": 1054,

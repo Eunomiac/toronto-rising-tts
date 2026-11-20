@@ -31,6 +31,18 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-801 — Scatter PC HUD: group title above NPC list with spacing
+
+> **Agent-assessment note:** Template/Lua set title above the NPC list with a blank-line spacer. Live strip layout still needs Save & Play.
+
+**How to verify:** Save & Play. In Scatter, give one group a title on the Dashboard and leave another blank. On a PC seat, open the Scatter strip — the title should sit above that group's NPC names, and blank groups should still leave a gap so the names line up across columns.
+
+#### 🟡 TOR-802 — Scatter stage title inputs drop library summaries on live seats push
+
+> **Agent-assessment note:** Vitest covers summary preservation on seats push. Live stage fields after entering a titled Scatter scene still need a Dashboard check (Save & Play not required for this slice).
+
+**How to verify:** Restart the Storyteller Dashboard. Enter a Scatter scene that already has group titles saved. The stage Group title fields should show those titles right away.
+
 #### 🟡 TOR-798 — NPC sheets visible under table despite HiddenObject park
 
 > **Agent-assessment note:** Inject now writes InvisibleTo; startup re-runs hide on tagged NPC sheets. Live under-table invisibility still needs Save & Play.

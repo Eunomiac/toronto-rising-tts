@@ -105,9 +105,9 @@
       color = "#C9C2B0"
       fontStyle = "Bold"
       fontSize = "16"
-      alignment = "LowerCenter"
+      alignment = "UpperCenter"
       raycastTarget = "false"
-      active = "false"
+      active = "true"
      />
 
   </Defaults>
@@ -215,8 +215,8 @@
           <Image id="scatterModeControlGroup1_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup1_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup1_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup1_summary_@@color@@" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
     <VerticalLayout id="scatterModeControlGroup2_container_@@color@@" class="scatterModeControl_group_container">
@@ -225,8 +225,8 @@
           <Image id="scatterModeControlGroup2_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup2_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup2_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup2_summary_@@color@@" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -236,8 +236,8 @@
           <Image id="scatterModeControlGroup3_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup3_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup3_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup3_summary_@@color@@" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -247,8 +247,8 @@
           <Image id="scatterModeControlGroup4_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup4_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup4_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup4_summary_@@color@@" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -258,8 +258,8 @@
           <Image id="scatterModeControlGroup5_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup5_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup5_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup5_summary_@@color@@" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
 
@@ -269,8 +269,8 @@
           <Image id="scatterModeControlGroup6_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_hover" active="false" />
         </Panel>
       </HorizontalLayout>
+      <Text id="scatterModeControlGroup6_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
       <Text id="scatterModeControlGroup6_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
-      <Text id="scatterModeControlGroup6_summary_@@color@@" class="scatterModeControl_summary" text="" active="false" />
     </VerticalLayout>
 
   </HorizontalLayout>

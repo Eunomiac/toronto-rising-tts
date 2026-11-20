@@ -595,9 +595,10 @@ local function applyControlHudVisible()
             if U.Type(area) == "table" and type(area.summary) == "string" then
                 summary = area.summary
             end
+            -- Always active: blank titles use a space so NPC name rows keep vertical spacing.
             U.setAttributes("scatterModeControlGroup" .. tostring(i) .. "_summary_" .. color, {
-                text = summary,
-                active = summary ~= "" and "true" or "false",
+                text = summary ~= "" and summary or " ",
+                active = "true",
             })
         end
     end
