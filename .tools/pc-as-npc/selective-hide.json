@@ -1,0 +1,44 @@
+{
+  "keepRolePrefixes": [
+    "SIGNAL_FIRE",
+    "SIGNAL_CANDLE",
+    "SEAT_CHAIR",
+    "DICEBAG_HUNGER",
+    "DICEBAG_NORMAL",
+    "DICEBAG_ROUSE",
+    "DICEBAG_OBLIVROUSE",
+    "CSHEET_BASE",
+    "CSHEET_BASE_BACK",
+    "CSHEET_DICE_DRAWER",
+    "CSHEET_DICE_DRAWER_ANCHOR_ON",
+    "CSHEET_DICE_DRAWER_ANCHOR_OFF",
+    "HAND",
+    "SEAT_LIGHT",
+    "FAMULUS_LIGHT",
+    "COMPULSION_LIGHT",
+    "COMPULSION_CARD_1_ANCHOR",
+    "COMPULSION_CARD_2_ANCHOR",
+    "COMPULSION_CARD_3_ANCHOR",
+    "COMPULSION_CARD_4_ANCHOR",
+    "COMPULSION_CARD_DRAWN_ANCHOR",
+    "COMPULSION_CARD_SELECTED_ANCHOR",
+    "COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR",
+    "STORAGE_TOME",
+    "PLAYER_STORAGE_CONTAINER"
+  ],
+  "hideRolePrefixes": [
+    "SEAT_FIGURE",
+    "CSHEET_PAGE",
+    "COMPULSION_DECK",
+    "HUNGER_SMOKE",
+    "PRINCE_SIGNET",
+    "PRINCE_CURTAIN",
+    "FAMULUS_FIGURINE",
+    "SNOW_EFFECT",
+    "TAROT"
+  ],
+  "showWhileAssigned": [
+    "CSHEET_NPC"
+  ],
+  "notes": "Hand zone stays; cards still stash with HeldCard. Keep list wins over hide when both could match."
+}

@@ -52,8 +52,8 @@ The machine-readable contract contains every exact header and snapshot range. Th
 
 | Named package | Rows verified | Fields | Authoring source |
 | --- | ---: | ---: | --- |
-| EXPORT_CHARACTERS_NAMED | 195 | 52 | CHARACTERS with variant values resolved in the sheet |
-| EXPORT_CHARACTERS_GENERIC | 2,070 | 32 | GENERICS joined to STAT PROFILES in the sheet |
+| EXPORT_CHARACTERS_NAMED | 195 | 53 | CHARACTERS with variant values resolved in the sheet (includes Roleplay Notes for Play-as-NPC) |
+| EXPORT_CHARACTERS_GENERIC | 2,070 | 33 | GENERICS joined to STAT PROFILES in the sheet (includes Roleplay Notes) |
 | EXPORT_LOCATIONS_DISTRICTS | 36 | 21 | Districts & Sites → DISTRICTS projection |
 | EXPORT_LOCATIONS_SITES | 186 | 27 | Districts & Sites → SITES and its authored audio/ducking lookups |
 | EXPORT_MEMORIAM | 50 | 26 | Approved MEMORIAMS records and the existing runtime key transformations |

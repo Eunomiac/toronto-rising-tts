@@ -30,6 +30,8 @@ const OBJECTS_REL_PATH = [".tts", "objects"];
 
 /** Role key pattern: CSHEET_PAGE_<digits>_ */
 const CSHEET_PAGE_XML_RE = /^CSHEET_PAGE_(\d+)_/i;
+/** Play-as-NPC face sheet roles */
+const CSHEET_NPC_XML_RE = /^CSHEET_NPC_/i;
 
 /**
  * Object role prefixes that have a Lua stub but must not have a `.tts/objects` Custom UI stub.
@@ -56,6 +58,7 @@ const LUA_STUB_RULES = [
   { prefix: "CSHEET_PAGE_5", line: `require("ui.ui_csheet_page5")` },
   // Page 6: build-baked Include XML + setAttribute paint (no page6 XML builder bundle).
   { prefix: "CSHEET_PAGE_6", line: `require("ui.ui_csheet")` },
+  { prefix: "CSHEET_NPC", line: `require("ui.ui_csheet_npc")` },
   { prefix: "CSHEET", line: `require("ui.ui_csheet")` },
 ];
 
@@ -191,6 +194,13 @@ function collectCsheetXmlTargets(objectsDir) {
       continue;
     }
     if (roleKey === null) {
+      continue;
+    }
+    if (CSHEET_NPC_XML_RE.test(roleKey)) {
+      out.push({
+        fullPath: path.join(objectsDir, stub.fileName),
+        want: '<Include src="ui/player/csheets/npc_sheet.xml" />',
+      });
       continue;
     }
     const match = CSHEET_PAGE_XML_RE.exec(roleKey);

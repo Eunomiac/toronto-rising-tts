@@ -1,0 +1,385 @@
+/**
+ * PC-as-NPC sheet fill recipe (TOR-95).
+ * Skeleton: ui/player/csheets/npc_sheet.xml
+ * Rows: EXPORT_CHARACTERS_NAMED / EXPORT_CHARACTERS_GENERIC
+ *
+ * Engine notes (not encoded as data — implement when writing the filler):
+ * - Generics: treat Label as Name when Name is missing.
+ * - emptyVals match sheet convention: "", "~", "0".
+ * - data in {{data.X}} / tooltipLookup is the whole export row (plus any capture fields).
+ * - REPT:field:char repeats char N times where N is the numeric field value.
+ * - id "foo_{{1-N}}" expands to foo_1..foo_N; /g captures serialize across those slots.
+ * - parseAs "powersDisciplineRows" builds one row per Discipline (label + name Texts + close).
+ * - Ancilla Power(s) is not a sheet section; it overlays tooltips onto matching power names.
+ * - tooltipLookup / ancillaTooltipOverlay fill the XmlUI tooltip="" attribute.
+ * - Shape: { trackerGlyphs, elements }. Legacy bare arrays still load via load-template.js.
+ */
+{
+  "trackerGlyphs": {
+    "hungerEmpty": "○",
+    "hungerFilled": "●",
+    "boxEmpty": "□",
+    "boxSuperficial": "╱",
+    "boxAggravated": "╳"
+  },
+  "elements": [
+  {
+    "id": "npc_trackers_label",
+    "dataKeys": ["Health", "Willpower", "Kind"],
+    "textTemplate": "Trackers",
+    "ifAllEmpty": "HIDE",
+    "notes": "Also hide when Kind is non-vampire and Health/Willpower empty. Filler refreshes glyphs when live trackers change."
+  },
+  {
+    "id": "npc_hunger_label",
+    "dataKeys": ["Kind"],
+    "textTemplate": "Hunger",
+    "ifEmpty": "HIDE",
+    "showWhenKind": ["vampire"]
+  },
+  {
+    "id": "npc_hunger",
+    "dataKeys": ["Kind"],
+    "parseAs": "hungerTracker",
+    "length": 5,
+    "ifEmpty": "HIDE",
+    "showWhenKind": ["vampire"]
+  },
+  {
+    "id": "npc_health_label",
+    "dataKeys": ["Health"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Health",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_health",
+    "dataKeys": ["Health"],
+    "parseAs": "boxTracker",
+    "maxKey": "Health",
+    "emptyVals": [["", "~", "0"]],
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_willpower_label",
+    "dataKeys": ["Willpower"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Willpower",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_willpower",
+    "dataKeys": ["Willpower"],
+    "parseAs": "boxTracker",
+    "maxKey": "Willpower",
+    "emptyVals": [["", "~", "0"]],
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_name_title",
+    "dataKeys": ["Title", "Name"],
+    "emptyVals": [["", "~", "0"], ["", "~", "0"]],
+    "delimiter": " ◆ ",
+    "ifEmpty": "BLANK",
+    "ifAllEmpty": "HIDE"
+  },
+  {
+    "id": "npc_clan_sect_rank",
+    "dataKeys": ["Clan", "Sect", "Rank"],
+    "emptyVals": [["", "~", "0"], ["", "~", "0"], ["", "~", "0"]],
+    "delimiter": " ◆ ",
+    "ifEmpty": "BLANK",
+    "ifAllEmpty": "HIDE"
+  },
+  {
+    "id": "npc_kind_subkind_coterie",
+    "dataKeys": ["Kind", "Subkind", "Coterie / Pack"],
+    "emptyVals": [["", "~", "0"], ["", "~", "0"], ["", "~", "0"]],
+    "delimiter": " ◆ ",
+    "ifEmpty": "BLANK",
+    "ifAllEmpty": "HIDE"
+  },
+  {
+    "id": "npc_sect_status",
+    "dataKeys": ["Sect Status"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "{{data.Sect}} Status {{REPT:data.Sect Status:•}}",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_clan_status",
+    "dataKeys": ["Clan Status"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "{{data.Clan}} Status {{REPT:data.Clan Status:•}}",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_standardPools_label",
+    "dataKeys": ["Phy", "Soc", "Men", "Pow"],
+    "emptyVals": [["", "~", "0"], ["", "~", "0"], ["", "~", "0"], ["", "~", "0"]],
+    "textTemplate": "Standard Pools",
+    "ifAllEmpty": "HIDE"
+  },
+  {
+    "id": "npc_phy",
+    "dataKeys": ["Phy"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "PHYSICAL {{REPT:data.Phy:•}}",
+    "ifEmpty": "TEXT:PHYSICAL ~"
+  },
+  {
+    "id": "npc_soc",
+    "dataKeys": ["Soc"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "SOCIAL {{REPT:data.Soc:•}}",
+    "ifEmpty": "TEXT:SOCIAL ~"
+  },
+  {
+    "id": "npc_men",
+    "dataKeys": ["Men"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "MENTAL {{REPT:data.Men:•}}",
+    "ifEmpty": "TEXT:MENTAL ~"
+  },
+  {
+    "id": "npc_pow",
+    "dataKeys": ["Pow"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "POWER {{REPT:data.Pow:•}}",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_exceptionalPools_label",
+    "dataKeys": ["Exceptional Pools"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Exceptional Pools",
+    "ifEmpty": "HIDE"
+  },
+  {
+    // Exceptional dice = 2 × the LEFT (exceptional) side of Difficulty "E/G" — same as npc-stats import.
+    "id": "npc_exceptional_pool_{{1-9}}",
+    "dataKeys": ["Difficulty", "Exceptional Pools"],
+    "capturePatterns": [
+      "/(\\d+)\\s*\\/\\s*\\d+/",
+      "/([^|:]+)(?::[^|:]*)?/g"
+    ],
+    "textTemplate": "{{data.Exceptional Pools}} {{REPT:data.Difficulty:•}} {{REPT:data.Difficulty:•}}",
+    "ifEmpty": "HIDE"
+    /**
+    Example:
+      Difficulty: "4/2"  → capture "4"
+      Exceptional Pools: "Animal Ken:Charisma+Animal Ken|Melee:Dexterity+Melee|Performance:Charisma+Performance"
+        → ["Animal Ken", "Melee", "Performance"]
+      npc_exceptional_pool_1: "Animal Ken •••• ••••"  (8 dots)
+    */
+  },
+  {
+    "id": "npc_attacks_label",
+    "dataKeys": ["Attacks"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Attacks",
+    "ifEmpty": "HIDE"
+  },
+  {
+    // Attacks: pipe-separated Name=Pool±bonus[:Trait+Trait]
+    // Capture group 1 = name, group 2 = unsigned bonus digits, group 3 = signed pool token (Phy+0 / Melee+2).
+    // textTemplate uses name; if bonus !== "0", append " (+N)".
+    "id": "npc_attack_{{1-9}}",
+    "dataKeys": ["Attacks"],
+    "capturePatterns": [
+      "/([^|=]+)=((?:Phy|Soc|Men|Pow|[^=|:]+)([+-]\\d+))(?::[^|]*)?/gi"
+    ],
+    "captureFields": ["name", "poolSigned", "bonus"],
+    "textTemplate": "{{name}}",
+    "textTemplateWhenBonus": "{{name}} (+{{bonus}})",
+    "bonusIsZero": ["0", "+0", "-0"],
+    "ifEmpty": "HIDE"
+    /**
+    Example:
+      Attacks: "Fists=Phy+0:Strength+Brawl|Knife=Melee+2:Dexterity+Melee"
+      → npc_attack_1: "Fists"
+      → npc_attack_2: "Knife (+2)"
+      → npc_attack_3..9: HIDE
+    */
+  },
+  {
+    "id": "npc_powers_label",
+    "dataKeys": ["Powers"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Powers",
+    "ifEmpty": "HIDE"
+  },
+  {
+    /**
+    Powers → one HorizontalLayout row per Discipline.
+
+    Sheet form (pipe groups at parenthesis depth 0):
+      Discipline Rating (entry,entry,...)
+
+    Entries:
+      - catalogue: "Silence of Death"
+      - custom: "3-1:Lay Down the Chain=POW"
+        Display name = text after the first ":" and before "=" / ":" / "_"
+        (omit the level[-rouse] prefix and the =pool / :traits / _difficulty suffix)
+
+    Per group i (1..8), fill:
+      npc_power_row_i              — show row if group exists, else HIDE whole row
+      npc_power_row_i_label        — "{{discipline}} {{REPT:dots:•}} ("
+      npc_power_row_i_p1..p6       — display name; unused slots HIDE
+      npc_power_row_i_sep1..sep5   — ", " shown only when both adjacent name slots are filled
+      npc_power_row_i_close        — ")"
+
+    Tooltips on each name Text, in priority order:
+      1. ancillaTooltipOverlay — if Ancilla Power(s) has an entry whose leading name
+         exactly matches this display name, use its rules text (see below).
+      2. EXPORT_DISCIPLINES — match Discipline + Name; join Description / System / Duration.
+      3. "" (empty) for unmatched custom powers.
+
+    Ancilla Power(s) is NOT rendered as its own section. Expected form when present:
+      "Lay Down the Chain (Presence 3. <rules…>)"
+    Parse:
+      name  = text before the first "("
+      rules = text inside the outer parentheses, after stripping a leading "Discipline N. " prefix
+              (stripRulesPrefix pattern once — see ancillaTooltipOverlay)
+    Contract: when Ancilla Power(s) is non-empty it should be a single entry whose name
+    exactly matches one power display name in Powers. Warn (do not invent a section) if not.
+    */
+    "id": "npc_power_row_{{1-8}}",
+    "dataKeys": ["Powers", "Ancilla Power(s)"],
+    "parseAs": "powersDisciplineRows",
+    "rowElements": {
+      "row": "npc_power_row_{{i}}",
+      "label": "npc_power_row_{{i}}_label",
+      "names": "npc_power_row_{{i}}_p{{1-6}}",
+      "seps": "npc_power_row_{{i}}_sep{{1-5}}",
+      "close": "npc_power_row_{{i}}_close"
+    },
+    "labelTemplate": "{{discipline}} {{REPT:dots:•}} (",
+    "closeTemplate": ")",
+    "sepTemplate": ", ",
+    "nameTemplate": "{{name}}",
+    "tooltipLookup": {
+      "catalog": "EXPORT_DISCIPLINES",
+      "match": {
+        "Discipline": "{{discipline}}",
+        "Name": "{{name}}"
+      },
+      "fields": ["Description", "System", "Duration"],
+      "join": "\n\n",
+      "ifMissing": ""
+    },
+    "ancillaTooltipOverlay": {
+      "dataKey": "Ancilla Power(s)",
+      "namePattern": "/^([^(]+?)\\s*(?:\\(|$)/",
+      "rulesPattern": "/\\(([\\s\\S]*)\\)\\s*$/",
+      "stripRulesPrefix": "/^\\s*[^.]+\\.\\s*/",
+      "matchField": "name",
+      "priority": "aboveCatalog"
+    },
+    "ifEmpty": "HIDE"
+    /**
+    Example (ren):
+
+      Powers:
+        Obfuscate 3 (Silence of Death,Unseen Passage,Mask of Isolation)|
+        Presence 3 (Eyes of the Serpent,Predator's Lure,True Love's Face,3-1:Lay Down the Chain=POW)|
+        Protean 2 (Weight of the Feather,Serpent's Kiss)|
+        Dominate 2 (Compel,The Stolen Voice)
+
+      Ancilla Power(s):
+        Lay Down the Chain (Presence 3. After a willing target confesses…)
+
+      Row 1 label: "Obfuscate ••• ("
+        p1..p3: Silence of Death, Unseen Passage, Mask of Isolation  (+ EXPORT_DISCIPLINES tooltips)
+      Row 2 label: "Presence ••• ("
+        p1..p3: Eyes of the Serpent, Predator's Lure, True Love's Face  (+ catalogue tooltips)
+        p4: Lay Down the Chain  (+ Ancilla rules tooltip, "Presence 3. " stripped)
+      Row 3: "Protean •• (Weight of the Feather, Serpent's Kiss)"
+      Row 4: "Dominate •• (Compel, The Stolen Voice)"
+      Rows 5–8: HIDE
+    */
+  },
+  {
+    "id": "npc_elder_label",
+    "dataKeys": ["Elder Power(s)"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Elder Powers",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_elder_{{1-3}}",
+    "dataKeys": ["Elder Power(s)"],
+    "capturePatterns": [
+      "/([^|]+)/g"
+    ],
+    "textTemplate": "{{data.Elder Power(s).name}}",
+    "captureFields": {
+      "name": "/^([^(]+?)(?:\\s*\\(|$)/",
+      "full": "/^([\\s\\S]+)$/"
+    },
+    "tooltipTemplate": "{{data.Elder Power(s).full}}",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_methuselah_label",
+    "dataKeys": ["Methuselah Power(s)"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Methuselah Powers",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_methuselah_{{1-3}}",
+    "dataKeys": ["Methuselah Power(s)"],
+    "capturePatterns": [
+      "/([^|]+)/g"
+    ],
+    "textTemplate": "{{data.Methuselah Power(s).name}}",
+    "captureFields": {
+      "name": "/^([^(]+?)(?:\\s*\\(|$)/",
+      "full": "/^([\\s\\S]+)$/"
+    },
+    "tooltipTemplate": "{{data.Methuselah Power(s).full}}",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_advantages_label",
+    "dataKeys": ["Advantages"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Advantages",
+    "ifEmpty": "HIDE"
+  },
+  {
+    // Named-only column. Pipe-separated display strings keep their trailing rating digits.
+    "id": "npc_advantage_{{1-15}}",
+    "dataKeys": ["Advantages"],
+    "capturePatterns": [
+      "/([^|]+)/g"
+    ],
+    "textTemplate": "{{data.Advantages}}",
+    "ifEmpty": "HIDE"
+  },
+  {
+    "id": "npc_specialAbilities_label",
+    "dataKeys": ["Special Abilities"],
+    "emptyVals": [["", "~", "0"]],
+    "textTemplate": "Special Abilities",
+    "ifEmpty": "HIDE"
+  },
+  {
+    // Pipe-separated in the exports (same as npc-stats). Rare embedded newlines should be
+    // normalized to spaces before split. Show Name on the line; full "Name (…)" in tooltip.
+    "id": "npc_special_ability_{{1-3}}",
+    "dataKeys": ["Special Abilities"],
+    "capturePatterns": [
+      "/([^|]+)/g"
+    ],
+    "textTemplate": "{{data.Special Abilities.name}}",
+    "captureFields": {
+      "name": "/^([^(]+?)(?:\\s*\\(|$)/",
+      "full": "/^([\\s\\S]+)$/"
+    },
+    "tooltipTemplate": "{{data.Special Abilities.full}}",
+    "ifEmpty": "HIDE"
+  }
+  ]
+}

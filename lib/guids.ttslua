@@ -464,6 +464,13 @@ G.GUIDS = {
     CSHEET_BASE_PURPLE = "bbb40e",
     CSHEET_BASE_RED = "bcc1e6",
 
+    -- NPC CSheet Objects - For assignment of NPCs to players (TOR-95 Play-as-NPC)
+    CSHEET_NPC_BROWN = "eb8b3c",
+    CSHEET_NPC_ORANGE = "2cfc7c",
+    CSHEET_NPC_RED = "6c80ed",
+    CSHEET_NPC_PINK = "0fede4",
+    CSHEET_NPC_PURPLE = "470570",
+
     -- Player Storage Containers
     PLAYER_STORAGE_CONTAINER_BROWN = "41d532",
     PLAYER_STORAGE_CONTAINER_ORANGE = "d53a52",

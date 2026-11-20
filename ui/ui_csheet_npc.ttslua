@@ -1,0 +1,3 @@
+---@diagnostic disable: undefined-global, lowercase-global
+-- Thin object stub for Play-as-NPC face sheets (TOR-95).
+-- No core.* / lib.constants — XmlUI is the Include on the tile; fill comes via Global.call later.

@@ -10,7 +10,7 @@
   "exports": [
     {
       "name": "EXPORT_CHARACTERS_NAMED",
-      "rangeAtVerification": "C3:BB3001",
+      "rangeAtVerification": "C3:BC3001",
       "headers": [
         "API Key",
         "Type",
@@ -63,7 +63,8 @@
         "Personal Domain",
         "Quote",
         "Bio",
-        "Notes"
+        "Notes",
+        "Roleplay Notes"
       ],
       "source": "CHARACTERS with variant fields resolved in the sheet",
       "verifiedRows": 195,
@@ -86,7 +87,7 @@
     },
     {
       "name": "EXPORT_CHARACTERS_GENERIC",
-      "rangeAtVerification": "BD3:CI3001",
+      "rangeAtVerification": "BD3:CJ3001",
       "headers": [
         "API Key",
         "Tier",
@@ -119,6 +120,7 @@
         "Ancilla Power(s)",
         "Elder Power(s)",
         "Special Abilities",
+        "Roleplay Notes",
         "Tags"
       ],
       "source": "GENERICS × STAT PROFILES joined in the sheet",

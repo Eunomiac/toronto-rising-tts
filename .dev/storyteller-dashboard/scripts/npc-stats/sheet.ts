@@ -209,6 +209,7 @@ export const parseStatRecord = (row: SheetRecord, key: string, named: boolean, c
     { label: "Methuselah Powers", entries: splitPipe(row["Methuselah Power(s)"]) },
     { label: "Special Abilities", entries: splitPipe(row["Special Abilities"]) }
   ]);
+  const roleplayNotes = blank(row["Roleplay Notes"]) ? undefined : row["Roleplay Notes"]!.trim();
   const block: NpcStatBlock = {
     kind,
     ...optional("generation", generation), ...optional("clan", clan), ...optional("rank", rank),
@@ -218,7 +219,9 @@ export const parseStatRecord = (row: SheetRecord, key: string, named: boolean, c
     ...optional("health", readInt("Health", RANGES.tracker)), ...optional("willpower", readInt("Willpower", RANGES.tracker)),
     ...optional("physical", readInt("Phy", RANGES.dice)), ...optional("social", readInt("Soc", RANGES.dice)),
     ...optional("mental", readInt("Men", RANGES.dice)), ...optional("supernatural", readInt("Pow", RANGES.dice)),
-    exceptional, attacks, powers, advantages, ...optional("notes", notes || undefined)
+    exceptional, attacks, powers, advantages,
+    ...optional("notes", notes || undefined),
+    ...optional("roleplayNotes", roleplayNotes)
   };
   if (problems.length > 0) throw new Error(`${key}: ${problems.join("; ")}`);
   return block;

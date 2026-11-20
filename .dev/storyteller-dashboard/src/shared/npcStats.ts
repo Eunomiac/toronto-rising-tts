@@ -82,6 +82,8 @@ export type NpcStatBlock = {
   readonly powers: readonly NpcPowerCategory[];
   readonly advantages?: readonly NpcAdvantage[];
   readonly notes?: string;
+  /** Play-as-NPC confirm seed from EXPORT Roleplay Notes (not the powers Notes block). */
+  readonly roleplayNotes?: string;
 };
 
 /** Who a `kept:<id>` entry is: the name given in the scene, the figurine it uses and its generic type. */
@@ -224,6 +226,7 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
     }
   }
   const notes = normalizeNpcNotes(text(value.notes, NOTES_MAX));
+  const roleplayNotes = text(value.roleplayNotes, NOTES_MAX);
   const block: NpcStatBlock = {
     ...optional("kind", kind),
     ...optional("generation", vampire ? intIn(value.generation, RANGES.generation) : undefined),
@@ -243,7 +246,8 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
     attacks,
     powers,
     ...(Array.isArray(value.advantages) ? { advantages } : {}),
-    ...optional("notes", notes === "" ? undefined : notes)
+    ...optional("notes", notes === "" ? undefined : notes),
+    ...optional("roleplayNotes", roleplayNotes === "" ? undefined : roleplayNotes)
   };
   const empty = Object.keys(block).every((key) => ["exceptional", "attacks", "powers", "advantages"].includes(key))
     && exceptional.length === 0 && attacks.length === 0 && powers.length === 0 && advantages.length === 0;

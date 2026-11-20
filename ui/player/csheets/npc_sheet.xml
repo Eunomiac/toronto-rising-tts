@@ -1,0 +1,278 @@
+<!--
+  PC-as-NPC face sheet skeleton (TOR-95).
+  Fill rules: lib/json/pc-as-npc-template.jsonc
+  Source rows: EXPORT_CHARACTERS_NAMED / EXPORT_CHARACTERS_GENERIC
+  Power name tooltips: EXPORT_DISCIPLINES, overridden by Ancilla Power(s) when the name matches.
+  TTS XmlUI supports tooltip="" / tooltipPosition="" on UI elements.
+-->
+<Text id="npc_name_title" class="npc_name_title">Title ◆ Name</Text>
+<Text id="npc_clan_sect_rank" class="npc_clan_sect_rank">Clan ◆ Sect ◆ Rank</Text>
+<Text id="npc_kind_subkind_coterie" class="npc_kind_subkind_coterie">Kind ◆ Subkind ◆ Coterie</Text>
+<HorizontalLayout id="db_npc_statusRow" class="npc_status_row">
+  <Text id="npc_sect_status" class="npc_sect_status">Sect Status •••</Text>
+  <Text id="npc_clan_status" class="npc_clan_status">Clan Status •••••</Text>
+</HorizontalLayout>
+
+<!--
+  Trackers: glyph strings from pc-as-npc-template.jsonc trackerGlyphs.
+  Hunger hides for non-vampire / no Hunger kinds. Health/Willpower hide when max is empty.
+-->
+<Text id="npc_trackers_label" class="npc_section_label">Trackers</Text>
+<HorizontalLayout id="db_npc_trackersRow" class="npc_trackers_row">
+  <Text id="npc_hunger_label" class="npc_tracker_label">Hunger</Text>
+  <Text id="npc_hunger" class="npc_tracker_glyphs">●○○○○</Text>
+  <Text id="npc_health_label" class="npc_tracker_label">Health</Text>
+  <Text id="npc_health" class="npc_tracker_glyphs">□□□□□</Text>
+  <Text id="npc_willpower_label" class="npc_tracker_label">Willpower</Text>
+  <Text id="npc_willpower" class="npc_tracker_glyphs">□□□□</Text>
+</HorizontalLayout>
+
+<Text id="npc_standardPools_label" class="npc_section_label">Standard Pools</Text>
+<HorizontalLayout id="db_standardPoolRow" class="npc_standard_pool_row">
+  <Text id="npc_phy" class="npc_standard_pool">PHYSICAL •••</Text>
+  <Text id="npc_soc" class="npc_standard_pool">SOCIAL •••</Text>
+  <Text id="npc_men" class="npc_standard_pool">MENTAL •••</Text>
+  <Text id="npc_pow" class="npc_standard_pool">POWER •••</Text>
+</HorizontalLayout>
+
+<Text id="npc_exceptionalPools_label" class="npc_section_label">Exceptional Pools</Text>
+<HorizontalLayout id="db_exceptionalPoolColumns" class="npc_exceptional_pool_columns">
+  <VerticalLayout id="db_exceptionalPoolColumn_1" class="npc_exceptional_pool_column">
+    <Text id="npc_exceptional_pool_1" class="npc_exceptional_pool">Exceptional Pool 1 ••••• ••</Text>
+    <Text id="npc_exceptional_pool_4" class="npc_exceptional_pool">Exceptional Pool 2 ••••• ••</Text>
+    <Text id="npc_exceptional_pool_7" class="npc_exceptional_pool">Exceptional Pool 3 ••••• ••</Text>
+  </VerticalLayout>
+  <VerticalLayout id="db_exceptionalPoolColumn_2" class="npc_exceptional_pool_column">
+    <Text id="npc_exceptional_pool_2" class="npc_exceptional_pool">Exceptional Pool 1 ••••• ••</Text>
+    <Text id="npc_exceptional_pool_5" class="npc_exceptional_pool">Exceptional Pool 2 ••••• ••</Text>
+    <Text id="npc_exceptional_pool_8" class="npc_exceptional_pool">Exceptional Pool 3 ••••• ••</Text>
+  </VerticalLayout>
+  <VerticalLayout id="db_exceptionalPoolColumn_3" class="npc_exceptional_pool_column">
+    <Text id="npc_exceptional_pool_3" class="npc_exceptional_pool">Exceptional Pool 1 ••••• ••</Text>
+    <Text id="npc_exceptional_pool_6" class="npc_exceptional_pool">Exceptional Pool 2 ••••• ••</Text>
+    <Text id="npc_exceptional_pool_9" class="npc_exceptional_pool">Exceptional Pool 3 ••••• ••</Text>
+  </VerticalLayout>
+</HorizontalLayout>
+
+<Text id="npc_attacks_label" class="npc_section_label">Attacks</Text>
+<HorizontalLayout id="db_attackColumns" class="npc_attack_columns">
+  <VerticalLayout id="db_attackColumn_1" class="npc_attack_column">
+    <Text id="npc_attack_1" class="npc_attack">Attack 1</Text>
+    <Text id="npc_attack_4" class="npc_attack">Attack 4</Text>
+    <Text id="npc_attack_7" class="npc_attack">Attack 7</Text>
+  </VerticalLayout>
+  <VerticalLayout id="db_attackColumn_2" class="npc_attack_column">
+    <Text id="npc_attack_2" class="npc_attack">Attack 2</Text>
+    <Text id="npc_attack_5" class="npc_attack">Attack 5</Text>
+    <Text id="npc_attack_8" class="npc_attack">Attack 8</Text>
+  </VerticalLayout>
+  <VerticalLayout id="db_attackColumn_3" class="npc_attack_column">
+    <Text id="npc_attack_3" class="npc_attack">Attack 3</Text>
+    <Text id="npc_attack_6" class="npc_attack">Attack 6</Text>
+    <Text id="npc_attack_9" class="npc_attack">Attack 9</Text>
+  </VerticalLayout>
+</HorizontalLayout>
+
+<!--
+  Powers: one row per Discipline.
+  Label = "Name ••• (", then a HorizontalLayout of power-name Texts (tooltips), then ")".
+  Unused rows / name slots / separators: active=false.
+  Ancilla Power(s) is NOT a separate section — it only supplies tooltips for matching names.
+  Current export max: 7 disciplines, 5 powers in one group → 8×6 slots.
+-->
+<Text id="npc_powers_label" class="npc_section_label">Powers</Text>
+<VerticalLayout id="db_powersList" class="npc_powers_list">
+
+  <HorizontalLayout id="npc_power_row_1" class="npc_power_row">
+    <Text id="npc_power_row_1_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_1_names" class="npc_power_names">
+      <Text id="npc_power_row_1_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_1_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_1_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_1_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_1_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_1_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_1_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_1_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_1_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_1_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_1_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_1_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+  <HorizontalLayout id="npc_power_row_2" class="npc_power_row">
+    <Text id="npc_power_row_2_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_2_names" class="npc_power_names">
+      <Text id="npc_power_row_2_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_2_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_2_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_2_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_2_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_2_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_2_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_2_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_2_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_2_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_2_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_2_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+  <HorizontalLayout id="npc_power_row_3" class="npc_power_row">
+    <Text id="npc_power_row_3_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_3_names" class="npc_power_names">
+      <Text id="npc_power_row_3_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_3_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_3_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_3_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_3_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_3_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_3_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_3_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_3_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_3_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_3_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_3_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+  <HorizontalLayout id="npc_power_row_4" class="npc_power_row">
+    <Text id="npc_power_row_4_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_4_names" class="npc_power_names">
+      <Text id="npc_power_row_4_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_4_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_4_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_4_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_4_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_4_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_4_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_4_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_4_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_4_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_4_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_4_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+  <HorizontalLayout id="npc_power_row_5" class="npc_power_row">
+    <Text id="npc_power_row_5_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_5_names" class="npc_power_names">
+      <Text id="npc_power_row_5_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_5_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_5_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_5_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_5_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_5_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_5_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_5_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_5_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_5_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_5_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_5_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+  <HorizontalLayout id="npc_power_row_6" class="npc_power_row">
+    <Text id="npc_power_row_6_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_6_names" class="npc_power_names">
+      <Text id="npc_power_row_6_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_6_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_6_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_6_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_6_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_6_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_6_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_6_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_6_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_6_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_6_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_6_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+  <HorizontalLayout id="npc_power_row_7" class="npc_power_row">
+    <Text id="npc_power_row_7_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_7_names" class="npc_power_names">
+      <Text id="npc_power_row_7_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_7_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_7_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_7_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_7_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_7_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_7_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_7_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_7_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_7_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_7_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_7_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+  <HorizontalLayout id="npc_power_row_8" class="npc_power_row">
+    <Text id="npc_power_row_8_label" class="npc_power_category">Discipline ••• (</Text>
+    <HorizontalLayout id="npc_power_row_8_names" class="npc_power_names">
+      <Text id="npc_power_row_8_p1" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_8_sep1" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_8_p2" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_8_sep2" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_8_p3" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_8_sep3" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_8_p4" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_8_sep4" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_8_p5" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+      <Text id="npc_power_row_8_sep5" class="npc_power_sep">, </Text>
+      <Text id="npc_power_row_8_p6" class="npc_power_name" tooltip="" tooltipPosition="Above">Power</Text>
+    </HorizontalLayout>
+    <Text id="npc_power_row_8_close" class="npc_power_paren">)</Text>
+  </HorizontalLayout>
+
+</VerticalLayout>
+
+<!-- Elder / Methuselah stay as their own sections: they do not appear inside Powers today. -->
+<Text id="npc_elder_label" class="npc_section_label">Elder Powers</Text>
+<VerticalLayout id="db_elderList" class="npc_note_list">
+  <Text id="npc_elder_1" class="npc_note_power" tooltip="" tooltipPosition="Above">Elder Power 1</Text>
+  <Text id="npc_elder_2" class="npc_note_power" tooltip="" tooltipPosition="Above">Elder Power 2</Text>
+  <Text id="npc_elder_3" class="npc_note_power" tooltip="" tooltipPosition="Above">Elder Power 3</Text>
+</VerticalLayout>
+
+<Text id="npc_methuselah_label" class="npc_section_label">Methuselah Powers</Text>
+<VerticalLayout id="db_methuselahList" class="npc_note_list">
+  <Text id="npc_methuselah_1" class="npc_note_power" tooltip="" tooltipPosition="Above">Methuselah Power 1</Text>
+  <Text id="npc_methuselah_2" class="npc_note_power" tooltip="" tooltipPosition="Above">Methuselah Power 2</Text>
+  <Text id="npc_methuselah_3" class="npc_note_power" tooltip="" tooltipPosition="Above">Methuselah Power 3</Text>
+</VerticalLayout>
+
+<Text id="npc_advantages_label" class="npc_section_label">Advantages</Text>
+<HorizontalLayout id="db_advantageColumns" class="npc_advantage_columns">
+  <VerticalLayout id="db_advantageColumn_1" class="npc_advantage_column">
+    <Text id="npc_advantage_1" class="npc_advantage">Advantage 1</Text>
+    <Text id="npc_advantage_4" class="npc_advantage">Advantage 4</Text>
+    <Text id="npc_advantage_7" class="npc_advantage">Advantage 7</Text>
+    <Text id="npc_advantage_10" class="npc_advantage">Advantage 10</Text>
+    <Text id="npc_advantage_13" class="npc_advantage">Advantage 13</Text>
+  </VerticalLayout>
+  <VerticalLayout id="db_advantageColumn_2" class="npc_advantage_column">
+    <Text id="npc_advantage_2" class="npc_advantage">Advantage 2</Text>
+    <Text id="npc_advantage_5" class="npc_advantage">Advantage 5</Text>
+    <Text id="npc_advantage_8" class="npc_advantage">Advantage 8</Text>
+    <Text id="npc_advantage_11" class="npc_advantage">Advantage 11</Text>
+    <Text id="npc_advantage_14" class="npc_advantage">Advantage 14</Text>
+  </VerticalLayout>
+  <VerticalLayout id="db_advantageColumn_3" class="npc_advantage_column">
+    <Text id="npc_advantage_3" class="npc_advantage">Advantage 3</Text>
+    <Text id="npc_advantage_6" class="npc_advantage">Advantage 6</Text>
+    <Text id="npc_advantage_9" class="npc_advantage">Advantage 9</Text>
+    <Text id="npc_advantage_12" class="npc_advantage">Advantage 12</Text>
+    <Text id="npc_advantage_15" class="npc_advantage">Advantage 15</Text>
+  </VerticalLayout>
+</HorizontalLayout>
+
+<!-- Special Abilities are pipe-separated in the exports (not newlines). -->
+<Text id="npc_specialAbilities_label" class="npc_section_label">Special Abilities</Text>
+<VerticalLayout id="db_specialAbilityList" class="npc_note_list">
+  <Text id="npc_special_ability_1" class="npc_note_power" tooltip="" tooltipPosition="Above">Special Ability 1</Text>
+  <Text id="npc_special_ability_2" class="npc_note_power" tooltip="" tooltipPosition="Above">Special Ability 2</Text>
+  <Text id="npc_special_ability_3" class="npc_note_power" tooltip="" tooltipPosition="Above">Special Ability 3</Text>
+</VerticalLayout>

@@ -501,6 +501,11 @@ C.LockedObjects = {
   G.GUIDS.CSHEET_PAGE_1_RED,
   G.GUIDS.CSHEET_PAGE_1_PINK,
   G.GUIDS.CSHEET_PAGE_1_PURPLE,
+  G.GUIDS.CSHEET_NPC_BROWN,
+  G.GUIDS.CSHEET_NPC_ORANGE,
+  G.GUIDS.CSHEET_NPC_RED,
+  G.GUIDS.CSHEET_NPC_PINK,
+  G.GUIDS.CSHEET_NPC_PURPLE,
   G.GUIDS.CSHEET_PAGE_2_BROWN,
   G.GUIDS.CSHEET_PAGE_2_ORANGE,
   G.GUIDS.CSHEET_PAGE_2_RED,
@@ -622,6 +627,7 @@ for _, color in ipairs(C.PlayerColors) do
   for page = 1, 8 do
     C.ClickableSeatControls[G.GUIDS["CSHEET_PAGE_" .. tostring(page) .. "_" .. upper]] = true
   end
+  C.ClickableSeatControls[G.GUIDS["CSHEET_NPC_" .. upper]] = true
 end
 C.ClickableSeatControls[G.GUIDS.TAROT_BUTTON_PINK] = true
 C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = true
@@ -922,6 +928,18 @@ C.ObjectPositions = {
         .GUIDS.CSHEET_PAGE_7_PURPLE,
       G.GUIDS.CSHEET_PAGE_8_RED, G.GUIDS.CSHEET_PAGE_8_BROWN, G.GUIDS.CSHEET_PAGE_8_ORANGE, G.GUIDS.CSHEET_PAGE_8_PINK, G
         .GUIDS.CSHEET_PAGE_8_PURPLE
+    },
+    on = { position = { y = 3.20 }, duration = 0 },
+    off = { position = { y = -200 }, duration = 0, isHidden = true }
+  },
+  -- Play-as-NPC face sheets (independent of PC page toggles; parked until assigned)
+  CSHEET_NPC = {
+    target = {
+      G.GUIDS.CSHEET_NPC_RED,
+      G.GUIDS.CSHEET_NPC_BROWN,
+      G.GUIDS.CSHEET_NPC_ORANGE,
+      G.GUIDS.CSHEET_NPC_PINK,
+      G.GUIDS.CSHEET_NPC_PURPLE
     },
     on = { position = { y = 3.20 }, duration = 0 },
     off = { position = { y = -200 }, duration = 0, isHidden = true }
@@ -2358,6 +2376,7 @@ C.TableSourceObjects = {
     "CSHEET_PAGE_6",
     "CSHEET_PAGE_7",
     "CSHEET_PAGE_8",
+    "CSHEET_NPC",
     "DICEBAG_HUNGER",
     "DICEBAG_NORMAL",
     "DICEBAG_ROUSE",
