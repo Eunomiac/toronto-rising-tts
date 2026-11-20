@@ -1,3 +1,84 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 685,
+      "y": 512,
+      "text": "The \"Feedback XP\" controls should be moved from Intermission to Play/Downtime, but only be displayed the first time Play/Downtime is entered during a session.",
+      "status": "open",
+      "createdAt": "2026-11-20T10:13:24.131Z",
+      "updatedAt": "2026-11-20T10:13:24.131Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 869,
+      "y": 175,
+      "text": "When the session number is advanced at the end of the End phase, the session title should also be cleared.\n\nDuring Intermission, along with the other reminders, a reminder should be shown to enter in the session title if it is blank. The phase progression button to PLAY should be greyed out if the session title is blank.",
+      "status": "open",
+      "createdAt": "2026-11-20T10:13:43.411Z",
+      "updatedAt": "2026-11-20T10:14:20.188Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 1012,
+      "y": 595,
+      "text": "NPC Sheets are visible under the table despite being hidden; they should be hidden using the standard functions, which should make them invisible to all players.",
+      "status": "open",
+      "createdAt": "2026-11-20T10:15:56.555Z",
+      "updatedAt": "2026-11-20T10:15:56.555Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 1004,
+      "y": 507,
+      "text": "In the scatter mode PC controls, the group title should be moved to be displayed above the list of NPCs at that group, with a spacer added to introduce a space between the title and the NPCs in the group.  Groups without a title should be named with an empty space, to preserve vertical spacing of NPC names",
+      "status": "open",
+      "createdAt": "2026-11-20T10:17:19.731Z",
+      "updatedAt": "2026-11-20T10:18:57.732Z"
+    },
+    {
+      "id": 6,
+      "sketch": "scenes",
+      "x": 875,
+      "y": 563,
+      "text": "After entering a scene in scatter mode with group titles assigned, the group title input fields on the stage should be populated with those group titles (i.e. stage display should be aligned to in-game state)",
+      "status": "open",
+      "createdAt": "2026-11-20T10:17:49.579Z",
+      "updatedAt": "2026-11-20T10:17:49.579Z"
+    },
+    {
+      "id": 7,
+      "sketch": "scenes",
+      "x": 1054,
+      "y": 433,
+      "text": "The sound controls for scenes in preview mode do not reflect actual selected playlists or volumes (they show \"Main\" and a full volume control, for example, even when at locations with custom music sound tracks like Casa Loma)",
+      "status": "open",
+      "createdAt": "2026-11-20T10:19:49.027Z",
+      "updatedAt": "2026-11-20T10:19:49.027Z"
+    },
+    {
+      "id": 8,
+      "sketch": "scenes",
+      "x": 1110,
+      "y": 612,
+      "text": "When the pink player right-clicks her Tarot control to automatically draw a card, position that card one world unit above the deck and let it drop into place",
+      "status": "open",
+      "createdAt": "2026-11-20T10:20:53.531Z",
+      "updatedAt": "2026-11-20T10:20:53.531Z"
+    },
+    {
+      "id": 9,
+      "sketch": "scenes",
+      "x": 483,
+      "y": 397,
+      "text": "The NPC sheets appear to be twice as wide as they should be (i.e. twice as wide as both normal CSHEET objects put together, instead of being equal to them in size)",
+      "status": "open",
+      "createdAt": "2026-11-20T10:21:50.147Z",
+      "updatedAt": "2026-11-20T10:21:50.147Z"
+    }
+  ]
 }

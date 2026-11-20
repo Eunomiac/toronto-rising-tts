@@ -991,10 +991,11 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
 /**
  * Every NPC group as a closed stack of all its tokens, stretched to fill its row; names wrap to three lines at
  * most (the group widens instead). Click one to open it in place and pick a token. Groups start Unsorted; "+"
- * creates a coloured category, dragging a group onto a category header files it there, and each category's
- * twirl shows or hides its groups; Unsorted only shows while it has groups (or a group is being dragged). "+" on
- * a group cell edits its colour and leader. A group takes its category's colour unless given its own; its
- * tokens are ringed in that colour, and the leader comes first with a thicker, brighter ring.
+ * creates a coloured category, "New group" creates an empty Catalog group under Unsorted (also listed in each
+ * NPC's group popup), dragging a group onto a category header files it there, and each category's twirl shows
+ * or hides its groups; Unsorted only shows while it has groups (or a group is being dragged). "+" on a group
+ * cell edits its colour and leader. A group takes its category's colour unless given its own; its tokens are
+ * ringed in that colour, and the leader comes first with a thicker, brighter ring.
  *
  * Main holds the catalogued NPCs (drag a token onto the stage). Generic holds the generics already spawned into
  * the scene (dragged like anyone else), then the generic catalog grouped by name with its own categories;
@@ -1084,6 +1085,16 @@ export const MasonryRoster = (): ReactElement => {
     setRosterLayout({ ...layout, categories: [...layout.categories, category] });
     setDraft(null);
   };
+  /** Empty Catalog group under Unsorted — key stays in `groupLabels` so the popup menu and masonry both see it. */
+  const createEmptyGroup = (): void => {
+    const key = `custom-${Date.now()}`;
+    const label = "New group";
+    setRosterLayout({
+      ...layout,
+      groupLabels: { ...layout.groupLabels, [key]: label }
+    });
+    setOpen(key);
+  };
   const mainGroups = useMemo((): readonly NpcGroup[] => {
     if (!catalogs) {
       return [];
@@ -1099,8 +1110,10 @@ export const MasonryRoster = (): ReactElement => {
         byKey.set(key, [...(byKey.get(key) ?? []), { characterKey: npc.characterKey, name: npc.fullName }]);
       }
     }
-    return [...byKey].map(([key, members]) => {
-      const label = catalogs.pickerGroupLabels[key] ?? (key === "catalogUngrouped" ? "Ungrouped" : key);
+    const fromMembers = [...byKey].map(([key, members]) => {
+      const label = layout.groupLabels[key]
+        ?? catalogs.pickerGroupLabels[key]
+        ?? (key === "catalogUngrouped" ? "Ungrouped" : key);
       return {
         key,
         label,
@@ -1111,7 +1124,16 @@ export const MasonryRoster = (): ReactElement => {
         })
       };
     });
-  }, [catalogs, memberGroups]);
+    const known = new Set(fromMembers.map((group) => group.key));
+    const emptyCustom: NpcGroup[] = [];
+    for (const [key, label] of Object.entries(layout.groupLabels)) {
+      if (known.has(key) || key === "catalogUngrouped" || key.startsWith("generic:")) {
+        continue;
+      }
+      emptyCustom.push({ key, label, labelWidth: groupLabelWidth(label), members: [] });
+    }
+    return [...fromMembers, ...emptyCustom];
+  }, [catalogs, memberGroups, layout.groupLabels]);
   const spawnedKey = [...inScene.map((npc) => npc.characterKey), ...Object.keys(queuedGenerics)].join(",");
   const spawned = useMemo(() => new Set(spawnedKey.split(",")), [spawnedKey]);
   const genGroups = useMemo(
@@ -1597,6 +1619,11 @@ export const MasonryRoster = (): ReactElement => {
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => event.key === "Escape" && setQuery("")}
         />
+        {view === "main" && (
+          <button type="button" className="lab-btn" title="New empty group under Unsorted" onClick={createEmptyGroup}>
+            New group
+          </button>
+        )}
         {view !== "memoriam" && <button type="button" className="lab-btn lab-cat-add" title="New category" onClick={() => setDraft({ name: "", color: NEW_CATEGORY_COLOR })}>+</button>}
       </div>
       {draft && (
