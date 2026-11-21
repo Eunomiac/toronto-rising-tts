@@ -919,6 +919,7 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
   return (
     <div
       className={`lab-cat-head${over ? " drop" : ""}${category ? "" : " unsorted"}`}
+      data-tr-roster-category=""
       onClick={onToggle ? (event) => {
         if (!(event.target as HTMLElement).closest("button, input, select")) {
           onToggle();

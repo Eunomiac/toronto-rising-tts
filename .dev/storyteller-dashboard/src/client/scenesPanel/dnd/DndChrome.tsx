@@ -8,6 +8,7 @@ import { hitTestDrop } from "./resolve";
 import { DragHelpPanel } from "./DragHelpPanel";
 import { HoverDropBins } from "./hoverBins";
 import { acceptNativeDrag } from "./native";
+import { isRosterCategoryFilingTarget } from "./rosterCategoryDrop";
 import { matrixCell } from "./matrix";
 import { endDrag, getDndSession, moveDrag, subscribeDndSession } from "./session";
 import { SlideOutPanel } from "./slideOut";
@@ -28,6 +29,10 @@ const isPreviewPreloadDrop = (event: DragEvent): boolean => {
     && event.target instanceof Element
     && event.target.closest("[data-tr-dnd-scene-preload]") !== null;
 };
+
+/** A closed roster group dropped on a category label. The header writes the roster file; the stage matrix must not swallow it. */
+const isRosterCategoryDrop = (event: DragEvent): boolean =>
+  isRosterCategoryFilingTarget(getDndSession().payload?.dragKind, event.target);
 
 /**
  * Canvas overlay: veil + edge slide-outs + hover bins. Mount once on the Scenes canvas.
@@ -75,7 +80,7 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
         return;
       }
       const point = { x: event.clientX, y: event.clientY };
-      if (isPreviewPreloadDrop(event)) {
+      if (isPreviewPreloadDrop(event) || isRosterCategoryDrop(event)) {
         moveDrag(point, null);
         return;
       }
@@ -89,6 +94,11 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
     const onDrop = (event: DragEvent): void => {
       const payload = getDndSession().payload;
       if (!payload || isPreviewPreloadDrop(event)) {
+        return;
+      }
+      // Category filing is the header's own drop. Stopping it here is what made the label ignore the group.
+      if (isRosterCategoryDrop(event)) {
+        event.preventDefault();
         return;
       }
       event.preventDefault();

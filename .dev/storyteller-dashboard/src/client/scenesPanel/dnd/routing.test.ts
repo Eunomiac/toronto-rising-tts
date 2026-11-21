@@ -4,6 +4,7 @@ import { hitTestDrop } from "./resolve";
 import { sessionTargetsAt, tryCommitDrop } from "./commit";
 import { beginDrag, endDrag, getDndSession, moveDrag, subscribeDndPointer, subscribeDndSession } from "./session";
 import { isDropAllowed, edgesWithBins } from "./matrix";
+import { isRosterCategoryFilingTarget, ROSTER_CATEGORY_DROP_ATTR } from "./rosterCategoryDrop";
 import { DROP_KINDS } from "./types";
 
 const stackAt = (...elements: Element[]): void => {
@@ -84,6 +85,17 @@ describe("drop routing", () => {
     });
     expect(getDndSession().hoverPointer).toEqual(point);
     expect(getDndSession().highlight?.binId).toBe("diffLow");
+  });
+
+  it("files a roster group dropped on a category label and ignores other drags there", () => {
+    const header = document.createElement("div");
+    header.setAttribute(ROSTER_CATEGORY_DROP_ATTR, "");
+    const label = document.createElement("span");
+    header.append(label);
+    document.body.append(header);
+    expect(isRosterCategoryFilingTarget("npcRosterGroup", label)).toBe(true);
+    expect(isRosterCategoryFilingTarget("npcRoster", label)).toBe(false);
+    expect(isRosterCategoryFilingTarget("npcRosterGroup", document.body)).toBe(false);
   });
 
   it("allows roster groups only on stage geometry and never opens character bins", () => {

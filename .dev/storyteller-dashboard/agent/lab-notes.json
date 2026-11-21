@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 2,
-      "sketch": "scenes",
-      "x": 300,
-      "y": 725,
-      "text": "Dragging a group of NPC tokens onto a category label in the Catalog tab of the NPC Roster should permanently move that group into that category.",
-      "status": "open",
-      "createdAt": "2026-11-21T21:18:57.633Z",
-      "updatedAt": "2026-11-21T21:18:57.633Z"
-    },
-    {
       "id": 3,
       "sketch": "scenes",
       "x": 987,
@@ -109,6 +99,16 @@
       "status": "open",
       "createdAt": "2026-11-21T22:07:36.227Z",
       "updatedAt": "2026-11-21T22:07:36.227Z"
+    },
+    {
+      "id": 13,
+      "sketch": "scenes",
+      "x": 1321,
+      "y": 199,
+      "text": "Upon switching the music via the dropdown in the scene preview panel, the selected option did not change and remained showing the default scene audio",
+      "status": "open",
+      "createdAt": "2026-11-21T22:12:46.555Z",
+      "updatedAt": "2026-11-21T22:12:46.555Z"
     }
   ]
 }

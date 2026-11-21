@@ -497,10 +497,28 @@ try {
     target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
   }, ungroupedNpc.characterKey);
   await assignmentResponse;
-  assert.equal(rosterAssignment?.characterKey, ungroupedNpc.variantOfUnique ?? ungroupedNpc.characterKey, "roster assignment used the wrong NPC key");
+  const canonicalUngrouped = ungroupedNpc.variantOfUnique?.trim() || ungroupedNpc.characterKey;
+  assert.equal(rosterAssignment?.characterKey, canonicalUngrouped, "roster assignment used the wrong NPC key");
   assert.equal(typeof rosterAssignment?.groupKey, "string");
   assert.notEqual(rosterAssignment.groupKey, "catalogUngrouped");
   console.log(`PASS dropping an ungrouped NPC into ${assignmentGroupLabel} saves one exclusive roster membership`);
+
+  await page.getByTitle("New category").click();
+  await page.getByPlaceholder("Category name").fill("Pin Filing");
+  const categorySave = page.waitForRequest((request) => request.url().endsWith("/api/scene-deck") && request.method() === "PUT");
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await categorySave;
+  const categoryHead = page.locator("[data-tr-roster-category]").filter({ hasText: "Pin Filing" });
+  await categoryHead.waitFor();
+  const filingGroup = page.locator('.lab-group[draggable="true"]').first();
+  const filingLabel = (await filingGroup.locator(".lab-group-label").textContent()).trim();
+  const filingSave = page.waitForRequest((request) => request.url().endsWith("/api/scene-deck") && request.method() === "PUT");
+  await filingGroup.dragTo(categoryHead);
+  const filingBody = (await filingSave).postDataJSON();
+  const filedSection = page.locator(".lab-cat").filter({ has: page.locator(".lab-cat-name", { hasText: "Pin Filing" }) });
+  await filedSection.locator(".lab-group-label", { hasText: filingLabel }).waitFor();
+  assert(Object.values(filingBody.roster.assigned).length > 0, "filing a group did not write a category assignment");
+  console.log(`PASS dragging ${filingLabel} onto a Catalog category files that group there`);
 
   await page.getByRole("button", { name: "Generic", exact: true }).click();
   const keptToken = page.getByText("Browser Kept", { exact: true }).locator("..");

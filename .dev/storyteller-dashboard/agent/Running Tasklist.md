@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 2. Dragging a Catalog roster group onto a category label files that group there (the board drag session was swallowing the drop).
+
 - ✔️ SD-ScenesPins-1121 pin 1. PC Roll stays visible after a left-click drop; either click tosses sitting dice, then the button hides. Pending Save & Play under **TOR-792**.
 
 - ✔️ SD-ScenesPins-1116 pin 7. END/INTERMISSION IdleBoard XP awards; reminders/PersonalDue moved aside. Pending Save & Play under **TOR-795**.
