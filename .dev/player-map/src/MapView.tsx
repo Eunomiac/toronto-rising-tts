@@ -422,7 +422,13 @@ function mountDistrictHtmlMarkers(
     if (feature.properties.kind !== 'district') continue;
     const element = createDistrictLabelElement(feature.properties.name);
     element.dataset.districtKey = feature.properties.key;
-    const marker = new Marker({ element, anchor: 'center' })
+    // Same map-locked Marker options as street labels (rotation stays 0 — names stay upright).
+    const marker = new Marker({
+      element,
+      anchor: 'center',
+      pitchAlignment: 'map',
+      rotationAlignment: 'map',
+    })
       .setLngLat(feature.geometry.coordinates as [number, number])
       .addTo(map);
     markers.push(marker);
@@ -510,12 +516,15 @@ function loadOrientationStreets(
         if (!next || next.geometry.type !== 'LineString') return [];
         return [next as GeoJSON.Feature<GeoJSON.LineString>];
       });
-      const filtered: GeoJSON.FeatureCollection = {
+      const cleaned = filterOrientationStubArtifacts(resolved);
+      // Paint uses stitched corridors; labels must use pre-stitch ways so West/East
+      // entryKeys survive (stitched templates were dropping BLOOR/DUNDAS/ST. CLAIR names).
+      const painted: GeoJSON.FeatureCollection = {
         type: 'FeatureCollection',
-        features: stitchOrientationStreetFeatures(filterOrientationStubArtifacts(resolved)),
+        features: stitchOrientationStreetFeatures(cleaned),
       };
       // Full OSM geometry — lines continue under the exterior blur (pin 7).
-      map.addSource(ORIENTATION_STREET_SOURCE_ID, { type: 'geojson', data: filtered });
+      map.addSource(ORIENTATION_STREET_SOURCE_ID, { type: 'geojson', data: painted });
       addStreetLineLayers(map, 'primary', {
         casing: PRIMARY_STREET_CASING_LAYER_ID,
         line: PRIMARY_STREET_LINE_LAYER_ID,
@@ -537,7 +546,7 @@ function loadOrientationStreets(
         lineOpacity: 0.92,
       });
       // HTML labels: Voltaire (orientation) / one marker per whitelist entry; hidden below zoom 12.
-      const labelPoints = streetLabelCollection(filtered, bounds);
+      const labelPoints = streetLabelCollection({ type: 'FeatureCollection', features: cleaned }, bounds);
       onLabelsMounted(mountStreetLabelMarkers(map, labelPoints));
       restackPulseAboveStreets(map);
     })

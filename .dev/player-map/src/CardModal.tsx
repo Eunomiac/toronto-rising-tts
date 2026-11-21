@@ -11,8 +11,9 @@ interface CardModalProps {
 }
 
 /**
- * Full-screen dimmed overlay. Clicking the backdrop closes without forwarding
- * the click to the map underneath.
+ * Full-screen dimmed overlay. Clicks outside any `[data-card-surface]` close
+ * without forwarding through to the map. Card images (and flip controls) mark
+ * themselves as the only interactive surface.
  */
 export function CardModal({ open, onClose, ariaLabel, children }: CardModalProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -44,7 +45,9 @@ export function CardModal({ open, onClose, ariaLabel, children }: CardModalProps
   if (!open) return null;
 
   const onBackdrop = (event: MouseEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest('[data-card-surface]')) return;
     event.preventDefault();
     event.stopPropagation();
     onClose();
@@ -61,7 +64,7 @@ export function CardModal({ open, onClose, ariaLabel, children }: CardModalProps
       onMouseDown={onBackdrop}
       onClick={onBackdrop}
     >
-      <div className="card-modal__content" onMouseDown={(event) => event.stopPropagation()}>
+      <div className="card-modal__content">
         {children}
       </div>
     </div>

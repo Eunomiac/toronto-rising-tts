@@ -2,20 +2,29 @@
 
 export const DISTRICT_LABEL_MIN_ZOOM = 13.0001;
 
+export type DistrictLabelState = 'default' | 'hovered' | 'selected';
+
 export interface DistrictHtmlLabelProperties {
   key: string;
   name: string;
 }
 
-export function createDistrictLabelElement(name: string, state: 'default' | 'hovered' | 'selected' = 'default') {
-  const element = document.createElement('div');
-  element.className = `district-html-label district-html-label--${state}`;
-  element.textContent = name.toUpperCase();
-  element.setAttribute('aria-hidden', 'true');
-  element.dataset.districtKey = '';
-  return element;
+/**
+ * Outer node is the MapLibre Marker root (keeps `maplibregl-marker` classes).
+ * Inner node carries Impact styling so hover/select can rewrite classes safely.
+ */
+export function createDistrictLabelElement(name: string, state: DistrictLabelState = 'default') {
+  const root = document.createElement('div');
+  root.dataset.districtKey = '';
+  const label = document.createElement('div');
+  label.className = `district-html-label district-html-label--${state}`;
+  label.textContent = name.toUpperCase();
+  label.setAttribute('aria-hidden', 'true');
+  root.appendChild(label);
+  return root;
 }
 
-export function setDistrictLabelState(element: HTMLElement, state: 'default' | 'hovered' | 'selected') {
-  element.className = `district-html-label district-html-label--${state}`;
+export function setDistrictLabelState(element: HTMLElement, state: DistrictLabelState) {
+  const label = element.querySelector('.district-html-label') ?? element;
+  label.className = `district-html-label district-html-label--${state}`;
 }

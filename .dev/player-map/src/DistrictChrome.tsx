@@ -39,6 +39,7 @@ export function DistrictChrome({ districtKey, districtName }: DistrictChromeProp
         <div className="card-modal__stack card-modal__stack--district-alone">
           <img
             className="card-modal__image card-modal__image--district-alone"
+            data-card-surface
             src={districtCardUrl(districtKey)}
             alt={`${districtName} district card`}
           />
