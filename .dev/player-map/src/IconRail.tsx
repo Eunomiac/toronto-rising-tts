@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 import type { DistrictFeatureProperties, NetworkDistrictFacts, PublicSiteProperties, RegionFeatureProperties } from './types';
 
 export type IconRailMenuId = 'map-layers' | 'domains' | 'sites';
@@ -26,6 +28,94 @@ const MENUS: Array<{ id: IconRailMenuId; label: string; icon: string }> = [
   { id: 'domains', label: 'Domains', icon: '/assets/icons/left_panel/domains.svg' },
   { id: 'sites', label: 'Sites', icon: '/assets/icons/left_panel/sites_of_interest.svg' },
 ];
+
+// The diamond art is a square rotated 45° inside a 129 viewBox. Counter-rotating
+// and scaling by this ratio stands that square up at the button's full size.
+const DIAMOND_SQUARE_SCALE = 129 / 90.5097;
+
+function IconRailButton({
+  menu,
+  isOpen,
+  onToggle,
+}: {
+  menu: (typeof MENUS)[number];
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useGSAP((_context, contextSafe) => {
+    const button = buttonRef.current;
+    if (!button || !contextSafe) return;
+    const shape = button.querySelector<HTMLElement>('.icon-rail__shape');
+    const diamond = button.querySelector<HTMLElement>('.icon-rail__diamond');
+    const label = button.querySelector<HTMLElement>('.icon-rail__label');
+    if (!shape || !diamond || !label) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || import.meta.env.MODE === 'test';
+    if (reducedMotion || button.offsetWidth === 0) return;
+
+    let detach = () => {};
+    let cancelled = false;
+    const start = () => {
+      if (cancelled || button.offsetWidth === 0) return;
+      const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const extension = (0.4 * rootFont) + label.scrollWidth + (0.55 * rootFont);
+      const scaleX = (button.offsetWidth + extension) / button.offsetWidth;
+      const hover = gsap.timeline({ paused: true });
+      hover
+        .to(diamond, {
+          rotation: -45,
+          scale: DIAMOND_SQUARE_SCALE,
+          duration: 0.22,
+          ease: 'power2.inOut',
+          transformOrigin: '50% 50%',
+        })
+        .to(shape, {
+          scaleX,
+          duration: 0.28,
+          ease: 'power2.out',
+          transformOrigin: '100% 50%',
+        })
+        .to(label, { autoAlpha: 1, duration: 0.16, ease: 'power1.out' }, '<0.08');
+
+      const play = contextSafe(() => { hover.play(); });
+      const reverse = contextSafe(() => { hover.reverse(); });
+      button.addEventListener('pointerenter', play);
+      button.addEventListener('pointerleave', reverse);
+      detach = () => {
+        button.removeEventListener('pointerenter', play);
+        button.removeEventListener('pointerleave', reverse);
+      };
+    };
+
+    if (!document.fonts || document.fonts.status === 'loaded') start();
+    else void document.fonts.ready.then(start);
+    return () => {
+      cancelled = true;
+      detach();
+    };
+  }, { scope: buttonRef });
+
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      className={`icon-rail__button${isOpen ? ' is-open' : ''}`}
+      data-gsap={`rail-face-${menu.id}`}
+      aria-label={menu.label}
+      aria-expanded={isOpen}
+      aria-controls={isOpen ? `icon-rail-body-${menu.id}` : undefined}
+      onClick={onToggle}
+    >
+      <span className="icon-rail__shape">
+        <span className="icon-rail__diamond" aria-hidden="true" />
+      </span>
+      <span className="icon-rail__glyph" style={{ ['--glyph' as string]: `url(${menu.icon})` }} aria-hidden="true" />
+      <span className="icon-rail__label" aria-hidden="true">{menu.label}</span>
+    </button>
+  );
+}
 
 export function IconRail({
   regions,
@@ -83,19 +173,12 @@ export function IconRail({
         {MENUS.map((menu) => {
           const isOpen = openMenu === menu.id;
           return (
-            <button
+            <IconRailButton
               key={menu.id}
-              type="button"
-              className={`icon-rail__button${isOpen ? ' is-open' : ''}`}
-              data-gsap={`rail-face-${menu.id}`}
-              aria-label={menu.label}
-              aria-expanded={isOpen}
-              aria-controls={isOpen ? `icon-rail-body-${menu.id}` : undefined}
-              onClick={() => setOpenMenu((current) => (current === menu.id ? null : menu.id))}
-            >
-              <span className="icon-rail__diamond" aria-hidden="true" />
-              <span className="icon-rail__glyph" style={{ ['--glyph' as string]: `url(${menu.icon})` }} aria-hidden="true" />
-            </button>
+              menu={menu}
+              isOpen={isOpen}
+              onToggle={() => setOpenMenu((current) => (current === menu.id ? null : menu.id))}
+            />
           );
         })}
       </div>

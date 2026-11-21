@@ -323,12 +323,23 @@ select,
     border: 0;
     background: transparent;
     cursor: pointer;
+    overflow: visible;
 
     &.is-open .icon-rail__diamond { background: #8d1c28; }
   }
 
+  &__shape {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 3.15rem;
+    height: 3.15rem;
+    transform-origin: right center;
+  }
+
   &__diamond,
-  &__glyph {
+  &__glyph,
+  &__label {
     position: absolute;
     display: block;
     pointer-events: none;
@@ -336,9 +347,24 @@ select,
 
   &__diamond {
     inset: 0;
+    transform-origin: center;
     background: #6e1520;
     mask: url('/assets/icons/left_panel/bg_diamond.svg') center / contain no-repeat;
     -webkit-mask: url('/assets/icons/left_panel/bg_diamond.svg') center / contain no-repeat;
+  }
+
+  &__label {
+    top: 0;
+    bottom: 0;
+    right: calc(100% + 0.4rem);
+    display: flex;
+    align-items: center;
+    color: #e6c36a;
+    font: 600 0.72rem/1 'Penumbra Flare', Georgia, serif;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
   }
 
   &__glyph {
