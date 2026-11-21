@@ -51,8 +51,8 @@ build step and must not silently replace the SVG.
 
 Use the existing production ranges in the Toronto Rising workbook:
 
-- `EXPORT_LOCATIONS_DISTRICTS` — 36 records and 21 fields under the current contract
-- `EXPORT_LOCATIONS_SITES` — site content and runtime metadata under the current contract, including `Map Icon`, `X`, and `Y` for later icon placement. The map build does not read those three fields yet.
+- `EXPORT_LOCATIONS_DISTRICTS` — 36 records and 22 fields under the current contract, including `Aspect Advantage`
+- `EXPORT_LOCATIONS_SITES` — site content and runtime metadata under the current contract, including `Map Icon`, `X`, `Y`, and `Show On Map`. The public map still projects only the fields named in `data/public-data-policy.json`.
 
 The district export deliberately includes four non-geographical runtime districts in addition to the 32 mapped districts. A reviewed coverage manifest must identify those exceptions; the pipeline must not assume that every Sheet district requires a polygon or silently ignore an unmatched key.
 

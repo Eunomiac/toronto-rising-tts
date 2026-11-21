@@ -144,7 +144,7 @@
     },
     {
       "name": "EXPORT_LOCATIONS_DISTRICTS",
-      "rangeAtVerification": "DB4:DV3001",
+      "rangeAtVerification": "CQ3:DL3000",
       "headers": [
         "Key",
         "Name",
@@ -166,7 +166,8 @@
         "Aspect Content 3",
         "Conditions",
         "Soundscape",
-        "Is Outdoors"
+        "Is Outdoors",
+        "Aspect Advantage"
       ],
       "source": "Districts & Sites: DISTRICTS authored projection",
       "verifiedRows": 36,
@@ -186,7 +187,7 @@
     },
     {
       "name": "EXPORT_LOCATIONS_SITES",
-      "rangeAtVerification": "DM3:EP3000",
+      "rangeAtVerification": "DN3:ER3000",
       "headers": [
         "Key",
         "Name",
@@ -217,7 +218,8 @@
         "Is Silent?",
         "Map Icon",
         "X",
-        "Y"
+        "Y",
+        "Show On Map"
       ],
       "source": "Districts & Sites: authored SITES plus environment rules",
       "verifiedRows": 186,

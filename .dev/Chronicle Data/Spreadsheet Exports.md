@@ -54,8 +54,8 @@ The machine-readable contract contains every exact header and snapshot range. Th
 | --- | ---: | ---: | --- |
 | EXPORT_CHARACTERS_NAMED | 195 | 53 | CHARACTERS with variant values resolved in the sheet (includes Roleplay Notes for Play-as-NPC) |
 | EXPORT_CHARACTERS_GENERIC | 2,070 | 33 | GENERICS joined to STAT PROFILES in the sheet (includes Roleplay Notes) |
-| EXPORT_LOCATIONS_DISTRICTS | 36 | 21 | Districts & Sites → DISTRICTS projection |
-| EXPORT_LOCATIONS_SITES | 186 | 30 | Districts & Sites → SITES and its authored audio/ducking lookups |
+| EXPORT_LOCATIONS_DISTRICTS | 36 | 22 | Districts & Sites → DISTRICTS projection |
+| EXPORT_LOCATIONS_SITES | 186 | 31 | Districts & Sites → SITES and its authored audio/ducking lookups |
 | EXPORT_MEMORIAM | 50 | 26 | Approved MEMORIAMS records and the existing runtime key transformations |
 | EXPORT_WEATHER | 366 | 4 | WEATHER month, temperature, day, and DayCodes columns |
 | EXPORT_SKYBOXES | 95 | 4 | Authored site names/availability and the API workbook's non-site keyed definitions |
@@ -86,9 +86,9 @@ Current routes:
 - `lib/constants.ttslua` exposes C.Districts/C.Sites for scenes, soundscape, map pins and conditions.
 - The Dashboard reads aspects/resonance from `/api/chronicle-exports`; scene catalog generation also reads generated Lua.
 
-The district schema retains its key/name/conditions plus authored domain values, resonance, and three aspect pairs. The site schema is the union of existing consumer needs: full runtime Name and card Title/Subtitle, district, map offset, resonance signs, aspect text, conditions, normalized location/music keys, outdoors state, numeric weather ducking, lighting, fog, skybox association, uniqueness, Elysium, and source audio labels. Is Silent? explicitly preserves the existing module's full ambient-silence setting from the authored TOTALSILENCE selection; the old generator did not emit that field.
+The district schema retains its key/name/conditions plus authored domain values, resonance, three aspect pairs, and Aspect Advantage. Aspect Advantage is the authored hunting modifier (`+`, `−`, or blank) from the DISTRICTS column of that name. The site schema is the union of existing consumer needs: full runtime Name and card Title/Subtitle, district, map offset, resonance signs, aspect text, conditions, normalized location/music keys, outdoors state, numeric weather ducking, lighting, fog, skybox association, uniqueness, Elysium, and source audio labels. Is Silent? explicitly preserves the existing module's full ambient-silence setting from the authored TOTALSILENCE selection; the old generator did not emit that field.
 
-Map Icon, X, and Y are copied through for the player map. Map Icon comes from the Sites column of the same name. X and Y come from the Sites columns `x` and `y` (map pixel coordinates). The Storyteller Dashboard and the TTS location importer do not read these three fields.
+Map Icon, X, Y, and Show On Map are copied through for the player map. Map Icon and Show On Map come from the Sites columns of the same names. X and Y come from the Sites columns `x` and `y` (map pixel coordinates). The Storyteller Dashboard and the TTS location importer do not read these four fields. The Player Map public projection still uses the allowlist in `public-data-policy.json`, which does not yet include Show On Map or Aspect Advantage.
 
 Audio identifiers come from the authoring workbook's `(data)` Soundscape label→key table. NONE resolves to silent; TOTALSILENCE retains its full-silence flag. Consumers resolve `Sound - Location` through that map (catalog key, authoring label, or today's camelCased label from a broken Sound - Location formula) before catalog checks — see `.dev/scripts/lib/locations_soundscape_map.js`. The existing nosWarrens music gap continues to use the default mood; Source Music Key retains the authored request so this exception is visible and can be retired when the playlist exists.
 
