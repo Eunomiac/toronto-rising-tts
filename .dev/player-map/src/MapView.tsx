@@ -424,8 +424,11 @@ function mountDistrictHtmlMarkers(
   const markers: Marker[] = [];
   for (const feature of labels.features) {
     if (feature.properties.kind !== 'district') continue;
-    const element = createDistrictLabelElement(feature.properties.name);
-    element.dataset.districtKey = feature.properties.key;
+    const element = createDistrictLabelElement(
+      feature.properties.name,
+      'default',
+      feature.properties.key,
+    );
     // Same map-locked Marker options as street labels (rotation stays 0 — names stay upright).
     const marker = new Marker({
       element,
@@ -563,7 +566,8 @@ function siteIconId(icon: string) {
   return `site-icon-${icon}`;
 }
 
-const SITE_LABEL_MIN_ZOOM = 12.5;
+/** Same threshold as district HTML labels and player pins. */
+const SITE_LABEL_MIN_ZOOM = DISTRICT_LABEL_MIN_ZOOM;
 
 function siteFilter(selectedKey: string | null, toggledSiteKeys: readonly string[]): FilterSpecification {
   const toggled: FilterSpecification = toggledSiteKeys.length > 0

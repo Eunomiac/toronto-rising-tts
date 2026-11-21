@@ -4,6 +4,7 @@ import type { PublicSiteCollection } from './types';
 import {
   fetchSessionPins,
   PLAYER_PIN_ART,
+  PLAYER_PIN_MIN_ZOOM,
   sessionCodeFromUrl,
   type PublicPlayerPin,
   type PublicPlayerPinsSnapshot,
@@ -14,6 +15,7 @@ const POLL_MS = 10_000;
 interface PlayerPinsLayerProps {
   readonly map: Map | null;
   readonly sites: PublicSiteCollection;
+  readonly onSnapshot?: (snapshot: PublicPlayerPinsSnapshot | null) => void;
 }
 
 function siteCoordinates(sites: PublicSiteCollection, siteKey: string): [number, number] | null {
@@ -24,19 +26,32 @@ function siteCoordinates(sites: PublicSiteCollection, siteKey: string): [number,
   return [lng, lat];
 }
 
-export function PlayerPinsLayer({ map, sites }: PlayerPinsLayerProps) {
+function syncPinMarkerVisibility(markers: Marker[], zoom: number) {
+  const visible = zoom >= PLAYER_PIN_MIN_ZOOM;
+  for (const marker of markers) {
+    marker.getElement().style.display = visible ? '' : 'none';
+  }
+}
+
+export function PlayerPinsLayer({ map, sites, onSnapshot }: PlayerPinsLayerProps) {
   const [snapshot, setSnapshot] = useState<PublicPlayerPinsSnapshot | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const sessionCode = sessionCodeFromUrl(window.location.search);
 
   useEffect(() => {
-    if (!sessionCode) return undefined;
+    if (!sessionCode) {
+      onSnapshot?.(null);
+      return undefined;
+    }
     let cancelled = false;
     const load = () => {
       void fetchSessionPins(sessionCode)
         .then((next) => {
           // 404 / empty: keep the last good snapshot so a missing feed never blanks pins.
-          if (!cancelled && next) setSnapshot(next);
+          if (!cancelled && next) {
+            setSnapshot(next);
+            onSnapshot?.(next);
+          }
         })
         .catch((error: unknown) => {
           console.error(error instanceof Error ? error.message : 'Could not load session pins');
@@ -48,7 +63,7 @@ export function PlayerPinsLayer({ map, sites }: PlayerPinsLayerProps) {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [sessionCode]);
+  }, [sessionCode, onSnapshot]);
 
   useEffect(() => {
     for (const marker of markersRef.current) marker.remove();
@@ -67,7 +82,11 @@ export function PlayerPinsLayer({ map, sites }: PlayerPinsLayerProps) {
         .addTo(map);
       markersRef.current.push(marker);
     }
+    syncPinMarkerVisibility(markersRef.current, map.getZoom());
+    const onZoom = () => syncPinMarkerVisibility(markersRef.current, map.getZoom());
+    map.on('zoom', onZoom);
     return () => {
+      map.off('zoom', onZoom);
       for (const marker of markersRef.current) marker.remove();
       markersRef.current = [];
     };

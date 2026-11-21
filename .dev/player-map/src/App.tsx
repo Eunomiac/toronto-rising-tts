@@ -23,6 +23,12 @@ import { type MapOverlaySelection } from './mapOverlays';
 import { SiteCardModal } from './SiteCardModal';
 import { TorontoLocator } from './TorontoLocator';
 import { PlayerPinsLayer } from './PlayerPinsLayer';
+import {
+  PLAYER_MAP_HOME_ZOOM,
+  resolvePlayerPinHomeCenter,
+  TORONTO_HOME,
+  type PublicPlayerPinsSnapshot,
+} from './sessionPins';
 import type { PublicMapData, PublicSiteProperties, RegionVisibility } from './types';
 import { useDistrictLayout } from './useDistrictLayout';
 
@@ -60,12 +66,16 @@ export function App() {
   }, [map]);
   const [activeSite, setActiveSite] = useState<PublicSiteProperties | null>(null);
   const [overlay, setOverlay] = useState<MapOverlaySelection>({ kind: 'none' });
+  const [pinSnapshot, setPinSnapshot] = useState<PublicPlayerPinsSnapshot | null>(null);
   const skipNextDistrictFocusRef = useRef(false);
   /** Ignore pin-18 zoom-out clears while fitBounds/easeTo from a selection is still running. */
   const ignoreZoomClearUntilRef = useRef(0);
   const armZoomClearSuppress = () => {
     ignoreZoomClearUntilRef.current = performance.now() + 2_000;
   };
+  const onPinSnapshot = useCallback((snapshot: PublicPlayerPinsSnapshot | null) => {
+    setPinSnapshot(snapshot);
+  }, []);
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
   // Author pin UI is swapped in only via the Vite #debug-notes alias during serve.
   const { mode: layoutMode, setMode: setLayoutMode, useImageChrome } = useDistrictLayout(import.meta.env.DEV);
@@ -82,16 +92,39 @@ export function App() {
     return () => { active = false; };
   }, []);
 
+  const resolveHomeCenter = useCallback((): [number, number] => {
+    if (!data) return TORONTO_HOME;
+    return resolvePlayerPinHomeCenter(pinSnapshot, data.sites) ?? TORONTO_HOME;
+  }, [data, pinSnapshot]);
+
+  const focusHomeIfPins = useCallback(() => {
+    if (!map || !data) return;
+    const center = resolvePlayerPinHomeCenter(pinSnapshot, data.sites);
+    if (!center) return;
+    armZoomClearSuppress();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      map.jumpTo({ center, zoom: PLAYER_MAP_HOME_ZOOM });
+      return;
+    }
+    map.easeTo({
+      center,
+      zoom: PLAYER_MAP_HOME_ZOOM,
+      duration: 700,
+    });
+  }, [data, map, pinSnapshot]);
+
   useEffect(() => {
     if (!selectedKey) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       setSelectedKey(null);
       window.history.replaceState(null, '', updateDistrictInUrl(null));
+      focusHomeIfPins();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedKey]);
+  }, [focusHomeIfPins, selectedKey]);
 
   // Zooming out past city scale clears overlay + district selection (pin 18).
   // Use zoomend so mid-animation dips during fitBounds do not clear; also suppress
@@ -186,6 +219,7 @@ export function App() {
     if (nextKey) armZoomClearSuppress();
     setSelectedKey(nextKey);
     window.history.replaceState(null, '', updateDistrictInUrl(nextKey));
+    if (nextKey === null) focusHomeIfPins();
     if (nextKey === 'PATH') {
       setLayerVisibility((layers) => {
         if (layers.path) return layers;
@@ -194,11 +228,12 @@ export function App() {
         return updated;
       });
     }
-  }, [selectedKey]);
+  }, [focusHomeIfPins, selectedKey]);
   const clearDistrict = useCallback(() => {
     setSelectedKey(null);
     window.history.replaceState(null, '', updateDistrictInUrl(null));
-  }, []);
+    focusHomeIfPins();
+  }, [focusHomeIfPins]);
   const toggleSite = useCallback((key: string) => {
     setToggledSiteKeys((current) => (
       current.includes(key) ? current.filter((item) => item !== key) : [...current, key]
@@ -283,8 +318,8 @@ export function App() {
         }}
         onMapReady={setMap}
       />
-      <TorontoLocator map={map} />
-      <PlayerPinsLayer map={map} sites={data.sites} />
+      <TorontoLocator map={map} resolveHomeCenter={resolveHomeCenter} />
+      <PlayerPinsLayer map={map} sites={data.sites} onSnapshot={onPinSnapshot} />
       {!calibrationMode ? (
         <IconRail
           regions={data.regions.features.map((feature) => feature.properties)}

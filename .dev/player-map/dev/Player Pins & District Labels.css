@@ -1,0 +1,67 @@
+/** Changes to District Label Styles */
+
+.district-html-label {
+    transition: 0.25s;
+}
+
+.district-html-label.district-html-label--default {
+    color: #2c0000;
+}
+
+.district-html-label.district-html-label--hovered {
+    color: #FF0000;
+    text-shadow:
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black;
+}
+
+.district-html-label.district-html-label--selected {
+    color: #FFFFFF;
+    font-size: 2rem;
+    text-shadow:
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black,
+        0 0 2px black;
+}
+
+/** Other required changes to District Labels:
+- District labels should only be hidden at the same zoom level that site labels and icons are hidden
+- Deltas to apply to District labels:
+    - "The Waterfront" -- {x: 0, y: -100}
+    - "Lake Ontario" -- {x: +300, y: -100}
+    - "Little Portugal" -- {x: -200, y: 0}
+    - "Centre Island" -- {x: 0, y: +50}
+    - "Yonge Street" -- rotateZ(72deg)
+    - "Don River Ravine" -- {x: -25, y: 0} + rotateZ(70deg)
+
+*/
+
+/** Changes to player pin sizes */
+
+.player-session-pin {
+    height: 20rem;
+    width: 20rem;
+}
+
+/** Other required changse to player pins:
+- Player pins should appear _above_ the district labels, but BELOW the site icons and site labels
+- Player pins should disappear at the same zoom level that district labels disappear
+- Clicking the "return to toronto" indicator or deselecting a selected District should pan and zoom the camera to the position of the player map pins, if any exist on the board
+    - If multiple pins exist in multiple locations, the map should pan to the location with the most pins; in the case of a tie, choose randomly
+**/
+
+/** Changes to overlay chip on button panel */
+button.icon-rail__overlay-chip {
+    left: 2rem;
+    z-index: -1;
+    padding-left: 20px;
+}

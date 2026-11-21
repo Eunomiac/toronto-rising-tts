@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Marker, type Map } from 'maplibre-gl';
 import gsap from 'gsap';
+import { PLAYER_MAP_HOME_ZOOM, TORONTO_HOME } from './sessionPins';
 
-const TORONTO: [number, number] = [-79.3832, 43.6532];
 const SHOW_MAX_ZOOM = 9.5;
-const HOME_ZOOM = 12.5;
 /** Circle center in the 480×480 SVG (slightly above geometric center). */
 const ROTATION_ORIGIN = '50% 38.4%';
 /** Clear of icon rail (left), header, and district chrome (bottom). */
@@ -12,6 +11,8 @@ const EDGE_INSET = { top: 140, right: 72, bottom: 260, left: 160 };
 
 interface TorontoLocatorProps {
   readonly map: Map | null;
+  /** Preferred home center (e.g. densest player pins); falls back to downtown Toronto. */
+  readonly resolveHomeCenter?: () => [number, number];
 }
 
 function clampToEdge(
@@ -36,17 +37,19 @@ function clampToEdge(
   return { x: cx + dx * scale, y: cy + dy * scale, offscreen: true };
 }
 
-export function TorontoLocator({ map }: TorontoLocatorProps) {
+export function TorontoLocator({ map, resolveHomeCenter }: TorontoLocatorProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const outerRef = useRef<HTMLImageElement>(null);
   const markerRef = useRef<Marker | null>(null);
   const pulseRef = useRef<gsap.core.Tween | null>(null);
+  const resolveHomeCenterRef = useRef(resolveHomeCenter);
+  resolveHomeCenterRef.current = resolveHomeCenter;
 
   useEffect(() => {
     if (!map || !hostRef.current) return undefined;
     const host = hostRef.current;
     const marker = new Marker({ element: host, anchor: 'bottom' })
-      .setLngLat(TORONTO)
+      .setLngLat(TORONTO_HOME)
       .addTo(map);
     markerRef.current = marker;
 
@@ -58,7 +61,7 @@ export function TorontoLocator({ map }: TorontoLocatorProps) {
         pulseRef.current?.pause();
         return;
       }
-      const projected = map.project(TORONTO);
+      const projected = map.project(TORONTO_HOME);
       const width = map.getContainer().clientWidth;
       const height = map.getContainer().clientHeight;
       const edge = clampToEdge(projected, width, height);
@@ -79,7 +82,7 @@ export function TorontoLocator({ map }: TorontoLocatorProps) {
           });
         } else pulseRef.current.play();
       } else {
-        marker.setLngLat(TORONTO);
+        marker.setLngLat(TORONTO_HOME);
         if (outerRef.current) outerRef.current.style.transform = 'rotate(0deg)';
         host.classList.remove('is-offscreen');
         pulseRef.current?.pause(0);
@@ -88,23 +91,24 @@ export function TorontoLocator({ map }: TorontoLocatorProps) {
     };
 
     const onClick = () => {
+      const center = resolveHomeCenterRef.current?.() ?? TORONTO_HOME;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (reduced) {
-        map.jumpTo({ center: TORONTO, zoom: HOME_ZOOM });
+        map.jumpTo({ center, zoom: PLAYER_MAP_HOME_ZOOM });
         return;
       }
       // Pan at current zoom, then zoom in (pin 28).
       const panMs = 700;
       map.easeTo({
-        center: TORONTO,
+        center,
         zoom: map.getZoom(),
         duration: panMs,
       });
       window.setTimeout(() => {
         if (!map.getContainer().isConnected) return;
         map.easeTo({
-          center: TORONTO,
-          zoom: HOME_ZOOM,
+          center,
+          zoom: PLAYER_MAP_HOME_ZOOM,
           duration: 750,
         });
       }, panMs);

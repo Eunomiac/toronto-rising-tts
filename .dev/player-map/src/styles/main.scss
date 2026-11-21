@@ -666,20 +666,24 @@ select,
   }
 }
 
-// HTML label stack: district < street < site (canvas icons stay under all HTML).
+// HTML label stack: district < player pins < street < site (canvas icons stay under all HTML).
 // District uses an inner label node; street/site classes live on the marker root.
 .maplibregl-marker:has(.district-html-label) {
   z-index: 1;
 }
 
+.maplibregl-marker:has(.player-session-pin) {
+  z-index: 2;
+}
+
 .maplibregl-marker.street-label,
 .maplibregl-marker:has(.street-label) {
-  z-index: 2;
+  z-index: 3;
 }
 
 .maplibregl-marker.site-html-label,
 .maplibregl-marker:has(.site-html-label) {
-  z-index: 3;
+  z-index: 4;
 }
 
 .site-html-label {
@@ -712,19 +716,66 @@ select,
   white-space: nowrap;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  // Fixed rem size — never set CSS transform (MapLibre owns marker translate).
+  // Fixed rem size on the marker root — MapLibre owns marker translate.
+  // Per-district nudges use transform on this inner node only.
+  transition: color 0.25s, font-size 0.25s, text-shadow 0.25s;
   font: 400 1.05rem/1 'Impact', 'Arial Black', sans-serif;
-  color: #000000;
+  color: #2c0000;
   opacity: 1;
   text-shadow: none;
   -webkit-text-stroke: 0;
 
+  &--default {
+    color: #2c0000;
+  }
+
   &--hovered {
-    color: #ff6b6b;
+    color: #ff0000;
+    text-shadow:
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black;
   }
 
   &--selected {
-    color: #ff2424;
+    color: #ffffff;
+    font-size: 2rem;
+    text-shadow:
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black,
+      0 0 2px black;
+  }
+
+  &[data-district-key='Waterfront'] {
+    transform: translate(0, -100px);
+  }
+
+  &[data-district-key='LakeOntario'] {
+    transform: translate(300px, -100px);
+  }
+
+  &[data-district-key='LittlePortugal'] {
+    transform: translate(-200px, 0);
+  }
+
+  &[data-district-key='CentreIsland'] {
+    transform: translate(0, 50px);
+  }
+
+  &[data-district-key='YongeStreet'] {
+    transform: rotateZ(72deg);
+  }
+
+  &[data-district-key='DonRavine'] {
+    transform: translate(-25px, 0) rotateZ(70deg);
   }
 }
 
@@ -774,11 +825,11 @@ select,
 
   &__overlay-chip {
     position: absolute;
-    z-index: 5;
-    left: calc(3.15rem * 1.25 + 0.35rem);
+    z-index: -1;
+    left: 2rem;
     top: 50%;
     transform: translateY(-50%);
-    padding: 0.35rem 0.7rem;
+    padding: 0.35rem 0.7rem 0.35rem 20px;
     border: 1px solid rgba(#e0b34f, 0.55);
     border-radius: 0.15rem;
     background: rgba(#2a0a0e, 0.94);
@@ -1217,8 +1268,8 @@ select,
 
 .player-session-pin {
   display: block;
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 20rem;
+  height: 20rem;
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 0.15rem 0.35rem rgba(#030304, 0.55));
