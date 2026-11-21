@@ -51,11 +51,11 @@ Unmarked = shipped and waiting for your first pass. Full agent policy: [PENDING 
 
 **How to verify:** Restart the Storyteller Dashboard, then Save & Play. In a Scatter scene, type a short title under a group circle and press Enter (or leave the field). Open the player Scatter strip — that group's column should show the title under the NPC list. Save the scene, reload it later, and confirm the title is still there.
 
-#### 🟡 TOR-792 — Right-click Roll after left-click should auto-toss sitting dice
+#### 🟡 TOR-792 — Roll stays up after a manual drop, then either click tosses the sitting dice
 
-> **Agent-assessment note:** Host can confirm ROLLING + right-click calls randomize; live tray toss still needs Save & Play.
+> **Agent-assessment note:** Host can confirm the button stays active in ROLLING until the first toss; the live tray toss and hide still need Save & Play.
 
-**How to verify:** Save & Play. Start a PC roll, left-click Roll so the dice sit on the tray, then right-click Roll — every die should toss as if the first click had been a right-click.
+**How to verify:** Save & Play. Start a PC roll and left-click Roll. The dice should drop onto the tray and Roll should stay on the popup. Throw the dice by hand, or left-click or right-click Roll again — they should tumble, and Roll should disappear so they cannot be thrown a second time. A right-click on the first Roll (before the dice drop) should still toss them by itself and then hide the button.
 
 #### 🟡 TOR-791 — Scatter Clear Stage leaves NPC figurines in the world
 

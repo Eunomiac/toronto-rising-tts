@@ -1,14 +1,114 @@
 {
   "notes": [
     {
-      "id": 1,
+      "id": 2,
       "sketch": "scenes",
-      "x": 534,
-      "y": 393,
-      "text": "When a player left-clicks \"Roll\" to manually roll their dice, the \"Roll\" button should remain visible on their roll control popup. Additionally, if the player left- OR right-clicks the \"Roll\" button after their dice have been dropped onto the table, the dropped dice should be automatically rolled.  Once the dice have been rolled, the \"Roll\" button should be hidden so they can't reroll.",
+      "x": 300,
+      "y": 725,
+      "text": "Dragging a group of NPC tokens onto a category label in the Catalog tab of the NPC Roster should permanently move that group into that category.",
       "status": "open",
-      "createdAt": "2026-11-20T11:39:32.597Z",
-      "updatedAt": "2026-11-20T11:39:32.597Z"
+      "createdAt": "2026-11-21T21:18:57.633Z",
+      "updatedAt": "2026-11-21T21:18:57.633Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 987,
+      "y": 179,
+      "text": "The scene preview panel should allow forking the previewed scene to a new scene, which can then be edited separately from the originating scene, as a wholly new scene.",
+      "status": "open",
+      "createdAt": "2026-11-21T21:21:14.073Z",
+      "updatedAt": "2026-11-21T21:21:14.073Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 673,
+      "y": 435,
+      "text": "Assigning NPCs to players should be possible within the scene preview panel, where it should happen instantly since no work needs to be done until the scene is transitioned to.",
+      "status": "open",
+      "createdAt": "2026-11-21T21:31:06.977Z",
+      "updatedAt": "2026-11-21T21:31:06.977Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 847,
+      "y": 187,
+      "text": "SERIOUS BUG:  Scenes on deck are being scrambled:  Returning to Elysium shows \"Elysium\" selected, but loaded the Fire Sale Chantry scene I was just departing.",
+      "status": "open",
+      "createdAt": "2026-11-21T21:41:38.195Z",
+      "updatedAt": "2026-11-21T21:41:38.195Z"
+    },
+    {
+      "id": 6,
+      "sketch": "scenes",
+      "x": 677,
+      "y": 371,
+      "text": "Player assignments as NPCs should NEVER persist between scenes. If a scene is returned to and that character was playing themselves, or was playing a different NPC, the assignment they had at the scene they are returning to must be restored.",
+      "status": "open",
+      "createdAt": "2026-11-21T21:44:05.961Z",
+      "updatedAt": "2026-11-21T21:44:05.961Z"
+    },
+    {
+      "id": 7,
+      "sketch": "scenes",
+      "x": 453,
+      "y": 380,
+      "text": "Ensure that all communication between the Dashboard and posts to the player map app (as well as the Deck of Complications) do not involve unnecessary interaction with TTS, as ANY interaction between the Dashboard and TTS causes noticeable performance lag.",
+      "status": "open",
+      "createdAt": "2026-11-21T21:47:04.465Z",
+      "updatedAt": "2026-11-21T21:47:44.746Z"
+    },
+    {
+      "id": 8,
+      "sketch": "scenes",
+      "x": 987,
+      "y": 714,
+      "text": "\"Ensure scenes are preloaded\" reminder should appear during first \"PLAY\" phase at the start of a new session, NOT during Intermission.",
+      "status": "open",
+      "createdAt": "2026-11-21T21:55:34.140Z",
+      "updatedAt": "2026-11-21T21:55:34.140Z"
+    },
+    {
+      "id": 9,
+      "sketch": "scenes",
+      "x": 926,
+      "y": 394,
+      "text": "There is no feedback on the Dashboard when session feedback XP is awarded via the buttons during the play phase.  Buttons should highlight or visually indicate that they have been clicked when the corresponding XP has been awarded to that player.",
+      "status": "open",
+      "createdAt": "2026-11-21T21:56:15.523Z",
+      "updatedAt": "2026-11-21T21:56:15.523Z"
+    },
+    {
+      "id": 10,
+      "sketch": "scenes",
+      "x": 789,
+      "y": 399,
+      "text": "Error upon attempting to assign an NPC to a PC, referring to line 1811 of state.ttslua:\n\n-1 [Global] Lua Error <executeScript>: Global:(37873,4-43): invalid value (table) at index 2 in table for 'concat'\n    at concat\n    at S.setStateVal\n    at applyCommand (local)\n    at Dash.apply\n    at GlobalDashboardScenesApply\n    at",
+      "status": "open",
+      "createdAt": "2026-11-21T21:57:30.536Z",
+      "updatedAt": "2026-11-21T21:57:30.536Z"
+    },
+    {
+      "id": 11,
+      "sketch": "scenes",
+      "x": 1770,
+      "y": 187,
+      "text": "Advancement from INTERMISSION to PLAY should not be permitted before the onboarding sequence has been run (i.e. the asset bundle load, the XML refresh, and the seating triggers)",
+      "status": "open",
+      "createdAt": "2026-11-21T21:58:46.386Z",
+      "updatedAt": "2026-11-21T21:58:46.386Z"
+    },
+    {
+      "id": 12,
+      "sketch": "scenes",
+      "x": 552,
+      "y": 253,
+      "text": "After experimentally awarding feedback XP using the controls presented on the Storyteller Dashboard, a subsequent reload of the save (before the XP was awarded) provided me with no controls to award feedback XP.  The source of truth on whether XP has been awarded should be the actual XP awarded to the PCs; it should not be something tracked by the Dashboard independently of the reality in-game.",
+      "status": "open",
+      "createdAt": "2026-11-21T22:07:36.227Z",
+      "updatedAt": "2026-11-21T22:07:36.227Z"
     }
   ]
 }

@@ -1381,6 +1381,29 @@ end
 -- PUBLIC API — PLAYER ROLL PANEL
 -- ============================================================================
 
+--- True while a left-click Roll has dropped dice that nobody has tossed yet.
+-- ROLLING starts at unlock, so the Roll button must stay up until the first toss.
+-- @param active table|nil
+-- @return boolean
+local function pcRollAwaitingManualToss(active)
+    if type(active) ~= "table" or active.phase ~= C.RollPhase.ROLLING then
+        return false
+    end
+    if active.takeHalfAwaitingRouse == true then
+        return false
+    end
+    if type(active.willpower) == "table" and active.willpower.wpRerollWave == true then
+        return false
+    end
+    if PRTL.isIdleBagAutoRouse(active) then
+        return false
+    end
+    if type(active.meta) == "table" and active.meta.initialPoolTossed == true then
+        return false
+    end
+    return true
+end
+
 --- Refreshes a PC seat roll control panel (rollControl_* in ui/player/panel_roll_controls.xml).
 -- @param color string  Brown, Orange, Red, Pink, or Purple
 -- @param active table|nil
@@ -1473,8 +1496,9 @@ local function refreshPcRollControlPanel(color, active)
 
     local rollBtnId = string.format("rollControl_btnRoll_%s", color)
     local halfBtnId = string.format("rollControl_btnHalf_%s", color)
-    local rollEnabled = isPreRoll and hasPool and not blockedByLiveRoll
-    uiSetActive(rollBtnId, isPreRoll or isSetup)
+    local awaitingManualToss = pcRollAwaitingManualToss(active)
+    local rollEnabled = ((isPreRoll and hasPool) or awaitingManualToss) and not blockedByLiveRoll
+    uiSetActive(rollBtnId, isPreRoll or isSetup or awaitingManualToss)
     uiSetInteractable(rollBtnId, rollEnabled)
     uiSetButtonColor(rollBtnId, rollEnabled and ROLL_CONTROL_BTN_ROLL_COLOR_ENABLED or ROLL_CONTROL_BTN_ROLL_COLOR_DISABLED)
     uiSetActive(halfBtnId, halfEligible)

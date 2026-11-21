@@ -2369,6 +2369,23 @@ function RC.onDieSettledSignal(color, obj)
     if active.tookHalf and active.takeHalfAwaitingRouse ~= true then return end
     if active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then return end
 
+    -- First real toss of the released pool. ROLLING begins when dice are unlocked
+    -- onto the tray, before anyone throws them; this flag is what hides Roll.
+    -- Willpower waves, Take Half's leftover Rouse, and idle-bag auto-Rouse are not that window.
+    if active.phase == C.RollPhase.ROLLING
+        and active.takeHalfAwaitingRouse ~= true
+        and not (type(active.willpower) == "table" and active.willpower.wpRerollWave == true)
+        and not PRTL.isIdleBagAutoRouse(active)
+        and not (type(active.meta) == "table" and active.meta.initialPoolTossed == true)
+    then
+        if type(active.meta) ~= "table" then
+            active.meta = {}
+        end
+        active.meta.initialPoolTossed = true
+        setActive(color, active)
+        notifyStateChanged(color)
+    end
+
     -- WP reroll wave: no settle timeout — the per-die settle callback drives display + lock + cap.
     if active.willpower ~= nil and active.willpower.wpRerollWave == true then
         return

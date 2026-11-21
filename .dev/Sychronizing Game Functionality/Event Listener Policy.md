@@ -175,7 +175,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Enable (on for testing, click again for off) / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
 | `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |
-| `HUD_rollInitiate/RollButton/Confirm/Cancel/…` | B (+C via Global) | Partial | |
+| `HUD_rollInitiate/RollButton/Confirm/Cancel/…` | B (+C via Global) | Partial | PC Roll stays visible after a left-click drop until the first die toss (`initialPoolTossed`); a later left- or right-click tosses the sitting dice |
 | `HUD_rollBroadcast` | B | — | ST dashboard slot **B** → `RC.broadcastHeldResult` (manual secret-roll reveal) |
 | `HUD_rollRollButton/Confirm/TakeHalf` (Black, value `-2`) | B | — | Sets `active.meta.secretDice` / `suppressBroadcast` on ST roll panel only |
 | `HUD_rollStDieClick` | B | — | ST selective reroll toggle (`RC.toggleStSelectiveDie`) |

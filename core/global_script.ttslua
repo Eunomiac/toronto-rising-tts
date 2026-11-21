@@ -6924,10 +6924,18 @@ function HUD_rollRollButton(player, value, id)
 
     local pid = S.getPlayerID(color)
     local active = pid ~= nil and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
-    -- Left-click already released dice into ROLLING: a later right-click should toss them
-    -- the same way as an initial right-click (autoRollOnRelease), not re-enter startRolling.
-    if value == "-2" and type(active) == "table" and active.phase == C.RollPhase.ROLLING and type(active.id) == "string" then
-        randomizeAllRollDiceForColor(color, active.id)
+    -- Dice already dropped (ROLLING) but not yet tossed: either click throws them.
+    -- startRolling only accepts PRE_ROLL, so a second click must not re-enter release.
+    if type(active) == "table" and active.phase == C.RollPhase.ROLLING then
+        local wpWave = type(active.willpower) == "table" and active.willpower.wpRerollWave == true
+        local tossed = type(active.meta) == "table" and active.meta.initialPoolTossed == true
+        if not wpWave
+            and not tossed
+            and active.takeHalfAwaitingRouse ~= true
+            and type(active.id) == "string"
+        then
+            randomizeAllRollDiceForColor(color, active.id)
+        end
         return
     end
 
