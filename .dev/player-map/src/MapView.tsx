@@ -85,7 +85,8 @@ const STREET_LINE_LAYER_IDS = [
 const BASEMAP_MASK_FILL_LAYER_ID = 'basemap-mask-fills';
 const BASEMAP_MASK_LINE_LAYER_ID = 'basemap-mask-lines';
 const BASEMAP_MASK_LABEL_LAYER_ID = 'basemap-mask-labels';
-const PLAY_BOUNDS: [[number, number], [number, number]] = [[-130, 10], [70, 62]];
+/** Wide enough for Circular Quay (Sydney) and European markers; south of Australia. */
+const PLAY_BOUNDS: [[number, number], [number, number]] = [[-130, -45], [160, 62]];
 const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [-79.34, 43.70]];
 const CITY_SHADE_MIN_ZOOM = 10;
 const JOKE_HOME_COORDINATES: [number, number] = [-80.0197, 44.5101];
@@ -305,6 +306,14 @@ function hideBasemapLabels(map: Map) {
     const existing = map.getFilter(layerId);
     map.setFilter(layerId, existing ? ['all', existing, exclude] as FilterSpecification : exclude);
   }
+  // Also suppress basemap *line* drawings for whitelist streets so only our overlays show.
+  for (const layer of map.getStyle().layers ?? []) {
+    if (layer.type !== 'line') continue;
+    const id = layer.id;
+    if (!id.startsWith('highway_') || id.includes('name')) continue;
+    const existing = map.getFilter(id);
+    map.setFilter(id, existing ? ['all', existing, exclude] as FilterSpecification : exclude);
+  }
 }
 
 function addStreetLineLayers(
@@ -366,7 +375,7 @@ function syncStreetLabelVisibility(markers: Marker[], zoom: number) {
 
 function mountStreetLabelMarkers(
   map: Map,
-  labels: GeoJSON.FeatureCollection<GeoJSON.Point, { category: string; displayName: string; entryKey: string }>,
+  labels: GeoJSON.FeatureCollection<GeoJSON.Point, { category: string; displayName: string; entryKey: string; bearing: number }>,
 ): Marker[] {
   const markers: Marker[] = [];
   for (const feature of labels.features) {
@@ -378,6 +387,7 @@ function mountStreetLabelMarkers(
       rotationAlignment: 'map',
     })
       .setLngLat(feature.geometry.coordinates as [number, number])
+      .setRotation(feature.properties.bearing ?? 0)
       .addTo(map);
     markers.push(marker);
   }
@@ -393,19 +403,22 @@ function resolveOrientationStreetFeature(feature: GeoJSON.Feature): GeoJSON.Feat
     ? ORIENTATION_STREETS.find((street) => street.matchNames.includes(matchName))
     : undefined;
   const byEntry = entryKey
-    ? ORIENTATION_STREETS.find((street) => street.matchNames[0] === entryKey)
+    ? ORIENTATION_STREETS.find((street) => street.matchNames.includes(entryKey) || street.matchNames[0] === entryKey)
     : undefined;
   const byDisplay = ORIENTATION_STREET_DISPLAY_REMAP.get(displayName);
   const resolved = byMatch ?? byEntry;
   if (resolved) {
+    const preservedKey = matchName && resolved.matchNames.includes(matchName)
+      ? matchName
+      : (entryKey && resolved.matchNames.includes(entryKey) ? entryKey : resolved.matchNames[0]);
     return {
       ...feature,
       properties: {
         ...feature.properties,
         category: resolved.category,
         displayName: resolved.displayName,
-        entryKey: resolved.matchNames[0],
-        matchName: matchName || resolved.matchNames[0],
+        entryKey: preservedKey,
+        matchName: matchName || preservedKey,
       },
     };
   }
@@ -694,18 +707,21 @@ export function MapView({
         type: 'fill',
         source: SOURCE_ID,
         paint: {
-          // Hover no longer fills the district (pin 9) — only selection keeps a faint wash.
           'fill-color': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], '#c22933',
             ['>', ['coalesce', ['feature-state', 'overlayOpacity'], 0], 0],
             ['coalesce', ['feature-state', 'overlayColor'], '#c22933'],
+            ['boolean', ['feature-state', 'hovered'], false], '#c22933',
             '#2a0b10',
           ],
           'fill-opacity': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], 0.06,
+            ['>', ['coalesce', ['feature-state', 'overlayOpacity'], 0], 0],
             ['coalesce', ['feature-state', 'overlayOpacity'], 0],
+            ['boolean', ['feature-state', 'hovered'], false], 0.04,
+            0,
           ],
         },
         layout: { visibility: mapVisibility(layerVisibilityRef.current.districts) },
@@ -848,14 +864,11 @@ export function MapView({
             ['get', 'hub'], ['upcase', ['get', 'name']],
             ['get', 'name'],
           ],
-          'text-font': [
-            'case',
-            ['get', 'hub'], ['literal', ['Noto Sans Bold']],
-            ['literal', ['Noto Sans Regular']],
-          ],
+          // OpenFreeMap dark only ships Noto Sans Regular — Bold yields blank glyphs.
+          'text-font': ['Noto Sans Regular'],
           'text-size': [
             'case',
-            ['get', 'hub'], 13,
+            ['get', 'hub'], 15,
             11,
           ],
           'text-anchor': 'bottom',
@@ -937,8 +950,8 @@ export function MapView({
         layout: {
           visibility: mapVisibility(layerVisibilityRef.current.districts),
           'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Bold'],
-          // Pin 9: hover scales the name up; MapLibre feature-state drives the resting↔hover jump.
+          'text-font': ['Noto Sans Regular'],
+          // Hover scales the name up; MapLibre feature-state drives the resting↔hover jump.
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
             12, [
@@ -1059,7 +1072,8 @@ export function MapView({
           'text-size': ['interpolate', ['linear'], ['zoom'], 1, 11, 5.5, 12, 9, 16],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.16,
-          'text-offset': [0, 1.35],
+          'text-anchor': ['coalesce', ['get', 'labelAnchor'], 'bottom'],
+          'text-offset': ['get', 'labelOffset'],
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
@@ -1308,7 +1322,10 @@ export function MapView({
       map.setPaintProperty(FILL_LAYER_ID, 'fill-opacity', [
         'case',
         ['boolean', ['feature-state', 'selected'], false], paint.fillOpacity,
+        ['>', ['coalesce', ['feature-state', 'overlayOpacity'], 0], 0],
         ['coalesce', ['feature-state', 'overlayOpacity'], 0],
+        ['boolean', ['feature-state', 'hovered'], false], 0.04,
+        0,
       ]);
       map.setPaintProperty(LINE_LAYER_ID, 'line-width', paint.lineWidth);
       map.setPaintProperty(LINE_LAYER_ID, 'line-color', pulseYellow ? '#FFDD00' : paint.strokeColor);

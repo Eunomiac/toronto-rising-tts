@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bearingAtMidpoint,
+  isEastStreetEntryKey,
   midpointAlong,
   streetEntryKey,
   streetLabelCollection,
 } from './street-labels';
 
 describe('streetLabelCollection', () => {
-  it('emits one point per entryKey even when display names match', () => {
+  it('drops East duplicate labels and keeps West-only entryKeys', () => {
     const collection = streetLabelCollection({
       type: 'FeatureCollection',
       features: [
@@ -29,11 +31,9 @@ describe('streetLabelCollection', () => {
       ],
     }, [[-79.44, 43.63], [-79.34, 43.70]]);
 
-    expect(collection.features).toHaveLength(2);
-    expect(collection.features.map((feature) => feature.properties.entryKey).sort()).toEqual([
-      'St. Clair Avenue East',
-      'St. Clair Avenue West',
-    ]);
+    expect(collection.features).toHaveLength(1);
+    expect(collection.features[0]?.properties.entryKey).toBe('St. Clair Avenue West');
+    expect(collection.features[0]?.properties.bearing).toBeCloseTo(90, 0);
     expect(collection.features.every((feature) => feature.geometry.type === 'Point')).toBe(true);
   });
 
@@ -46,5 +46,11 @@ describe('streetLabelCollection', () => {
   it('prefers entryKey over displayName when deriving the group key', () => {
     expect(streetEntryKey({ entryKey: 'a', displayName: 'b' })).toBe('a');
     expect(streetEntryKey({ matchName: 'm', displayName: 'b' })).toBe('m');
+  });
+
+  it('detects East street entry keys and keeps nearly-north bearings upright', () => {
+    expect(isEastStreetEntryKey('Bloor Street East')).toBe(true);
+    expect(isEastStreetEntryKey('Bloor Street West')).toBe(false);
+    expect(bearingAtMidpoint([[-79.4, 43.65], [-79.4, 43.67]])).toBeCloseTo(0, 0);
   });
 });

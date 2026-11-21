@@ -205,9 +205,10 @@ select,
 .homestead-blurb {
   position: absolute;
   z-index: 5;
-  left: 4.4rem;
+  // Past the widest open icon-rail panel so twirl-downs stay clickable.
+  left: 34rem;
   bottom: 1.1rem;
-  width: min(22rem, calc(100vw - 5.5rem));
+  width: min(22rem, calc(100vw - 35rem));
   padding: 0.85rem 0.95rem;
   border: 1px solid rgba(#f2d4cf, 0.22);
   background: rgba(#140b0d, 0.92);
@@ -262,7 +263,8 @@ select,
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    max-width: min(42rem, 92vw);
+    width: 96vw;
+    max-width: 96vw;
 
     img {
       display: block;
@@ -289,7 +291,7 @@ select,
     left: 50%;
     top: calc(100% + 0.45rem);
     z-index: 2;
-    width: min(11rem, 36vw);
+    width: min(33rem, 50vw);
     transform: translateX(-50%);
     pointer-events: none;
     filter: drop-shadow(0 0.4rem 0.8rem rgba(#000, 0.55));
@@ -307,7 +309,8 @@ select,
   backdrop-filter: blur(2px);
 
   &__content {
-    max-width: min(52rem, 96vw);
+    width: min(70vw, 96vw);
+    max-width: 96vw;
     max-height: 94vh;
     overflow: auto;
   }
@@ -315,7 +318,7 @@ select,
   &__title {
     margin: 0 0 0.65rem;
     color: #f4ebe4;
-    font: 700 1rem/1.2 'Penumbra Flare', Georgia, serif;
+    font: 700 1.85rem/1.2 'Penumbra Flare', Georgia, serif;
     letter-spacing: 0.06em;
     text-align: center;
     text-transform: uppercase;
@@ -323,7 +326,7 @@ select,
 
   &__image {
     display: block;
-    width: min(100%, 28rem);
+    width: 100%;
     margin: 0 auto 0.75rem;
     height: auto;
   }
@@ -498,8 +501,8 @@ select,
 
   &--orientation {
     color: #ffff00;
-    font: 400 2.25rem/1 'Voltaire', 'Segoe UI', sans-serif;
-    -webkit-text-stroke-width: 3px;
+    font: 400 1.125rem/1 'Voltaire', 'Segoe UI', sans-serif;
+    -webkit-text-stroke-width: 2px;
   }
 
   &--primary {
@@ -548,6 +551,7 @@ select,
     display: flex;
     align-items: center;
     gap: 0.45rem;
+    color: #e0b34f;
   }
 
   &__option-glyph {
@@ -656,13 +660,26 @@ select,
     pointer-events: auto;
 
     &--wide { width: min(24rem, calc(100vw - 5.5rem)); }
+    &--sites { width: min(32rem, calc(100vw - 5.5rem)); }
   }
 
   &__list {
     min-height: 0;
     max-height: calc(100dvh - 12rem);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding: 0.2rem 0.55rem 0.35rem;
+
+    &--sites {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 0.55rem;
+      row-gap: 0.05rem;
+
+      .icon-rail__gap {
+        grid-column: 1 / -1;
+      }
+    }
   }
 
   &__gap { height: 0.35rem; }
@@ -670,15 +687,17 @@ select,
   &__option {
     display: block;
     width: 100%;
-    height: 1.28rem;
-    padding: 0 0.05rem;
+    min-height: 1.28rem;
+    height: auto;
+    padding: 0.1rem 0.05rem;
     border: 0;
     background: transparent;
-    font: 600 0.66rem/1.28rem 'Penumbra Flare', Georgia, serif;
+    font: 600 0.66rem/1.2 'Penumbra Flare', Georgia, serif;
     letter-spacing: 0.015em;
     text-align: left;
     text-transform: uppercase;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     cursor: pointer;
 
     &--region { color: #d5d0cb; }

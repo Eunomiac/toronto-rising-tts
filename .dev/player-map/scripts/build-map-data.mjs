@@ -73,11 +73,15 @@ const [calibration, names, districtPriority, publicDataPolicy, pathNetworkConfig
   loadSnapshot(),
 ]);
 if (provincialCities?.schemaVersion !== 1 || !Array.isArray(provincialCities.cities)
-  || provincialCities.cities.length === 0 || !provincialCities.cities.every((city) => (
-    city && Object.keys(city).sort().join(',') === 'coordinates,key,name'
-    && typeof city.key === 'string' && city.key && typeof city.name === 'string' && city.name
-    && Array.isArray(city.coordinates) && city.coordinates.length === 2 && city.coordinates.every(Number.isFinite)
-  )) || new Set(provincialCities.cities.map((city) => city.key)).size !== provincialCities.cities.length) {
+  || provincialCities.cities.length === 0 || !provincialCities.cities.every((city) => {
+    if (!city || typeof city.key !== 'string' || !city.key || typeof city.name !== 'string' || !city.name) return false;
+    if (!Array.isArray(city.coordinates) || city.coordinates.length !== 2 || !city.coordinates.every(Number.isFinite)) return false;
+    const keys = Object.keys(city).sort().join(',');
+    if (keys !== 'coordinates,key,name' && keys !== 'coordinates,key,labelAnchor,labelOffset,name') return false;
+    if (city.labelAnchor !== undefined && city.labelAnchor !== 'top' && city.labelAnchor !== 'bottom') return false;
+    if (city.labelOffset !== undefined && (!Array.isArray(city.labelOffset) || city.labelOffset.length !== 2 || !city.labelOffset.every(Number.isFinite))) return false;
+    return true;
+  }) || new Set(provincialCities.cities.map((city) => city.key)).size !== provincialCities.cities.length) {
   throw new Error('Invalid provincial city marker configuration');
 }
 const cityMarkers = {
@@ -85,7 +89,12 @@ const cityMarkers = {
   features: provincialCities.cities.map((city) => ({
     type: 'Feature',
     id: city.key,
-    properties: { key: city.key, name: city.name },
+    properties: {
+      key: city.key,
+      name: city.name,
+      labelAnchor: city.labelAnchor ?? 'bottom',
+      labelOffset: Array.isArray(city.labelOffset) ? city.labelOffset : [0, 1.35],
+    },
     geometry: { type: 'Point', coordinates: city.coordinates },
   })),
 };

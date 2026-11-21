@@ -4,7 +4,32 @@ import { describe, expect, it, vi } from 'vitest';
 import { IconRail } from './IconRail';
 
 describe('IconRail', () => {
+  it('places Sites second in the menu stack after Map Layers', () => {
+    render(
+      <IconRail
+        regions={[]}
+        districts={[]}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        overlay={{ kind: 'none' }}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+        onOverlayChange={vi.fn()}
+      />,
+    );
+    const menuButtons = screen.getAllByRole('button').filter((button) => button.className.includes('icon-rail__button'));
+    expect(menuButtons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Map Layers',
+      'Sites',
+      'Domains',
+      'Coteries',
+      'Hunting',
+      'Homestead',
+    ]);
+  });
+
   it('opens Map Layers and selects districts or toggles regions', async () => {
+    cleanup();
     const onToggleRegion = vi.fn();
     const onSelectDistrict = vi.fn();
     const user = userEvent.setup();
@@ -155,11 +180,34 @@ describe('IconRail', () => {
     await user.click(screen.getByRole('button', { name: /Sites/i }));
     const names = screen.getAllByRole('button').filter((button) => button.className.includes('icon-rail__option')).map((button) => button.textContent);
     expect(names).toEqual(['Casa Loma', 'The Annex Library', 'The Cafe']);
+    expect(document.querySelector('.icon-rail__list--sites')).not.toBeNull();
+    expect(document.querySelector('.icon-rail__panel--sites')).not.toBeNull();
     await user.click(screen.getByRole('button', { name: 'Casa Loma' }));
     expect(onFocusHub).toHaveBeenCalledWith('CasaLoma');
     expect(onToggleSite).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'The Annex Library' }));
     expect(onToggleSite).toHaveBeenCalledWith('Annex');
     expect(onFocusHub).toHaveBeenCalledWith('Annex');
+  });
+
+  it('styles hunting and homestead options with the gold district class color', async () => {
+    cleanup();
+    const user = userEvent.setup();
+    render(
+      <IconRail
+        regions={[]}
+        districts={[]}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        overlay={{ kind: 'none' }}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+        onOverlayChange={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Hunting/i }));
+    expect(screen.getByRole('button', { name: 'Choleric' }).className).toContain('icon-rail__option--district');
+    await user.click(screen.getByRole('button', { name: /Homestead/i }));
+    expect(screen.getByRole('button', { name: /Affair/i }).className).toContain('icon-rail__option--homestead');
   });
 });

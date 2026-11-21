@@ -98,6 +98,8 @@ export interface PathLabelProperties {
 export interface CityMarkerProperties {
   key: string;
   name: string;
+  labelAnchor: 'top' | 'bottom';
+  labelOffset: [number, number];
 }
 
 export interface BasemapMaskProperties {

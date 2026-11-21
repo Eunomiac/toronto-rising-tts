@@ -41,11 +41,11 @@ function districtSortName(name: string) {
 
 const MENUS: Array<{ id: IconRailMenuId; label: string; icon: string }> = [
   { id: 'map-layers', label: 'Map Layers', icon: '/assets/icons/left_panel/map_layers.svg' },
+  { id: 'sites', label: 'Sites', icon: '/assets/icons/left_panel/sites_of_interest.svg' },
   { id: 'domains', label: 'Domains', icon: '/assets/icons/left_panel/domains.svg' },
   { id: 'coteries', label: 'Coteries', icon: '/assets/icons/left_panel/coteries.svg' },
   { id: 'hunting', label: 'Hunting', icon: '/assets/icons/left_panel/hunting.svg' },
   { id: 'homestead', label: 'Homestead', icon: '/assets/icons/left_panel/homestead.svg' },
-  { id: 'sites', label: 'Sites', icon: '/assets/icons/left_panel/sites_of_interest.svg' },
 ];
 
 // The diamond art is a square rotated 45° inside a 129 viewBox. Counter-rotating
@@ -249,7 +249,7 @@ function IconRailItem({
       </button>
       <div
         id={`icon-rail-body-${menu.id}`}
-        className={`icon-rail__panel${wide ? ' icon-rail__panel--wide' : ''}`}
+        className={`icon-rail__panel${wide ? ' icon-rail__panel--wide' : ''}${menu.id === 'sites' ? ' icon-rail__panel--sites' : ''}`}
         data-gsap={`rail-body-${menu.id}`}
         hidden={!shown}
       >
@@ -403,7 +403,7 @@ export function IconRail({
               })}
             </div>
           ) : menu.id === 'sites' ? (
-            <div className="icon-rail__list">
+            <div className="icon-rail__list icon-rail__list--sites">
               {hubSites.map((site) => (
                 <button
                   key={site.key}
@@ -446,7 +446,7 @@ export function IconRail({
                     {index === 1 ? <div className="icon-rail__gap" aria-hidden="true" /> : null}
                     <button
                       type="button"
-                      className={`icon-rail__option${selected ? ' is-selected' : ''}`}
+                      className={`icon-rail__option icon-rail__option--district${selected ? ' is-selected' : ''}`}
                       aria-pressed={selected}
                       onClick={() => onOverlayChange(
                         selected ? { kind: 'none' } : { kind: 'hunting', flavor: flavor as HuntingFlavor },

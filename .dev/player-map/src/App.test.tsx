@@ -108,7 +108,7 @@ const mapData = {
     features: [{
       type: 'Feature' as const,
       geometry: { type: 'Point' as const, coordinates: [-79.3832, 43.6532] },
-      properties: { key: 'Toronto', name: 'Toronto' },
+      properties: { key: 'Toronto', name: 'Toronto', labelAnchor: 'bottom', labelOffset: [0, 1.35] },
     }],
   },
   basemapMasks: {

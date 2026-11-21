@@ -7,7 +7,8 @@ const SHOW_MAX_ZOOM = 9.5;
 const HOME_ZOOM = 12.5;
 /** Circle center in the 480×480 SVG (slightly above geometric center). */
 const ROTATION_ORIGIN = '50% 38.4%';
-const EDGE_PAD = 28;
+/** Match MapView focus padding so the pin clears the rail and district chrome. */
+const EDGE_INSET = { top: 116, right: 52, bottom: 260, left: 120 };
 
 interface TorontoLocatorProps {
   readonly map: Map | null;
@@ -18,16 +19,19 @@ function clampToEdge(
   width: number,
   height: number,
 ): { x: number; y: number; offscreen: boolean } {
-  const inset = EDGE_PAD;
-  const inside = point.x >= inset && point.x <= width - inset && point.y >= inset && point.y <= height - inset;
+  const left = EDGE_INSET.left;
+  const right = width - EDGE_INSET.right;
+  const top = EDGE_INSET.top;
+  const bottom = height - EDGE_INSET.bottom;
+  const inside = point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;
   if (inside) return { x: point.x, y: point.y, offscreen: false };
   const cx = width / 2;
   const cy = height / 2;
   const dx = point.x - cx;
   const dy = point.y - cy;
   if (dx === 0 && dy === 0) return { x: cx, y: cy, offscreen: true };
-  const scaleX = dx === 0 ? Number.POSITIVE_INFINITY : ((dx > 0 ? width - inset : inset) - cx) / dx;
-  const scaleY = dy === 0 ? Number.POSITIVE_INFINITY : ((dy > 0 ? height - inset : inset) - cy) / dy;
+  const scaleX = dx === 0 ? Number.POSITIVE_INFINITY : ((dx > 0 ? right : left) - cx) / dx;
+  const scaleY = dy === 0 ? Number.POSITIVE_INFINITY : ((dy > 0 ? bottom : top) - cy) / dy;
   const scale = Math.min(Math.abs(scaleX), Math.abs(scaleY));
   return { x: cx + dx * scale, y: cy + dy * scale, offscreen: true };
 }
@@ -61,7 +65,8 @@ export function TorontoLocator({ map }: TorontoLocatorProps) {
       if (edge.offscreen) {
         const lngLat = map.unproject([edge.x, edge.y]);
         marker.setLngLat(lngLat);
-        const angle = (Math.atan2(projected.y - edge.y, projected.x - edge.x) * 180) / Math.PI + 90;
+        // SVG default “up” points away from Toronto with +90; flip so the tip aims at the city.
+        const angle = (Math.atan2(projected.y - edge.y, projected.x - edge.x) * 180) / Math.PI - 90;
         if (outerRef.current) outerRef.current.style.transform = `rotate(${angle}deg)`;
         host.classList.add('is-offscreen');
         if (!pulseRef.current) {

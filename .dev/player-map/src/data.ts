@@ -36,7 +36,7 @@ const PATH_ROUTE_KEYS = ['covered', 'highway', 'indoor', 'key', 'level', 'name',
 const PATH_ENTRANCE_KEYS = ['key', 'kind', 'name', 'osmId'].sort();
 const PATH_INTERACTION_KEYS = ['key', 'osmId'].sort();
 const PATH_LABEL_KEYS = ['key', 'kind', 'name'].sort();
-const CITY_MARKER_KEYS = ['key', 'name'].sort();
+const CITY_MARKER_KEYS = ['key', 'labelAnchor', 'labelOffset', 'name'].sort();
 const BASEMAP_MASK_KEYS = ['key', 'name'].sort();
 const MAP_LAYER_IDS: MapLayerId[] = ['districts', 'regions', 'path', 'sites'];
 export const DEFAULT_LAYER_VISIBILITY: MapLayerVisibility = {
@@ -265,6 +265,16 @@ function parseCityMarkers(value: unknown): CityMarkerCollection {
     exactKeys(properties, CITY_MARKER_KEYS, 'City marker');
     nonEmptyString(properties.key, 'City marker key');
     nonEmptyString(properties.name, 'City marker name');
+    if (properties.labelAnchor !== 'top' && properties.labelAnchor !== 'bottom') {
+      throw new Error('City marker labelAnchor must be top or bottom');
+    }
+    if (
+      !Array.isArray(properties.labelOffset)
+      || properties.labelOffset.length !== 2
+      || !properties.labelOffset.every((value) => typeof value === 'number' && Number.isFinite(value))
+    ) {
+      throw new Error('City marker labelOffset must be a finite [x, y] pair');
+    }
     if (keys.has(properties.key) || geometry.type !== 'Point' || !finitePosition(geometry.coordinates)) throw new Error('Invalid or duplicate city marker');
     keys.add(properties.key);
   }

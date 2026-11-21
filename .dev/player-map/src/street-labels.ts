@@ -4,6 +4,8 @@ export interface StreetLabelProperties {
   category: string;
   displayName: string;
   entryKey: string;
+  /** Degrees clockwise from north for MapLibre Marker.setRotation. */
+  bearing: number;
 }
 
 export interface StreetBox {
@@ -141,6 +143,38 @@ export function stitchLongest(parts: number[][][]) {
   return chains[0] ?? [];
 }
 
+/** Bearing (degrees clockwise from north) of the segment that contains the midpoint. */
+export function bearingAtMidpoint(coordinates: number[][]): number {
+  if (coordinates.length < 2) return 0;
+  const total = lineLength(coordinates);
+  let remaining = total > 0 ? total / 2 : 0;
+  let start = coordinates[0];
+  let end = coordinates[1];
+  for (let index = 1; index < coordinates.length; index += 1) {
+    const from = coordinates[index - 1];
+    const to = coordinates[index];
+    if (!from || !to || from[0] === undefined || from[1] === undefined || to[0] === undefined || to[1] === undefined) continue;
+    const segment = Math.hypot((to[0] - from[0]) * 82, (to[1] - from[1]) * 111);
+    start = from;
+    end = to;
+    if (segment >= remaining) break;
+    remaining -= segment;
+  }
+  if (!start || !end || start[0] === undefined || start[1] === undefined || end[0] === undefined || end[1] === undefined) return 0;
+  const midLat = ((start[1] + end[1]) / 2) * (Math.PI / 180);
+  const dx = (end[0] - start[0]) * Math.cos(midLat);
+  const dy = end[1] - start[1];
+  let bearing = (Math.atan2(dx, dy) * 180) / Math.PI;
+  // Keep text upright when the road runs mostly southward.
+  if (bearing > 90 || bearing < -90) bearing += 180;
+  return bearing;
+}
+
+/** East duplicates share a display name with West; only West labels are shown. */
+export function isEastStreetEntryKey(entryKey: string) {
+  return /\bEast$/i.test(entryKey.trim());
+}
+
 /** Midpoint along the polyline by approximate length. */
 export function midpointAlong(coordinates: number[][]): [number, number] | null {
   if (coordinates.length < 2) return null;
@@ -196,7 +230,7 @@ export function streetLabelCollection(
   for (const feature of collection.features) {
     if (feature.geometry.type !== 'LineString') continue;
     const entryKey = streetEntryKey(feature.properties);
-    if (!entryKey) continue;
+    if (!entryKey || isEastStreetEntryKey(entryKey)) continue;
     const clipped = clipPolyline(feature.geometry.coordinates as number[][], box);
     if (clipped.length === 0) continue;
     const category = String(feature.properties?.category ?? '');
@@ -217,6 +251,7 @@ export function streetLabelCollection(
           category: group.category,
           displayName: group.displayName,
           entryKey: group.entryKey,
+          bearing: bearingAtMidpoint(coordinates),
         },
         geometry: { type: 'Point' as const, coordinates: mid },
       }];
