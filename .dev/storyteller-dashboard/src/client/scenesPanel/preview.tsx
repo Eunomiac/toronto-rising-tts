@@ -44,7 +44,7 @@ export const previewLayout = (w: number, h: number): Readonly<Record<"location" 
  * open scene into a new one that can be edited on its own; Discard (second click) drops the edits. `panels` draws
  * the open scene's panels.
  */
-export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, statusOf, onStatus, onSave, onDeck, onPlay, onFork, onDiscard, panels }: {
+export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, statusOf, onStatus, onSave, onDeck, onPlay, onFork, onActivate, onDiscard, panels }: {
   x: number;
   y: number;
   w: number;
@@ -60,6 +60,8 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
   onDeck: (key: string) => void;
   onPlay: PlayScene;
   onFork: (key: string) => void;
+  /** The tab being viewed, so a drop is stored on that scene. */
+  onActivate?: (key: string) => void;
   onDiscard: (key: string) => void;
   panels: (key: string, w: number, h: number) => ReactElement;
 }): ReactElement => {
@@ -85,7 +87,10 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
               key={scene.key}
               type="button"
               className={`lab-gpreview-tab${scene.key === active?.key ? " on" : ""}${scenes.live.some((live) => live.key === scene.key) ? " live" : ""}`}
-              onClick={() => setActiveKey(scene.key)}
+                onClick={() => {
+                  setActiveKey(scene.key);
+                  onActivate?.(scene.key);
+                }}
             >
               {statusOf(scene.key) === "template" ? `[${scene.title}]` : scene.title}
             </button>

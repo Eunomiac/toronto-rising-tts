@@ -7,6 +7,8 @@ import {
   draftScatterGroups,
   draftSceneSlice,
   draftSeatRows,
+  ensureDraftPcSlot,
+  previewSeatRows,
   draftSoundView,
   draftStage,
   draftTable,
@@ -254,6 +256,29 @@ describe("draft seating", () => {
     const draft = applyToDraft(seated, { op: "seatPresence", seat: "NPC1", present: true });
     expect(draft.sessionScene.seatSlots).toMatchObject({ NPC1: { characterKey: "mara", isPresent: true, tableSlot: 6 } });
     expect(draft.sessionScene.seatPresent).toEqual({ Pink: false, NPC1: true });
+  });
+
+  it("shows a table PC the scene has not stored, and keeps a stored Play-as-NPC row", () => {
+    const bare = scene("bare", { sessionScene: {} });
+    const live = [
+      { seat: "Pink", kind: "pc" as const, isPresent: true, tableSlot: 1, charKey: "aishe" },
+      { seat: "NPC1", kind: "npc" as const, isPresent: true, tableSlot: 6, characterKey: "mara" },
+    ];
+    expect(previewSeatRows(bare, live).map((row) => row.seat)).toEqual(["Pink"]);
+    const stored = previewSeatRows(seated, live);
+    expect(stored.find((row) => row.seat === "Pink")).toMatchObject({ playingNpcKey: "drake", charKey: "aishe" });
+  });
+
+  it("stores Play-as-NPC on a scene that has no seat row yet", () => {
+    const bare = scene("bare", { sessionScene: {} });
+    const live = [{ seat: "Pink", kind: "pc" as const, isPresent: true, tableSlot: 1, charKey: "aishe" }];
+    const assigned = applyToDraft(
+      ensureDraftPcSlot(bare, "Pink", live),
+      { op: "playAsNpc", color: "Pink", npcCharacterKey: "drake", roleplayNotes: "Quiet" }
+    );
+    expect(assigned.sessionScene.seatSlots).toMatchObject({
+      Pink: { characterKey: "aishe", isPlayingNPC: true, npcCharacterKey: "drake", playAsRoleplayNotes: "Quiet", tableSlot: 1 },
+    });
   });
 
   it("assigns and clears Play-as-NPC on a PC seat row", () => {

@@ -529,6 +529,40 @@ export const draftSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): re
   });
 };
 
+/**
+ * Preview seating: the scene's own rows, plus any PC at the table the scene has not stored yet.
+ * A new scene can then take a Play-as-NPC drop before it has ever been on the table.
+ */
+export const previewSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): readonly SeatRow[] => {
+  const stored = draftSeatRows(scene, live);
+  const seen = new Set(stored.map((row) => row.seat));
+  return [...stored, ...live.filter((row) => row.kind === "pc" && !seen.has(row.seat))];
+};
+
+/** Give a draft the PC's own seat row when Play-as-NPC is stored before the scene has seating of its own. */
+export const ensureDraftPcSlot = (scene: LibraryScene, color: string, live: readonly SeatRow[]): LibraryScene => {
+  const slots = isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {};
+  const existing = slots[color];
+  if (isRecord(existing) && typeof existing.characterKey === "string") {
+    return scene;
+  }
+  const pc = live.find((row) => row.kind === "pc" && row.seat === color);
+  if (!pc?.charKey) {
+    return scene;
+  }
+  return withSession(scene, {
+    seatSlots: {
+      ...slots,
+      [color]: {
+        ...(isRecord(existing) ? existing : {}),
+        characterKey: pc.charKey,
+        ...(pc.tableSlot !== undefined ? { tableSlot: pc.tableSlot } : {}),
+        isPresent: pc.isPresent !== false,
+      },
+    },
+  });
+};
+
 /** A draft row seen as TTS's scene slice, so the preview panels read it the way they read the table. */
 export const draftSceneSlice = (scene: LibraryScene, indoors: boolean): SceneSlice => {
   const ss = scene.sessionScene;

@@ -38,6 +38,7 @@ import { useNpcOverrides } from "../npcOverrides";
 import { useNpcStats, saveNpcStats } from "../npcStats";
 import { NpcTrackerPopup } from "./npcTrackers";
 import { PlayAsNpcModal } from "./playAsNpcModal";
+import { applyToDraft, draftGenerics, draftSeatRows, ensureDraftPcSlot } from "./library";
 import { playAsNpcCommand, type PlayAsNpcAsk } from "./playAsNpc";
 import { statBlockFor } from "../../shared/npcStats";
 import { getDndSession } from "./dnd/session";
@@ -375,6 +376,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const [dndEdit, setDndEdit] = useState<NpcConfigTarget | null>(null);
   const [dndTracker, setDndTracker] = useState<{ key: string; name: string; x: number; y: number } | null>(null);
   const [playAsAsk, setPlayAsAsk] = useState<PlayAsNpcAsk | null>(null);
+  /** Set when the drop landed on an open preview, so confirm writes that draft and leaves the table alone. */
+  const [playAsDraftKey, setPlayAsDraftKey] = useState<string | null>(null);
   const [relocateAsk, setRelocateAsk] = useState<SeatingAsk | null>(null);
   const { catalogs } = useSceneCatalogs();
   const { data: chronicleLocations } = useChronicleLocations();
@@ -615,8 +618,13 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     },
     openNpcTracker: (key) => { if (seats) setDndTracker({ key, name: characterName(key), ...dropPoint() }); else setDndNotice("Connect to Tabletop Simulator to read this NPC's trackers."); },
     openPlayAsNpc: (color, npcKey) => {
-      const pc = seats?.seats.find((row) => row.kind === "pc" && row.seat === color);
-      const generic = seats?.generics.find((row) => row.characterKey === npcKey);
+      const draftKey = library.previewKey;
+      setPlayAsDraftKey(draftKey);
+      const draft = draftKey ? library.previews.find((row) => row.key === draftKey) : undefined;
+      const seatRows = draft ? draftSeatRows(draft, seats?.seats ?? []) : seats?.seats ?? [];
+      const pc = seatRows.find((row) => row.kind === "pc" && row.seat === color);
+      const draftGeneric = draft ? draftGenerics(draft).find((row) => row.characterKey === npcKey) : undefined;
+      const generic = draftGeneric ?? seats?.generics.find((row) => row.characterKey === npcKey);
       const isGeneric = generic !== undefined || memoriamCatalog.find((npc) => npc.key === npcKey)?.isGeneric === true;
       const statsKey = isGeneric ? genericStatsKey(npcKey) : npcKey;
       const availableTiers = configuredTiers(npcStats?.[statsKey]);
@@ -675,10 +683,20 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           {playAsAsk && (
             <PlayAsNpcModal
               ask={playAsAsk}
-              onClose={() => setPlayAsAsk(null)}
-              onConfirm={(confirm) => {
-                send(playAsNpcCommand(confirm));
+              onClose={() => {
                 setPlayAsAsk(null);
+                setPlayAsDraftKey(null);
+              }}
+              onConfirm={(confirm) => {
+                const command = playAsNpcCommand(confirm);
+                if (playAsDraftKey) {
+                  const liveRows = seats?.seats ?? [];
+                  library.updateDraft(playAsDraftKey, (scene) => applyToDraft(ensureDraftPcSlot(scene, confirm.color, liveRows), command));
+                } else {
+                  send(command);
+                }
+                setPlayAsAsk(null);
+                setPlayAsDraftKey(null);
               }}
             />
           )}
@@ -879,6 +897,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 onDeck={library.deckDraft}
                 onPlay={library.playDraft}
                 onFork={library.forkPreview}
+                onActivate={library.activatePreview}
                 onDiscard={library.discardDraft}
                 panels={(key, w, h) => {
                   const draft = library.previews.find((row) => row.key === key);

@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 4. Dropping an NPC on a player in a scene preview stores Play as NPC on that scene. The table is unchanged until the scene is played.
+
 - ✔️ SD-ScenesPins-1121 pin 3. Preview Fork copies the open scene into its own new scene and leaves the original alone.
 
 - ✔️ SD-ScenesPins-1121 pin 2. Dragging a Catalog roster group onto a category label files that group there (the board drag session was swallowing the drop).

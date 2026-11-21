@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 4,
-      "sketch": "scenes",
-      "x": 673,
-      "y": 435,
-      "text": "Assigning NPCs to players should be possible within the scene preview panel, where it should happen instantly since no work needs to be done until the scene is transitioned to.",
-      "status": "open",
-      "createdAt": "2026-11-21T21:31:06.977Z",
-      "updatedAt": "2026-11-21T21:31:06.977Z"
-    },
-    {
       "id": 5,
       "sketch": "scenes",
       "x": 847,
@@ -119,6 +109,16 @@
       "status": "open",
       "createdAt": "2026-11-21T22:18:43.092Z",
       "updatedAt": "2026-11-21T22:18:43.092Z"
+    },
+    {
+      "id": 16,
+      "sketch": "scenes",
+      "x": 996,
+      "y": 451,
+      "text": "On the player scatter control panel, that they use to swap between groups, a spacer should be added to vertically separate the name of the group from the list of NPCs present there.",
+      "status": "open",
+      "createdAt": "2026-11-21T22:27:08.342Z",
+      "updatedAt": "2026-11-21T22:27:08.342Z"
     }
   ]
 }

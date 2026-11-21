@@ -245,6 +245,10 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     setPreviewKey(copy.key);
   };
 
+  const activatePreview = (key: string): void => {
+    if (previews.some((row) => row.key === key)) setPreviewKey(key);
+  };
+
   const openPreview = (key: string): void => {
     if (!findDraft(key)) {
       const row = findRow(key);
@@ -383,6 +387,7 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     play,
     relocateLive,
     openPreview,
+    activatePreview,
     forkPreview,
     closePreview: () => setPreviewKey(null),
     prepare,

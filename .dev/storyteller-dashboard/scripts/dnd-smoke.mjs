@@ -338,6 +338,28 @@ try {
   assert.deepEqual(copy.sessionScene, originDraft.sessionScene);
   assert.equal(libraryFile.scenes.find((row) => row.key === preloadScene.key).title, preloadScene.title);
   console.log("PASS forking a preview opens a separate new scene");
+  const luaBeforePlayAs = commands.length;
+  const previewSeat = page.locator('.lab-gpreview .lab-seat-slot[data-seat-key="Pink"]');
+  await previewSeat.waitFor();
+  await preview.getByRole("button", { name: "NPC Roster" }).click();
+  const openRoster = preview.locator(".lab-group.open [data-tr-dnd-roster]");
+  if ((await openRoster.count()) === 0) {
+    await preview.locator('.lab-group[draggable="true"]').first().click();
+  }
+  const playToken = openRoster.first();
+  const playKey = await playToken.getAttribute("data-tr-dnd-roster");
+  assert(playKey, "the preview roster has no NPC to assign");
+  const playAsSaved = page.waitForResponse((response) => {
+    if (!response.url().endsWith("/api/scene-deck") || response.request().method() !== "PUT") return false;
+    const row = (response.request().postDataJSON().previews ?? []).find((entry) => entry.title === `${preloadScene.title} copy`);
+    const slot = row?.sessionScene?.seatSlots?.Pink;
+    return slot?.isPlayingNPC === true && slot?.npcCharacterKey === playKey;
+  });
+  await playToken.dragTo(previewSeat);
+  await page.getByRole("dialog", { name: "Assign Play as NPC" }).getByRole("button", { name: "Confirm", exact: true }).click();
+  await playAsSaved;
+  assert.equal(commands.length, luaBeforePlayAs, "assigning in a preview must not talk to Tabletop Simulator");
+  console.log("PASS preview Play as NPC is stored on the draft and does not reach the table");
   await page.locator(".lab-gpreview").getByRole("button", { name: preloadScene.title, exact: true }).click();
   const savedDraft = page.waitForResponse((response) => response.url().endsWith("/api/scene-library")
     && response.request().method() === "PUT"

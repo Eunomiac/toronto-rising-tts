@@ -14,7 +14,7 @@ import {
   draftGenerics,
   draftScatterGroups,
   draftSceneSlice,
-  draftSeatRows,
+  previewSeatRows,
   draftSoundView,
   draftStage,
   draftTable,
@@ -105,7 +105,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange, o
     onChange((scene) => (followPresent ? draftAtPresentDay(scene) : applyToDraft(scene, command)));
   };
   const board: LiveBoard = {
-    seats: liveSeats({ seats: draftSeatRows(draft, tableSeats), stage: [], generics, scatter: [], spotlightOrder: [] }, slice.tableKey, catalogs),
+    seats: liveSeats({ seats: previewSeatRows(draft, tableSeats), stage: [], generics, scatter: [], spotlightOrder: [] }, slice.tableKey, catalogs),
     presenceClicks: true,
     tokens: liveTokens(draftStage(draft), catalogs, generics).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
     pending: {},
