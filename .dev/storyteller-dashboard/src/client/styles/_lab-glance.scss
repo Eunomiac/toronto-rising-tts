@@ -1132,6 +1132,18 @@ $lab-live: #4caf6a;
 
 .lab-cat-name {
   flex: 1 1 auto;
+
+  .lab-cat-create {
+    margin-left: 6px;
+    padding: 0 6px;
+    border: 1px solid #5a5a66;
+    font: inherit;
+    font-weight: 800;
+    line-height: 1.2;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+  }
 }
 
 input.lab-cat-rename {

@@ -906,13 +906,15 @@ const GroupEditor = ({ group, at, color, own, leader, onLabel, onColor, onLeader
  * Category header: twirl to show or hide its groups; drop a group on it to file the group there; right-click the
  * name to rename it (Enter or leaving the field keeps the new name, Escape cancels).
  */
-const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename }: {
+const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename, onCreate }: {
   category: RosterCategory | null;
   count: number;
   onToggle?: () => void;
   onDrop: (groupKey: string) => void;
   onRemove?: () => void;
   onRename?: (name: string) => void;
+  /** A "+" beside an Unsorted header; creates an empty group there. */
+  onCreate?: () => void;
 }): ReactElement => {
   const [over, setOver] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -981,6 +983,19 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
           } : undefined}
         >
           {category ? category.name : "Unsorted"}
+          {onCreate && (
+            <button
+              type="button"
+              className="lab-cat-create"
+              title="New empty group"
+              onClick={(event) => {
+                event.stopPropagation();
+                onCreate();
+              }}
+            >
+              +
+            </button>
+          )}
         </span>
       )}
       <span className="lab-cat-count">{count}</span>
@@ -992,9 +1007,9 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
 /**
  * Every NPC group as a closed stack of all its tokens, stretched to fill its row; names wrap to three lines at
  * most (the group widens instead). Click one to open it in place and pick a token. Groups start Unsorted; "+"
- * creates a coloured category, "New group" creates an empty Catalog group under Unsorted (also listed in each
- * NPC's group popup), dragging a group onto a category header files it there, and each category's twirl shows
- * or hides its groups; Unsorted only shows while it has groups (or a group is being dragged). "+" on a group
+ * on the roster bar creates a coloured category, and "+" beside the Unsorted header creates an empty Catalog
+ * group there (also listed in each NPC's group popup). Dragging a group onto a category header files it there, and each category's twirl shows
+ * or hides its groups. The Catalog Unsorted header stays up so that "+" is always there; Generic Unsorted only shows while it has groups (or a group is being dragged). "+" on a group
  * cell edits its colour and leader. A group takes its category's colour unless given its own; its tokens are
  * ringed in that colour, and the leader comes first with a thicker, brighter ring.
  *
@@ -1620,11 +1635,6 @@ export const MasonryRoster = (): ReactElement => {
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => event.key === "Escape" && setQuery("")}
         />
-        {view === "main" && (
-          <button type="button" className="lab-btn" title="New empty group under Unsorted" onClick={createEmptyGroup}>
-            New group
-          </button>
-        )}
         {view !== "memoriam" && <button type="button" className="lab-btn lab-cat-add" title="New category" onClick={() => setDraft({ name: "", color: NEW_CATEGORY_COLOR })}>+</button>}
       </div>
       {draft && (
@@ -1818,7 +1828,13 @@ export const MasonryRoster = (): ReactElement => {
             </section>
           );
         })}
-        {view !== "memoriam" && !found && (unsorted.length > 0 || dragging) && (
+        {view === "main" && !found && (
+          <section className="lab-cat unsorted">
+            <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} onCreate={createEmptyGroup} />
+            {(unsorted.length > 0 || dragging) && masonry(unsorted)}
+          </section>
+        )}
+        {view === "generic" && !found && (unsorted.length > 0 || dragging) && (
           <section className="lab-cat unsorted">
             {categories.length > 0 && <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} />}
             {masonry(unsorted)}

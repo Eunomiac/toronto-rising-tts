@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 15. The Catalog roster's new-group control is a "+" beside the Unsorted header.
+
 - ✔️ SD-ScenesPins-1121 pin 14. Filing a group on a category ends the drag immediately, so the floating preview does not stay behind when the row disappears.
 
 - ✔️ SD-ScenesPins-1121 pin 12. Feedback XP controls follow the opening Play downtime in the game, not a browser note that survived loading an earlier save.
