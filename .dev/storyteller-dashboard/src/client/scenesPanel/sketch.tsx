@@ -710,6 +710,11 @@ export const IdleBoard = ({
     };
   }, [firstDowntimeFeedback, sessionNum]);
   const xpPhase = phase === "End" ? "End" : firstDowntimeFeedback ? "Feedback" : null;
+  useEffect(() => {
+    if (xpPhase) {
+      liveSheet?.load();
+    }
+  }, [xpPhase, liveSheet]);
   return (
     <div className={`lab-board wide idle${xpPhase ? " has-xp" : ""}`} style={{ width: w, height: h }}>
       {reminders.length > 0 ? (
@@ -724,7 +729,7 @@ export const IdleBoard = ({
         <span className="lab-board-idle">(No Active Scene)</span>
       ) : null}
       {xpPhase && liveSheet ? (
-        <XpAwardPanel phase={xpPhase} seats={seats} apply={liveSheet.apply} />
+        <XpAwardPanel phase={xpPhase} seats={seats} sheetSeats={liveSheet.sheet?.seats} apply={liveSheet.apply} />
       ) : null}
       <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
         <Seats seats={seats} {...(liveSheet ? { liveSheet } : {})} />

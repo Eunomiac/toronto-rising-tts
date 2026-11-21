@@ -2243,6 +2243,12 @@ input.lab-cat-rename {
     cursor: not-allowed;
   }
 
+  &.is-awarded {
+    border-color: #d4b46a;
+    background: #3a3428;
+    box-shadow: inset 0 0 0 1px #d4b46a;
+  }
+
   &:not(.is-disabled):hover {
     border-color: #8a826f;
   }

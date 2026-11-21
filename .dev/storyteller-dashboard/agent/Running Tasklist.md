@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 9. Session XP seat buttons light up once that award is on the character, or as soon as the button is clicked.
+
 - ✔️ SD-ScenesPins-1121 pin 8. The "ensure scenes are preloaded" reminder shows on the opening Play downtime, not during Intermission.
 
 - ✔️ SD-ScenesPins-1121 pin 5. Switching scenes no longer saves the scene you left under the next scene's name. Pending Save & Play under **TOR-805**.

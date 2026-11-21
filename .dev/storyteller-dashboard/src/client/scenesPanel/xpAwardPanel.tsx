@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactElement } from "react";
 import { isSeatColor, type SeatColor } from "../catalogVocab";
-import type { ApplyCommand } from "../pcSheet/types";
+import type { ApplyCommand, SeatSnapshot } from "../pcSheet/types";
 import type { SeatSketch } from "./sketch";
 
 const SEAT_ORDER: readonly SeatColor[] = ["Brown", "Red", "Orange", "Pink", "Purple"];
@@ -24,16 +24,43 @@ const pcSeats = (seats: readonly SeatSketch[]): readonly PcSeat[] => {
 
 const seedColor = (pcs: readonly PcSeat[]): SeatColor => pcs[0]?.color ?? "Brown";
 
+const clickKey = (description: string, color: SeatColor): string => `${description}|${color}`;
+
+/** Seats whose latest Experience Log line is this award, plus seats clicked this visit. */
+export const colorsAwarded = (
+  seats: readonly Pick<SeatSnapshot, "color" | "lastXpEntry">[],
+  description: string,
+  clicked: ReadonlySet<string>
+): ReadonlySet<SeatColor> => {
+  const out = new Set<SeatColor>();
+  for (const seat of seats) {
+    if (seat.lastXpEntry?.description === description) {
+      out.add(seat.color);
+    }
+  }
+  for (const key of clicked) {
+    const split = key.indexOf("|");
+    const desc = key.slice(0, split);
+    const color = key.slice(split + 1);
+    if (desc === description && isSeatColor(color)) {
+      out.add(color);
+    }
+  }
+  return out;
+};
+
 /** Per-seat XP row: grey out disconnected seats when `requireConnected`. */
 const SeatRow = ({
   label,
   pcs,
   requireConnected,
+  awarded,
   onAward
 }: {
   label: string;
   pcs: readonly PcSeat[];
   requireConnected: boolean;
+  awarded: ReadonlySet<SeatColor>;
   onAward: (color: SeatColor) => void;
 }): ReactElement => (
   <div className="lab-xp-row">
@@ -45,9 +72,10 @@ const SeatRow = ({
           <button
             key={pc.color}
             type="button"
-            className={`lab-xp-seat lab-xp-seat--${pc.color.toLowerCase()}${disabled ? " is-disabled" : ""}`}
+            className={`lab-xp-seat lab-xp-seat--${pc.color.toLowerCase()}${disabled ? " is-disabled" : ""}${awarded.has(pc.color) ? " is-awarded" : ""}`}
             disabled={disabled}
-            title={disabled ? `${pc.name} is not connected` : `Award 1 XP to ${pc.name}`}
+            aria-pressed={awarded.has(pc.color)}
+            title={disabled ? `${pc.name} is not connected` : awarded.has(pc.color) ? `${pc.name} has this XP` : `Award 1 XP to ${pc.name}`}
             onClick={() => onAward(pc.color)}
           >
             {pc.color}
@@ -66,16 +94,24 @@ const SeatRow = ({
 export const XpAwardPanel = ({
   phase,
   seats,
+  sheetSeats,
   apply
 }: {
   phase: "End" | "Feedback";
   seats: readonly SeatSketch[];
+  /** Live sheet seats, so a button stays lit when that XP is already on the character. */
+  sheetSeats?: readonly Pick<SeatSnapshot, "color" | "lastXpEntry">[];
   apply: (command: ApplyCommand) => void;
 }): ReactElement => {
   const pcs = useMemo(() => pcSeats(seats), [seats]);
   const seed = seedColor(pcs);
   const [amountText, setAmountText] = useState("1");
   const [description, setDescription] = useState("");
+  const [clicked, setClicked] = useState<ReadonlySet<string>>(() => new Set());
+  const mark = (desc: string, color: SeatColor): void => {
+    setClicked((prev) => new Set(prev).add(clickKey(desc, color)));
+  };
+  const awarded = (desc: string): ReadonlySet<SeatColor> => colorsAwarded(sheetSeats ?? [], desc, clicked);
 
   const awardOne = (color: SeatColor, desc: string): void => {
     apply({ op: "xpAppend", color, amount: 1, description: desc });
@@ -95,7 +131,11 @@ export const XpAwardPanel = ({
           label="Provided Feedback"
           pcs={pcs}
           requireConnected={false}
-          onAward={(color) => awardOne(color, "Provided Feedback")}
+          awarded={awarded("Provided Feedback")}
+          onAward={(color) => {
+            mark("Provided Feedback", color);
+            awardOne(color, "Provided Feedback");
+          }}
         />
       </div>
     );
@@ -115,9 +155,9 @@ export const XpAwardPanel = ({
           +1 everyone · End of Story
         </button>
       </div>
-      <SeatRow label="Promoted Team Play" pcs={pcs} requireConnected onAward={(color) => awardOne(color, "Promoted Team Play")} />
-      <SeatRow label="Compulsion Roleplay" pcs={pcs} requireConnected onAward={(color) => awardOne(color, "Compulsion Roleplay")} />
-      <SeatRow label="Compulsion Resolution" pcs={pcs} requireConnected onAward={(color) => awardOne(color, "Compulsion Resolution")} />
+      <SeatRow label="Promoted Team Play" pcs={pcs} requireConnected awarded={awarded("Promoted Team Play")} onAward={(color) => { mark("Promoted Team Play", color); awardOne(color, "Promoted Team Play"); }} />
+      <SeatRow label="Compulsion Roleplay" pcs={pcs} requireConnected awarded={awarded("Compulsion Roleplay")} onAward={(color) => { mark("Compulsion Roleplay", color); awardOne(color, "Compulsion Roleplay"); }} />
+      <SeatRow label="Compulsion Resolution" pcs={pcs} requireConnected awarded={awarded("Compulsion Resolution")} onAward={(color) => { mark("Compulsion Resolution", color); awardOne(color, "Compulsion Resolution"); }} />
       <div className="lab-xp-custom">
         <input
           type="number"
