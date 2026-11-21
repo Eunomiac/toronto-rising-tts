@@ -1,5 +1,6 @@
 /**
  * Click-to-hide stage reminders for the empty IdleBoard (Intermission, Downtime, End).
+ * Preload is the opening Play downtime of a session, not Intermission.
  * Awakening is once per dusk→dawn night; End NPC prompts are once per TTS sessionNum.
  */
 
@@ -20,6 +21,8 @@ export type StageReminderContext = {
   readonly sessionNum?: number;
   /** Live session title from TTS; blank means the Storyteller still needs to type one. */
   readonly sessionName?: string;
+  /** Opening Play downtime after Intermission, before any scene is on the table. */
+  readonly sessionStartDowntime?: boolean;
   /** Narrative clock used for dusk→dawn checks (present day / downtime now). */
   readonly now?: Date;
   readonly dusk?: Date;
@@ -206,9 +209,6 @@ export const visibleStageReminders = (
     if (store.intermission.recorder) {
       push("recorder");
     }
-    if (store.intermission.scenesPreloaded) {
-      push("scenesPreloaded");
-    }
     const titleBlank = (ctx.sessionName ?? "").trim() === "";
     if (titleBlank && store.intermission.sessionTitle) {
       push("sessionTitle");
@@ -217,6 +217,9 @@ export const visibleStageReminders = (
   }
 
   if (ctx.phase === "Play" && (ctx.subPhase ?? "Main") === "Downtime") {
+    if (ctx.sessionStartDowntime === true && store.intermission.scenesPreloaded) {
+      push("scenesPreloaded");
+    }
     const { now, dusk, dawn } = ctx;
     if (now && dusk && dawn && isInNight(now, dusk, dawn)) {
       const key = nightKey(dusk);

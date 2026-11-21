@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 8. The "ensure scenes are preloaded" reminder shows on the opening Play downtime, not during Intermission.
+
 - ✔️ SD-ScenesPins-1121 pin 5. Switching scenes no longer saves the scene you left under the next scene's name. Pending Save & Play under **TOR-805**.
 
 - ✔️ SD-ScenesPins-1121 pin 4. Dropping an NPC on a player in a scene preview stores Play as NPC on that scene. The table is unchanged until the scene is played.

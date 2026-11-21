@@ -25,12 +25,16 @@ describe("IdleBoard stage reminders", () => {
     const user = userEvent.setup();
     mount({ phase: "Intermission", sessionName: "" });
     expect(screen.getByRole("button", { name: /session recorder/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /scenes are preloaded/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /scenes are preloaded/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /title for this session/i })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /session recorder/i }));
     expect(screen.queryByRole("button", { name: /session recorder/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /scenes are preloaded/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /title for this session/i })).toBeInTheDocument();
+  });
+
+  it("shows the preload reminder on the opening Play downtime, not a later one", () => {
+    mount({ phase: "Play", subPhase: "Downtime", sessionStartDowntime: true });
+    expect(screen.getByRole("button", { name: /scenes are preloaded/i })).toBeInTheDocument();
   });
 
   it("shows the awakening reminder in Downtime at night and dismisses it for that night", async () => {
