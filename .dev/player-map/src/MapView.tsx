@@ -559,6 +559,8 @@ function siteIconId(icon: string) {
   return `site-icon-${icon}`;
 }
 
+const SITE_LABEL_MIN_ZOOM = 12.5;
+
 function siteFilter(selectedKey: string | null, toggledSiteKeys: readonly string[]): FilterSpecification {
   const toggled: FilterSpecification = toggledSiteKeys.length > 0
     ? ['in', ['get', 'key'], ['literal', [...toggledSiteKeys]]]
@@ -567,6 +569,69 @@ function siteFilter(selectedKey: string | null, toggledSiteKeys: readonly string
     ? ['==', ['get', 'districtKey'], selectedKey]
     : ['literal', false];
   return ['any', ['==', ['get', 'hub'], true], toggled, district];
+}
+
+/** Same visibility rules as `siteFilter`, for HTML site-name markers. */
+function siteLabelIsVisible(
+  feature: PublicSiteCollection['features'][number],
+  selectedKey: string | null,
+  toggledSiteKeys: readonly string[],
+) {
+  if (feature.properties.hub) return true;
+  if (toggledSiteKeys.includes(feature.properties.key)) return true;
+  if (selectedKey && feature.properties.districtKey === selectedKey) return true;
+  return false;
+}
+
+function createSiteLabelMarkerElement(name: string, hub: boolean) {
+  const element = document.createElement('div');
+  element.className = hub ? 'site-html-label site-html-label--hub' : 'site-html-label';
+  element.textContent = hub ? name.toUpperCase() : name;
+  element.setAttribute('aria-hidden', 'true');
+  return element;
+}
+
+function syncSiteLabelVisibility(markers: Marker[], zoom: number) {
+  const visible = zoom >= SITE_LABEL_MIN_ZOOM;
+  for (const marker of markers) {
+    marker.getElement().style.display = visible ? '' : 'none';
+  }
+}
+
+function mountSiteLabelMarkers(
+  map: Map,
+  sites: PublicSiteCollection,
+  selectedKey: string | null,
+  toggledSiteKeys: readonly string[],
+): Marker[] {
+  const markers: Marker[] = [];
+  for (const feature of sites.features) {
+    if (!siteLabelIsVisible(feature, selectedKey, toggledSiteKeys)) continue;
+    const hub = Boolean(feature.properties.hub);
+    const marker = new Marker({
+      element: createSiteLabelMarkerElement(feature.properties.name, hub),
+      // Bottom-anchored like the canvas icon; padding in CSS lifts the name above the glyph.
+      anchor: 'bottom',
+      pitchAlignment: 'map',
+      rotationAlignment: 'map',
+    })
+      .setLngLat(feature.geometry.coordinates as [number, number])
+      .addTo(map);
+    markers.push(marker);
+  }
+  syncSiteLabelVisibility(markers, map.getZoom());
+  return markers;
+}
+
+function remountSiteLabelMarkers(
+  map: Map,
+  sites: PublicSiteCollection,
+  selectedKey: string | null,
+  toggledSiteKeys: readonly string[],
+  previous: Marker[],
+) {
+  for (const marker of previous) marker.remove();
+  return mountSiteLabelMarkers(map, sites, selectedKey, toggledSiteKeys);
 }
 
 const rasterizedSiteIcons = new globalThis.Map<string, HTMLImageElement>();
@@ -604,10 +669,10 @@ function addSiteMarkerLayer(map: Map, selectedKey: string | null, toggledSiteKey
     id: SITE_LAYER_ID,
     type: 'symbol',
     source: SITE_SOURCE_ID,
-    minzoom: 12.5,
+    minzoom: SITE_LABEL_MIN_ZOOM,
     filter: siteFilter(selectedKey, toggledSiteKeys),
     layout: {
-      // Icons are applied in syncSiteIcons once rasterized — missing sprite ids must not block text.
+      // Icons only — site names are HTML markers so they can stack above district labels.
       'icon-anchor': 'bottom',
       // One zoom interpolate only (MapLibre rejects nested zoom expressions).
       'icon-size': [
@@ -617,39 +682,6 @@ function addSiteMarkerLayer(map: Map, selectedKey: string | null, toggledSiteKey
       ],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
-      'text-field': [
-        'case',
-        ['get', 'hub'], ['upcase', ['get', 'name']],
-        ['get', 'name'],
-      ],
-      // OpenFreeMap dark only ships Noto Sans Regular — Bold yields blank glyphs.
-      'text-font': ['Noto Sans Regular'],
-      'text-size': [
-        'case',
-        ['get', 'hub'], 15,
-        11,
-      ],
-      'text-anchor': 'bottom',
-      // Hubs sit closer to the icon; one zoom interpolate only (MapLibre rejects nested zoom exprs).
-      'text-offset': [
-        'interpolate', ['linear'], ['zoom'],
-        12.5, ['case', ['get', 'hub'], ['literal', [0, -1.55]], ['literal', [0, -3.1]]],
-        16, ['case', ['get', 'hub'], ['literal', [0, -2.2]], ['literal', [0, -4.6]]],
-      ],
-      'text-max-width': 12,
-      'text-justify': 'center',
-      'text-allow-overlap': true,
-      'text-ignore-placement': true,
-    },
-    paint: {
-      'text-color': [
-        'case',
-        ['get', 'hub'], '#ffffff',
-        '#f7f4ef',
-      ],
-      'text-halo-color': '#000000',
-      'text-halo-width': 1.35,
-      'text-halo-blur': 0,
     },
   });
 }
@@ -727,6 +759,7 @@ export function MapView({
   const pulseOriginRef = useRef<number | null>(null);
   const streetLabelMarkersRef = useRef<Marker[]>([]);
   const districtHtmlMarkersRef = useRef<Marker[]>([]);
+  const siteLabelMarkersRef = useRef<Marker[]>([]);
   const [status, setStatus] = useState('Loading street map…');
   const [distantView, setDistantView] = useState(false);
   const [siteTooltip, setSiteTooltip] = useState<{
@@ -795,6 +828,7 @@ export function MapView({
           zoom,
           layerVisibilityRef.current.districts,
         );
+        syncSiteLabelVisibility(siteLabelMarkersRef.current, zoom);
       });
     };
     const finalizeViewportLabels = () => {
@@ -1129,6 +1163,13 @@ export function MapView({
       try {
         addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
         if (map.getLayer(SITE_LAYER_ID)) map.moveLayer(SITE_LAYER_ID);
+        for (const marker of siteLabelMarkersRef.current) marker.remove();
+        siteLabelMarkersRef.current = mountSiteLabelMarkers(
+          map,
+          sitesRef.current,
+          selectedRef.current,
+          toggledSiteKeysRef.current,
+        );
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Could not mount site markers';
         console.error(message);
@@ -1242,6 +1283,8 @@ export function MapView({
       streetLabelMarkersRef.current = [];
       for (const marker of districtHtmlMarkersRef.current) marker.remove();
       districtHtmlMarkersRef.current = [];
+      for (const marker of siteLabelMarkersRef.current) marker.remove();
+      siteLabelMarkersRef.current = [];
       jokeMarker.remove();
       onMapReadyRef.current?.(null);
       map.remove();
@@ -1267,12 +1310,27 @@ export function MapView({
     if (!map?.isStyleLoaded()) return;
     (map.getSource(SITE_SOURCE_ID) as GeoJSONSource | undefined)?.setData(sites);
     syncSiteIcons(map, sites);
+    if (!map.getLayer(SITE_LAYER_ID)) return;
+    siteLabelMarkersRef.current = remountSiteLabelMarkers(
+      map,
+      sites,
+      selectedRef.current,
+      toggledSiteKeysRef.current,
+      siteLabelMarkersRef.current,
+    );
   }, [sites]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.getLayer(SITE_LAYER_ID)) return;
     map.setFilter(SITE_LAYER_ID, siteFilter(selectedKey, toggledSiteKeys));
+    siteLabelMarkersRef.current = remountSiteLabelMarkers(
+      map,
+      sitesRef.current,
+      selectedKey,
+      toggledSiteKeys,
+      siteLabelMarkersRef.current,
+    );
   }, [selectedKey, toggledSiteKeys]);
 
   useEffect(() => {
