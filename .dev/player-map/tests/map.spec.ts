@@ -71,10 +71,18 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   await expect(canvas).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('.map-surface__status')).toContainText('Street map ready', { timeout: 30_000 });
 
-  if (testInfo.project.name === 'desktop-chromium') {
+  const isDesktop = testInfo.project.name === 'desktop-chromium';
+  const districtCard = (name: string | RegExp) => page.getByRole('button', { name });
+  const hospitalRail = page.getByRole('button', { name: 'The Yonge & Dundas Hospital District', exact: true });
+
+  if (isDesktop) {
+    // Desktop uses image chrome (no × close). Select from the rail, then clear with Escape.
     await openMapLayers(page);
-    await page.getByRole('button', { name: 'Hospital District' }).click();
-    await page.getByRole('button', { name: 'Close district details' }).click();
+    await hospitalRail.click();
+    await expect(districtCard(/Hospital District district card/i)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(districtCard(/district card/i)).toHaveCount(0);
+
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
     let districtPoint: { x: number; y: number } | null = null;
@@ -93,24 +101,34 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
     await expect(canvas).toHaveCSS('cursor', 'pointer');
     await page.mouse.click(districtPoint!.x, districtPoint!.y);
     await expect(page).toHaveURL(/district=[A-Za-z]+/);
-    await expect(page.getByTestId('selected-district')).toBeVisible();
+    await expect(districtCard(/district card/i)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(districtCard(/district card/i)).toHaveCount(0);
   }
 
   await openMapLayers(page);
   await page.getByRole('button', { name: 'Rosedale' }).click();
-  await expect(page.getByTestId('selected-district')).toContainText('Rosedale');
-  await expect(page.getByTestId('selected-district')).toContainText('Hunting difficulty6');
-  await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
-  await expect(page.getByTestId('selected-district')).toContainText('Melancholic');
   await expect(page).toHaveURL(/district=Rosedale/);
+  if (isDesktop) {
+    await expect(districtCard(/Rosedale district card/i)).toBeVisible();
+  } else {
+    await expect(page.getByTestId('selected-district')).toContainText('Rosedale');
+    await expect(page.getByTestId('selected-district')).toContainText('Hunting difficulty6');
+    await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
+    await expect(page.getByTestId('selected-district')).toContainText('Melancholic');
+  }
 
   await page.getByRole('button', { name: 'P.A.T.H.' }).click();
-  await expect(page.getByTestId('selected-district')).toContainText('P.A.T.H.');
-  await expect(page.getByTestId('selected-district')).toContainText('Hunting difficulty4');
-  await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
-  await expect(page.getByTestId('selected-district')).toContainText('Choleric');
   await expect(page).toHaveURL(/district=PATH/);
   await expect(page.locator('.map-surface__path-legend-label')).toContainText('P.A.T.H.');
+  if (isDesktop) {
+    await expect(districtCard(/P\.A\.T\.H\. district card/i)).toBeVisible();
+  } else {
+    await expect(page.getByTestId('selected-district')).toContainText('P.A.T.H.');
+    await expect(page.getByTestId('selected-district')).toContainText('Hunting difficulty4');
+    await expect(page.getByTestId('selected-district')).toContainText('Phlegmatic');
+    await expect(page.getByTestId('selected-district')).toContainText('Choleric');
+  }
 
   await page.getByRole('button', { name: 'The Rack' }).click();
   await expect(page).toHaveURL(/layers=districts%2Cregions/);
