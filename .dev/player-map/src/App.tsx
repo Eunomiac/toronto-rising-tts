@@ -56,7 +56,7 @@ export function App() {
   const [activeSite, setActiveSite] = useState<PublicSiteProperties | null>(null);
   const [overlay, setOverlay] = useState<MapOverlaySelection>({ kind: 'none' });
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
-  // Debug notes only exist in the Vite alias for development builds.
+  // Author pin UI is swapped in only via the Vite #debug-notes alias during serve.
   const { mode: layoutMode, setMode: setLayoutMode, useImageChrome } = useDistrictLayout(import.meta.env.DEV);
 
   useEffect(() => {
