@@ -139,7 +139,7 @@ The Worker reserves `/api/health` and session pin routes:
 session overwrites it). One chronicle-wide `PLAYER_MAP_SESSION_CODE` (for example `tts-tr`) is
 enough: visitors opening `?session=` that code see pins where they were during the last live
 session, even across long gaps between tables. The Dashboard relay does **not** overwrite that
-feed when TTS reports no live scene, and Dashboard downtime does not clear pins. Configure the
-Dashboard `.env` with `PLAYER_MAP_ENDPOINT`, `PLAYER_MAP_SESSION_CODE`, and
-`PLAYER_MAP_PUSH_SECRET` (matching the Worker secret) to publish during play. Restart the
-Dashboard after changing those values.
+feed when TTS reports no live scene, and Dashboard downtime does not clear pins. The map client
+also keeps its last good snapshot if a poll returns 404 or fails. Configure the Dashboard `.env`
+with `PLAYER_MAP_ENDPOINT`, `PLAYER_MAP_SESSION_CODE`, and `PLAYER_MAP_PUSH_SECRET` (matching the
+Worker secret) to publish during play. Restart the Dashboard after changing those values.

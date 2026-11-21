@@ -35,7 +35,8 @@ export function PlayerPinsLayer({ map, sites }: PlayerPinsLayerProps) {
     const load = () => {
       void fetchSessionPins(sessionCode)
         .then((next) => {
-          if (!cancelled) setSnapshot(next);
+          // 404 / empty: keep the last good snapshot so a missing feed never blanks pins.
+          if (!cancelled && next) setSnapshot(next);
         })
         .catch((error: unknown) => {
           console.error(error instanceof Error ? error.message : 'Could not load session pins');
