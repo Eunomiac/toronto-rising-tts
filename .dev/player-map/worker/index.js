@@ -1,5 +1,4 @@
 const memoryStore = new Map();
-const PIN_TTL_SECONDS = 60 * 60 * 24;
 const ALLOWED_CHAR_KEYS = new Set([
   'fomorach',
   'rashid',
@@ -36,7 +35,8 @@ async function readPins(environment, sessionCode) {
 async function writePins(environment, sessionCode, snapshot) {
   const key = `pins:${sessionCode}`;
   if (environment.SESSION_PINS) {
-    await environment.SESSION_PINS.put(key, JSON.stringify(snapshot), { expirationTtl: PIN_TTL_SECONDS });
+    // No TTL — keep the last live feed until the next live POST overwrites it.
+    await environment.SESSION_PINS.put(key, JSON.stringify(snapshot));
     return;
   }
   memoryStore.set(key, snapshot);

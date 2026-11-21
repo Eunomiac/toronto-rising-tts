@@ -57,6 +57,8 @@ export function startPlayerMapPinRelay(hub: TtsEventHub, config: PlayerMapPinRel
   const onEvent = (event: TtsPushEvent) => {
     if (event.topic !== "scene" || !event.data || typeof event.data !== "object") return;
     const mapPins = (event.data as { mapPins?: SceneMapPins }).mapPins;
+    // Freeze the last in-session feed: non-live flushes would hide every pin and wipe mid-week viewers.
+    if (!mapPins || mapPins.live !== true) return;
     const snapshot = projectPublicPins(mapPins, config.sessionCode);
     if (!snapshot) return;
     const body = JSON.stringify(snapshot);

@@ -9,7 +9,12 @@
     "not_found_handling": "single-page-application"
   },
   // Create with: wrangler secret put PLAYER_MAP_PUSH_SECRET
-  // Optional durable store: wrangler kv namespace create SESSION_PINS
-  // then bind id below as SESSION_PINS (memory fallback works for single-isolate smoke).
+  // SESSION_PINS keeps the last live pin snapshot indefinitely (until the next live POST).
+  "kv_namespaces": [
+    {
+      "binding": "SESSION_PINS",
+      "id": "f4ac8ec426c0444bbe46b752958feb47"
+    }
+  ],
   "vars": {}
 }

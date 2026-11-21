@@ -135,4 +135,11 @@ The Worker reserves `/api/health` and session pin routes:
 - `GET /api/session/:code/pins` — public allowlisted pin snapshot for `?session=` on the map
 - `POST /api/session/:code/pins` — Dashboard relay only (`Authorization: Bearer` + `PLAYER_MAP_PUSH_SECRET`)
 
-Optional KV binding `SESSION_PINS` stores snapshots; without it the Worker keeps them in memory for that isolate. Configure the Dashboard `.env` with `PLAYER_MAP_ENDPOINT`, `PLAYER_MAP_SESSION_CODE`, and `PLAYER_MAP_PUSH_SECRET` to publish during play.
+`SESSION_PINS` KV stores the last **live** pin snapshot **indefinitely** (until a later live
+session overwrites it). One chronicle-wide `PLAYER_MAP_SESSION_CODE` (for example `tts-tr`) is
+enough: visitors opening `?session=` that code see pins where they were during the last live
+session, even across long gaps between tables. The Dashboard relay does **not** overwrite that
+feed when TTS reports no live scene, and Dashboard downtime does not clear pins. Configure the
+Dashboard `.env` with `PLAYER_MAP_ENDPOINT`, `PLAYER_MAP_SESSION_CODE`, and
+`PLAYER_MAP_PUSH_SECRET` (matching the Worker secret) to publish during play. Restart the
+Dashboard after changing those values.
