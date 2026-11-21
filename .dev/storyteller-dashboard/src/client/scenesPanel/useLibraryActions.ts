@@ -16,7 +16,7 @@ import type { SceneSlice } from "../worldState";
 import type { SceneClock, ScenesCommand } from "./commands";
 import { newLibraryScene, newSceneKey, newSceneTitle } from "./library";
 import { buildRelocatedScene, nextForkKey, relocateTitle } from "./liveRelocate";
-import { entryPlan, nightLabel, templateCopy } from "./sceneStatus";
+import { entryPlan, forkPreviewScene, nightLabel, templateCopy } from "./sceneStatus";
 import type { SeatingEdit } from "./transitionSeating";
 
 /** How long the table's scene must be quiet before its library row is read back from TTS. */
@@ -232,6 +232,19 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     }
   };
 
+  /** The open preview becomes its own new scene. The scene it was copied from is left as it was. */
+  const forkPreview = (key: string): void => {
+    const source = findDraft(key) ?? findRow(key);
+    if (!source) {
+      setNotice("That scene is not open to fork.");
+      return;
+    }
+    const rows = [...sceneLibrarySnapshot().scenes, ...sceneDeckSnapshot().previews];
+    const copy = forkPreviewScene(source, rows);
+    setPreviews([...sceneDeckSnapshot().previews, copy]);
+    setPreviewKey(copy.key);
+  };
+
   const openPreview = (key: string): void => {
     if (!findDraft(key)) {
       const row = findRow(key);
@@ -370,6 +383,7 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     play,
     relocateLive,
     openPreview,
+    forkPreview,
     closePreview: () => setPreviewKey(null),
     prepare,
     updateDraft: (key: string, update: (row: LibraryScene) => LibraryScene) =>

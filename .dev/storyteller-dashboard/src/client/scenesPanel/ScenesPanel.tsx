@@ -878,6 +878,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 onSave={library.saveDraft}
                 onDeck={library.deckDraft}
                 onPlay={library.playDraft}
+                onFork={library.forkPreview}
                 onDiscard={library.discardDraft}
                 panels={(key, w, h) => {
                   const draft = library.previews.find((row) => row.key === key);

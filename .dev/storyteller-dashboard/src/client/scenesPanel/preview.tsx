@@ -1,4 +1,4 @@
-import { Fragment, useState, type ReactElement } from "react";
+import { Fragment, useEffect, useState, type ReactElement } from "react";
 import type { SceneStatus } from "../../shared/sceneLibrary";
 import { ConfirmButton, useSceneEntry, type LiveScenes, type PlayScene, type SceneRef } from "./glance";
 import { canvasPoint } from "./sketch";
@@ -40,10 +40,11 @@ export const previewLayout = (w: number, h: number): Readonly<Record<"location" 
  * Preview: prepared scenes in tabs across the top, each laid out like the table and framed in blue because edits
  * only change the library copy. A new scene can be made a template (it then plays as a dated copy, `[Title]`).
  * Save keeps the edits in the library; On deck also adds the scene to the live scenes in the phase bar without
- * switching to it; Play Scene puts it on the table (a new scene first asks how to set the clock); Discard (second
- * click) drops the edits. `panels` draws the open scene's panels.
+ * switching to it; Play Scene puts it on the table (a new scene first asks how to set the clock); Fork copies the
+ * open scene into a new one that can be edited on its own; Discard (second click) drops the edits. `panels` draws
+ * the open scene's panels.
  */
-export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, statusOf, onStatus, onSave, onDeck, onPlay, onDiscard, panels }: {
+export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, statusOf, onStatus, onSave, onDeck, onPlay, onFork, onDiscard, panels }: {
   x: number;
   y: number;
   w: number;
@@ -58,10 +59,16 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
   onSave: (key: string) => void;
   onDeck: (key: string) => void;
   onPlay: PlayScene;
+  onFork: (key: string) => void;
   onDiscard: (key: string) => void;
   panels: (key: string, w: number, h: number) => ReactElement;
 }): ReactElement => {
   const [activeKey, setActiveKey] = useState(initialKey ?? prepared[0]?.key ?? "");
+  useEffect(() => {
+    if (initialKey) {
+      setActiveKey(initialKey);
+    }
+  }, [initialKey]);
   const entry = useSceneEntry();
   const active = prepared.find((scene) => scene.key === activeKey) ?? prepared[0];
   const onTable = active !== undefined && active.key === scenes.current?.key;
@@ -97,6 +104,15 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
               <option value="template">Template</option>
             </select>
           )}
+          <button
+            type="button"
+            className="lab-btn"
+            disabled={!active}
+            title="Copy this scene into a new one. The original stays as it is, and the copy opens here to edit."
+            onClick={() => active && onFork(active.key)}
+          >
+            Fork
+          </button>
           <button type="button" className="lab-btn" disabled={!active} title="Keep these edits in the scene library" onClick={() => active && onSave(active.key)}>Save</button>
           <button
             type="button"

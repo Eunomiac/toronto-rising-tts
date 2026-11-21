@@ -322,6 +322,23 @@ try {
   assert(preloadScript.includes(`"placements":{"${npc}":`));
   assert(!preloadScript.includes(`"${offstageNpc.characterKey}":`));
   await page.screenshot({ path: path.join(output, "offstage-preload-editor.png") });
+  const forkSaved = page.waitForResponse((response) => {
+    if (!response.url().endsWith("/api/scene-deck") || response.request().method() !== "PUT") {
+      return false;
+    }
+    const previews = response.request().postDataJSON().previews ?? [];
+    return previews.some((row) => row.title === `${preloadScene.title} copy` && row.key !== preloadScene.key && row.status === "new" && row.linked === false);
+  });
+  await page.locator(".lab-gpreview").getByRole("button", { name: "Fork", exact: true }).click();
+  const forkBody = (await forkSaved).request().postDataJSON();
+  const copy = forkBody.previews.find((row) => row.title === `${preloadScene.title} copy`);
+  const originDraft = forkBody.previews.find((row) => row.key === preloadScene.key);
+  assert(copy && originDraft, "fork did not keep both the copy and the original preview");
+  assert.notEqual(copy.key, originDraft.key);
+  assert.deepEqual(copy.sessionScene, originDraft.sessionScene);
+  assert.equal(libraryFile.scenes.find((row) => row.key === preloadScene.key).title, preloadScene.title);
+  console.log("PASS forking a preview opens a separate new scene");
+  await page.locator(".lab-gpreview").getByRole("button", { name: preloadScene.title, exact: true }).click();
   const savedDraft = page.waitForResponse((response) => response.url().endsWith("/api/scene-library")
     && response.request().method() === "PUT"
     && response.request().postDataJSON().scenes.some((row) => row.key === preloadScene.key && row.preloadNpcKeys?.includes(offstageNpc.characterKey)));
@@ -330,6 +347,8 @@ try {
   assert.deepEqual(libraryFile.scenes.find((row) => row.key === preloadScene.key).sessionScene, preloadScene.sessionScene);
   assert.equal(libraryFile.scenes.find((row) => row.key === greenScene.key).status, "ended");
   console.log("PASS scene editor saves and preloads offstage NPCs without changing placements");
+  await page.keyboard.press("Escape");
+  await page.locator(".lab-gpreview").waitFor({ state: "detached" });
   await page.keyboard.press("Escape");
 
   await page.locator('.lab-conditions-head').first().click();

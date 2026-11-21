@@ -50,6 +50,35 @@ export const templateCopy = (template: LibraryScene, night: string, rows: readon
   return { ...template, key: newSceneKey(title, rows.map((row) => row.key)), title, linked: false, status: "new" };
 };
 
+/** "Elysium copy", then "Elysium copy (2)" when that title is taken. */
+export const forkPreviewTitle = (title: string, titles: readonly string[]): string => {
+  const base = `${title} copy`;
+  if (!titles.includes(base)) {
+    return base;
+  }
+  let n = 2;
+  while (titles.includes(`${base} (${n})`)) {
+    n += 1;
+  }
+  return `${base} (${n})`;
+};
+
+/**
+ * A preview forked into its own scene. The copy is deep, so later edits do not change the scene it came from.
+ * It starts new and unlinked: it is not the table's scene and the table does not write into it.
+ */
+export const forkPreviewScene = (source: LibraryScene, rows: readonly LibraryScene[]): LibraryScene => {
+  const copy = structuredClone(source);
+  const title = forkPreviewTitle(source.title, rows.map((row) => row.title));
+  return {
+    ...copy,
+    key: newSceneKey(title, rows.map((row) => row.key)),
+    title,
+    linked: false,
+    status: "new"
+  };
+};
+
 /** A live scene in the phase bar: the table's, an ongoing one, or a new scene or template put on the deck. */
 export type DeckScene = { readonly key: string; readonly title: string; readonly status: SceneStatus };
 

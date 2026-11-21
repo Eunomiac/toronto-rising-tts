@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { deckScenes, displayTitle, entryPlan, libraryRank, nightLabel, templateCopy, templateCopyTitle } from "./sceneStatus";
+import { deckScenes, displayTitle, entryPlan, forkPreviewScene, libraryRank, nightLabel, templateCopy, templateCopyTitle } from "./sceneStatus";
 
 const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => ({
   key,
@@ -54,6 +54,25 @@ describe("templates", () => {
     const template = scene("elysium", { title: "Elysium", status: "template", sessionScene: { siteKey: "S" } });
     const copy = templateCopy(template, "Oct 12", [template]);
     expect(copy).toEqual({ ...template, key: "elysiumOct12", title: "Elysium (Oct 12)", linked: false, status: "new" });
+  });
+});
+
+describe("forkPreviewScene", () => {
+  it("copies the preview into a new unlinked scene and does not share its contents", () => {
+    const source = scene("elysium", {
+      title: "Elysium",
+      status: "ongoing",
+      linked: true,
+      sessionScene: { siteKey: "S", npcWorld: { placements: {} } }
+    });
+    const copy = forkPreviewScene(source, [source]);
+    expect(copy.key).toBe("elysiumCopy");
+    expect(copy.title).toBe("Elysium copy");
+    expect(copy.status).toBe("new");
+    expect(copy.linked).toBe(false);
+    (copy.sessionScene.npcWorld as { placements: Record<string, unknown> }).placements.extra = 1;
+    expect(source.sessionScene).toEqual({ siteKey: "S", npcWorld: { placements: {} } });
+    expect(forkPreviewScene(source, [source, copy]).title).toBe("Elysium copy (2)");
   });
 });
 
