@@ -61,6 +61,11 @@ export function App() {
   const [activeSite, setActiveSite] = useState<PublicSiteProperties | null>(null);
   const [overlay, setOverlay] = useState<MapOverlaySelection>({ kind: 'none' });
   const skipNextDistrictFocusRef = useRef(false);
+  /** Ignore pin-18 zoom-out clears while fitBounds/easeTo from a selection is still running. */
+  const ignoreZoomClearUntilRef = useRef(0);
+  const armZoomClearSuppress = () => {
+    ignoreZoomClearUntilRef.current = performance.now() + 2_000;
+  };
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
   // Author pin UI is swapped in only via the Vite #debug-notes alias during serve.
   const { mode: layoutMode, setMode: setLayoutMode, useImageChrome } = useDistrictLayout(import.meta.env.DEV);
@@ -89,9 +94,12 @@ export function App() {
   }, [selectedKey]);
 
   // Zooming out past city scale clears overlay + district selection (pin 18).
+  // Use zoomend so mid-animation dips during fitBounds do not clear; also suppress
+  // briefly after a selection so PATH/district focus on narrow viewports can finish.
   useEffect(() => {
     if (!map) return undefined;
-    const onZoom = () => {
+    const onZoomEnd = () => {
+      if (performance.now() < ignoreZoomClearUntilRef.current) return;
       if (map.getZoom() >= 12) return;
       setOverlay((current) => (current.kind === 'none' ? current : { kind: 'none' }));
       setSelectedKey((current) => {
@@ -100,8 +108,8 @@ export function App() {
         return null;
       });
     };
-    map.on('zoom', onZoom);
-    return () => { map.off('zoom', onZoom); };
+    map.on('zoomend', onZoomEnd);
+    return () => { map.off('zoomend', onZoomEnd); };
   }, [map]);
 
   useEffect(() => {
@@ -175,6 +183,7 @@ export function App() {
 
   const selectDistrict = useCallback((key: string) => {
     const nextKey = selectedKey === key ? null : key;
+    if (nextKey) armZoomClearSuppress();
     setSelectedKey(nextKey);
     window.history.replaceState(null, '', updateDistrictInUrl(nextKey));
     if (nextKey === 'PATH') {
@@ -204,6 +213,7 @@ export function App() {
     if (districtKey) {
       // Site easeTo must win over MapView's district fitBounds (pin 19).
       skipNextDistrictFocusRef.current = true;
+      armZoomClearSuppress();
       setSelectedKey(districtKey);
       window.history.replaceState(null, '', updateDistrictInUrl(districtKey));
       setLayerVisibility((layers) => {

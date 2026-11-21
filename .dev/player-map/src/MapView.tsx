@@ -202,8 +202,12 @@ function focusDistrict(map: Map, districts: DistrictFeatureCollection, key: stri
 function focusPath(map: Map, bounds: MapViewProps['pathBounds']) {
   map.fitBounds([[bounds.west, bounds.south], [bounds.east, bounds.north]], {
     padding: { top: 116, right: 52, bottom: 260, left: 120 },
+    // Stay at/above the pin-18 clear threshold so PATH focus cannot wipe its own selection.
     maxZoom: 14,
     duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 850,
+  });
+  map.once('moveend', () => {
+    if (map.getZoom() < 12) map.setZoom(12);
   });
 }
 
