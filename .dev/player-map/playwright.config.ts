@@ -5,7 +5,10 @@ const deployedBaseURL = process.env.PLAYER_MAP_BASE_URL;
 export default defineConfig({
   testDir: './tests',
   testIgnore: 'debug-notes.spec.ts',
-  fullyParallel: true,
+  fullyParallel: false,
+  // Four browsers at once stall the OpenFreeMap style request and the local preview,
+  // so the street map stays on "Loading street map…" and the full build fails.
+  workers: 1,
   forbidOnly: true,
   retries: 0,
   reporter: 'line',
