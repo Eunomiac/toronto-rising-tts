@@ -164,10 +164,12 @@ export function bearingAtMidpoint(coordinates: number[][]): number {
   const midLat = ((start[1] + end[1]) / 2) * (Math.PI / 180);
   const dx = (end[0] - start[0]) * Math.cos(midLat);
   const dy = end[1] - start[1];
-  let bearing = (Math.atan2(dx, dy) * 180) / Math.PI;
-  // Keep text upright when the road runs mostly southward.
-  if (bearing > 90 || bearing < -90) bearing += 180;
-  return bearing;
+  // Map bearing (0 = north). HTML text baselines run east-west at rotation 0, so
+  // align the label with the street by rotating bearing − 90°.
+  let rotation = (Math.atan2(dx, dy) * 180) / Math.PI - 90;
+  // Keep text upright when it would otherwise read upside-down.
+  if (rotation > 90 || rotation < -90) rotation += 180;
+  return rotation;
 }
 
 /** East duplicates share a display name with West; only West labels are shown. */

@@ -33,7 +33,8 @@ describe('streetLabelCollection', () => {
 
     expect(collection.features).toHaveLength(1);
     expect(collection.features[0]?.properties.entryKey).toBe('St. Clair Avenue West');
-    expect(collection.features[0]?.properties.bearing).toBeCloseTo(90, 0);
+    // East-west street → HTML baseline already horizontal → rotation ≈ 0.
+    expect(collection.features[0]?.properties.bearing).toBeCloseTo(0, 0);
     expect(collection.features.every((feature) => feature.geometry.type === 'Point')).toBe(true);
   });
 
@@ -48,9 +49,10 @@ describe('streetLabelCollection', () => {
     expect(streetEntryKey({ matchName: 'm', displayName: 'b' })).toBe('m');
   });
 
-  it('detects East street entry keys and keeps nearly-north bearings upright', () => {
+  it('detects East street entry keys and tilts north-south streets near ±90°', () => {
     expect(isEastStreetEntryKey('Bloor Street East')).toBe(true);
     expect(isEastStreetEntryKey('Bloor Street West')).toBe(false);
-    expect(bearingAtMidpoint([[-79.4, 43.65], [-79.4, 43.67]])).toBeCloseTo(0, 0);
+    expect(bearingAtMidpoint([[-79.4, 43.65], [-79.4, 43.67]])).toBeCloseTo(-90, 0);
+    expect(bearingAtMidpoint([[-79.42, 43.68], [-79.38, 43.68]])).toBeCloseTo(0, 0);
   });
 });

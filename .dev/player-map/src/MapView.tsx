@@ -306,13 +306,16 @@ function hideBasemapLabels(map: Map) {
     const existing = map.getFilter(layerId);
     map.setFilter(layerId, existing ? ['all', existing, exclude] as FilterSpecification : exclude);
   }
-  // Also suppress basemap *line* drawings for whitelist streets so only our overlays show.
+  // OpenMapTiles transportation *line* layers have class, not name — a name match cannot
+  // hide Bloor/Yonge/etc. Dim major/motorway basemap roads so only our overlays read as
+  // the bright curated highlights (Spadina/University stay un-emphasized).
   for (const layer of map.getStyle().layers ?? []) {
     if (layer.type !== 'line') continue;
     const id = layer.id;
-    if (!id.startsWith('highway_') || id.includes('name')) continue;
-    const existing = map.getFilter(id);
-    map.setFilter(id, existing ? ['all', existing, exclude] as FilterSpecification : exclude);
+    if (!id.startsWith('highway_') || id.includes('name') || id.includes('path') || id.includes('minor')) continue;
+    if (id.includes('major') || id.includes('motorway')) {
+      map.setPaintProperty(id, 'line-opacity', 0.12);
+    }
   }
 }
 
@@ -520,10 +523,111 @@ function syncSiteIcons(map: Map, sites: PublicSiteCollection) {
     void loadSiteIcon(icon).then((image) => {
       if (!map.getLayer(SITE_LAYER_ID) || map.hasImage(id)) return;
       map.addImage(id, image);
+      // Icons load after the layer; re-assert icon layout once the first image lands.
+      map.setLayoutProperty(SITE_LAYER_ID, 'icon-image', ['concat', 'site-icon-', ['get', 'icon']]);
     }).catch((error: unknown) => {
       console.error(error instanceof Error ? error.message : `Could not load site icon ${icon}`);
     });
   }
+}
+
+function addSiteMarkerLayer(map: Map, selectedKey: string | null, toggledSiteKeys: readonly string[]) {
+  if (map.getLayer(SITE_LAYER_ID)) return;
+  map.addLayer({
+    id: SITE_LAYER_ID,
+    type: 'symbol',
+    source: SITE_SOURCE_ID,
+    minzoom: 12.5,
+    filter: siteFilter(selectedKey, toggledSiteKeys),
+    layout: {
+      // Icons are applied in syncSiteIcons once rasterized — missing sprite ids must not block text.
+      'icon-anchor': 'bottom',
+      // One zoom interpolate only (MapLibre rejects nested zoom expressions).
+      'icon-size': [
+        'interpolate', ['linear'], ['zoom'],
+        12.5, ['case', ['get', 'hub'], 0.625, 0.5],
+        16, ['case', ['get', 'hub'], 1.1875, 0.95],
+      ],
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+      'text-field': [
+        'case',
+        ['get', 'hub'], ['upcase', ['get', 'name']],
+        ['get', 'name'],
+      ],
+      // OpenFreeMap dark only ships Noto Sans Regular — Bold yields blank glyphs.
+      'text-font': ['Noto Sans Regular'],
+      'text-size': [
+        'case',
+        ['get', 'hub'], 15,
+        11,
+      ],
+      'text-anchor': 'bottom',
+      'text-offset': ['interpolate', ['linear'], ['zoom'], 12.5, ['literal', [0, -3.1]], 16, ['literal', [0, -4.6]]],
+      'text-max-width': 12,
+      'text-justify': 'center',
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+    },
+    paint: {
+      'text-color': [
+        'case',
+        ['get', 'hub'], '#ffffff',
+        '#f7f4ef',
+      ],
+      'text-halo-color': '#000000',
+      'text-halo-width': 1.35,
+      'text-halo-blur': 0,
+    },
+  });
+}
+
+function addDistrictLabelLayer(map: Map, districtsVisible: boolean) {
+  if (map.getLayer(LABEL_LAYER_ID)) return;
+  map.addLayer({
+    id: LABEL_LAYER_ID,
+    type: 'symbol',
+    source: LABEL_SOURCE_ID,
+    minzoom: 12,
+    filter: ['==', ['get', 'kind'], 'district'],
+    layout: {
+      visibility: mapVisibility(districtsVisible),
+      'text-field': ['get', 'name'],
+      'text-font': ['Noto Sans Regular'],
+      // feature-state is paint/filter-only — using it in text-size rejects the whole layer.
+      'text-size': ['interpolate', ['linear'], ['zoom'], 12, 11, 14, 14],
+      'text-transform': 'uppercase',
+      'text-letter-spacing': 0.12,
+      'text-max-width': 10,
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+      'text-optional': false,
+    },
+    paint: {
+      'text-color': [
+        'case',
+        ['boolean', ['feature-state', 'hovered'], false], '#ff2424',
+        ['==', ['feature-state', 'aspectAdvantage'], '+'], '#efe8e0',
+        ['==', ['feature-state', 'aspectAdvantage'], '−'], '#8a8580',
+        '#d2cbc3',
+      ],
+      'text-opacity': [
+        'case',
+        ['boolean', ['feature-state', 'hovered'], false], 1,
+        ['==', ['feature-state', 'aspectAdvantage'], '+'], 0.95,
+        ['==', ['feature-state', 'aspectAdvantage'], '−'], 0.62,
+        0.9,
+      ],
+      'text-halo-color': '#000000',
+      'text-halo-width': [
+        'case',
+        ['boolean', ['feature-state', 'hovered'], false], 2,
+        ['==', ['feature-state', 'aspectAdvantage'], '+'], 1.8,
+        1.4,
+      ],
+      'text-halo-blur': 0,
+    },
+  });
 }
 
 function regionFilter(visibility: RegionVisibility): FilterSpecification {
@@ -842,53 +946,7 @@ export function MapView({
           'line-opacity': 0.78,
         },
       });
-      map.addLayer({
-        id: SITE_LAYER_ID,
-        type: 'symbol',
-        source: SITE_SOURCE_ID,
-        minzoom: 12.5,
-        filter: siteFilter(selectedRef.current, toggledSiteKeysRef.current),
-        layout: {
-          'icon-image': ['concat', 'site-icon-', ['get', 'icon']],
-          'icon-anchor': 'bottom',
-          'icon-size': [
-            'case',
-            ['get', 'hub'],
-            ['*', 1.25, ['interpolate', ['linear'], ['zoom'], 12.5, 0.5, 16, 0.95]],
-            ['interpolate', ['linear'], ['zoom'], 12.5, 0.5, 16, 0.95],
-          ],
-          'icon-allow-overlap': true,
-          'icon-ignore-placement': true,
-          'text-field': [
-            'case',
-            ['get', 'hub'], ['upcase', ['get', 'name']],
-            ['get', 'name'],
-          ],
-          // OpenFreeMap dark only ships Noto Sans Regular — Bold yields blank glyphs.
-          'text-font': ['Noto Sans Regular'],
-          'text-size': [
-            'case',
-            ['get', 'hub'], 15,
-            11,
-          ],
-          'text-anchor': 'bottom',
-          'text-offset': ['interpolate', ['linear'], ['zoom'], 12.5, ['literal', [0, -3.1]], 16, ['literal', [0, -4.6]]],
-          'text-max-width': 12,
-          'text-justify': 'center',
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
-        },
-        paint: {
-          'text-color': [
-            'case',
-            ['get', 'hub'], '#ffffff',
-            '#f7f4ef',
-          ],
-          'text-halo-color': '#000000',
-          'text-halo-width': 1.35,
-          'text-halo-blur': 0,
-        },
-      });
+      addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
       map.addLayer({
         id: PATH_ROUTE_LAYER_ID,
         type: 'line',
@@ -939,68 +997,13 @@ export function MapView({
       loadOrientationStreets(map, chronicleBounds, (markers) => {
         for (const marker of streetLabelMarkersRef.current) marker.remove();
         streetLabelMarkersRef.current = markers;
+        addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
+        addDistrictLabelLayer(map, layerVisibilityRef.current.districts);
+        syncSiteIcons(map, sitesRef.current);
+        restackPulseAboveStreets(map);
       });
 
-      map.addLayer({
-        id: LABEL_LAYER_ID,
-        type: 'symbol',
-        source: LABEL_SOURCE_ID,
-        minzoom: 12,
-        filter: ['==', ['get', 'kind'], 'district'],
-        layout: {
-          visibility: mapVisibility(layerVisibilityRef.current.districts),
-          'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular'],
-          // Hover scales the name up; MapLibre feature-state drives the resting↔hover jump.
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            12, [
-              'case',
-              ['boolean', ['feature-state', 'hovered'], false], 14,
-              ['==', ['feature-state', 'aspectAdvantage'], '+'], 13,
-              ['==', ['feature-state', 'aspectAdvantage'], '−'], 8,
-              10,
-            ],
-            14, [
-              'case',
-              ['boolean', ['feature-state', 'hovered'], false], 18,
-              ['==', ['feature-state', 'aspectAdvantage'], '+'], 16,
-              ['==', ['feature-state', 'aspectAdvantage'], '−'], 11,
-              13,
-            ],
-          ],
-          'text-transform': 'uppercase',
-          'text-letter-spacing': 0.12,
-          'text-max-width': 10,
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
-          'text-optional': false,
-        },
-        paint: {
-          'text-color': [
-            'case',
-            ['boolean', ['feature-state', 'hovered'], false], '#ff2424',
-            ['==', ['feature-state', 'aspectAdvantage'], '+'], '#d8d2cc',
-            ['==', ['feature-state', 'aspectAdvantage'], '−'], '#4a4643',
-            '#6f6a66',
-          ],
-          'text-opacity': [
-            'case',
-            ['boolean', ['feature-state', 'hovered'], false], 1,
-            ['==', ['feature-state', 'aspectAdvantage'], '+'], 0.92,
-            ['==', ['feature-state', 'aspectAdvantage'], '−'], 0.5,
-            0.72,
-          ],
-          'text-halo-color': '#000000',
-          'text-halo-width': [
-            'case',
-            ['boolean', ['feature-state', 'hovered'], false], 2,
-            ['==', ['feature-state', 'aspectAdvantage'], '+'], 1.8,
-            1.2,
-          ],
-          'text-halo-blur': 0,
-        },
-      });
+      addDistrictLabelLayer(map, layerVisibilityRef.current.districts);
       map.addLayer({
         id: REGION_LABEL_LAYER_ID,
         type: 'symbol',
@@ -1084,7 +1087,17 @@ export function MapView({
         },
       });
       syncBasemapImages(map, basemapMaskImagesRef.current);
-      map.moveLayer(SITE_LAYER_ID);
+      // Re-assert symbol layers — a failed icon/font bind must not leave labels absent.
+      try {
+        addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
+        addDistrictLabelLayer(map, layerVisibilityRef.current.districts);
+        if (map.getLayer(SITE_LAYER_ID)) map.moveLayer(SITE_LAYER_ID);
+        if (map.getLayer(LABEL_LAYER_ID)) map.moveLayer(LABEL_LAYER_ID);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Could not mount district/site labels';
+        console.error(message);
+        setStatus(`Map error: ${message}`);
+      }
       syncSiteIcons(map, sitesRef.current);
       syncPathVisibility(map, selectedRef.current);
       if (selectedRef.current) {
@@ -1093,6 +1106,12 @@ export function MapView({
           map.setFeatureState({ source: SOURCE_ID, id: selectedRef.current }, { selected: true });
           focusDistrict(map, districtsRef.current, selectedRef.current);
         }
+      }
+      if (!map.getLayer(SITE_LAYER_ID) || !map.getLayer(LABEL_LAYER_ID)) {
+        console.error('District/site label layers missing after style load', {
+          site: Boolean(map.getLayer(SITE_LAYER_ID)),
+          district: Boolean(map.getLayer(LABEL_LAYER_ID)),
+        });
       }
       setStatus('Street map ready. Select a shaded district for details.');
       updateBoundaryShade();
