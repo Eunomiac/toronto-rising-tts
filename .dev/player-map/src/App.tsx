@@ -19,7 +19,6 @@ import {
   updateDistrictInUrl,
   updateLayersInUrl,
 } from './data';
-import { runGsapEffectsMain } from './gsap-effects';
 import { type MapOverlaySelection } from './mapOverlays';
 import { SiteCardModal } from './SiteCardModal';
 import { TorontoLocator } from './TorontoLocator';
@@ -95,11 +94,6 @@ export function App() {
     if (!calibrationMode || revision === undefined || calibrationStorageRevision !== revision) return;
     window.localStorage.setItem(`${CALIBRATION_STORAGE_PREFIX}-${revision}`, JSON.stringify(visualCalibration));
   }, [calibrationMode, calibrationStorageRevision, data, visualCalibration]);
-
-  useEffect(() => {
-    if (!data) return;
-    runGsapEffectsMain();
-  }, [data, map, selectedKey, layerVisibility, regionVisibility]);
 
   const validSelectedKey = useMemo(() => {
     if (!data || !selectedKey) return null;
