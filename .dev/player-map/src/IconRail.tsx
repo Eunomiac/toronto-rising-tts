@@ -201,12 +201,18 @@ function IconRailItem({
     });
 
     playOpenRef.current = playOpen;
-    button.addEventListener('pointerenter', playHover);
-    button.addEventListener('pointerleave', stopHover);
+    // Hover lift only on fine pointers — touch leaves sticky hover otherwise (pin 31).
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (finePointer) {
+      button.addEventListener('pointerenter', playHover);
+      button.addEventListener('pointerleave', stopHover);
+    }
     return () => {
       entryTl.current?.kill();
-      button.removeEventListener('pointerenter', playHover);
-      button.removeEventListener('pointerleave', stopHover);
+      if (finePointer) {
+        button.removeEventListener('pointerenter', playHover);
+        button.removeEventListener('pointerleave', stopHover);
+      }
     };
   }, { scope: itemRef });
 
@@ -318,19 +324,45 @@ export function IconRail({
   useEffect(() => {
     const column = columnRef.current;
     if (!column) return undefined;
-    const items = [...column.querySelectorAll<HTMLElement>('.icon-rail__item')];
+    const slots = [...column.querySelectorAll<HTMLElement>('.icon-rail__slot')];
     const layout = () => {
       const top = column.getBoundingClientRect().top;
       const available = Math.max(180, window.innerHeight - top - 120);
-      const natural = items.length * (3.15 * 16 + 12); // rough px: button + gap
-      const needsCollapse = natural > available && !expandedRail && !openMenu;
-      column.classList.toggle('is-collapsed', needsCollapse);
-      column.classList.toggle('is-expanded', expandedRail || Boolean(openMenu));
-      if (needsCollapse) {
-        const overlap = Math.min(1.8, (natural - available) / items.length / 16);
+      const natural = slots.length * (3.15 * 16 + 12); // rough px: button + gap
+      const landscapeSolo = window.matchMedia('(orientation: landscape) and (max-height: 520px)').matches;
+      const needsCollapse = (natural > available && !expandedRail && !openMenu)
+        || (landscapeSolo && Boolean(openMenu));
+      column.classList.toggle('is-collapsed', needsCollapse && !(landscapeSolo && openMenu));
+      column.classList.toggle('is-expanded', (expandedRail || Boolean(openMenu)) && !landscapeSolo);
+      column.classList.toggle('is-landscape-solo', landscapeSolo && Boolean(openMenu));
+      if (needsCollapse && !(landscapeSolo && openMenu)) {
+        const overlap = Math.min(1.8, (natural - available) / Math.max(1, slots.length) / 16);
         column.style.setProperty('--rail-overlap', `${overlap.toFixed(2)}rem`);
       } else {
         column.style.removeProperty('--rail-overlap');
+      }
+      // Mobile landscape: open slot to top; others stay clustered (pin 32).
+      if (landscapeSolo && openMenu) {
+        const openSlot = slots.find((slot) => slot.dataset.menu === openMenu);
+        const closed = slots.filter((slot) => slot !== openSlot);
+        if (openSlot) {
+          openSlot.style.order = '-1';
+          gsap.to(openSlot, { y: 0, duration: 0.28, ease: 'power2.out', overwrite: 'auto' });
+        }
+        closed.forEach((slot, index) => {
+          slot.style.order = String(index + 1);
+          gsap.to(slot, {
+            y: 0,
+            duration: 0.28,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
+        });
+      } else {
+        for (const slot of slots) {
+          slot.style.order = '';
+          gsap.to(slot, { y: 0, duration: 0.22, ease: 'power2.inOut', overwrite: 'auto' });
+        }
       }
     };
     layout();
@@ -345,11 +377,24 @@ export function IconRail({
 
   const huntingSelected = overlay.kind === 'hunting' ? overlay.flavor : null;
   const homesteadSelected = overlay.kind === 'homestead' ? overlay.trait : null;
+  const overlayChip = overlay.kind === 'hunting'
+    ? { menuId: 'hunting' as const, label: overlay.flavor.toUpperCase() }
+    : overlay.kind === 'homestead'
+      ? {
+        menuId: 'homestead' as const,
+        label: (HOMESTEAD_TRAITS.find((trait) => trait.id === overlay.trait)?.label ?? overlay.trait).toUpperCase(),
+      }
+      : null;
+
+  const selectOverlay = (next: MapOverlaySelection) => {
+    onOverlayChange(next);
+    setOpenMenu(null);
+  };
 
   return (
     <nav
       ref={rootRef}
-      className="icon-rail"
+      className={`icon-rail${openMenu ? ' is-menu-open' : ''}`}
       data-note-surface="layer-controls"
       aria-label="Map menus"
       data-gsap="icon-rail"
@@ -359,9 +404,16 @@ export function IconRail({
       <div ref={columnRef} className="icon-rail__column">
         {MENUS.map((menu) => {
           const isOpen = openMenu === menu.id;
+          const chipForMenu = overlayChip && overlayChip.menuId === menu.id && !isOpen
+            ? overlayChip
+            : null;
           return (
-            <IconRailItem
+            <div
               key={menu.id}
+              className={`icon-rail__slot${isOpen ? ' is-open' : ''}${chipForMenu ? ' has-chip' : ''}`}
+              data-menu={menu.id}
+            >
+            <IconRailItem
               menu={menu}
               isOpen={isOpen}
               wide={menu.id === 'sites' || menu.id === 'hunting' || menu.id === 'homestead'}
@@ -448,7 +500,7 @@ export function IconRail({
                       type="button"
                       className={`icon-rail__option icon-rail__option--district${selected ? ' is-selected' : ''}`}
                       aria-pressed={selected}
-                      onClick={() => onOverlayChange(
+                      onClick={() => selectOverlay(
                         selected ? { kind: 'none' } : { kind: 'hunting', flavor: flavor as HuntingFlavor },
                       )}
                     >
@@ -468,7 +520,7 @@ export function IconRail({
                     type="button"
                     className={`icon-rail__option icon-rail__option--homestead${selected ? ' is-selected' : ''}`}
                     aria-pressed={selected}
-                    onClick={() => onOverlayChange(
+                    onClick={() => selectOverlay(
                       selected ? { kind: 'none' } : { kind: 'homestead', trait: trait.id },
                     )}
                   >
@@ -486,12 +538,32 @@ export function IconRail({
             <p className="icon-rail__empty">Nothing revealed yet.</p>
           )}
             </IconRailItem>
+            {chipForMenu ? (
+              <button
+                type="button"
+                className="icon-rail__overlay-chip"
+                aria-label={`Clear ${chipForMenu.label} overlay`}
+                onClick={() => onOverlayChange({ kind: 'none' })}
+              >
+                {chipForMenu.label}
+              </button>
+            ) : null}
+            </div>
           );
         })}
       </div>
       {overlay.kind === 'homestead' ? (
         <aside className="homestead-blurb" data-gsap="homestead-blurb">
-          <h2>{HOMESTEAD_BLURBS[overlay.trait].title}</h2>
+          <h2>
+            <span
+              className="homestead-blurb__glyph"
+              style={{
+                '--glyph': `url('${HOMESTEAD_TRAITS.find((trait) => trait.id === overlay.trait)?.icon ?? ''}')`,
+              } as CSSProperties}
+              aria-hidden="true"
+            />
+            {HOMESTEAD_BLURBS[overlay.trait].title}
+          </h2>
           <p>{HOMESTEAD_BLURBS[overlay.trait].body}</p>
         </aside>
       ) : null}

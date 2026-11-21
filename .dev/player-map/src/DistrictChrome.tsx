@@ -35,9 +35,14 @@ export function DistrictChrome({ districtKey, districtName }: DistrictChromeProp
           <img src={districtFooterUrl(districtKey)} alt="" />
         </div>
       </div>
-      <CardModal open={cardOpen} onClose={() => setCardOpen(false)} labelledBy="district-card-title">
-        <h2 id="district-card-title" className="card-modal__title">{districtName}</h2>
-        <img className="card-modal__image" src={districtCardUrl(districtKey)} alt={`${districtName} district card`} />
+      <CardModal open={cardOpen} onClose={() => setCardOpen(false)} ariaLabel={`${districtName} district card`}>
+        <div className="card-modal__stack card-modal__stack--district-alone">
+          <img
+            className="card-modal__image card-modal__image--district-alone"
+            src={districtCardUrl(districtKey)}
+            alt={`${districtName} district card`}
+          />
+        </div>
       </CardModal>
     </>
   );

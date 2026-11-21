@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Map } from 'maplibre-gl';
 import { DebugNotesSlot } from '#debug-notes';
 import { CalibrationPanel } from './CalibrationPanel';
@@ -52,8 +52,15 @@ export function App() {
   const [visualCalibration, setVisualCalibration] = useState(DEFAULT_VISUAL_CALIBRATION);
   const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
   const [map, setMap] = useState<Map | null>(null);
+  useEffect(() => {
+    (window as Window & { __trPlayerMap?: Map | null }).__trPlayerMap = map;
+    return () => {
+      delete (window as Window & { __trPlayerMap?: Map | null }).__trPlayerMap;
+    };
+  }, [map]);
   const [activeSite, setActiveSite] = useState<PublicSiteProperties | null>(null);
   const [overlay, setOverlay] = useState<MapOverlaySelection>({ kind: 'none' });
+  const skipNextDistrictFocusRef = useRef(false);
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
   // Author pin UI is swapped in only via the Vite #debug-notes alias during serve.
   const { mode: layoutMode, setMode: setLayoutMode, useImageChrome } = useDistrictLayout(import.meta.env.DEV);
@@ -80,6 +87,22 @@ export function App() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [selectedKey]);
+
+  // Zooming out past city scale clears overlay + district selection (pin 18).
+  useEffect(() => {
+    if (!map) return undefined;
+    const onZoom = () => {
+      if (map.getZoom() >= 12) return;
+      setOverlay((current) => (current.kind === 'none' ? current : { kind: 'none' }));
+      setSelectedKey((current) => {
+        if (!current) return current;
+        window.history.replaceState(null, '', updateDistrictInUrl(null));
+        return null;
+      });
+    };
+    map.on('zoom', onZoom);
+    return () => { map.off('zoom', onZoom); };
+  }, [map]);
 
   useEffect(() => {
     const revision = data?.manifest.calibration.revision;
@@ -179,6 +202,8 @@ export function App() {
     const lat = coordinates?.[1];
     const districtKey = feature?.properties.districtKey;
     if (districtKey) {
+      // Site easeTo must win over MapView's district fitBounds (pin 19).
+      skipNextDistrictFocusRef.current = true;
       setSelectedKey(districtKey);
       window.history.replaceState(null, '', updateDistrictInUrl(districtKey));
       setLayerVisibility((layers) => {
@@ -240,6 +265,7 @@ export function App() {
         selectedKey={mapSelectedKey}
         toggledSiteKeys={toggledSiteKeys}
         overlay={overlay}
+        skipNextDistrictFocusRef={skipNextDistrictFocusRef}
         onSelect={selectDistrict}
         onSiteSelect={(key) => {
           const site = data.sites.features.find((feature) => feature.properties.key === key);

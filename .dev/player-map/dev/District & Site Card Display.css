@@ -1,0 +1,55 @@
+.card-modal {
+    padding: 0px;
+}
+
+.card-modal__content {
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    display: grid;
+    justify-items: center;
+    pointer-events: none; /* Required given max size of container; will have to change this or move click listener to swap to District to another element */
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+.card-modal__stack {
+    width: 80%;
+    position: absolute;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+}
+
+.card-modal__stack h2 { display: none; } /* Remove title; we don't need it. */
+
+img.card-modal__image[alt*="site"] {
+    position: absolute;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    left: 50%;
+}
+
+img.card-modal__image[alt*="hub"] {
+    height: 100vh;
+    width: auto;
+}
+img.card-modal__image[alt*="district"] {
+    height: auto;
+    width: 70vw;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: calc(50% + 120px); /* This is the value for a SITE card (with District + Site displayed simultaneously) */
+    top: 50%; /* This is the value for a District card displayed on its own */
+    left: 50%;
+}
+
+span.card-modal__hint {
+    position: absolute;
+    top: 10px;
+    font-size: 2rem;
+    font-family: "Penumbra Flare";
+}
+

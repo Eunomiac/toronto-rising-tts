@@ -5,7 +5,8 @@ import gsap from 'gsap';
 interface CardModalProps {
   readonly open: boolean;
   readonly onClose: () => void;
-  readonly labelledBy: string;
+  /** Accessible name when visible titles are omitted. */
+  readonly ariaLabel: string;
   readonly children: ReactNode;
 }
 
@@ -13,7 +14,7 @@ interface CardModalProps {
  * Full-screen dimmed overlay. Clicking the backdrop closes without forwarding
  * the click to the map underneath.
  */
-export function CardModal({ open, onClose, labelledBy, children }: CardModalProps) {
+export function CardModal({ open, onClose, ariaLabel, children }: CardModalProps) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,7 +56,7 @@ export function CardModal({ open, onClose, labelledBy, children }: CardModalProp
       className="card-modal"
       role="dialog"
       aria-modal="true"
-      aria-labelledby={labelledBy}
+      aria-label={ariaLabel}
       data-note-surface="card-modal"
       onMouseDown={onBackdrop}
       onClick={onBackdrop}

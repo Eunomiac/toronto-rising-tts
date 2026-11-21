@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   bearingAtMidpoint,
+  filterOrientationStubArtifacts,
   isEastStreetEntryKey,
   midpointAlong,
+  stitchOrientationStreetFeatures,
   streetEntryKey,
   streetLabelCollection,
 } from './street-labels';
@@ -54,5 +56,70 @@ describe('streetLabelCollection', () => {
     expect(isEastStreetEntryKey('Bloor Street West')).toBe(false);
     expect(bearingAtMidpoint([[-79.4, 43.65], [-79.4, 43.67]])).toBeCloseTo(-90, 0);
     expect(bearingAtMidpoint([[-79.42, 43.68], [-79.38, 43.68]])).toBeCloseTo(0, 0);
+  });
+
+  it('drops short cross-stubs and orphan dashes, keeps short corridor pieces', () => {
+    const features = [
+      {
+        properties: { entryKey: 'Yonge Street', displayName: 'YONGE' },
+        geometry: { type: 'LineString', coordinates: [[-79.4, 43.65], [-79.4, 43.66]] },
+      },
+      // Short N–S piece touching the long way — keep.
+      {
+        properties: { entryKey: 'Yonge Street', displayName: 'YONGE' },
+        geometry: { type: 'LineString', coordinates: [[-79.4, 43.66], [-79.4, 43.6603]] },
+      },
+      // Short E–W cross-stub — drop.
+      {
+        properties: { entryKey: 'Yonge Street', displayName: 'YONGE' },
+        geometry: { type: 'LineString', coordinates: [[-79.4, 43.655], [-79.3996, 43.655]] },
+      },
+      // Orphan short N–S dash far from the corridor — drop.
+      {
+        properties: { entryKey: 'Yonge Street', displayName: 'YONGE' },
+        geometry: { type: 'LineString', coordinates: [[-79.41, 43.64], [-79.41, 43.6403]] },
+      },
+      {
+        properties: { entryKey: 'Bloor Street West', displayName: 'BLOOR' },
+        geometry: { type: 'LineString', coordinates: [[-79.42, 43.67], [-79.40, 43.67]] },
+      },
+      // Short E–W piece touching Bloor — keep.
+      {
+        properties: { entryKey: 'Bloor Street West', displayName: 'BLOOR' },
+        geometry: { type: 'LineString', coordinates: [[-79.40, 43.67], [-79.3996, 43.67]] },
+      },
+      // Short N–S cross-stub on Bloor — drop.
+      {
+        properties: { entryKey: 'Bloor Street West', displayName: 'BLOOR' },
+        geometry: { type: 'LineString', coordinates: [[-79.41, 43.67], [-79.41, 43.6703]] },
+      },
+    ];
+    const kept = filterOrientationStubArtifacts(features);
+    expect(kept).toHaveLength(4);
+    expect(kept.some((feature) => feature.geometry.coordinates[1]?.[0] === -79.3996
+      && feature.properties?.displayName === 'YONGE')).toBe(false);
+    expect(kept.some((feature) => feature.geometry.coordinates[0]?.[0] === -79.41
+      && feature.properties?.displayName === 'YONGE')).toBe(false);
+    expect(kept.some((feature) => feature.geometry.coordinates[1]?.[1] === 43.6703)).toBe(false);
+  });
+
+  it('stitches near-touching corridor pieces into fewer continuous lines', () => {
+    const features = [
+      {
+        properties: { entryKey: 'Yonge Street', displayName: 'YONGE' },
+        geometry: { type: 'LineString', coordinates: [[-79.4, 43.65], [-79.4, 43.651]] },
+      },
+      {
+        properties: { entryKey: 'Yonge Street', displayName: 'YONGE' },
+        geometry: { type: 'LineString', coordinates: [[-79.4, 43.651], [-79.4, 43.652]] },
+      },
+      {
+        properties: { entryKey: 'Yonge Street', displayName: 'YONGE' },
+        geometry: { type: 'LineString', coordinates: [[-79.4, 43.652], [-79.4, 43.653]] },
+      },
+    ];
+    const stitched = stitchOrientationStreetFeatures(features);
+    expect(stitched).toHaveLength(1);
+    expect(stitched[0]?.geometry.coordinates.length).toBeGreaterThan(2);
   });
 });

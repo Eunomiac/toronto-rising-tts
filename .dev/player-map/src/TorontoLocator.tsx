@@ -7,8 +7,8 @@ const SHOW_MAX_ZOOM = 9.5;
 const HOME_ZOOM = 12.5;
 /** Circle center in the 480×480 SVG (slightly above geometric center). */
 const ROTATION_ORIGIN = '50% 38.4%';
-/** Match MapView focus padding so the pin clears the rail and district chrome. */
-const EDGE_INSET = { top: 116, right: 52, bottom: 260, left: 120 };
+/** Clear of icon rail (left), header, and district chrome (bottom). */
+const EDGE_INSET = { top: 140, right: 72, bottom: 260, left: 160 };
 
 interface TorontoLocatorProps {
   readonly map: Map | null;
@@ -88,11 +88,26 @@ export function TorontoLocator({ map }: TorontoLocatorProps) {
     };
 
     const onClick = () => {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduced) {
+        map.jumpTo({ center: TORONTO, zoom: HOME_ZOOM });
+        return;
+      }
+      // Pan at current zoom, then zoom in (pin 28).
+      const panMs = 700;
       map.easeTo({
         center: TORONTO,
-        zoom: HOME_ZOOM,
-        duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900,
+        zoom: map.getZoom(),
+        duration: panMs,
       });
+      window.setTimeout(() => {
+        if (!map.getContainer().isConnected) return;
+        map.easeTo({
+          center: TORONTO,
+          zoom: HOME_ZOOM,
+          duration: 750,
+        });
+      }, panMs);
     };
     host.addEventListener('click', onClick);
     map.on('move', sync);

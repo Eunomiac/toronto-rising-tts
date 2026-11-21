@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type MutableRefObject } from 'react';
 import { siteCardUrl, siteHubCardUrl } from './districtAssets';
 import { overlayPaintForDistrict, type MapOverlaySelection } from './mapOverlays';
 import {
@@ -20,7 +20,14 @@ import { interiorDistrictBorders } from './district-borders';
 import { DISTRICT_GLOW_COLOR, districtPulseAmount, districtPulseFrame } from './district-pulse';
 import { ORIENTATION_STREETS, type OrientationStreetCategory } from './orientation-streets';
 import {
+  createDistrictLabelElement,
+  DISTRICT_LABEL_MIN_ZOOM,
+  setDistrictLabelState,
+} from './district-html-labels';
+import {
+  filterOrientationStubArtifacts,
   STREET_LABEL_MIN_ZOOM,
+  stitchOrientationStreetFeatures,
   streetLabelCollection,
 } from './street-labels';
 import { labelsForViewport } from './viewport-labels';
@@ -59,7 +66,6 @@ const DISTRICT_GLOW_LAYER_IDS = ['district-selected-glow', 'district-selected-gl
 const LINE_LAYER_ID = 'district-lines';
 const REGION_GLOW_LAYER_ID = 'region-glow';
 const BASEMAP_IMAGE_PREFIX = 'basemap-mask-image-';
-const LABEL_LAYER_ID = 'district-labels';
 const REGION_FILL_LAYER_ID = 'region-fills';
 const REGION_LINE_LAYER_ID = 'region-lines';
 const REGION_LABEL_LAYER_ID = 'region-labels';
@@ -85,7 +91,7 @@ const STREET_LINE_LAYER_IDS = [
 const BASEMAP_MASK_FILL_LAYER_ID = 'basemap-mask-fills';
 const BASEMAP_MASK_LINE_LAYER_ID = 'basemap-mask-lines';
 const BASEMAP_MASK_LABEL_LAYER_ID = 'basemap-mask-labels';
-/** Wide enough for Circular Quay (Sydney) and European markers; south of Australia. */
+/** Wide enough for New South Wales Colony (Sydney) and European markers; south of Australia. */
 const PLAY_BOUNDS: [[number, number], [number, number]] = [[-130, -45], [160, 62]];
 const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [-79.34, 43.70]];
 const CITY_SHADE_MIN_ZOOM = 10;
@@ -93,8 +99,8 @@ const JOKE_HOME_COORDINATES: [number, number] = [-80.0197, 44.5101];
 /** Remap the last generated street snapshot onto the current whitelist until streets are re-fetched. */
 const ORIENTATION_STREET_DISPLAY_REMAP = new globalThis.Map<string, { category: OrientationStreetCategory; displayName: string }>([
   ['Yonge Street', { category: 'orientation', displayName: 'YONGE' }],
-  ['Don Valley Parkway', { category: 'primary', displayName: 'DON VALLEY PKY' }],
-  ['Gardiner Expressway', { category: 'primary', displayName: 'GARDINER EXPY' }],
+  ['Don Valley Parkway', { category: 'primary', displayName: 'DON VALLEY PARKWAY' }],
+  ['Gardiner Expressway', { category: 'primary', displayName: 'GARDINER EXPRESSWAY' }],
   ['St. Clair West', { category: 'orientation', displayName: 'ST. CLAIR' }],
   ['St. Clair East', { category: 'orientation', displayName: 'ST. CLAIR' }],
   ['Bloor West', { category: 'orientation', displayName: 'BLOOR' }],
@@ -143,6 +149,8 @@ interface MapViewProps {
   selectedKey: string | null;
   toggledSiteKeys: readonly string[];
   overlay?: MapOverlaySelection;
+  /** When true, the next selectedKey change skips district fitBounds (site focus wins). */
+  skipNextDistrictFocusRef?: MutableRefObject<boolean>;
   onSelect: (key: string) => void;
   onSiteSelect?: (key: string) => void;
   onMapReady?: (map: Map | null) => void;
@@ -225,7 +233,6 @@ function restackPulseAboveStreets(map: Map) {
   for (const layerId of [
     REGION_GLOW_LAYER_ID,
     REGION_LINE_LAYER_ID,
-    LABEL_LAYER_ID,
     REGION_LABEL_LAYER_ID,
     SITE_LAYER_ID,
     BASEMAP_MASK_LABEL_LAYER_ID,
@@ -306,16 +313,22 @@ function hideBasemapLabels(map: Map) {
     const existing = map.getFilter(layerId);
     map.setFilter(layerId, existing ? ['all', existing, exclude] as FilterSpecification : exclude);
   }
-  // OpenMapTiles transportation *line* layers have class, not name — a name match cannot
-  // hide Bloor/Yonge/etc. Dim major/motorway basemap roads so only our overlays read as
-  // the bright curated highlights (Spadina/University stay un-emphasized).
+  // Keep CA / US / AU state-province labels; quiet foreign regional admin names (pin 26).
+  const stateAllow: FilterSpecification = [
+    'any',
+    ['match', ['slice', ['coalesce', ['get', 'iso_3166_2'], ''], 0, 2], ['CA', 'US', 'AU'], true, false],
+    ['match', ['slice', ['coalesce', ['get', 'iso_3166_1'], ''], 0, 2], ['CA', 'US', 'AU'], true, false],
+  ];
   for (const layer of map.getStyle().layers ?? []) {
-    if (layer.type !== 'line') continue;
-    const id = layer.id;
-    if (!id.startsWith('highway_') || id.includes('name') || id.includes('path') || id.includes('minor')) continue;
-    if (id.includes('major') || id.includes('motorway')) {
-      map.setPaintProperty(id, 'line-opacity', 0.12);
-    }
+    if (layer.type !== 'symbol') continue;
+    const id = layer.id.toLowerCase();
+    if (!id.includes('place')) continue;
+    if (id.includes('country')) continue;
+    if (!(id.includes('state') || id.includes('province') || id.includes('region'))) continue;
+    if (!map.getLayer(layer.id)) continue;
+    map.setLayoutProperty(layer.id, 'visibility', 'visible');
+    const existing = map.getFilter(layer.id);
+    map.setFilter(layer.id, existing ? ['all', existing, stateAllow] as FilterSpecification : stateAllow);
   }
 }
 
@@ -374,6 +387,49 @@ function syncStreetLabelVisibility(markers: Marker[], zoom: number) {
     const element = marker.getElement();
     element.style.display = visible ? '' : 'none';
   }
+}
+
+function syncDistrictHtmlLabelVisibility(markers: Marker[], zoom: number, districtsVisible: boolean) {
+  const visible = districtsVisible && zoom >= DISTRICT_LABEL_MIN_ZOOM;
+  for (const marker of markers) {
+    marker.getElement().style.display = visible ? '' : 'none';
+  }
+}
+
+function syncDistrictHtmlLabelStates(
+  markers: Marker[],
+  hoveredKey: string | null,
+  selectedKey: string | null,
+) {
+  for (const marker of markers) {
+    const element = marker.getElement();
+    const key = element.dataset.districtKey ?? '';
+    const state = key && key === selectedKey
+      ? 'selected'
+      : (key && key === hoveredKey ? 'hovered' : 'default');
+    setDistrictLabelState(element, state);
+  }
+}
+
+function mountDistrictHtmlMarkers(
+  map: Map,
+  labels: MapLabelCollection,
+  hoveredKey: string | null,
+  selectedKey: string | null,
+): Marker[] {
+  const markers: Marker[] = [];
+  for (const feature of labels.features) {
+    if (feature.properties.kind !== 'district') continue;
+    const element = createDistrictLabelElement(feature.properties.name);
+    element.dataset.districtKey = feature.properties.key;
+    const marker = new Marker({ element, anchor: 'center' })
+      .setLngLat(feature.geometry.coordinates as [number, number])
+      .addTo(map);
+    markers.push(marker);
+  }
+  syncDistrictHtmlLabelStates(markers, hoveredKey, selectedKey);
+  syncDistrictHtmlLabelVisibility(markers, map.getZoom(), true);
+  return markers;
 }
 
 function mountStreetLabelMarkers(
@@ -449,12 +505,14 @@ function loadOrientationStreets(
     })
     .then((data) => {
       if (!map.getLayer(FILL_LAYER_ID) || map.getSource(ORIENTATION_STREET_SOURCE_ID)) return;
+      const resolved = data.features.flatMap((feature) => {
+        const next = resolveOrientationStreetFeature(feature);
+        if (!next || next.geometry.type !== 'LineString') return [];
+        return [next as GeoJSON.Feature<GeoJSON.LineString>];
+      });
       const filtered: GeoJSON.FeatureCollection = {
         type: 'FeatureCollection',
-        features: data.features.flatMap((feature) => {
-          const next = resolveOrientationStreetFeature(feature);
-          return next ? [next] : [];
-        }),
+        features: stitchOrientationStreetFeatures(filterOrientationStubArtifacts(resolved)),
       };
       // Full OSM geometry — lines continue under the exterior blur (pin 7).
       map.addSource(ORIENTATION_STREET_SOURCE_ID, { type: 'geojson', data: filtered });
@@ -563,7 +621,12 @@ function addSiteMarkerLayer(map: Map, selectedKey: string | null, toggledSiteKey
         11,
       ],
       'text-anchor': 'bottom',
-      'text-offset': ['interpolate', ['linear'], ['zoom'], 12.5, ['literal', [0, -3.1]], 16, ['literal', [0, -4.6]]],
+      // Hubs sit closer to the icon; one zoom interpolate only (MapLibre rejects nested zoom exprs).
+      'text-offset': [
+        'interpolate', ['linear'], ['zoom'],
+        12.5, ['case', ['get', 'hub'], ['literal', [0, -1.55]], ['literal', [0, -3.1]]],
+        16, ['case', ['get', 'hub'], ['literal', [0, -2.2]], ['literal', [0, -4.6]]],
+      ],
       'text-max-width': 12,
       'text-justify': 'center',
       'text-allow-overlap': true,
@@ -577,54 +640,6 @@ function addSiteMarkerLayer(map: Map, selectedKey: string | null, toggledSiteKey
       ],
       'text-halo-color': '#000000',
       'text-halo-width': 1.35,
-      'text-halo-blur': 0,
-    },
-  });
-}
-
-function addDistrictLabelLayer(map: Map, districtsVisible: boolean) {
-  if (map.getLayer(LABEL_LAYER_ID)) return;
-  map.addLayer({
-    id: LABEL_LAYER_ID,
-    type: 'symbol',
-    source: LABEL_SOURCE_ID,
-    minzoom: 12,
-    filter: ['==', ['get', 'kind'], 'district'],
-    layout: {
-      visibility: mapVisibility(districtsVisible),
-      'text-field': ['get', 'name'],
-      'text-font': ['Noto Sans Regular'],
-      // feature-state is paint/filter-only — using it in text-size rejects the whole layer.
-      'text-size': ['interpolate', ['linear'], ['zoom'], 12, 11, 14, 14],
-      'text-transform': 'uppercase',
-      'text-letter-spacing': 0.12,
-      'text-max-width': 10,
-      'text-allow-overlap': true,
-      'text-ignore-placement': true,
-      'text-optional': false,
-    },
-    paint: {
-      'text-color': [
-        'case',
-        ['boolean', ['feature-state', 'hovered'], false], '#ff2424',
-        ['==', ['feature-state', 'aspectAdvantage'], '+'], '#efe8e0',
-        ['==', ['feature-state', 'aspectAdvantage'], '−'], '#8a8580',
-        '#d2cbc3',
-      ],
-      'text-opacity': [
-        'case',
-        ['boolean', ['feature-state', 'hovered'], false], 1,
-        ['==', ['feature-state', 'aspectAdvantage'], '+'], 0.95,
-        ['==', ['feature-state', 'aspectAdvantage'], '−'], 0.62,
-        0.9,
-      ],
-      'text-halo-color': '#000000',
-      'text-halo-width': [
-        'case',
-        ['boolean', ['feature-state', 'hovered'], false], 2,
-        ['==', ['feature-state', 'aspectAdvantage'], '+'], 1.8,
-        1.4,
-      ],
       'text-halo-blur': 0,
     },
   });
@@ -672,6 +687,7 @@ export function MapView({
   selectedKey,
   toggledSiteKeys,
   overlay = { kind: 'none' },
+  skipNextDistrictFocusRef,
   onSelect,
   onSiteSelect,
   onMapReady,
@@ -701,6 +717,7 @@ export function MapView({
   const toggledSiteKeysRef = useRef(toggledSiteKeys);
   const pulseOriginRef = useRef<number | null>(null);
   const streetLabelMarkersRef = useRef<Marker[]>([]);
+  const districtHtmlMarkersRef = useRef<Marker[]>([]);
   const [status, setStatus] = useState('Loading street map…');
   const [distantView, setDistantView] = useState(false);
   const [siteTooltip, setSiteTooltip] = useState<{
@@ -762,7 +779,13 @@ export function MapView({
         boundaryFrame = null;
         if (boundaryShadeRef.current) positionBoundaryShade(map, chronicleBounds, boundaryShadeRef.current);
         setDistantView(map.getZoom() < CITY_SHADE_MIN_ZOOM);
-        syncStreetLabelVisibility(streetLabelMarkersRef.current, map.getZoom());
+        const zoom = map.getZoom();
+        syncStreetLabelVisibility(streetLabelMarkersRef.current, zoom);
+        syncDistrictHtmlLabelVisibility(
+          districtHtmlMarkersRef.current,
+          zoom,
+          layerVisibilityRef.current.districts,
+        );
       });
     };
     const finalizeViewportLabels = () => {
@@ -998,12 +1021,18 @@ export function MapView({
         for (const marker of streetLabelMarkersRef.current) marker.remove();
         streetLabelMarkersRef.current = markers;
         addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
-        addDistrictLabelLayer(map, layerVisibilityRef.current.districts);
         syncSiteIcons(map, sitesRef.current);
         restackPulseAboveStreets(map);
       });
 
-      addDistrictLabelLayer(map, layerVisibilityRef.current.districts);
+      for (const marker of districtHtmlMarkersRef.current) marker.remove();
+      districtHtmlMarkersRef.current = mountDistrictHtmlMarkers(
+        map,
+        labelsRef.current,
+        hoveredRef.current,
+        selectedRef.current,
+      );
+
       map.addLayer({
         id: REGION_LABEL_LAYER_ID,
         type: 'symbol',
@@ -1087,14 +1116,12 @@ export function MapView({
         },
       });
       syncBasemapImages(map, basemapMaskImagesRef.current);
-      // Re-assert symbol layers — a failed icon/font bind must not leave labels absent.
+      // Re-assert site symbols — a failed icon/font bind must not leave markers absent.
       try {
         addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
-        addDistrictLabelLayer(map, layerVisibilityRef.current.districts);
         if (map.getLayer(SITE_LAYER_ID)) map.moveLayer(SITE_LAYER_ID);
-        if (map.getLayer(LABEL_LAYER_ID)) map.moveLayer(LABEL_LAYER_ID);
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Could not mount district/site labels';
+        const message = error instanceof Error ? error.message : 'Could not mount site markers';
         console.error(message);
         setStatus(`Map error: ${message}`);
       }
@@ -1107,11 +1134,8 @@ export function MapView({
           focusDistrict(map, districtsRef.current, selectedRef.current);
         }
       }
-      if (!map.getLayer(SITE_LAYER_ID) || !map.getLayer(LABEL_LAYER_ID)) {
-        console.error('District/site label layers missing after style load', {
-          site: Boolean(map.getLayer(SITE_LAYER_ID)),
-          district: Boolean(map.getLayer(LABEL_LAYER_ID)),
-        });
+      if (!map.getLayer(SITE_LAYER_ID)) {
+        console.error('Site marker layer missing after style load');
       }
       setStatus('Street map ready. Select a shaded district for details.');
       updateBoundaryShade();
@@ -1122,6 +1146,13 @@ export function MapView({
       map.setFeatureState({ source: SOURCE_ID, id: key }, { hovered: false });
       map.setFeatureState({ source: LABEL_SOURCE_ID, id: key }, { hovered: false });
     };
+    const refreshDistrictHtmlLabelStates = () => {
+      syncDistrictHtmlLabelStates(
+        districtHtmlMarkersRef.current,
+        hoveredRef.current,
+        selectedRef.current,
+      );
+    };
     const onMouseMove = (event: MapMouseEvent) => {
       const siteHit = map.getLayer(SITE_LAYER_ID)
         ? map.queryRenderedFeatures(event.point, { layers: [SITE_LAYER_ID] })[0]
@@ -1131,6 +1162,7 @@ export function MapView({
         if (hoveredRef.current && hoveredRef.current !== 'PATH') clearDistrictHover(hoveredRef.current);
         hoveredRef.current = null;
         syncHoverBorders(map, districtsRef.current, null);
+        refreshDistrictHtmlLabelStates();
         setSiteTooltip({
           key: siteKey,
           hub: Boolean(siteHit?.properties?.hub),
@@ -1153,6 +1185,7 @@ export function MapView({
       } else {
         syncHoverBorders(map, districtsRef.current, null);
       }
+      refreshDistrictHtmlLabelStates();
       map.getCanvas().style.cursor = key ? 'pointer' : '';
     };
     const onClick = (event: MapMouseEvent) => {
@@ -1181,6 +1214,7 @@ export function MapView({
       if (hoveredRef.current && hoveredRef.current !== 'PATH') clearDistrictHover(hoveredRef.current);
       hoveredRef.current = null;
       syncHoverBorders(map, districtsRef.current, null);
+      refreshDistrictHtmlLabelStates();
       map.getCanvas().style.cursor = '';
     };
     map.on('mousemove', onMouseMove);
@@ -1197,6 +1231,8 @@ export function MapView({
       if (labelTimer !== null) window.clearTimeout(labelTimer);
       for (const marker of streetLabelMarkersRef.current) marker.remove();
       streetLabelMarkersRef.current = [];
+      for (const marker of districtHtmlMarkersRef.current) marker.remove();
+      districtHtmlMarkersRef.current = [];
       jokeMarker.remove();
       onMapReadyRef.current?.(null);
       map.remove();
@@ -1234,6 +1270,13 @@ export function MapView({
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
     updateViewportLabels(map, districtsRef.current, labels);
+    for (const marker of districtHtmlMarkersRef.current) marker.remove();
+    districtHtmlMarkersRef.current = mountDistrictHtmlMarkers(
+      map,
+      labels,
+      hoveredRef.current,
+      selectedRef.current,
+    );
   }, [labels]);
 
   useEffect(() => {
@@ -1268,12 +1311,17 @@ export function MapView({
     const map = mapRef.current;
     if (!map) return undefined;
     return applyWhenStyleReady(map, FILL_LAYER_ID, () => {
-      for (const layer of [FILL_LAYER_ID, ...DISTRICT_GLOW_LAYER_IDS, LINE_LAYER_ID, HOVER_BORDER_LAYER_ID, LABEL_LAYER_ID]) {
+      for (const layer of [FILL_LAYER_ID, ...DISTRICT_GLOW_LAYER_IDS, LINE_LAYER_ID, HOVER_BORDER_LAYER_ID]) {
         if (map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.districts));
       }
       for (const layer of [REGION_FILL_LAYER_ID, REGION_GLOW_LAYER_ID, REGION_LINE_LAYER_ID, REGION_LABEL_LAYER_ID]) {
         if (map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.regions));
       }
+      syncDistrictHtmlLabelVisibility(
+        districtHtmlMarkersRef.current,
+        map.getZoom(),
+        layerVisibility.districts,
+      );
       syncPathVisibility(map, selectedRef.current);
       if (!layerVisibility.districts && hoveredRef.current) {
         if (hoveredRef.current !== 'PATH') {
@@ -1282,6 +1330,7 @@ export function MapView({
         }
         hoveredRef.current = null;
         syncHoverBorders(map, districtsRef.current, null);
+        syncDistrictHtmlLabelStates(districtHtmlMarkersRef.current, null, selectedRef.current);
         map.getCanvas().style.cursor = '';
       }
     });
@@ -1371,18 +1420,31 @@ export function MapView({
     selectedRef.current = selectedKey;
     if (!map?.getSource(BORDER_SOURCE_ID)) return;
     if (previousKey && previousKey !== 'PATH') map.setFeatureState({ source: SOURCE_ID, id: previousKey }, { selected: false });
-    syncDistrictBorders(map, districtsRef.current, selectedKey);
+    const homesteadPulseKey = overlay.kind === 'homestead'
+      ? districtsRef.current.features.find((feature) => feature.properties[overlay.trait] === 6)?.properties.key ?? null
+      : null;
+    // Homestead trait-6 pulse must survive clearing selection (pin 29).
+    const borderKey = (selectedKey && selectedKey !== 'PATH')
+      ? selectedKey
+      : homesteadPulseKey;
+    syncDistrictBorders(map, districtsRef.current, borderKey);
     syncPathVisibility(map, selectedKey);
+    syncDistrictHtmlLabelStates(districtHtmlMarkersRef.current, hoveredRef.current, selectedKey);
     map.setPaintProperty(PATH_ROUTE_LAYER_ID, 'line-width', selectedKey === 'PATH'
       ? ['interpolate', ['linear'], ['zoom'], 11.5, 2.4, 16, 5]
       : ['interpolate', ['linear'], ['zoom'], 11.5, 1.2, 16, 3.2]);
     if (!selectedKey) return;
-    if (selectedKey === 'PATH') focusPath(map, pathBounds);
-    else {
-      map.setFeatureState({ source: SOURCE_ID, id: selectedKey }, { selected: true });
-      focusDistrict(map, districtsRef.current, selectedKey);
+    if (selectedKey === 'PATH') {
+      focusPath(map, pathBounds);
+      return;
     }
-  }, [pathBounds, selectedKey]);
+    map.setFeatureState({ source: SOURCE_ID, id: selectedKey }, { selected: true });
+    if (skipNextDistrictFocusRef?.current) {
+      skipNextDistrictFocusRef.current = false;
+      return;
+    }
+    focusDistrict(map, districtsRef.current, selectedKey);
+  }, [overlay, pathBounds, selectedKey, skipNextDistrictFocusRef]);
 
   return (
     <section className="map-surface" data-note-surface="map" aria-label="Interactive map of Toronto Rising districts">

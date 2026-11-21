@@ -99,6 +99,7 @@ export function clipPolyline(coordinates: number[][], box: StreetBox) {
   return parts;
 }
 
+/** Approximate length in kilometres (lon×82, lat×111). */
 export function lineLength(coordinates: number[][]) {
   let length = 0;
   for (let index = 1; index < coordinates.length; index += 1) {
@@ -110,9 +111,126 @@ export function lineLength(coordinates: number[][]) {
   return length;
 }
 
-export function stitchLongest(parts: number[][][]) {
+/**
+ * Short OSM stubs that run *across* a corridor paint as bright dash artifacts (round caps).
+ * Drop only short pieces that are perpendicular to that street's dominant axis — never length alone.
+ */
+export const MIN_ORIENTATION_STREET_KM = 0.05;
+
+/** Net axis extents in km (lon×82, lat×111). */
+export function streetAxisExtentsKm(coordinates: number[][]) {
+  let minLon = Number.POSITIVE_INFINITY;
+  let maxLon = Number.NEGATIVE_INFINITY;
+  let minLat = Number.POSITIVE_INFINITY;
+  let maxLat = Number.NEGATIVE_INFINITY;
+  for (const point of coordinates) {
+    const lon = point[0];
+    const lat = point[1];
+    if (lon === undefined || lat === undefined) continue;
+    if (lon < minLon) minLon = lon;
+    if (lon > maxLon) maxLon = lon;
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+  }
+  if (!Number.isFinite(minLon)) return { eastKm: 0, northKm: 0 };
+  return {
+    eastKm: Math.abs(maxLon - minLon) * 82,
+    northKm: Math.abs(maxLat - minLat) * 111,
+  };
+}
+
+export type StreetDominantAxis = 'east' | 'north';
+
+export function dominantStreetAxis(coordinates: number[][]): StreetDominantAxis {
+  const { eastKm, northKm } = streetAxisExtentsKm(coordinates);
+  return eastKm >= northKm ? 'east' : 'north';
+}
+
+/** True when a short piece runs across the corridor (dash artifact), not along it. */
+export function isPerpendicularStub(
+  coordinates: number[][],
+  corridorAxis: StreetDominantAxis,
+  minKm = MIN_ORIENTATION_STREET_KM,
+) {
+  if (lineLength(coordinates) >= minKm) return false;
+  const pieceAxis = dominantStreetAxis(coordinates);
+  return pieceAxis !== corridorAxis;
+}
+
+function endpointNearAny(
+  point: number[],
+  others: number[][][],
+  maxKm: number,
+) {
+  const px = point[0] ?? 0;
+  const py = point[1] ?? 0;
+  for (const coords of others) {
+    for (const candidate of coords) {
+      const dx = ((candidate[0] ?? 0) - px) * 82;
+      const dy = ((candidate[1] ?? 0) - py) * 111;
+      if (Math.hypot(dx, dy) <= maxKm) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Drop short ways that are either (a) perpendicular to the corridor, or
+ * (b) orphan stubs whose endpoints do not touch any other way of the same street.
+ * Short pieces that continue a real corridor stay — length alone must not gap Bloor/Yonge.
+ */
+export function filterOrientationStubArtifacts<T extends {
+  properties?: { entryKey?: unknown; displayName?: unknown } | null;
+  geometry: { type: string; coordinates: number[][] };
+}>(features: T[], minKm = MIN_ORIENTATION_STREET_KM): T[] {
+  const groups = new Map<string, T[]>();
+  for (const feature of features) {
+    if (feature.geometry.type !== 'LineString') continue;
+    const entryKey = feature.properties?.entryKey;
+    const displayName = feature.properties?.displayName;
+    const key = typeof entryKey === 'string' && entryKey
+      ? entryKey
+      : (typeof displayName === 'string' ? displayName : '');
+    const list = groups.get(key);
+    if (list) list.push(feature);
+    else groups.set(key, [feature]);
+  }
+  const kept: T[] = [];
+  const touchKm = 0.035;
+  for (const group of groups.values()) {
+    let east = 0;
+    let north = 0;
+    for (const feature of group) {
+      if (lineLength(feature.geometry.coordinates) < minKm) continue;
+      const extents = streetAxisExtentsKm(feature.geometry.coordinates);
+      east += extents.eastKm;
+      north += extents.northKm;
+    }
+    const corridorAxis: StreetDominantAxis = east >= north ? 'east' : 'north';
+    for (const feature of group) {
+      const coords = feature.geometry.coordinates;
+      if (isPerpendicularStub(coords, corridorAxis, minKm)) continue;
+      if (lineLength(coords) < minKm) {
+        const start = coords[0];
+        const end = coords[coords.length - 1];
+        if (!start || !end) continue;
+        const others = group
+          .filter((candidate) => candidate !== feature)
+          .map((candidate) => candidate.geometry.coordinates);
+        const touches = endpointNearAny(start, others, touchKm)
+          || endpointNearAny(end, others, touchKm);
+        if (!touches) continue;
+      }
+      kept.push(feature);
+    }
+  }
+  return kept;
+}
+
+/** Join near-touching polylines into contiguous chains (all chains, longest first). */
+export function stitchAllChains(parts: number[][][], joinKm = 0.04): number[][][] {
   const unused = parts.map((part) => part.map((point) => [...point]));
-  const near = (a: number[], b: number[]) => Math.hypot(((a[0] ?? 0) - (b[0] ?? 0)) * 82, ((a[1] ?? 0) - (b[1] ?? 0)) * 111) < 0.04;
+  const near = (a: number[], b: number[]) => Math.hypot(((a[0] ?? 0) - (b[0] ?? 0)) * 82, ((a[1] ?? 0) - (b[1] ?? 0)) * 111) < joinKm;
   const chains: number[][][] = [];
   while (unused.length > 0) {
     const chain = unused.pop();
@@ -140,7 +258,50 @@ export function stitchLongest(parts: number[][][]) {
     chains.push(chain);
   }
   chains.sort((left, right) => lineLength(right) - lineLength(left));
-  return chains[0] ?? [];
+  return chains;
+}
+
+/**
+ * Merge near-touching OSM ways per street so paint is continuous (closes sub-block gaps).
+ * Runs after stub filtering. Uses a slightly looser join than label stitching.
+ */
+export function stitchOrientationStreetFeatures<T extends {
+  properties?: Record<string, unknown> | null;
+  geometry: { type: string; coordinates: number[][] };
+}>(features: T[], joinKm = 0.1): T[] {
+  // Group by display name so West/East halves (Dundas, Bloor, …) paint as one corridor.
+  // Labels still use entryKey separately and keep a single marker per side.
+  const groups = new Map<string, T[]>();
+  for (const feature of features) {
+    if (feature.geometry.type !== 'LineString') continue;
+    const displayName = feature.properties?.displayName;
+    const entryKey = feature.properties?.entryKey;
+    const key = typeof displayName === 'string' && displayName
+      ? displayName
+      : (typeof entryKey === 'string' ? entryKey : '');
+    const list = groups.get(key);
+    if (list) list.push(feature);
+    else groups.set(key, [feature]);
+  }
+  const stitched: T[] = [];
+  for (const group of groups.values()) {
+    const chains = stitchAllChains(group.map((feature) => feature.geometry.coordinates), joinKm);
+    const template = group[0];
+    if (!template) continue;
+    for (const coordinates of chains) {
+      if (coordinates.length < 2) continue;
+      stitched.push({
+        ...template,
+        geometry: { type: 'LineString', coordinates },
+      });
+    }
+  }
+  return stitched;
+}
+
+/** Longest contiguous chain only — used for placing one HTML label per street entry. */
+export function stitchLongest(parts: number[][][], joinKm = 0.04) {
+  return stitchAllChains(parts, joinKm)[0] ?? [];
 }
 
 /** Bearing (degrees clockwise from north) of the segment that contains the midpoint. */

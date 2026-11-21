@@ -210,4 +210,26 @@ describe('IconRail', () => {
     await user.click(screen.getByRole('button', { name: /Homestead/i }));
     expect(screen.getByRole('button', { name: /Affair/i }).className).toContain('icon-rail__option--homestead');
   });
+
+  it('shows a sticky overlay chip that clears the overlay when clicked', async () => {
+    cleanup();
+    const onOverlayChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <IconRail
+        regions={[]}
+        districts={[]}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        overlay={{ kind: 'hunting', flavor: 'Choleric' }}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+        onOverlayChange={onOverlayChange}
+      />,
+    );
+    const chip = screen.getByRole('button', { name: /Clear CHOLERIC overlay/i });
+    expect(chip.textContent).toBe('CHOLERIC');
+    await user.click(chip);
+    expect(onOverlayChange).toHaveBeenCalledWith({ kind: 'none' });
+  });
 });

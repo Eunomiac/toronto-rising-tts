@@ -1,0 +1,15 @@
+.homestead-blurb {
+    left: 77rem;
+    bottom: -27rem;
+    width: min(35rem, 100vw - 35rem);
+}
+
+/* (Will also need to include the SVG icon to the left of the header, as shown in 'Homestead Info Popup.png' */
+
+.homestead-blurb p {
+    font-size: 1rem;
+    line-height: 1.2rem;
+    font-family: "Cormorant Garamond";
+    text-shadow: 0 0 2px black,0 0 2px black,0 0 3px black,0 0 3px black,0 0 3px black,0 0 3px black,0 0 3px black,0 0 4px black,0 0 4px black,0 0 4px black,0 0 4px black,0 0 4px black;
+    text-align: justify;  
+}

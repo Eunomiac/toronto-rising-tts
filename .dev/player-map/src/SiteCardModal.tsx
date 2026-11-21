@@ -31,35 +31,52 @@ export function SiteCardModal({
     setHubShowsDistrict(false);
   }
 
+  const ariaLabel = isHub
+    ? (hubShowsDistrict ? `${districtName} district card` : `${siteName} hub card`)
+    : `${siteName} site card`;
+
   return (
-    <CardModal open={open} onClose={onClose} labelledBy="site-card-title">
+    <CardModal open={open} onClose={onClose} ariaLabel={ariaLabel}>
       {isHub ? (
         hubShowsDistrict ? (
           <button
             type="button"
-            className="card-modal__stack card-modal__stack--flip"
+            className="card-modal__stack card-modal__stack--flip card-modal__stack--hub-district"
             onClick={() => setHubShowsDistrict(false)}
           >
-            <h2 id="site-card-title" className="card-modal__title">{districtName}</h2>
-            <img className="card-modal__image" src={districtCardUrl(districtKey)} alt={`${districtName} district card`} />
+            <img
+              className="card-modal__image card-modal__image--district-alone"
+              src={districtCardUrl(districtKey)}
+              alt={`${districtName} district card`}
+            />
             <span className="card-modal__hint">Click to view hub</span>
           </button>
         ) : (
           <button
             type="button"
-            className="card-modal__stack card-modal__stack--flip"
+            className="card-modal__stack card-modal__stack--flip card-modal__stack--hub"
             onClick={() => setHubShowsDistrict(true)}
           >
-            <h2 id="site-card-title" className="card-modal__title">{siteName}</h2>
-            <img className="card-modal__image" src={siteHubCardUrl(siteKey)} alt={`${siteName} hub card`} />
+            <img
+              className="card-modal__image card-modal__image--hub"
+              src={siteHubCardUrl(siteKey)}
+              alt={`${siteName} hub card`}
+            />
             <span className="card-modal__hint">Click to view District</span>
           </button>
         )
       ) : (
-        <div className="card-modal__stack">
-          <h2 id="site-card-title" className="card-modal__title">{siteName}</h2>
-          <img className="card-modal__image" src={districtCardUrl(districtKey)} alt={`${districtName} district card`} />
-          <img className="card-modal__image" src={siteCardUrl(siteKey)} alt={`${siteName} site card`} />
+        <div className="card-modal__stack card-modal__stack--site-over-district">
+          <img
+            className="card-modal__image card-modal__image--district"
+            src={districtCardUrl(districtKey)}
+            alt={`${districtName} district card`}
+          />
+          <img
+            className="card-modal__image card-modal__image--site"
+            src={siteCardUrl(siteKey)}
+            alt={`${siteName} site card`}
+          />
         </div>
       )}
     </CardModal>
