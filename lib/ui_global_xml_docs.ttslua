@@ -3415,6 +3415,13 @@ prettyPrintTable(draggableData, "draggableData")
       active = "true"
      />
 
+    <!-- Sits between the group name and the NPC names so the two lists do not run together. -->
+    <Panel class="scatterModeControl_nameGap"
+      preferredHeight = "14"
+      minHeight = "14"
+      flexibleHeight = "0"
+      raycastTarget = "false" />
+
   </Defaults>
   <!--
 
@@ -3521,6 +3528,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup1_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup1_npcList_Brown" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3531,6 +3539,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup2_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup2_npcList_Brown" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3542,6 +3551,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup3_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup3_npcList_Brown" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3553,6 +3563,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup4_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup4_npcList_Brown" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3564,6 +3575,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup5_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup5_npcList_Brown" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3575,6 +3587,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup6_summary_Brown" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup6_npcList_Brown" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3700,6 +3713,13 @@ prettyPrintTable(draggableData, "draggableData")
       active = "true"
      />
 
+    <!-- Sits between the group name and the NPC names so the two lists do not run together. -->
+    <Panel class="scatterModeControl_nameGap"
+      preferredHeight = "14"
+      minHeight = "14"
+      flexibleHeight = "0"
+      raycastTarget = "false" />
+
   </Defaults>
   <!--
 
@@ -3806,6 +3826,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup1_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup1_npcList_Orange" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3816,6 +3837,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup2_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup2_npcList_Orange" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3827,6 +3849,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup3_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup3_npcList_Orange" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3838,6 +3861,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup4_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup4_npcList_Orange" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3849,6 +3873,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup5_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup5_npcList_Orange" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3860,6 +3885,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup6_summary_Orange" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup6_npcList_Orange" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -3985,6 +4011,13 @@ prettyPrintTable(draggableData, "draggableData")
       active = "true"
      />
 
+    <!-- Sits between the group name and the NPC names so the two lists do not run together. -->
+    <Panel class="scatterModeControl_nameGap"
+      preferredHeight = "14"
+      minHeight = "14"
+      flexibleHeight = "0"
+      raycastTarget = "false" />
+
   </Defaults>
   <!--
 
@@ -4091,6 +4124,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup1_summary_Red" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup1_npcList_Red" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4101,6 +4135,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup2_summary_Red" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup2_npcList_Red" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4112,6 +4147,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup3_summary_Red" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup3_npcList_Red" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4123,6 +4159,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup4_summary_Red" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup4_npcList_Red" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4134,6 +4171,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup5_summary_Red" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup5_npcList_Red" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4145,6 +4183,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup6_summary_Red" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup6_npcList_Red" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4270,6 +4309,13 @@ prettyPrintTable(draggableData, "draggableData")
       active = "true"
      />
 
+    <!-- Sits between the group name and the NPC names so the two lists do not run together. -->
+    <Panel class="scatterModeControl_nameGap"
+      preferredHeight = "14"
+      minHeight = "14"
+      flexibleHeight = "0"
+      raycastTarget = "false" />
+
   </Defaults>
   <!--
 
@@ -4376,6 +4422,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup1_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup1_npcList_Pink" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4386,6 +4433,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup2_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup2_npcList_Pink" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4397,6 +4445,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup3_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup3_npcList_Pink" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4408,6 +4457,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup4_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup4_npcList_Pink" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4419,6 +4469,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup5_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup5_npcList_Pink" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4430,6 +4481,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup6_summary_Pink" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup6_npcList_Pink" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4555,6 +4607,13 @@ prettyPrintTable(draggableData, "draggableData")
       active = "true"
      />
 
+    <!-- Sits between the group name and the NPC names so the two lists do not run together. -->
+    <Panel class="scatterModeControl_nameGap"
+      preferredHeight = "14"
+      minHeight = "14"
+      flexibleHeight = "0"
+      raycastTarget = "false" />
+
   </Defaults>
   <!--
 
@@ -4661,6 +4720,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup1_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup1_npcList_Purple" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4671,6 +4731,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup2_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup2_npcList_Purple" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4682,6 +4743,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup3_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup3_npcList_Purple" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4693,6 +4755,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup4_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup4_npcList_Purple" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4704,6 +4767,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup5_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup5_npcList_Purple" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -4715,6 +4779,7 @@ prettyPrintTable(draggableData, "draggableData")
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup6_summary_Purple" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup6_npcList_Purple" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 

@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-807 — Scatter strip: a gap between the group name and the NPC list
+
+> **Agent-assessment note:** The spacer is in the panel layout. You still need to look at the open strip and judge whether the gap is enough.
+
+**How to verify:** Save & Play, set the table to Scatter, and open a player's group strip. Each column should show the group name, then a small gap, then the NPC names. The names should not sit flush against the group name.
+
 #### 🟡 TOR-806 — Play as NPC crashed because the seat write had its arguments backwards
 
 > **Agent-assessment note:** The crash is the path and the value being swapped in `setStateVal`. A live drop is still the check that the assignment sticks.

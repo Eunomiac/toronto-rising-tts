@@ -110,6 +110,13 @@
       active = "true"
      />
 
+    <!-- Sits between the group name and the NPC names so the two lists do not run together. -->
+    <Panel class="scatterModeControl_nameGap"
+      preferredHeight = "14"
+      minHeight = "14"
+      flexibleHeight = "0"
+      raycastTarget = "false" />
+
   </Defaults>
   <!--
 
@@ -216,6 +223,7 @@
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup1_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup1_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -226,6 +234,7 @@
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup2_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup2_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -237,6 +246,7 @@
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup3_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup3_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -248,6 +258,7 @@
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup4_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup4_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -259,6 +270,7 @@
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup5_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup5_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 
@@ -270,6 +282,7 @@
         </Panel>
       </HorizontalLayout>
       <Text id="scatterModeControlGroup6_summary_@@color@@" class="scatterModeControl_summary" text="" active="true" />
+      <Panel class="scatterModeControl_nameGap" />
       <Text id="scatterModeControlGroup6_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
     </VerticalLayout>
 

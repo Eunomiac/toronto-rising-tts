@@ -39,16 +39,6 @@
       "status": "open",
       "createdAt": "2026-11-21T22:12:46.555Z",
       "updatedAt": "2026-11-21T22:15:34.380Z"
-    },
-    {
-      "id": 16,
-      "sketch": "scenes",
-      "x": 996,
-      "y": 451,
-      "text": "On the player scatter control panel, that they use to swap between groups, a spacer should be added to vertically separate the name of the group from the list of NPCs present there.",
-      "status": "open",
-      "createdAt": "2026-11-21T22:27:08.342Z",
-      "updatedAt": "2026-11-21T22:27:08.342Z"
     }
   ]
 }

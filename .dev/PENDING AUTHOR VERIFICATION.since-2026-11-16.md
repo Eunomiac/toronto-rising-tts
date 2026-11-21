@@ -4,7 +4,7 @@ Filtered slice of [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATI
 
 **Filter rule:** keep only Outstanding rows whose `####` header was first added in a commit on or after **2026-11-16** (matched via `git blame` on those headers and the shipping commits that introduced them). Older backlog rows from before that date are omitted.
 
-**Included (10 rows):** TOR-806, TOR-805, TOR-796, TOR-795, TOR-794, TOR-792, TOR-791, TOR-790, TOR-789, TOR-788.
+**Included (11 rows):** TOR-807, TOR-806, TOR-805, TOR-796, TOR-795, TOR-794, TOR-792, TOR-791, TOR-790, TOR-789, TOR-788.
 
 **Not listed here:** Dashboard-only pin work from the same day (pin 8 stage NPC right-click → roster config; pin 9 NPC-drop difficulty strip) — those never got PAV rows. Everything else still Outstanding in the full checklist was first added before 2026-11-16.
 
@@ -32,6 +32,12 @@ Unmarked = shipped and waiting for your first pass. Full agent policy: [PENDING 
 ---
 
 ## Outstanding (on or after 2026-11-16)
+
+#### 🟡 TOR-807 — Scatter strip: a gap between the group name and the NPC list
+
+> **Agent-assessment note:** The spacer is in the panel layout. You still need to look at the open strip and judge whether the gap is enough.
+
+**How to verify:** Save & Play, set the table to Scatter, and open a player's group strip. Each column should show the group name, then a small gap, then the NPC names. The names should not sit flush against the group name.
 
 #### 🟡 TOR-806 — Play as NPC crashed because the seat write had its arguments backwards
 
