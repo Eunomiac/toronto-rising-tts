@@ -57,6 +57,16 @@ export type SceneSlice = {
     readonly thunder: boolean;
     readonly indoors: boolean;
   };
+  /** Player-safe last-active map pins for the public Player Map relay (site keys already public). */
+  readonly mapPins?: {
+    readonly live: boolean;
+    readonly pins: ReadonlyArray<{
+      readonly seat?: string;
+      readonly charKey?: string;
+      readonly siteKey?: string;
+      readonly visible: boolean;
+    }>;
+  };
 };
 
 export type ClockDatetime = {

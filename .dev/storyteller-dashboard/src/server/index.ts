@@ -25,6 +25,7 @@ import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
 import { ttsEventHub } from "./ttsEvents.js";
+import { playerMapPinConfigFromEnv, startPlayerMapPinRelay } from "./playerMapPins.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 import { stripJsonComments } from "../shared/compulsionText.js";
 import {
@@ -811,6 +812,12 @@ void (async () => {
       const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
       void serveFile(response, url.pathname);
     });
+  }
+
+  const playerMapPins = playerMapPinConfigFromEnv();
+  if (playerMapPins) {
+    startPlayerMapPinRelay(ttsEventHub, playerMapPins);
+    console.log(`Player Map pin relay → ${playerMapPins.endpointBase} (session ${playerMapPins.sessionCode})`);
   }
 
   httpServer.listen(config.port, "127.0.0.1", () => {

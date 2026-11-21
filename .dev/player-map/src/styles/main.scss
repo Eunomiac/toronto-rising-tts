@@ -933,6 +933,15 @@ select,
   cursor: help;
 }
 
+.player-session-pin {
+  display: block;
+  width: 3.25rem;
+  height: 3.25rem;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 0.15rem 0.35rem rgba(#030304, 0.55));
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

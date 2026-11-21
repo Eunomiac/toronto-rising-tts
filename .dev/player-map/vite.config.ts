@@ -2,11 +2,12 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { debugNotesPlugin } from './scripts/debug-notes-plugin.ts';
+import { sessionPinsPlugin } from './scripts/session-pins-plugin.ts';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig(({ command }) => ({
-  plugins: [react(), debugNotesPlugin(root)],
+  plugins: [react(), debugNotesPlugin(root), sessionPinsPlugin()],
   resolve: {
     alias: {
       '#debug-notes': fileURLToPath(new URL(

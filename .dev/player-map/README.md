@@ -130,5 +130,9 @@ $env:PLAYER_MAP_BASE_URL='https://toronto-rising-player-map.toronto-rising-playe
 npm run test:browser
 ```
 
-The Worker reserves `/api/health` as the first server boundary. No persistent
-storage is configured yet.
+The Worker reserves `/api/health` and session pin routes:
+
+- `GET /api/session/:code/pins` — public allowlisted pin snapshot for `?session=` on the map
+- `POST /api/session/:code/pins` — Dashboard relay only (`Authorization: Bearer` + `PLAYER_MAP_PUSH_SECRET`)
+
+Optional KV binding `SESSION_PINS` stores snapshots; without it the Worker keeps them in memory for that isolate. Configure the Dashboard `.env` with `PLAYER_MAP_ENDPOINT`, `PLAYER_MAP_SESSION_CODE`, and `PLAYER_MAP_PUSH_SECRET` to publish during play.

@@ -52,11 +52,23 @@ export const parseDashboardPrint = (message: string): TtsPushEvent | undefined =
 export class TtsEventHub {
   private readonly clients = new Set<ServerResponse>();
   private readonly latest = new Map<string, TtsPushEvent>();
+  private readonly listeners = new Set<(event: TtsPushEvent) => void>();
+
+  /** Server-side side effects (Player Map pin relay, …). Returns an unsubscribe function. */
+  addListener(listener: (event: TtsPushEvent) => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
 
   publish(event: TtsPushEvent, now: number = Date.now()): void {
     const stamped: TtsPushEvent = { ...event, at: now };
     this.latest.set(cacheKey(stamped), stamped);
     this.broadcast(stamped);
+    for (const listener of this.listeners) {
+      listener(stamped);
+    }
   }
 
   gameLoading(): void {

@@ -23,6 +23,7 @@ import { runGsapEffectsMain } from './gsap-effects';
 import { type MapOverlaySelection } from './mapOverlays';
 import { SiteCardModal } from './SiteCardModal';
 import { TorontoLocator } from './TorontoLocator';
+import { PlayerPinsLayer } from './PlayerPinsLayer';
 import type { PublicMapData, PublicSiteProperties, RegionVisibility } from './types';
 import { useDistrictLayout } from './useDistrictLayout';
 
@@ -253,6 +254,7 @@ export function App() {
         onMapReady={setMap}
       />
       <TorontoLocator map={map} />
+      <PlayerPinsLayer map={map} sites={data.sites} />
       {!calibrationMode ? (
         <IconRail
           regions={data.regions.features.map((feature) => feature.properties)}

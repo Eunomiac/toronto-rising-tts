@@ -69,6 +69,7 @@ Sheet-backed District facts.
 - [x] Promote the reviewed priority manifest and sequential overlap cuts into the runtime district GeoJSON.
 - [x] Load generated district GeoJSON and prove hover, keyboard selection, click selection, shareable URL state, and a details panel.
 - [x] Deploy the spike to Cloudflare Workers Free and confirm its public address, homepage, `/api/health` route, and desktop/mobile browser behavior.
+- [x] Live play pins: TTS `scene.mapPins` → Dashboard relay → Worker `/api/session/:code/pins` → Player Map `?session=` markers (center-anchored `playerPins` art). _(TOR-804)_
 
 ## Known Geometry Defects — Resolve Before Final Approval
 
