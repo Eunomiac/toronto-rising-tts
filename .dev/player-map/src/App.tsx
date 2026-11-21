@@ -20,7 +20,9 @@ import {
   updateLayersInUrl,
 } from './data';
 import { runGsapEffectsMain } from './gsap-effects';
+import { type MapOverlaySelection } from './mapOverlays';
 import { SiteCardModal } from './SiteCardModal';
+import { TorontoLocator } from './TorontoLocator';
 import type { PublicMapData, PublicSiteProperties, RegionVisibility } from './types';
 import { useDistrictLayout } from './useDistrictLayout';
 
@@ -51,6 +53,7 @@ export function App() {
   const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
   const [map, setMap] = useState<Map | null>(null);
   const [activeSite, setActiveSite] = useState<PublicSiteProperties | null>(null);
+  const [overlay, setOverlay] = useState<MapOverlaySelection>({ kind: 'none' });
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
   // Debug notes only exist in the Vite alias for development builds.
   const { mode: layoutMode, setMode: setLayoutMode, useImageChrome } = useDistrictLayout(import.meta.env.DEV);
@@ -241,6 +244,7 @@ export function App() {
         regionVisibility={regionVisibility}
         selectedKey={mapSelectedKey}
         toggledSiteKeys={toggledSiteKeys}
+        overlay={overlay}
         onSelect={selectDistrict}
         onSiteSelect={(key) => {
           const site = data.sites.features.find((feature) => feature.properties.key === key);
@@ -248,6 +252,7 @@ export function App() {
         }}
         onMapReady={setMap}
       />
+      <TorontoLocator map={map} />
       {!calibrationMode ? (
         <IconRail
           regions={data.regions.features.map((feature) => feature.properties)}
@@ -258,10 +263,12 @@ export function App() {
           selectedDistrictKey={validSelectedKey}
           sites={data.sites.features.map((feature) => feature.properties)}
           toggledSiteKeys={toggledSiteKeys}
+          overlay={overlay}
           onToggleRegion={toggleRegion}
           onSelectDistrict={selectDistrict}
           onToggleSite={toggleSite}
           onFocusHub={focusSite}
+          onOverlayChange={setOverlay}
         />
       ) : null}
       {calibrationMode ? (

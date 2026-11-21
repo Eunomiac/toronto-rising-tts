@@ -17,6 +17,11 @@ const districts: DistrictFeatureCollection['features'] = [{
     huntingDifficulty: 6,
     resonancePlus: 'phlegmatic',
     resonanceMinus: 'melancholic',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3,
   },
   geometry: { type: 'MultiPolygon', coordinates: [[[[-79.4, 43.6], [-79.3, 43.6], [-79.4, 43.6]]]] },
 }];

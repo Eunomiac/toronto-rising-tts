@@ -21,13 +21,17 @@ import type {
 
 const GENERATED_ROOT = '/generated';
 const DISTRICT_PROPERTY_KEYS = [
-  'fillRule', 'huntingDifficulty', 'key', 'kind', 'name', 'resonanceMinus',
-  'resonancePlus', 'sourceElement', 'sourceRingCount',
+  'affair', 'aspectAdvantage', 'association', 'clout', 'fillRule', 'huntingDifficulty',
+  'key', 'kind', 'name', 'resonanceMinus', 'resonancePlus', 'sourceElement', 'sourceRingCount',
+  'utility',
 ].sort();
 const REGION_PROPERTY_KEYS = ['fillRule', 'key', 'kind', 'name', 'sourceElement', 'sourceRingCount'].sort();
 const SITE_PROPERTY_KEYS = ['districtKey', 'hub', 'icon', 'key', 'name'].sort();
 const LABEL_PROPERTY_KEYS = ['key', 'kind', 'name'].sort();
-const PATH_DISTRICT_KEYS = ['huntingDifficulty', 'key', 'name', 'resonanceMinus', 'resonancePlus'].sort();
+const PATH_DISTRICT_KEYS = [
+  'affair', 'aspectAdvantage', 'association', 'clout', 'huntingDifficulty', 'key', 'name',
+  'resonanceMinus', 'resonancePlus', 'utility',
+].sort();
 const PATH_ROUTE_KEYS = ['covered', 'highway', 'indoor', 'key', 'level', 'name', 'osmId', 'tunnel'].sort();
 const PATH_ENTRANCE_KEYS = ['key', 'kind', 'name', 'osmId'].sort();
 const PATH_INTERACTION_KEYS = ['key', 'osmId'].sort();
@@ -156,12 +160,26 @@ function nullableString(value: unknown, label: string) {
   if (value !== null && typeof value !== 'string') throw new Error(`${label} must be a string or null`);
 }
 
+function parseDistrictFactsFields(district: Record<string, unknown>, label: string) {
+  for (const key of ['name', 'resonancePlus', 'resonanceMinus']) nonEmptyString(district[key], `${label} ${key}`);
+  if (district.huntingDifficulty !== null && !Number.isInteger(district.huntingDifficulty)) {
+    throw new Error(`Invalid ${label} hunting difficulty`);
+  }
+  if (district.aspectAdvantage !== null && district.aspectAdvantage !== '+' && district.aspectAdvantage !== '−') {
+    throw new Error(`Invalid ${label} aspect advantage`);
+  }
+  for (const key of ['affair', 'association', 'clout', 'utility']) {
+    if (!Number.isInteger(district[key]) || Number(district[key]) < 0 || Number(district[key]) > 6) {
+      throw new Error(`Invalid ${label} ${key}`);
+    }
+  }
+}
+
 function parsePathDistrict(value: unknown): NetworkDistrictFacts {
   const district = record(value, 'PATH district');
   exactKeys(district, PATH_DISTRICT_KEYS, 'PATH district');
   if (district.key !== 'PATH') throw new Error('Invalid PATH district key');
-  for (const key of ['name', 'resonancePlus', 'resonanceMinus']) nonEmptyString(district[key], `PATH ${key}`);
-  if (district.huntingDifficulty !== null && !Number.isInteger(district.huntingDifficulty)) throw new Error('Invalid PATH hunting difficulty');
+  parseDistrictFactsFields(district, 'PATH');
   return value as NetworkDistrictFacts;
 }
 
@@ -171,10 +189,7 @@ function parseSheetOnlyDistricts(value: unknown): SheetOnlyDistrictFacts[] {
     const district = record(entry, `sheet-only district ${index}`);
     exactKeys(district, PATH_DISTRICT_KEYS, `sheet-only district ${index}`);
     nonEmptyString(district.key, `sheet-only district ${index} key`);
-    for (const key of ['name', 'resonancePlus', 'resonanceMinus']) nonEmptyString(district[key], `sheet-only ${key}`);
-    if (district.huntingDifficulty !== null && !Number.isInteger(district.huntingDifficulty)) {
-      throw new Error(`Invalid sheet-only hunting difficulty for ${String(district.key)}`);
-    }
+    parseDistrictFactsFields(district, `sheet-only ${String(district.key)}`);
     return entry as SheetOnlyDistrictFacts;
   });
 }

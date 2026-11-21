@@ -4,7 +4,10 @@ import { joinDistrictFacts, projectDistrictRows, projectPublicSites, validatePub
 
 const policy = {
   schemaVersion: 1,
-  districtFields: ['Key', 'Name', 'Hunting Difficulty', 'Resonance Plus', 'Resonance Minus'],
+  districtFields: [
+    'Key', 'Name', 'Hunting Difficulty', 'Resonance Plus', 'Resonance Minus',
+    'Aspect Advantage', 'Affair', 'Association', 'Clout', 'Utility',
+  ],
   sheetOnlyDistricts: [{ key: 'PATH', geometryKind: 'network', reason: 'test' }],
   siteFields: ['Key', 'Name', 'Subtitle', 'District', 'Map Icon', 'X', 'Y'],
   publicSiteKeys: [],
@@ -16,6 +19,11 @@ const row = {
   'Hunting Difficulty': '6',
   'Resonance Plus': 'phlegmatic +',
   'Resonance Minus': 'melancholic -',
+  'Aspect Advantage': '+',
+  Affair: '4',
+  Association: '3',
+  Clout: '5',
+  Utility: '2',
   'Domain Control: Full': 'must never project',
 };
 
@@ -27,6 +35,11 @@ test('district projection emits only the reviewed player-safe facts', () => {
     huntingDifficulty: 6,
     resonancePlus: 'phlegmatic',
     resonanceMinus: 'melancholic',
+    aspectAdvantage: '+',
+    affair: 4,
+    association: 3,
+    clout: 5,
+    utility: 2,
   });
   assert.equal(JSON.stringify(projected).includes('must never project'), false);
 });
@@ -52,6 +65,7 @@ test('mapped sites keep only their public name, icon, district, and hub grouping
     { Key: 'stables', Name: 'The Stables', Subtitle: 'Casa Loma', District: 'Wychwood', 'Map Icon': 'hub_castle', X: '10', Y: '20', 'Aspect Content': 'also secret' },
     { Key: 'cafe', Name: 'The Cafe', Subtitle: '', District: 'Yorkville', 'Map Icon': 'cafe', X: '4', Y: '8' },
     { Key: 'hidden', Name: 'Unmapped', Subtitle: '', District: 'Yorkville', 'Map Icon': '', X: '', Y: '' },
+    { Key: 'off', Name: 'Off Map', Subtitle: '', District: 'Yorkville', 'Map Icon': 'cafe', X: '5', Y: '9', 'Show On Map': 'FALSE' },
   ];
   const sites = projectPublicSites(rows, ['hub_castle', 'cafe'], ([x, y]) => [x, y]);
   assert.deepEqual(sites.features.map((feature) => feature.properties), [
@@ -60,6 +74,7 @@ test('mapped sites keep only their public name, icon, district, and hub grouping
   ]);
   assert.deepEqual(sites.features[1].geometry.coordinates, [10, 20]);
   assert.equal(JSON.stringify(sites).includes('secret'), false);
+  assert.equal(JSON.stringify(sites).includes('Off Map'), false);
 });
 
 test('a hub with two map positions is rejected', () => {

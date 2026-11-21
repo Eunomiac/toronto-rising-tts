@@ -228,6 +228,11 @@ export function buildPathNetwork(snapshotValue, configValue, districtFacts) {
     huntingDifficulty: districtFacts.huntingDifficulty,
     resonancePlus: districtFacts.resonancePlus,
     resonanceMinus: districtFacts.resonanceMinus,
+    aspectAdvantage: districtFacts.aspectAdvantage,
+    affair: districtFacts.affair,
+    association: districtFacts.association,
+    clout: districtFacts.clout,
+    utility: districtFacts.utility,
   };
   const label = {
     type: 'FeatureCollection',

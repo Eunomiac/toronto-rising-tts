@@ -25,6 +25,11 @@ describe('IconRail', () => {
             huntingDifficulty: 6,
             resonancePlus: 'phlegmatic',
             resonanceMinus: 'melancholic',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3,
           },
         ]}
         pathDistrict={{
@@ -33,11 +38,18 @@ describe('IconRail', () => {
           huntingDifficulty: 4,
           resonancePlus: 'phlegmatic',
           resonanceMinus: 'choleric',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3,
         }}
         regionVisibility={{ TheRack: false, UniversityOfToronto: false }}
         selectedDistrictKey={null}
+        overlay={{ kind: 'none' }}
         onToggleRegion={onToggleRegion}
         onSelectDistrict={onSelectDistrict}
+        onOverlayChange={vi.fn()}
       />,
     );
 
@@ -55,19 +67,51 @@ describe('IconRail', () => {
       <IconRail
         regions={[]}
         districts={[
-          { key: 'Bay', name: 'The Bay St. Financial District', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 4, resonancePlus: 'choleric', resonanceMinus: 'melancholic' },
-          { key: 'Annex', name: 'The Annex', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 5, resonancePlus: 'sanguine', resonanceMinus: 'choleric' },
-          { key: 'Yorkville', name: 'Yorkville', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 6, resonancePlus: 'phlegmatic', resonanceMinus: 'melancholic' },
+          { key: 'Bay', name: 'The Bay St. Financial District', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 4, resonancePlus: 'choleric', resonanceMinus: 'melancholic',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3 },
+          { key: 'Annex', name: 'The Annex', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 5, resonancePlus: 'sanguine', resonanceMinus: 'choleric',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3 },
+          { key: 'Yorkville', name: 'Yorkville', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 6, resonancePlus: 'phlegmatic', resonanceMinus: 'melancholic',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3 },
         ]}
-        pathDistrict={{ key: 'PATH', name: 'P.A.T.H.', huntingDifficulty: 4, resonancePlus: 'phlegmatic', resonanceMinus: 'choleric' }}
+        pathDistrict={{ key: 'PATH', name: 'P.A.T.H.', huntingDifficulty: 4, resonancePlus: 'phlegmatic', resonanceMinus: 'choleric',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3 }}
         sheetOnlyDistricts={[
-          { key: 'Sewers', name: 'The Sewers', huntingDifficulty: null, resonancePlus: 'primal', resonanceMinus: 'sanguine' },
-          { key: 'Subway', name: 'The Subway', huntingDifficulty: 5, resonancePlus: 'melancholic', resonanceMinus: 'choleric' },
+          { key: 'Sewers', name: 'The Sewers', huntingDifficulty: null, resonancePlus: 'primal', resonanceMinus: 'sanguine',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3 },
+          { key: 'Subway', name: 'The Subway', huntingDifficulty: 5, resonancePlus: 'melancholic', resonanceMinus: 'choleric',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3 },
         ]}
         regionVisibility={{}}
         selectedDistrictKey={null}
+        overlay={{ kind: 'none' }}
         onToggleRegion={vi.fn()}
         onSelectDistrict={vi.fn()}
+        onOverlayChange={vi.fn()}
       />,
     );
     await user.click(screen.getByRole('button', { name: /Map Layers/i }));
@@ -100,10 +144,12 @@ describe('IconRail', () => {
           { key: 'Annex', name: 'The Annex Library', districtKey: 'TheAnnex', icon: 'library', hub: false },
         ]}
         toggledSiteKeys={['Cafe']}
+        overlay={{ kind: 'none' }}
         onToggleRegion={vi.fn()}
         onSelectDistrict={vi.fn()}
         onToggleSite={onToggleSite}
         onFocusHub={onFocusHub}
+        onOverlayChange={vi.fn()}
       />,
     );
     await user.click(screen.getByRole('button', { name: /Sites/i }));

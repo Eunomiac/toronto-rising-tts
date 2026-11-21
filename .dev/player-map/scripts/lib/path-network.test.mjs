@@ -24,7 +24,18 @@ const snapshot = {
     { type: 'node', id: 20, lon: -79.38, lat: 43.65, tags: { railway: 'subway_entrance' } },
   ],
 };
-const facts = { key: 'PATH', name: 'PATH', huntingDifficulty: 4, resonancePlus: 'sanguine', resonanceMinus: 'phlegmatic' };
+const facts = {
+  key: 'PATH',
+  name: 'PATH',
+  huntingDifficulty: 4,
+  resonancePlus: 'sanguine',
+  resonanceMinus: 'phlegmatic',
+  aspectAdvantage: null,
+  affair: 3,
+  association: 4,
+  clout: 2,
+  utility: 5,
+};
 
 test('builds separate player-safe PATH route, entrance, corridor, label, and provenance outputs', () => {
   const result = buildPathNetwork(snapshot, config, facts);

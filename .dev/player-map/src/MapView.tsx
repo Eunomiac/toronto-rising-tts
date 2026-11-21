@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { siteCardUrl, siteHubCardUrl } from './districtAssets';
+import { overlayPaintForDistrict, type MapOverlaySelection } from './mapOverlays';
 import {
   AttributionControl,
   Map,
@@ -140,6 +141,7 @@ interface MapViewProps {
   regionVisibility: RegionVisibility;
   selectedKey: string | null;
   toggledSiteKeys: readonly string[];
+  overlay?: MapOverlaySelection;
   onSelect: (key: string) => void;
   onSiteSelect?: (key: string) => void;
   onMapReady?: (map: Map | null) => void;
@@ -552,6 +554,7 @@ export function MapView({
   regionVisibility,
   selectedKey,
   toggledSiteKeys,
+  overlay = { kind: 'none' },
   onSelect,
   onSiteSelect,
   onMapReady,
@@ -695,12 +698,14 @@ export function MapView({
           'fill-color': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], '#c22933',
+            ['>', ['coalesce', ['feature-state', 'overlayOpacity'], 0], 0],
+            ['coalesce', ['feature-state', 'overlayColor'], '#c22933'],
             '#2a0b10',
           ],
           'fill-opacity': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], 0.06,
-            0,
+            ['coalesce', ['feature-state', 'overlayOpacity'], 0],
           ],
         },
         layout: { visibility: mapVisibility(layerVisibilityRef.current.districts) },
@@ -936,8 +941,20 @@ export function MapView({
           // Pin 9: hover scales the name up; MapLibre feature-state drives the resting↔hover jump.
           'text-size': [
             'interpolate', ['linear'], ['zoom'],
-            12, ['case', ['boolean', ['feature-state', 'hovered'], false], 14, 10],
-            14, ['case', ['boolean', ['feature-state', 'hovered'], false], 18, 13],
+            12, [
+              'case',
+              ['boolean', ['feature-state', 'hovered'], false], 14,
+              ['==', ['feature-state', 'aspectAdvantage'], '+'], 13,
+              ['==', ['feature-state', 'aspectAdvantage'], '−'], 8,
+              10,
+            ],
+            14, [
+              'case',
+              ['boolean', ['feature-state', 'hovered'], false], 18,
+              ['==', ['feature-state', 'aspectAdvantage'], '+'], 16,
+              ['==', ['feature-state', 'aspectAdvantage'], '−'], 11,
+              13,
+            ],
           ],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.12,
@@ -950,17 +967,22 @@ export function MapView({
           'text-color': [
             'case',
             ['boolean', ['feature-state', 'hovered'], false], '#ff2424',
+            ['==', ['feature-state', 'aspectAdvantage'], '+'], '#d8d2cc',
+            ['==', ['feature-state', 'aspectAdvantage'], '−'], '#4a4643',
             '#6f6a66',
           ],
           'text-opacity': [
             'case',
             ['boolean', ['feature-state', 'hovered'], false], 1,
+            ['==', ['feature-state', 'aspectAdvantage'], '+'], 0.92,
+            ['==', ['feature-state', 'aspectAdvantage'], '−'], 0.5,
             0.72,
           ],
           'text-halo-color': '#000000',
           'text-halo-width': [
             'case',
             ['boolean', ['feature-state', 'hovered'], false], 2,
+            ['==', ['feature-state', 'aspectAdvantage'], '+'], 1.8,
             1.2,
           ],
           'text-halo-blur': 0,
@@ -1246,11 +1268,36 @@ export function MapView({
 
   useEffect(() => {
     const map = mapRef.current;
+    if (!map?.getSource(SOURCE_ID)) return;
+    for (const feature of districts.features) {
+      const paint = overlayPaintForDistrict(feature.properties, overlay);
+      map.setFeatureState({ source: SOURCE_ID, id: feature.properties.key }, {
+        overlayOpacity: paint.opacity,
+        overlayColor: paint.color,
+      });
+      map.setFeatureState({ source: LABEL_SOURCE_ID, id: feature.properties.key }, {
+        aspectAdvantage: paint.aspect,
+      });
+    }
+  }, [districts, overlay]);
+
+  useEffect(() => {
+    const map = mapRef.current;
     if (!map) return undefined;
-    const active = layerVisibility.districts && selectedKey !== null && selectedKey !== 'PATH';
+    const homesteadPulseKey = overlay.kind === 'homestead'
+      ? districts.features.find((feature) => feature.properties[overlay.trait] === 6)?.properties.key ?? null
+      : null;
+    const pulseKey = (selectedKey && selectedKey !== 'PATH')
+      ? selectedKey
+      : homesteadPulseKey;
+    const pulseYellow = Boolean(pulseKey && pulseKey === homesteadPulseKey && selectedKey !== pulseKey);
+    const active = layerVisibility.districts && pulseKey !== null;
     if (!active) {
       pulseOriginRef.current = null;
       return undefined;
+    }
+    if (pulseKey === homesteadPulseKey && selectedKey !== pulseKey) {
+      syncDistrictBorders(map, districts, pulseKey);
     }
     let frame = 0;
     let stopped = false;
@@ -1261,13 +1308,14 @@ export function MapView({
       map.setPaintProperty(FILL_LAYER_ID, 'fill-opacity', [
         'case',
         ['boolean', ['feature-state', 'selected'], false], paint.fillOpacity,
-        0,
+        ['coalesce', ['feature-state', 'overlayOpacity'], 0],
       ]);
       map.setPaintProperty(LINE_LAYER_ID, 'line-width', paint.lineWidth);
-      map.setPaintProperty(LINE_LAYER_ID, 'line-color', paint.strokeColor);
+      map.setPaintProperty(LINE_LAYER_ID, 'line-color', pulseYellow ? '#FFDD00' : paint.strokeColor);
       for (const layerId of DISTRICT_GLOW_LAYER_IDS) {
         map.setPaintProperty(layerId, 'line-blur', paint.glowBlur);
         map.setPaintProperty(layerId, 'line-width', paint.glowWidth);
+        map.setPaintProperty(layerId, 'line-color', pulseYellow ? '#FFDD00' : DISTRICT_GLOW_COLOR);
       }
       frame = window.requestAnimationFrame(tick);
     };
@@ -1279,7 +1327,7 @@ export function MapView({
       window.cancelAnimationFrame(frame);
       stopReady();
     };
-  }, [layerVisibility.districts, selectedKey]);
+  }, [districts, layerVisibility.districts, overlay, selectedKey]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -13,11 +13,18 @@ export interface MapFeatureProperties {
 
 export type MapFeatureCollection = FeatureCollection<MultiPolygon, MapFeatureProperties>;
 
+export type AspectAdvantage = '+' | '−' | null;
+
 export interface DistrictFeatureProperties extends MapFeatureProperties {
   kind: 'district';
   huntingDifficulty: number | null;
   resonancePlus: string;
   resonanceMinus: string;
+  aspectAdvantage: AspectAdvantage;
+  affair: number;
+  association: number;
+  clout: number;
+  utility: number;
 }
 
 export interface RegionFeatureProperties extends MapFeatureProperties {
@@ -38,21 +45,25 @@ export interface MapLabelProperties {
   kind: MapFeatureKind;
 }
 
-export interface NetworkDistrictFacts {
-  key: 'PATH';
+export interface DistrictFactsBase {
   name: string;
   huntingDifficulty: number | null;
   resonancePlus: string;
   resonanceMinus: string;
+  aspectAdvantage: AspectAdvantage;
+  affair: number;
+  association: number;
+  clout: number;
+  utility: number;
+}
+
+export interface NetworkDistrictFacts extends DistrictFactsBase {
+  key: 'PATH';
 }
 
 /** Sewers / Streets / Subway — Sheet facts with no surface polygon. */
-export interface SheetOnlyDistrictFacts {
+export interface SheetOnlyDistrictFacts extends DistrictFactsBase {
   key: string;
-  name: string;
-  huntingDifficulty: number | null;
-  resonancePlus: string;
-  resonanceMinus: string;
 }
 
 export interface PathRouteProperties {

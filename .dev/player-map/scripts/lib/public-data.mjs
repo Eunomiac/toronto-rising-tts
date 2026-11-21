@@ -1,4 +1,7 @@
-const DISTRICT_FIELDS = ['Key', 'Name', 'Hunting Difficulty', 'Resonance Plus', 'Resonance Minus'];
+const DISTRICT_FIELDS = [
+  'Key', 'Name', 'Hunting Difficulty', 'Resonance Plus', 'Resonance Minus',
+  'Aspect Advantage', 'Affair', 'Association', 'Clout', 'Utility',
+];
 const SITE_FIELDS = ['Key', 'Name', 'Subtitle', 'District', 'Map Icon', 'X', 'Y'];
 const PUBLIC_SITE_PROPERTIES = ['districtKey', 'hub', 'icon', 'key', 'name'];
 const RESONANCES = new Set(['choleric', 'ischemic', 'melancholic', 'mercurial', 'phlegmatic', 'primal', 'sanguine']);
@@ -12,6 +15,11 @@ const PUBLIC_DISTRICT_PROPERTIES = new Set([
   'huntingDifficulty',
   'resonancePlus',
   'resonanceMinus',
+  'aspectAdvantage',
+  'affair',
+  'association',
+  'clout',
+  'utility',
 ]);
 
 function sameMembers(left, right) {
@@ -32,6 +40,22 @@ function huntingDifficulty(value, key) {
   const number = Number(normalized);
   if (!Number.isInteger(number) || number < 1 || number > 10) {
     throw new Error(`${key}: invalid Hunting Difficulty ${JSON.stringify(value)}`);
+  }
+  return number;
+}
+
+function aspectAdvantage(value, key) {
+  const normalized = String(value ?? '').trim();
+  if (normalized === '' || normalized === '—') return null;
+  if (normalized === '+') return '+';
+  if (normalized === '−' || normalized === '-') return '−';
+  throw new Error(`${key}: invalid Aspect Advantage ${JSON.stringify(value)}`);
+}
+
+function homesteadTrait(value, key, field) {
+  const number = Number(String(value).trim());
+  if (!Number.isInteger(number) || number < 0 || number > 6) {
+    throw new Error(`${key}: invalid ${field} ${JSON.stringify(value)}`);
   }
   return number;
 }
@@ -62,6 +86,11 @@ export function projectDistrictRows(rows, policy) {
       huntingDifficulty: huntingDifficulty(row['Hunting Difficulty'], key),
       resonancePlus: resonance(row['Resonance Plus'], '+', key),
       resonanceMinus: resonance(row['Resonance Minus'], '-', key),
+      aspectAdvantage: aspectAdvantage(row['Aspect Advantage'], key),
+      affair: homesteadTrait(row.Affair, key, 'Affair'),
+      association: homesteadTrait(row.Association, key, 'Association'),
+      clout: homesteadTrait(row.Clout, key, 'Clout'),
+      utility: homesteadTrait(row.Utility, key, 'Utility'),
     };
   });
   if (new Set(projected.map(({ key }) => key)).size !== projected.length) throw new Error('Duplicate public district key');
@@ -93,6 +122,11 @@ export function joinDistrictFacts(collection, facts, policy) {
           huntingDifficulty: fact.huntingDifficulty,
           resonancePlus: fact.resonancePlus,
           resonanceMinus: fact.resonanceMinus,
+          aspectAdvantage: fact.aspectAdvantage,
+          affair: fact.affair,
+          association: fact.association,
+          clout: fact.clout,
+          utility: fact.utility,
         },
       };
       const keys = Object.keys(joined.properties);
@@ -117,6 +151,8 @@ export function projectPublicSites(rows, icons, project) {
     const xText = String(row.X ?? '').trim();
     const yText = String(row.Y ?? '').trim();
     if (!icon || !xText || !yText) continue;
+    const showOnMap = String(row['Show On Map'] ?? '').trim().toUpperCase();
+    if (showOnMap === 'FALSE' || showOnMap === 'NO' || showOnMap === '0') continue;
     const x = Number(xText);
     const y = Number(yText);
     if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error(`${key}: invalid map coordinates`);

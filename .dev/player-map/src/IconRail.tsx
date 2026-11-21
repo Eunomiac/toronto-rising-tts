@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import type {
@@ -8,8 +8,15 @@ import type {
   RegionFeatureProperties,
   SheetOnlyDistrictFacts,
 } from './types';
+import {
+  HOMESTEAD_BLURBS,
+  HOMESTEAD_TRAITS,
+  HUNTING_FLAVORS,
+  type HuntingFlavor,
+  type MapOverlaySelection,
+} from './mapOverlays';
 
-export type IconRailMenuId = 'map-layers' | 'domains' | 'sites';
+export type IconRailMenuId = 'map-layers' | 'domains' | 'coteries' | 'hunting' | 'homestead' | 'sites';
 
 interface IconRailProps {
   regions: RegionFeatureProperties[];
@@ -20,10 +27,12 @@ interface IconRailProps {
   selectedDistrictKey: string | null;
   sites?: PublicSiteProperties[];
   toggledSiteKeys?: readonly string[];
+  overlay: MapOverlaySelection;
   onToggleRegion: (key: string) => void;
   onSelectDistrict: (key: string) => void;
   onToggleSite?: (key: string) => void;
   onFocusHub?: (key: string) => void;
+  onOverlayChange: (overlay: MapOverlaySelection) => void;
 }
 
 function districtSortName(name: string) {
@@ -33,6 +42,9 @@ function districtSortName(name: string) {
 const MENUS: Array<{ id: IconRailMenuId; label: string; icon: string }> = [
   { id: 'map-layers', label: 'Map Layers', icon: '/assets/icons/left_panel/map_layers.svg' },
   { id: 'domains', label: 'Domains', icon: '/assets/icons/left_panel/domains.svg' },
+  { id: 'coteries', label: 'Coteries', icon: '/assets/icons/left_panel/coteries.svg' },
+  { id: 'hunting', label: 'Hunting', icon: '/assets/icons/left_panel/hunting.svg' },
+  { id: 'homestead', label: 'Homestead', icon: '/assets/icons/left_panel/homestead.svg' },
   { id: 'sites', label: 'Sites', icon: '/assets/icons/left_panel/sites_of_interest.svg' },
 ];
 
@@ -258,13 +270,17 @@ export function IconRail({
   selectedDistrictKey,
   sites = [],
   toggledSiteKeys = [],
+  overlay,
   onToggleRegion,
   onSelectDistrict,
   onToggleSite,
   onFocusHub,
+  onOverlayChange,
 }: IconRailProps) {
   const rootRef = useRef<HTMLElement>(null);
+  const columnRef = useRef<HTMLDivElement>(null);
   const [openMenu, setOpenMenu] = useState<IconRailMenuId | null>(null);
+  const [expandedRail, setExpandedRail] = useState(false);
   const openMenuRef = useRef<IconRailMenuId | null>(null);
   openMenuRef.current = openMenu;
   const districtRows: Array<{ key: string; name: string; disabled?: boolean }> = [
@@ -280,12 +296,16 @@ export function IconRail({
 
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
-      if (!openMenuRef.current || !rootRef.current) return;
+      if (!rootRef.current) return;
       if (rootRef.current.contains(event.target as Node)) return;
       setOpenMenu(null);
+      setExpandedRail(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpenMenu(null);
+      if (event.key === 'Escape') {
+        setOpenMenu(null);
+        setExpandedRail(false);
+      }
     };
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('keydown', onKeyDown);
@@ -295,9 +315,48 @@ export function IconRail({
     };
   }, []);
 
+  useEffect(() => {
+    const column = columnRef.current;
+    if (!column) return undefined;
+    const items = [...column.querySelectorAll<HTMLElement>('.icon-rail__item')];
+    const layout = () => {
+      const top = column.getBoundingClientRect().top;
+      const available = Math.max(180, window.innerHeight - top - 120);
+      const natural = items.length * (3.15 * 16 + 12); // rough px: button + gap
+      const needsCollapse = natural > available && !expandedRail && !openMenu;
+      column.classList.toggle('is-collapsed', needsCollapse);
+      column.classList.toggle('is-expanded', expandedRail || Boolean(openMenu));
+      if (needsCollapse) {
+        const overlap = Math.min(1.8, (natural - available) / items.length / 16);
+        column.style.setProperty('--rail-overlap', `${overlap.toFixed(2)}rem`);
+      } else {
+        column.style.removeProperty('--rail-overlap');
+      }
+    };
+    layout();
+    window.addEventListener('resize', layout);
+    return () => window.removeEventListener('resize', layout);
+  }, [expandedRail, openMenu]);
+
+  const openMenuAndExpand = (id: IconRailMenuId) => {
+    setExpandedRail(true);
+    setOpenMenu((current) => (current === id ? null : id));
+  };
+
+  const huntingSelected = overlay.kind === 'hunting' ? overlay.flavor : null;
+  const homesteadSelected = overlay.kind === 'homestead' ? overlay.trait : null;
+
   return (
-    <nav ref={rootRef} className="icon-rail" data-note-surface="layer-controls" aria-label="Map menus" data-gsap="icon-rail">
-      <div className="icon-rail__column">
+    <nav
+      ref={rootRef}
+      className="icon-rail"
+      data-note-surface="layer-controls"
+      aria-label="Map menus"
+      data-gsap="icon-rail"
+      onPointerEnter={() => setExpandedRail(true)}
+      onFocusCapture={() => setExpandedRail(true)}
+    >
+      <div ref={columnRef} className="icon-rail__column">
         {MENUS.map((menu) => {
           const isOpen = openMenu === menu.id;
           return (
@@ -305,8 +364,8 @@ export function IconRail({
               key={menu.id}
               menu={menu}
               isOpen={isOpen}
-              wide={menu.id === 'sites'}
-              onToggle={() => setOpenMenu((current) => (current === menu.id ? null : menu.id))}
+              wide={menu.id === 'sites' || menu.id === 'hunting' || menu.id === 'homestead'}
+              onToggle={() => openMenuAndExpand(menu.id)}
             >
           {menu.id === 'map-layers' ? (
             <div className="icon-rail__list">
@@ -378,6 +437,51 @@ export function IconRail({
                 );
               })}
             </div>
+          ) : menu.id === 'hunting' ? (
+            <div className="icon-rail__list">
+              {HUNTING_FLAVORS.map((flavor, index) => {
+                const selected = huntingSelected === flavor;
+                return (
+                  <div key={flavor}>
+                    {index === 1 ? <div className="icon-rail__gap" aria-hidden="true" /> : null}
+                    <button
+                      type="button"
+                      className={`icon-rail__option${selected ? ' is-selected' : ''}`}
+                      aria-pressed={selected}
+                      onClick={() => onOverlayChange(
+                        selected ? { kind: 'none' } : { kind: 'hunting', flavor: flavor as HuntingFlavor },
+                      )}
+                    >
+                      {flavor}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : menu.id === 'homestead' ? (
+            <div className="icon-rail__list">
+              {HOMESTEAD_TRAITS.map((trait) => {
+                const selected = homesteadSelected === trait.id;
+                return (
+                  <button
+                    key={trait.id}
+                    type="button"
+                    className={`icon-rail__option icon-rail__option--homestead${selected ? ' is-selected' : ''}`}
+                    aria-pressed={selected}
+                    onClick={() => onOverlayChange(
+                      selected ? { kind: 'none' } : { kind: 'homestead', trait: trait.id },
+                    )}
+                  >
+                    <span
+                      className="icon-rail__option-glyph"
+                      style={{ '--glyph': `url('${trait.icon}')` } as CSSProperties}
+                      aria-hidden="true"
+                    />
+                    {trait.label}
+                  </button>
+                );
+              })}
+            </div>
           ) : (
             <p className="icon-rail__empty">Nothing revealed yet.</p>
           )}
@@ -385,6 +489,12 @@ export function IconRail({
           );
         })}
       </div>
+      {overlay.kind === 'homestead' ? (
+        <aside className="homestead-blurb" data-gsap="homestead-blurb">
+          <h2>{HOMESTEAD_BLURBS[overlay.trait].title}</h2>
+          <p>{HOMESTEAD_BLURBS[overlay.trait].body}</p>
+        </aside>
+      ) : null}
     </nav>
   );
 }

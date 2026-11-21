@@ -10,6 +10,11 @@ const districts: DistrictFeatureCollection = {
       key: 'Test', name: 'Test', kind: 'district', sourceElement: 'polygon',
       fillRule: 'nonzero', sourceRingCount: 1, huntingDifficulty: 2,
       resonancePlus: 'sanguine', resonanceMinus: 'melancholic',
+    aspectAdvantage: null,
+    affair: 3,
+    association: 3,
+    clout: 3,
+    utility: 3,
     },
     geometry: {
       type: 'MultiPolygon',
