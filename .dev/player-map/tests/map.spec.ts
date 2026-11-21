@@ -1,23 +1,30 @@
 import { expect, test, type Page, type Route, type TestInfo } from '@playwright/test';
 
+const relayedResponses = new Map<string, { status: number; contentType: string; body: Buffer }>();
+
 async function relayThroughTestRunner(route: Route) {
-  let response: Response | undefined;
+  const url = route.request().url();
+  const cached = relayedResponses.get(url);
+  if (cached) {
+    await route.fulfill(cached);
+    return;
+  }
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
-      response = await fetch(route.request().url());
-      break;
-    } catch (error) {
-      if (attempt === 3) throw error;
-      await new Promise((resolve) => setTimeout(resolve, attempt * 150));
+      const response = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+      const payload = {
+        status: response.status,
+        contentType: response.headers.get('content-type') ?? 'application/octet-stream',
+        body: Buffer.from(await response.arrayBuffer()),
+      };
+      if (response.ok) relayedResponses.set(url, payload);
+      await route.fulfill(payload);
+      return;
+    } catch {
+      if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 150));
     }
   }
-  if (!response) throw new Error(`Unable to relay ${route.request().url()}`);
-  const body = Buffer.from(await response.arrayBuffer());
-  await route.fulfill({
-    status: response.status,
-    contentType: response.headers.get('content-type') ?? 'application/octet-stream',
-    body,
-  });
+  await route.abort();
 }
 
 async function prepareNetwork(page: Page, testInfo: TestInfo) {
@@ -48,8 +55,8 @@ test('loads the real map and supports pointer and keyboard-friendly selection', 
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   page.on('requestfailed', (request) => {
     const errorText = request.failure()?.errorText;
-    // MapLibre cancels obsolete vector tiles when fitBounds changes the camera.
-    if (errorText === 'net::ERR_ABORTED' && request.url().endsWith('.pbf')) return;
+    // Reloading the page, and MapLibre changing the camera, cancels requests that were already in flight.
+    if (errorText === 'net::ERR_ABORTED') return;
     failedRequests.push(`${request.method()} ${request.url()}: ${errorText}`);
   });
 

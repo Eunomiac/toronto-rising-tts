@@ -26,6 +26,7 @@ Status:
 3. Choose **Add note**, then click the map or the interface element you want to discuss.
 4. Write the instruction and press Enter to save. Use Shift+Enter for another line.
 5. Leave **Show notes** on to review pins, edit their text, mark them done, or delete them. Deletion requires two clicks so a stray click cannot remove a note.
+6. The gold **Zoom** readout shows the current map zoom to two decimal places. A higher number is closer: 1 is the widest view and 18 is the closest. Quote that number in a note when a label or other detail should appear or disappear. Hover the readout for the same reminder.
 
 Map pins store longitude and latitude, so they remain on the same place while
 the map pans or zooms. Interface pins store a named surface and a position

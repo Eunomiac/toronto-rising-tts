@@ -234,7 +234,7 @@ export function App() {
           onClear={clearDistrict}
         />
       )}
-      <DebugNotesSlot map={map} selectedDistrict={validSelectedKey} />
+      <DebugNotesSlot map={map} districts={calibratedDistricts ?? data.districts} selectedDistrict={validSelectedKey} />
     </main>
   );
 }

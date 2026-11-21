@@ -11,6 +11,7 @@ import {
 } from './positioning';
 import type { DebugNote, DebugNoteAnchor, DebugNoteFile } from './types';
 import type { DebugNotesSlotProps } from './DebugNotesSlot';
+import { GsapSandboxOverlay } from './GsapSandboxOverlay';
 import './debug-notes.scss';
 
 const SWALLOWED_EVENTS = ['pointerdown', 'mousedown', 'click', 'dblclick', 'contextmenu', 'dragstart'] as const;
@@ -34,8 +35,9 @@ function ConfirmDelete({ onConfirm }: { readonly onConfirm: () => void }) {
   return <button type="button" className={armed ? 'is-danger' : ''} onClick={() => armed ? onConfirm() : setArmed(true)}>{armed ? 'Click again' : 'Delete'}</button>;
 }
 
-export function DebugNotesSlot({ map, selectedDistrict }: DebugNotesSlotProps) {
+export function DebugNotesSlot({ map, districts, selectedDistrict }: DebugNotesSlotProps) {
   const [enabled, setEnabled] = useState(false);
+  const [shapes, setShapes] = useState(false);
   const [addMode, setAddMode] = useState(false);
   const [visible, setVisible] = useState(true);
   const [file, setFile] = useState<DebugNoteFile>({ nextId: 1, notes: [] });
@@ -129,6 +131,7 @@ export function DebugNotesSlot({ map, selectedDistrict }: DebugNotesSlotProps) {
   const openNote = file.notes.find((note) => note.id === openId) ?? null;
   const openPoint = openNote ? pointForAnchor(openNote.anchor, map) : null;
   const openCount = file.notes.filter((note) => note.status === 'open').length;
+  const zoomLabel = map && positionRevision >= 0 ? map.getZoom().toFixed(2) : null;
 
   const editNote = (note: DebugNote, point: ScreenPoint) => {
     setOpenId(null);
@@ -138,6 +141,8 @@ export function DebugNotesSlot({ map, selectedDistrict }: DebugNotesSlotProps) {
   const stop = (event: ReactPointerEvent) => event.stopPropagation();
 
   return (
+    <>
+    {shapes ? <GsapSandboxOverlay map={map} districts={districts} /> : null}
     <div className="debug-notes" onPointerDown={stop}>
       <div className={`debug-notes__controls${enabled ? ' is-open' : ''}`}>
         <button type="button" className="debug-notes__master" aria-expanded={enabled} onClick={() => {
@@ -160,6 +165,20 @@ export function DebugNotesSlot({ map, selectedDistrict }: DebugNotesSlotProps) {
             }}>
               {visible ? 'Hide notes' : 'Show notes'}
             </button>
+            <label className="debug-notes__toggle">
+              <input
+                type="checkbox"
+                checked={shapes}
+                onChange={(event) => setShapes(event.target.checked)}
+              />
+              GSAP shapes
+            </label>
+            <span
+              className="debug-notes__zoom"
+              title="The map's zoom. A higher number is closer. 1 is the widest view and 18 is the closest. Quote this number in a note when something should appear or disappear."
+            >
+              Zoom {zoomLabel ?? '—'}
+            </span>
           </div>
         )}
       </div>
@@ -212,5 +231,6 @@ export function DebugNotesSlot({ map, selectedDistrict }: DebugNotesSlotProps) {
 
       {error && <p className="debug-notes__error" role="alert">{error}</p>}
     </div>
+    </>
   );
 }

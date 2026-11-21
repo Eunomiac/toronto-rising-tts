@@ -24,7 +24,7 @@ describe('DebugNotesSlot development controls', () => {
     });
     vi.stubGlobal('fetch', fetch);
 
-    render(<DebugNotesSlot map={null} selectedDistrict={null} />);
+    render(<DebugNotesSlot map={null} districts={null} selectedDistrict={null} />);
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/debug-notes', expect.objectContaining({ method: 'GET' })));
     expect(screen.queryByRole('button', { name: 'Add note' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '1' })).not.toBeInTheDocument();
@@ -32,6 +32,9 @@ describe('DebugNotesSlot development controls', () => {
     await userEvent.click(screen.getByRole('button', { name: /Debug notes/ }));
     expect(screen.getByRole('button', { name: 'Add note' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Hide notes' })).toBeVisible();
+    expect(screen.getByRole('checkbox', { name: 'GSAP shapes' })).not.toBeChecked();
+    expect(screen.getByText('Zoom —')).toBeVisible();
+    expect(document.querySelector('.gsap-sandbox')).toBeNull();
     expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('title', 'Check this position.');
   });
 });

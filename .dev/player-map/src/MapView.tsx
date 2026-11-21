@@ -15,6 +15,7 @@ import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { featureBounds } from './data';
 import { interiorDistrictBorders } from './district-borders';
+import { DISTRICT_GLOW_COLOR, districtPulseAmount, districtPulseFrame } from './district-pulse';
 import { ORIENTATION_STREETS, type OrientationStreetCategory } from './orientation-streets';
 import { labelsForViewport } from './viewport-labels';
 import type {
@@ -46,7 +47,7 @@ const BASEMAP_MASK_SOURCE_ID = 'basemap-masks';
 const BASEMAP_MASK_LABEL_SOURCE_ID = 'basemap-mask-labels';
 const FILL_LAYER_ID = 'district-fills';
 const BORDER_SOURCE_ID = 'district-borders';
-const SELECTED_GLOW_LAYER_ID = 'district-selected-glow';
+const DISTRICT_GLOW_LAYER_IDS = ['district-selected-glow', 'district-selected-glow-b'] as const;
 const LINE_LAYER_ID = 'district-lines';
 const BASEMAP_IMAGE_PREFIX = 'basemap-mask-image-';
 const LABEL_LAYER_ID = 'district-labels';
@@ -640,6 +641,7 @@ export function MapView({
   const hoveredRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const toggledSiteKeysRef = useRef(toggledSiteKeys);
+  const pulseOriginRef = useRef<number | null>(null);
   const [status, setStatus] = useState('Loading street map…');
   const [distantView, setDistantView] = useState(false);
   districtsRef.current = districts;
@@ -743,7 +745,7 @@ export function MapView({
           ],
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.2,
+            ['boolean', ['feature-state', 'selected'], false], 0.06,
             ['boolean', ['feature-state', 'hovered'], false], 0.34,
             0,
           ],
@@ -754,28 +756,38 @@ export function MapView({
         type: 'geojson',
         data: interiorDistrictBorders(districtsRef.current, selectedRef.current),
       });
-      map.addLayer({
-        id: SELECTED_GLOW_LAYER_ID,
-        type: 'line',
-        source: BORDER_SOURCE_ID,
-        paint: {
-          'line-color': '#ff4f59',
-          'line-width': 8,
-          'line-blur': 5,
-          'line-opacity': 0.9,
-        },
-        layout: { visibility: mapVisibility(layerVisibilityRef.current.districts) },
-      });
+      for (const layerId of DISTRICT_GLOW_LAYER_IDS) {
+        map.addLayer({
+          id: layerId,
+          type: 'line',
+          source: BORDER_SOURCE_ID,
+          layout: {
+            visibility: mapVisibility(layerVisibilityRef.current.districts),
+            'line-cap': 'round',
+            'line-join': 'round',
+          },
+          paint: {
+            'line-color': DISTRICT_GLOW_COLOR,
+            'line-width': 9,
+            'line-blur': 6,
+            'line-opacity': 1,
+          },
+        });
+      }
       map.addLayer({
         id: LINE_LAYER_ID,
         type: 'line',
         source: BORDER_SOURCE_ID,
-        paint: {
-          'line-color': '#ff6b72',
-          'line-width': 2.6,
-          'line-opacity': 0.92,
+        layout: {
+          visibility: mapVisibility(layerVisibilityRef.current.districts),
+          'line-cap': 'round',
+          'line-join': 'round',
         },
-        layout: { visibility: mapVisibility(layerVisibilityRef.current.districts) },
+        paint: {
+          'line-color': DISTRICT_GLOW_COLOR,
+          'line-width': 2,
+          'line-opacity': 1,
+        },
       });
       map.addLayer({
         id: REGION_FILL_LAYER_ID,
@@ -1033,6 +1045,8 @@ export function MapView({
       if (event.error) setStatus(`Map error: ${event.error.message}`);
     };
 
+    // `load` waits for basemap tiles. `style.load` is enough to add districts, so a stalled tile cannot leave the status on "Loading street map…".
+    map.on('style.load', onLoad);
     map.on('load', onLoad);
     if (map.isStyleLoaded()) onLoad();
     map.on('mousemove', onMouseMove);
@@ -1116,7 +1130,7 @@ export function MapView({
     const map = mapRef.current;
     if (!map) return undefined;
     return applyWhenStyleReady(map, FILL_LAYER_ID, () => {
-      for (const layer of [FILL_LAYER_ID, SELECTED_GLOW_LAYER_ID, LINE_LAYER_ID, LABEL_LAYER_ID]) {
+      for (const layer of [FILL_LAYER_ID, ...DISTRICT_GLOW_LAYER_IDS, LINE_LAYER_ID, LABEL_LAYER_ID]) {
         if (map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.districts));
       }
       for (const layer of [REGION_FILL_LAYER_ID, REGION_LINE_LAYER_ID, REGION_LABEL_LAYER_ID]) {
@@ -1143,6 +1157,44 @@ export function MapView({
       map.setFilter(REGION_LABEL_LAYER_ID, ['all', ['==', ['get', 'kind'], 'region'], filter] as FilterSpecification);
     });
   }, [regionVisibility]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return undefined;
+    const active = layerVisibility.districts && selectedKey !== null && selectedKey !== 'PATH';
+    if (!active) {
+      pulseOriginRef.current = null;
+      return undefined;
+    }
+    let frame = 0;
+    let stopped = false;
+    const tick = (now: number) => {
+      if (stopped || !map.getLayer(LINE_LAYER_ID)) return;
+      if (pulseOriginRef.current === null) pulseOriginRef.current = now;
+      const paint = districtPulseFrame(districtPulseAmount(now - pulseOriginRef.current));
+      map.setPaintProperty(FILL_LAYER_ID, 'fill-opacity', [
+        'case',
+        ['boolean', ['feature-state', 'selected'], false], paint.fillOpacity,
+        ['boolean', ['feature-state', 'hovered'], false], 0.34,
+        0,
+      ]);
+      map.setPaintProperty(LINE_LAYER_ID, 'line-width', paint.lineWidth);
+      map.setPaintProperty(LINE_LAYER_ID, 'line-color', paint.strokeColor);
+      for (const layerId of DISTRICT_GLOW_LAYER_IDS) {
+        map.setPaintProperty(layerId, 'line-blur', paint.glowBlur);
+        map.setPaintProperty(layerId, 'line-width', paint.glowWidth);
+      }
+      frame = window.requestAnimationFrame(tick);
+    };
+    const stopReady = applyWhenStyleReady(map, LINE_LAYER_ID, () => {
+      frame = window.requestAnimationFrame(tick);
+    });
+    return () => {
+      stopped = true;
+      window.cancelAnimationFrame(frame);
+      stopReady();
+    };
+  }, [layerVisibility.districts, selectedKey]);
 
   useEffect(() => {
     const map = mapRef.current;
