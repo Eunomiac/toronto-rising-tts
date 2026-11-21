@@ -672,6 +672,8 @@ select,
   z-index: 1;
 }
 
+// Pin Marker root is the img itself (no inner wrapper).
+.maplibregl-marker.player-session-pin,
 .maplibregl-marker:has(.player-session-pin) {
   z-index: 2;
 }
