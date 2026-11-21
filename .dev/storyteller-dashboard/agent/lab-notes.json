@@ -41,16 +41,6 @@
       "updatedAt": "2026-11-21T22:15:34.380Z"
     },
     {
-      "id": 14,
-      "sketch": "scenes",
-      "x": 284,
-      "y": 795,
-      "text": "Upon dropping a group onto a category to move them to the category, the group remained floating above the category, as if the drag entity wasn't properly cleared.",
-      "status": "open",
-      "createdAt": "2026-11-21T22:16:41.707Z",
-      "updatedAt": "2026-11-21T22:16:41.707Z"
-    },
-    {
       "id": 15,
       "sketch": "scenes",
       "x": 318,

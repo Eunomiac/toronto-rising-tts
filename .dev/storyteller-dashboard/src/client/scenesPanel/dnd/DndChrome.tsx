@@ -96,9 +96,11 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
       if (!payload || isPreviewPreloadDrop(event)) {
         return;
       }
-      // Category filing is the header's own drop. Stopping it here is what made the label ignore the group.
+      // Category filing is the header's own drop. End the preview here: filing removes the
+      // dragged row, and the browser then never sends dragend, so the ghost would stay put.
       if (isRosterCategoryDrop(event)) {
         event.preventDefault();
+        endDrag();
         return;
       }
       event.preventDefault();
