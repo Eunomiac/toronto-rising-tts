@@ -3,8 +3,12 @@
 /** Shared with site labels/icons and player pins — hide below this zoom together. */
 export const DISTRICT_LABEL_MIN_ZOOM = 12.5;
 
-/** Design offsets were authored as CSS pixels at this zoom; convert once to lng/lat. */
-export const DISTRICT_LABEL_OFFSET_REF_ZOOM = 13;
+/**
+ * Design offsets were authored as CSS pixels while reading districts up close.
+ * Convert once at this zoom so a −200px nudge stays a neighborhood-scale shift
+ * instead of kilometres (z13 made Little Portugal jump ~1.4 km west).
+ */
+export const DISTRICT_LABEL_OFFSET_REF_ZOOM = 15;
 
 export type DistrictLabelState = 'default' | 'hovered' | 'selected';
 
