@@ -7,7 +7,8 @@
 
     phase       phase, Play subphase, session number/name, Memoriam active
     scene       live library scene (and its own location), location, table, lighting, skybox override,
-                top fog, scene conditions, weather, Storyteller weather override
+                top fog, scene conditions, weather, Storyteller weather override, public mapPins
+                (last-active PC site stamps for the Player Map)
     clock       clock anchor: scene / present-day / Downtime clocks, which one runs, speed
     soundscape  music, location, featured, intro, weather layers, lane volumes
     seats       PC and NPC seat occupancy and presence, stage NPCs, generic NPCs in the scene, Scatter
@@ -82,6 +83,65 @@ local function buildPhase()
   }
 end
 
+--- Match player-map `hubKey(subtitle)` so hub rooms collapse to one public map site.
+local function publicMapHubKey(subtitle)
+  if type(subtitle) ~= "string" then
+    return nil
+  end
+  local parts = {}
+  for part in string.gmatch(subtitle, "[A-Za-z0-9]+") do
+    parts[#parts + 1] = string.upper(string.sub(part, 1, 1)) .. string.sub(part, 2)
+  end
+  if #parts == 0 then
+    return nil
+  end
+  return table.concat(parts)
+end
+
+--- TTS room keys (e.g. StRegisAishe) → public Player Map site keys (e.g. TheStRegisToronto).
+local function publicMapSiteKey(siteKey)
+  if type(siteKey) ~= "string" or siteKey == "" then
+    return nil
+  end
+  local site = C.Sites[siteKey]
+  if type(site) ~= "table" or type(site.name) ~= "string" then
+    return siteKey
+  end
+  local raw = string.gsub(string.gsub(site.name, "^%s+", ""), "%s+$", "")
+  local colonAt = string.find(raw, ":", 1, true)
+  if colonAt == nil then
+    return siteKey
+  end
+  local parent = string.gsub(string.gsub(string.sub(raw, 1, colonAt - 1), "^%s+", ""), "%s+$", "")
+  return publicMapHubKey(parent) or siteKey
+end
+
+--- Player-safe pin stamps for the public Player Map (public site keys only; no offsets or Steam ids).
+local function buildMapPins()
+  local MapPins = require("core.map_pins")
+  local SceneLibrary = require("core.scene_library")
+  local pins = {}
+  for _, color in ipairs(C.PlayerColors) do
+    local display = MapPins.resolvePinDisplay(color)
+    local lap = S.getStateVal("lastActiveMapPin")
+    local row = type(lap) == "table" and lap[color] or nil
+    local pid = C.GetPlayerIDOrNil(color)
+    local charKey = pid ~= nil and C.PlayerData[pid] ~= nil and C.PlayerData[pid].charKey or nil
+    local rawSite = type(row) == "table" and type(row.siteKey) == "string" and row.siteKey or nil
+    local siteKey = publicMapSiteKey(rawSite)
+    pins[#pins + 1] = {
+      seat = color,
+      charKey = charKey,
+      siteKey = siteKey,
+      visible = display.visible == true and siteKey ~= nil,
+    }
+  end
+  return {
+    live = SceneLibrary.hasLiveSceneOnTable() == true,
+    pins = pins,
+  }
+end
+
 local function buildScene()
   local SceneLibrary = require("core.scene_library")
   local liveKey = SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") or nil
@@ -132,6 +192,7 @@ local function buildScene()
       thunder = snd.thunderEnabled == true,
       indoors = snd.isIndoors == true,
     },
+    mapPins = buildMapPins(),
   }
 end
 

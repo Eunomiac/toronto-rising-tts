@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-804 — Public Player Map live pins via Dashboard scene mapPins
+
+> **Agent-assessment note:** Worker and Dashboard relay unit tests pass; live Save & Play plus Worker secret + session URL still need a real table check.
+
+**How to verify:** Save & Play. In the Storyteller Dashboard `.env`, set `PLAYER_MAP_ENDPOINT`, `PLAYER_MAP_SESSION_CODE` (at least 6 characters), and `PLAYER_MAP_PUSH_SECRET` to match the Worker secret. Apply a live scene with a PC present. Open the Player Map with `?session=` set to that same code. Success: that character’s pin art appears centered on their site (hub rooms use the hub marker). Ending the scene or clearing the pin in-game should clear or hide it on the public map within about ten seconds.
+
 #### 🟡 TOR-803 — NPC sheets twice as wide as two PC pages (scaleX double-count)
 
 > **Agent-assessment note:** Inject unit tests expect PAGE_1 scaleX (not ×2). Live width after re-inject still needs File → Load.

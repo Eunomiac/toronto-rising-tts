@@ -36,6 +36,8 @@ end
 --- @param lap table
 local function writeLastActiveTable(lap)
     S.setStateVal(lap, "lastActiveMapPin")
+    -- Public Player Map reads mapPins from the scene world slice.
+    require("dashboard.push").markWorldDirty({ scene = true })
 end
 
 --- @param color string

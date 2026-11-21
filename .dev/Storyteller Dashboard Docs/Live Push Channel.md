@@ -62,7 +62,7 @@ console output; no request waits for a dashboard response.
 | `notice` | `DashPush.notice(text)`: scene Play refusals, dice-on-table blocks, failed blindfold transitions | `json` = `{ text }` | Scenes tab shows a red notice with OK (`scenesPanel/notices.ts`); replays older than a minute are ignored |
 | `complicationConditionPrompt` | `DashPush.complicationConditionPrompt(color, payload)` from Complications Automate when `Dashboard Prompt` is true | `color` + `json` = `{ correlationId, complicationGuid, index, enhanced, draft }` | Scenes seat tracker opens the Conditions form prefilled; confirm runs `personalCardAdd` with `correlationId` so TTS stores the new card id on the Automate receipt |
 | `phase` | world flush (§ 3a) | phase, Play subphase, session number/name, first-Downtime flag, Memoriam active | world store replaces the slice (no UI yet) |
-| `scene` | world flush | live library scene key/title/linked flag, district/site/table keys, placement mode, lighting preset, skybox override, top fog, weather layers | same |
+| `scene` | world flush | live library scene key/title/linked flag, district/site/table keys, placement mode, lighting preset, skybox override, top fog, weather layers, `mapPins` for the public Player Map relay | same; server may POST allowlisted pins to the Player Map Worker when env is configured |
 | `clock` | world flush | clock **anchor** (§ 3b) | same; read through `clockNow` |
 | `soundscape` | world flush | music mode/mood/enabled, location bed, featured track, session intro, per-lane volumes | same |
 | `seats` | world flush | PC and NPC seat rows (table slot, `isPresent`, PC `absentFromSession`), stage NPCs with board position, spotlight order and front index | same |
