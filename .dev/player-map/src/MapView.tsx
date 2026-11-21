@@ -22,6 +22,7 @@ import { ORIENTATION_STREETS, type OrientationStreetCategory } from './orientati
 import {
   createDistrictLabelElement,
   DISTRICT_LABEL_MIN_ZOOM,
+  districtLabelLngLat,
   setDistrictLabelState,
 } from './district-html-labels';
 import {
@@ -148,6 +149,8 @@ interface MapViewProps {
   regionVisibility: RegionVisibility;
   selectedKey: string | null;
   toggledSiteKeys: readonly string[];
+  /** Sites forced visible because live player pins sit on them. */
+  revealedSiteKeys?: readonly string[];
   overlay?: MapOverlaySelection;
   /** When true, the next selectedKey change skips district fitBounds (site focus wins). */
   skipNextDistrictFocusRef?: MutableRefObject<boolean>;
@@ -430,13 +433,14 @@ function mountDistrictHtmlMarkers(
       feature.properties.key,
     );
     // Same map-locked Marker options as street labels (rotation stays 0 — names stay upright).
+    const base = feature.geometry.coordinates as [number, number];
     const marker = new Marker({
       element,
       anchor: 'center',
       pitchAlignment: 'map',
       rotationAlignment: 'map',
     })
-      .setLngLat(feature.geometry.coordinates as [number, number])
+      .setLngLat(districtLabelLngLat(feature.properties.key, base))
       .addTo(map);
     markers.push(marker);
   }
@@ -569,34 +573,50 @@ function siteIconId(icon: string) {
 /** Same threshold as district HTML labels and player pins. */
 const SITE_LABEL_MIN_ZOOM = DISTRICT_LABEL_MIN_ZOOM;
 
-function siteFilter(selectedKey: string | null, toggledSiteKeys: readonly string[]): FilterSpecification {
+function siteFilter(
+  selectedKey: string | null,
+  toggledSiteKeys: readonly string[],
+  revealedSiteKeys: readonly string[] = [],
+): FilterSpecification {
   const toggled: FilterSpecification = toggledSiteKeys.length > 0
     ? ['in', ['get', 'key'], ['literal', [...toggledSiteKeys]]]
+    : ['literal', false];
+  const revealed: FilterSpecification = revealedSiteKeys.length > 0
+    ? ['in', ['get', 'key'], ['literal', [...revealedSiteKeys]]]
     : ['literal', false];
   const district: FilterSpecification = selectedKey
     ? ['==', ['get', 'districtKey'], selectedKey]
     : ['literal', false];
-  return ['any', ['==', ['get', 'hub'], true], toggled, district];
+  return ['any', ['==', ['get', 'hub'], true], toggled, revealed, district];
 }
 
-/** Same visibility rules as `siteFilter`, for HTML site-name markers. */
+/** Same visibility rules as `siteFilter`, for HTML site markers. */
 function siteLabelIsVisible(
   feature: PublicSiteCollection['features'][number],
   selectedKey: string | null,
   toggledSiteKeys: readonly string[],
+  revealedSiteKeys: readonly string[] = [],
 ) {
   if (feature.properties.hub) return true;
   if (toggledSiteKeys.includes(feature.properties.key)) return true;
+  if (revealedSiteKeys.includes(feature.properties.key)) return true;
   if (selectedKey && feature.properties.districtKey === selectedKey) return true;
   return false;
 }
 
-function createSiteLabelMarkerElement(name: string, hub: boolean) {
-  const element = document.createElement('div');
-  element.className = hub ? 'site-html-label site-html-label--hub' : 'site-html-label';
-  element.textContent = hub ? name.toUpperCase() : name;
-  element.setAttribute('aria-hidden', 'true');
-  return element;
+function createSiteMarkerElement(name: string, icon: string, hub: boolean) {
+  const root = document.createElement('div');
+  root.className = 'site-html-marker';
+  root.setAttribute('aria-hidden', 'true');
+  const label = document.createElement('div');
+  label.className = hub ? 'site-html-label site-html-label--hub' : 'site-html-label';
+  label.textContent = hub ? name.toUpperCase() : name;
+  const glyph = document.createElement('img');
+  glyph.className = hub ? 'site-html-icon site-html-icon--hub' : 'site-html-icon';
+  glyph.src = `/assets/icons/sites/${encodeURIComponent(icon)}.svg`;
+  glyph.alt = '';
+  root.append(label, glyph);
+  return root;
 }
 
 function syncSiteLabelVisibility(markers: Marker[], zoom: number) {
@@ -611,14 +631,15 @@ function mountSiteLabelMarkers(
   sites: PublicSiteCollection,
   selectedKey: string | null,
   toggledSiteKeys: readonly string[],
+  revealedSiteKeys: readonly string[] = [],
 ): Marker[] {
   const markers: Marker[] = [];
   for (const feature of sites.features) {
-    if (!siteLabelIsVisible(feature, selectedKey, toggledSiteKeys)) continue;
+    if (!siteLabelIsVisible(feature, selectedKey, toggledSiteKeys, revealedSiteKeys)) continue;
     const hub = Boolean(feature.properties.hub);
     const marker = new Marker({
-      element: createSiteLabelMarkerElement(feature.properties.name, hub),
-      // Bottom-anchored like the canvas icon; padding in CSS lifts the name above the glyph.
+      element: createSiteMarkerElement(feature.properties.name, feature.properties.icon, hub),
+      // Bottom-anchored at the icon foot; label stacks above in the HTML marker.
       anchor: 'bottom',
       pitchAlignment: 'map',
       rotationAlignment: 'map',
@@ -637,9 +658,10 @@ function remountSiteLabelMarkers(
   selectedKey: string | null,
   toggledSiteKeys: readonly string[],
   previous: Marker[],
+  revealedSiteKeys: readonly string[] = [],
 ) {
   for (const marker of previous) marker.remove();
-  return mountSiteLabelMarkers(map, sites, selectedKey, toggledSiteKeys);
+  return mountSiteLabelMarkers(map, sites, selectedKey, toggledSiteKeys, revealedSiteKeys);
 }
 
 const rasterizedSiteIcons = new globalThis.Map<string, HTMLImageElement>();
@@ -671,16 +693,21 @@ function syncSiteIcons(map: Map, sites: PublicSiteCollection) {
   }
 }
 
-function addSiteMarkerLayer(map: Map, selectedKey: string | null, toggledSiteKeys: readonly string[]) {
+function addSiteMarkerLayer(
+  map: Map,
+  selectedKey: string | null,
+  toggledSiteKeys: readonly string[],
+  revealedSiteKeys: readonly string[] = [],
+) {
   if (map.getLayer(SITE_LAYER_ID)) return;
   map.addLayer({
     id: SITE_LAYER_ID,
     type: 'symbol',
     source: SITE_SOURCE_ID,
     minzoom: SITE_LABEL_MIN_ZOOM,
-    filter: siteFilter(selectedKey, toggledSiteKeys),
+    filter: siteFilter(selectedKey, toggledSiteKeys, revealedSiteKeys),
     layout: {
-      // Icons only — site names are HTML markers so they can stack above district labels.
+      // Invisible hit targets only — visible glyphs are HTML so pins can stack under them.
       'icon-anchor': 'bottom',
       // One zoom interpolate only (MapLibre rejects nested zoom expressions).
       'icon-size': [
@@ -690,6 +717,9 @@ function addSiteMarkerLayer(map: Map, selectedKey: string | null, toggledSiteKey
       ],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
+    },
+    paint: {
+      'icon-opacity': 0,
     },
   });
 }
@@ -735,6 +765,7 @@ export function MapView({
   regionVisibility,
   selectedKey,
   toggledSiteKeys,
+  revealedSiteKeys = [],
   overlay = { kind: 'none' },
   skipNextDistrictFocusRef,
   onSelect,
@@ -764,6 +795,7 @@ export function MapView({
   const hoveredRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const toggledSiteKeysRef = useRef(toggledSiteKeys);
+  const revealedSiteKeysRef = useRef(revealedSiteKeys);
   const pulseOriginRef = useRef<number | null>(null);
   const streetLabelMarkersRef = useRef<Marker[]>([]);
   const districtHtmlMarkersRef = useRef<Marker[]>([]);
@@ -791,6 +823,7 @@ export function MapView({
   layerVisibilityRef.current = layerVisibility;
   regionVisibilityRef.current = regionVisibility;
   toggledSiteKeysRef.current = toggledSiteKeys;
+  revealedSiteKeysRef.current = revealedSiteKeys;
   onSelectRef.current = onSelect;
   onSiteSelectRef.current = onSiteSelect;
   onMapReadyRef.current = onMapReady;
@@ -1020,7 +1053,12 @@ export function MapView({
           'line-opacity': 0.78,
         },
       });
-      addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
+      addSiteMarkerLayer(
+        map,
+        selectedRef.current,
+        toggledSiteKeysRef.current,
+        revealedSiteKeysRef.current,
+      );
       map.addLayer({
         id: PATH_ROUTE_LAYER_ID,
         type: 'line',
@@ -1071,7 +1109,12 @@ export function MapView({
       loadOrientationStreets(map, chronicleBounds, (markers) => {
         for (const marker of streetLabelMarkersRef.current) marker.remove();
         streetLabelMarkersRef.current = markers;
-        addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
+        addSiteMarkerLayer(
+          map,
+          selectedRef.current,
+          toggledSiteKeysRef.current,
+          revealedSiteKeysRef.current,
+        );
         syncSiteIcons(map, sitesRef.current);
         restackPulseAboveStreets(map);
       });
@@ -1169,7 +1212,12 @@ export function MapView({
       syncBasemapImages(map, basemapMaskImagesRef.current);
       // Re-assert site symbols — a failed icon/font bind must not leave markers absent.
       try {
-        addSiteMarkerLayer(map, selectedRef.current, toggledSiteKeysRef.current);
+        addSiteMarkerLayer(
+          map,
+          selectedRef.current,
+          toggledSiteKeysRef.current,
+          revealedSiteKeysRef.current,
+        );
         if (map.getLayer(SITE_LAYER_ID)) map.moveLayer(SITE_LAYER_ID);
         for (const marker of siteLabelMarkersRef.current) marker.remove();
         siteLabelMarkersRef.current = mountSiteLabelMarkers(
@@ -1177,6 +1225,7 @@ export function MapView({
           sitesRef.current,
           selectedRef.current,
           toggledSiteKeysRef.current,
+          revealedSiteKeysRef.current,
         );
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Could not mount site markers';
@@ -1325,21 +1374,23 @@ export function MapView({
       selectedRef.current,
       toggledSiteKeysRef.current,
       siteLabelMarkersRef.current,
+      revealedSiteKeysRef.current,
     );
   }, [sites]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.getLayer(SITE_LAYER_ID)) return;
-    map.setFilter(SITE_LAYER_ID, siteFilter(selectedKey, toggledSiteKeys));
+    map.setFilter(SITE_LAYER_ID, siteFilter(selectedKey, toggledSiteKeys, revealedSiteKeys));
     siteLabelMarkersRef.current = remountSiteLabelMarkers(
       map,
       sitesRef.current,
       selectedKey,
       toggledSiteKeys,
       siteLabelMarkersRef.current,
+      revealedSiteKeys,
     );
-  }, [selectedKey, toggledSiteKeys]);
+  }, [selectedKey, toggledSiteKeys, revealedSiteKeys]);
 
   useEffect(() => {
     const map = mapRef.current;

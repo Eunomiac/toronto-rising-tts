@@ -92,6 +92,13 @@ export function App() {
     return () => { active = false; };
   }, []);
 
+  const pinRevealedSiteKeys = useMemo(() => {
+    if (!pinSnapshot?.live) return [] as string[];
+    return [...new Set(
+      pinSnapshot.pins.filter((pin) => pin.visible).map((pin) => pin.siteKey),
+    )];
+  }, [pinSnapshot]);
+
   const resolveHomeCenter = useCallback((): [number, number] => {
     if (!data) return TORONTO_HOME;
     return resolvePlayerPinHomeCenter(pinSnapshot, data.sites) ?? TORONTO_HOME;
@@ -309,6 +316,7 @@ export function App() {
         regionVisibility={regionVisibility}
         selectedKey={mapSelectedKey}
         toggledSiteKeys={toggledSiteKeys}
+        revealedSiteKeys={pinRevealedSiteKeys}
         overlay={overlay}
         skipNextDistrictFocusRef={skipNextDistrictFocusRef}
         onSelect={selectDistrict}

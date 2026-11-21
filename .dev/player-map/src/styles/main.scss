@@ -666,7 +666,7 @@ select,
   }
 }
 
-// HTML label stack: district < player pins < street < site (canvas icons stay under all HTML).
+// HTML label stack: district < player pins < street < site (icons+labels are HTML; canvas sites are hit-only).
 // District uses an inner label node; street/site classes live on the marker root.
 .maplibregl-marker:has(.district-html-label) {
   z-index: 1;
@@ -683,17 +683,38 @@ select,
   z-index: 3;
 }
 
+.maplibregl-marker.site-html-marker,
+.maplibregl-marker:has(.site-html-marker),
 .maplibregl-marker.site-html-label,
 .maplibregl-marker:has(.site-html-label) {
   z-index: 4;
+}
+
+.site-html-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  pointer-events: none;
+}
+
+.site-html-icon {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 0.1rem 0.2rem rgba(#000, 0.55));
+
+  &--hub {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
 }
 
 .site-html-label {
   pointer-events: none;
   white-space: nowrap;
   text-align: center;
-  // Lift name above the bottom-anchored canvas icon.
-  padding-bottom: 2.75rem;
   color: #f7f4ef;
   font: 400 0.7rem/1 'Noto Sans', 'Segoe UI', sans-serif;
   paint-order: stroke fill;
@@ -706,7 +727,6 @@ select,
     0 -1px 0 #000;
 
   &--hub {
-    padding-bottom: 1.75rem;
     color: #ffffff;
     font-size: 0.95rem;
     letter-spacing: 0.02em;
@@ -718,8 +738,8 @@ select,
   white-space: nowrap;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  // Fixed rem size on the marker root — MapLibre owns marker translate.
-  // Per-district nudges use transform on this inner node only.
+  // MapLibre owns marker translate. Geographic nudges adjust setLngLat;
+  // only rotateZ may use CSS transform on this inner node.
   transition: color 0.25s, font-size 0.25s, text-shadow 0.25s;
   font: 400 1.05rem/1 'Impact', 'Arial Black', sans-serif;
   color: #2c0000;
@@ -754,30 +774,6 @@ select,
       0 0 2px black,
       0 0 2px black,
       0 0 2px black;
-  }
-
-  &[data-district-key='Waterfront'] {
-    transform: translate(0, -100px);
-  }
-
-  &[data-district-key='LakeOntario'] {
-    transform: translate(300px, -100px);
-  }
-
-  &[data-district-key='LittlePortugal'] {
-    transform: translate(-200px, 0);
-  }
-
-  &[data-district-key='CentreIsland'] {
-    transform: translate(0, 50px);
-  }
-
-  &[data-district-key='YongeStreet'] {
-    transform: rotateZ(72deg);
-  }
-
-  &[data-district-key='DonRavine'] {
-    transform: translate(-25px, 0) rotateZ(70deg);
   }
 }
 
