@@ -52,10 +52,17 @@ test('pins map and interface feedback, persists it, and displays agent replies',
 
   await page.getByRole('button', { name: /Adding: click anywhere/ }).click();
   await page.getByRole('button', { name: 'Add note' }).click();
-  const panel = page.locator('[data-note-surface="district-panel"]');
-  const panelBox = await panel.boundingBox();
+  // Desktop image chrome is pointer-events:none except the header/footer; pin the header.
+  // Mobile still uses the text panel surface.
+  const chromeHeader = page.locator('.district-chrome__header');
+  const textPanel = page.locator('[data-note-surface="district-panel"]');
+  const useChrome = await chromeHeader.isVisible();
+  const surfaceName = useChrome ? 'district-chrome' : 'district-panel';
+  const pinTarget = useChrome ? chromeHeader : textPanel;
+  await expect(pinTarget).toBeVisible();
+  const panelBox = await pinTarget.boundingBox();
   expect(panelBox).not.toBeNull();
-  await page.mouse.click(panelBox!.x + panelBox!.width * 0.45, panelBox!.y + panelBox!.height * 0.45);
+  await page.mouse.click(panelBox!.x + panelBox!.width * 0.45, panelBox!.y + panelBox!.height * 0.55);
   await page.getByPlaceholder(/What should change here/).fill('Interface note from the browser test.');
   await page.getByPlaceholder(/What should change here/).press('Enter');
 
@@ -65,7 +72,7 @@ test('pins map and interface feedback, persists it, and displays agent replies',
   }).toMatchObject({
     notes: [
       { id: expect.any(Number), anchor: { kind: 'map' }, context: { selectedDistrict: 'Rosedale', map: { zoom: expect.any(Number) } } },
-      { id: expect.any(Number), anchor: { kind: 'interface', surface: 'district-panel', x: expect.any(Number), y: expect.any(Number) } },
+      { id: expect.any(Number), anchor: { kind: 'interface', surface: surfaceName, x: expect.any(Number), y: expect.any(Number) } },
     ],
   });
 
