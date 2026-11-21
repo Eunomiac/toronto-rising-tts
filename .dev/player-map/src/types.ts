@@ -46,6 +46,15 @@ export interface NetworkDistrictFacts {
   resonanceMinus: string;
 }
 
+/** Sewers / Streets / Subway — Sheet facts with no surface polygon. */
+export interface SheetOnlyDistrictFacts {
+  key: string;
+  name: string;
+  huntingDifficulty: number | null;
+  resonancePlus: string;
+  resonanceMinus: string;
+}
+
 export interface PathRouteProperties {
   key: 'PATH';
   osmId: number;
@@ -197,6 +206,7 @@ export interface PublicMapData {
   sites: PublicSiteCollection;
   labels: MapLabelCollection;
   pathDistrict: NetworkDistrictFacts;
+  sheetOnlyDistricts: SheetOnlyDistrictFacts[];
   pathRoutes: PathRouteCollection;
   pathEntrances: PathEntranceCollection;
   pathInteraction: PathInteractionCollection;

@@ -35,7 +35,13 @@ function ConfirmDelete({ onConfirm }: { readonly onConfirm: () => void }) {
   return <button type="button" className={armed ? 'is-danger' : ''} onClick={() => armed ? onConfirm() : setArmed(true)}>{armed ? 'Click again' : 'Delete'}</button>;
 }
 
-export function DebugNotesSlot({ map, districts, selectedDistrict }: DebugNotesSlotProps) {
+export function DebugNotesSlot({
+  map,
+  districts,
+  selectedDistrict,
+  layoutMode = 'auto',
+  onLayoutModeChange,
+}: DebugNotesSlotProps) {
   const [enabled, setEnabled] = useState(false);
   const [shapes, setShapes] = useState(false);
   const [addMode, setAddMode] = useState(false);
@@ -173,6 +179,20 @@ export function DebugNotesSlot({ map, districts, selectedDistrict }: DebugNotesS
               />
               GSAP shapes
             </label>
+            {onLayoutModeChange ? (
+              <label className="debug-notes__layout">
+                Layout
+                <select
+                  value={layoutMode}
+                  aria-label="District layout mode"
+                  onChange={(event) => onLayoutModeChange(event.target.value as 'auto' | 'image' | 'panel')}
+                >
+                  <option value="auto">Auto</option>
+                  <option value="image">Image chrome</option>
+                  <option value="panel">Panel</option>
+                </select>
+              </label>
+            ) : null}
             <span
               className="debug-notes__zoom"
               title="The map's zoom. A higher number is closer. 1 is the widest view and 18 is the closest. Quote this number in a note when something should appear or disappear."

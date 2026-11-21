@@ -9,6 +9,7 @@ import type {
   MapLayerVisibility,
   MapDataManifest,
   NetworkDistrictFacts,
+  SheetOnlyDistrictFacts,
   PathEntranceCollection,
   PathInteractionCollection,
   PathLabelCollection,
@@ -162,6 +163,20 @@ function parsePathDistrict(value: unknown): NetworkDistrictFacts {
   for (const key of ['name', 'resonancePlus', 'resonanceMinus']) nonEmptyString(district[key], `PATH ${key}`);
   if (district.huntingDifficulty !== null && !Number.isInteger(district.huntingDifficulty)) throw new Error('Invalid PATH hunting difficulty');
   return value as NetworkDistrictFacts;
+}
+
+function parseSheetOnlyDistricts(value: unknown): SheetOnlyDistrictFacts[] {
+  if (!Array.isArray(value) || value.length === 0) throw new Error('Invalid sheet-only districts list');
+  return value.map((entry, index) => {
+    const district = record(entry, `sheet-only district ${index}`);
+    exactKeys(district, PATH_DISTRICT_KEYS, `sheet-only district ${index}`);
+    nonEmptyString(district.key, `sheet-only district ${index} key`);
+    for (const key of ['name', 'resonancePlus', 'resonanceMinus']) nonEmptyString(district[key], `sheet-only ${key}`);
+    if (district.huntingDifficulty !== null && !Number.isInteger(district.huntingDifficulty)) {
+      throw new Error(`Invalid sheet-only hunting difficulty for ${String(district.key)}`);
+    }
+    return entry as SheetOnlyDistrictFacts;
+  });
 }
 
 function parsePathRoutes(value: unknown): PathRouteCollection {
@@ -320,7 +335,7 @@ function validatePathProvenance(
 }
 
 export async function loadPublicMapData(): Promise<PublicMapData> {
-  const [districtValue, regionValue, siteValue, labelValue, pathDistrictValue, pathRouteValue,
+  const [districtValue, regionValue, siteValue, labelValue, pathDistrictValue, sheetOnlyValue, pathRouteValue,
     pathEntranceValue, pathInteractionValue, pathLabelValue, cityMarkerValue, basemapMaskValue,
     basemapMaskLabelValue, manifestValue] = await Promise.all([
     loadJson(`${GENERATED_ROOT}/districts.geojson`),
@@ -328,6 +343,7 @@ export async function loadPublicMapData(): Promise<PublicMapData> {
     loadJson(`${GENERATED_ROOT}/sites.geojson`),
     loadJson(`${GENERATED_ROOT}/labels.geojson`),
     loadJson(`${GENERATED_ROOT}/path-district.json`),
+    loadJson(`${GENERATED_ROOT}/sheet-only-districts.json`),
     loadJson(`${GENERATED_ROOT}/path-routes.geojson`),
     loadJson(`${GENERATED_ROOT}/path-entrances.geojson`),
     loadJson(`${GENERATED_ROOT}/path-interaction.geojson`),
@@ -342,6 +358,7 @@ export async function loadPublicMapData(): Promise<PublicMapData> {
   const sites = parseSites(siteValue);
   const labels = parseLabels(labelValue);
   const pathDistrict = parsePathDistrict(pathDistrictValue);
+  const sheetOnlyDistricts = parseSheetOnlyDistricts(sheetOnlyValue);
   const pathRoutes = parsePathRoutes(pathRouteValue);
   const pathEntrances = parsePathEntrances(pathEntranceValue);
   const pathInteraction = parsePathInteraction(pathInteractionValue);
@@ -363,7 +380,7 @@ export async function loadPublicMapData(): Promise<PublicMapData> {
     || basemapMaskLabels.features.length !== manifest.counts.basemapMaskLabels) throw new Error('Basemap mask manifest counts do not match the map data');
   validatePathProvenance(pathRoutes, pathEntrances, pathLabel, manifest);
   return {
-    districts, regions, sites, labels, pathDistrict, pathRoutes, pathEntrances,
+    districts, regions, sites, labels, pathDistrict, sheetOnlyDistricts, pathRoutes, pathEntrances,
     pathInteraction, pathLabel, cityMarkers, basemapMasks, basemapMaskLabels, manifest,
   };
 }

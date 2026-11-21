@@ -46,8 +46,6 @@ describe('IconRail', () => {
     expect(onToggleRegion).toHaveBeenCalledWith('TheRack');
     await user.click(screen.getByRole('button', { name: 'Rosedale' }));
     expect(onSelectDistrict).toHaveBeenCalledWith('Rosedale');
-    expect(screen.getByRole('button', { name: 'The Sewers' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'The Subway' })).toBeDisabled();
   });
 
   it('sorts districts by name and ignores a leading The', async () => {
@@ -62,6 +60,10 @@ describe('IconRail', () => {
           { key: 'Yorkville', name: 'Yorkville', kind: 'district', sourceElement: 'path', fillRule: 'evenodd', sourceRingCount: 1, huntingDifficulty: 6, resonancePlus: 'phlegmatic', resonanceMinus: 'melancholic' },
         ]}
         pathDistrict={{ key: 'PATH', name: 'P.A.T.H.', huntingDifficulty: 4, resonancePlus: 'phlegmatic', resonanceMinus: 'choleric' }}
+        sheetOnlyDistricts={[
+          { key: 'Sewers', name: 'The Sewers', huntingDifficulty: null, resonancePlus: 'primal', resonanceMinus: 'sanguine' },
+          { key: 'Subway', name: 'The Subway', huntingDifficulty: 5, resonancePlus: 'melancholic', resonanceMinus: 'choleric' },
+        ]}
         regionVisibility={{}}
         selectedDistrictKey={null}
         onToggleRegion={vi.fn()}
@@ -78,6 +80,7 @@ describe('IconRail', () => {
       'The Subway',
       'Yorkville',
     ]);
+    expect(screen.getByRole('button', { name: 'The Sewers' })).toBeEnabled();
   });
 
   it('groups hub sites above the other sites and toggles only the others', async () => {
@@ -111,5 +114,6 @@ describe('IconRail', () => {
     expect(onToggleSite).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'The Annex Library' }));
     expect(onToggleSite).toHaveBeenCalledWith('Annex');
+    expect(onFocusHub).toHaveBeenCalledWith('Annex');
   });
 });

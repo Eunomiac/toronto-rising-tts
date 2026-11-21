@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import type { DistrictFeatureProperties, NetworkDistrictFacts, PublicSiteProperties, RegionFeatureProperties } from './types';
+import type {
+  DistrictFeatureProperties,
+  NetworkDistrictFacts,
+  PublicSiteProperties,
+  RegionFeatureProperties,
+  SheetOnlyDistrictFacts,
+} from './types';
 
 export type IconRailMenuId = 'map-layers' | 'domains' | 'sites';
 
@@ -9,6 +15,7 @@ interface IconRailProps {
   regions: RegionFeatureProperties[];
   districts: DistrictFeatureProperties[];
   pathDistrict?: NetworkDistrictFacts;
+  sheetOnlyDistricts?: SheetOnlyDistrictFacts[];
   regionVisibility: Record<string, boolean>;
   selectedDistrictKey: string | null;
   sites?: PublicSiteProperties[];
@@ -246,6 +253,7 @@ export function IconRail({
   regions,
   districts,
   pathDistrict,
+  sheetOnlyDistricts = [],
   regionVisibility,
   selectedDistrictKey,
   sites = [],
@@ -262,8 +270,7 @@ export function IconRail({
   const districtRows: Array<{ key: string; name: string; disabled?: boolean }> = [
     ...districts.map((district) => ({ key: district.key, name: district.name })),
     ...(pathDistrict ? [{ key: pathDistrict.key, name: pathDistrict.name }] : []),
-    { key: 'Sewers', name: 'The Sewers', disabled: true },
-    { key: 'Subway', name: 'The Subway', disabled: true },
+    ...sheetOnlyDistricts.map((district) => ({ key: district.key, name: district.name })),
   ].sort((a, b) => districtSortName(a.name).localeCompare(districtSortName(b.name), 'en', { sensitivity: 'base' }));
   const bySiteName = (left: PublicSiteProperties, right: PublicSiteProperties) => (
     districtSortName(left.name).localeCompare(districtSortName(right.name), 'en', { sensitivity: 'base' })
@@ -359,9 +366,12 @@ export function IconRail({
                     type="button"
                     className={`icon-rail__option icon-rail__option--site${selected ? ' is-selected' : ''}`}
                     aria-label={site.name}
-                  title={site.name}
+                    title={site.name}
                     aria-pressed={selected}
-                    onClick={() => onToggleSite?.(site.key)}
+                    onClick={() => {
+                      onToggleSite?.(site.key);
+                      onFocusHub?.(site.key);
+                    }}
                   >
                     {site.name}
                   </button>

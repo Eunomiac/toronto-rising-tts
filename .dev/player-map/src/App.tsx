@@ -8,6 +8,7 @@ import {
   DEFAULT_VISUAL_CALIBRATION,
   type VisualCalibration,
 } from './calibration';
+import { DistrictChrome } from './DistrictChrome';
 import { DistrictPanel } from './DistrictPanel';
 import { IconRail } from './IconRail';
 import { MapView, type BasemapMaskImage } from './MapView';
@@ -19,7 +20,9 @@ import {
   updateLayersInUrl,
 } from './data';
 import { runGsapEffectsMain } from './gsap-effects';
-import type { PublicMapData, RegionVisibility } from './types';
+import { SiteCardModal } from './SiteCardModal';
+import type { PublicMapData, PublicSiteProperties, RegionVisibility } from './types';
+import { useDistrictLayout } from './useDistrictLayout';
 
 const CALIBRATION_STORAGE_PREFIX = 'toronto-rising-map-visual-calibration';
 
@@ -47,7 +50,10 @@ export function App() {
   const [visualCalibration, setVisualCalibration] = useState(DEFAULT_VISUAL_CALIBRATION);
   const [calibrationStorageRevision, setCalibrationStorageRevision] = useState<number | null>(null);
   const [map, setMap] = useState<Map | null>(null);
+  const [activeSite, setActiveSite] = useState<PublicSiteProperties | null>(null);
   const calibrationMode = new URLSearchParams(window.location.search).get('calibrate') === '1';
+  // Debug notes only exist in the Vite alias for development builds.
+  const { mode: layoutMode, setMode: setLayoutMode, useImageChrome } = useDistrictLayout(import.meta.env.DEV);
 
   useEffect(() => {
     let active = true;
@@ -93,10 +99,35 @@ export function App() {
 
   const validSelectedKey = useMemo(() => {
     if (!data || !selectedKey) return null;
-    return data.districts.features.some((feature) => feature.properties.key === selectedKey) || data.pathDistrict.key === selectedKey
-      ? selectedKey
-      : null;
+    if (data.districts.features.some((feature) => feature.properties.key === selectedKey)) return selectedKey;
+    if (data.pathDistrict.key === selectedKey) return selectedKey;
+    if (data.sheetOnlyDistricts.some((district) => district.key === selectedKey)) return selectedKey;
+    return null;
   }, [data, selectedKey]);
+
+  const selectedDistrictName = useMemo(() => {
+    if (!data || !validSelectedKey) return null;
+    const surface = data.districts.features.find((feature) => feature.properties.key === validSelectedKey);
+    if (surface) return surface.properties.name;
+    if (data.pathDistrict.key === validSelectedKey) return data.pathDistrict.name;
+    return data.sheetOnlyDistricts.find((district) => district.key === validSelectedKey)?.name ?? validSelectedKey;
+  }, [data, validSelectedKey]);
+
+  /** Map highlight only for polygon districts and PATH — not Sewers/Streets/Subway. */
+  const mapSelectedKey = useMemo(() => {
+    if (!data || !validSelectedKey) return null;
+    if (data.sheetOnlyDistricts.some((district) => district.key === validSelectedKey)) return null;
+    return validSelectedKey;
+  }, [data, validSelectedKey]);
+
+  const activeSiteDistrictName = useMemo(() => {
+    if (!data || !activeSite) return '';
+    const surface = data.districts.features.find((feature) => feature.properties.key === activeSite.districtKey);
+    if (surface) return surface.properties.name;
+    if (data.pathDistrict.key === activeSite.districtKey) return data.pathDistrict.name;
+    return data.sheetOnlyDistricts.find((district) => district.key === activeSite.districtKey)?.name
+      ?? activeSite.districtKey;
+  }, [activeSite, data]);
 
   const calibratedDistricts = useMemo(() => {
     if (!data) return null;
@@ -148,6 +179,17 @@ export function App() {
     const coordinates = feature?.geometry.type === 'Point' ? feature.geometry.coordinates : null;
     const lng = coordinates?.[0];
     const lat = coordinates?.[1];
+    const districtKey = feature?.properties.districtKey;
+    if (districtKey) {
+      setSelectedKey(districtKey);
+      window.history.replaceState(null, '', updateDistrictInUrl(districtKey));
+      setLayerVisibility((layers) => {
+        if (districtKey !== 'PATH' || layers.path) return layers;
+        const updated = { ...layers, path: true };
+        window.history.replaceState(null, '', updateLayersInUrl(updated));
+        return updated;
+      });
+    }
     if (!map || lng === undefined || lat === undefined) return;
     map.easeTo({
       center: [lng, lat],
@@ -197,9 +239,13 @@ export function App() {
         chronicleBounds={data.manifest.bounds}
         layerVisibility={layerVisibility}
         regionVisibility={regionVisibility}
-        selectedKey={validSelectedKey}
+        selectedKey={mapSelectedKey}
         toggledSiteKeys={toggledSiteKeys}
         onSelect={selectDistrict}
+        onSiteSelect={(key) => {
+          const site = data.sites.features.find((feature) => feature.properties.key === key);
+          if (site) setActiveSite(site.properties);
+        }}
         onMapReady={setMap}
       />
       {!calibrationMode ? (
@@ -207,6 +253,7 @@ export function App() {
           regions={data.regions.features.map((feature) => feature.properties)}
           districts={data.districts.features.map((feature) => feature.properties)}
           pathDistrict={data.pathDistrict}
+          sheetOnlyDistricts={data.sheetOnlyDistricts}
           regionVisibility={regionVisibility}
           selectedDistrictKey={validSelectedKey}
           sites={data.sites.features.map((feature) => feature.properties)}
@@ -226,15 +273,35 @@ export function App() {
           }
           onChange={setVisualCalibration}
         />
+      ) : useImageChrome && validSelectedKey && selectedDistrictName ? (
+        <DistrictChrome districtKey={validSelectedKey} districtName={selectedDistrictName} />
       ) : (
         <DistrictPanel
           districts={data.districts.features}
           pathDistrict={data.pathDistrict}
+          sheetOnlyDistricts={data.sheetOnlyDistricts}
           selectedKey={validSelectedKey}
           onClear={clearDistrict}
         />
       )}
-      <DebugNotesSlot map={map} districts={calibratedDistricts ?? data.districts} selectedDistrict={validSelectedKey} />
+      {activeSite ? (
+        <SiteCardModal
+          open
+          onClose={() => setActiveSite(null)}
+          siteKey={activeSite.key}
+          siteName={activeSite.name}
+          hub={activeSite.hub}
+          districtKey={activeSite.districtKey}
+          districtName={activeSiteDistrictName}
+        />
+      ) : null}
+      <DebugNotesSlot
+        map={map}
+        districts={calibratedDistricts ?? data.districts}
+        selectedDistrict={validSelectedKey}
+        layoutMode={layoutMode}
+        onLayoutModeChange={setLayoutMode}
+      />
     </main>
   );
 }

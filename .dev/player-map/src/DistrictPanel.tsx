@@ -2,18 +2,29 @@ import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import type { Feature, MultiPolygon } from 'geojson';
-import type { DistrictFeatureProperties, NetworkDistrictFacts } from './types';
+import type { DistrictFeatureProperties, NetworkDistrictFacts, SheetOnlyDistrictFacts } from './types';
 
 interface DistrictPanelProps {
   districts: Array<Feature<MultiPolygon, DistrictFeatureProperties>>;
   pathDistrict?: NetworkDistrictFacts;
+  sheetOnlyDistricts?: SheetOnlyDistrictFacts[];
   selectedKey: string | null;
   onClear: () => void;
 }
 
-export function DistrictPanel({ districts, pathDistrict, selectedKey, onClear }: DistrictPanelProps) {
+export function DistrictPanel({
+  districts,
+  pathDistrict,
+  sheetOnlyDistricts = [],
+  selectedKey,
+  onClear,
+}: DistrictPanelProps) {
   const panelRef = useRef<HTMLElement>(null);
-  const choices = [...districts.map((feature) => feature.properties), ...(pathDistrict ? [pathDistrict] : [])];
+  const choices = [
+    ...districts.map((feature) => feature.properties),
+    ...(pathDistrict ? [pathDistrict] : []),
+    ...sheetOnlyDistricts,
+  ];
   const selected = choices.find((district) => district.key === selectedKey) ?? null;
   const resonanceName = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 

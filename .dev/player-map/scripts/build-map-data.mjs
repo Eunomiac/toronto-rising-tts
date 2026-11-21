@@ -112,6 +112,13 @@ const sheetSiteRows = dataOf(sheetSnapshot, 'LOCATIONS_SITES');
 const publicDistrictFacts = projectDistrictRows(sheetDistrictRows, publicDataPolicy);
 const pathFacts = publicDistrictFacts.find((district) => district.key === 'PATH');
 const pathNetwork = buildPathNetwork(pathNetworkSnapshot, pathNetworkConfig, pathFacts);
+const sheetOnlyDistricts = publicDataPolicy.sheetOnlyDistricts
+  .filter((entry) => entry.geometryKind === 'none')
+  .map((entry) => {
+    const fact = publicDistrictFacts.find((district) => district.key === entry.key);
+    if (!fact) throw new Error(`Missing public facts for sheet-only district ${entry.key}`);
+    return fact;
+  });
 const orientationStreets = buildOrientationStreets(
   JSON.parse(await fs.readFile(orientationStreetConfigPath, 'utf8')),
   JSON.parse(await fs.readFile(orientationStreetSnapshotPath, 'utf8')),
@@ -452,7 +459,7 @@ if (manifest.counts.pathRoutes === 0 || manifest.counts.pathEntrances === 0
   || manifest.counts.pathInteractionCorridors !== manifest.counts.pathRoutes || manifest.counts.pathLabels !== 1) {
   throw new Error('Unexpected PATH network counts');
 }
-if (manifest.counts.cityMarkers !== 17) throw new Error('Unexpected provincial city marker count');
+if (manifest.counts.cityMarkers !== 29) throw new Error('Unexpected provincial city marker count');
 if (manifest.counts.basemapMasks !== basemapMasks.masks.length
   || manifest.counts.basemapMaskLabels !== basemapMasks.masks.length) {
   throw new Error('Unexpected basemap mask count');
@@ -473,6 +480,7 @@ const outputs = [
   ['sites.geojson', sites],
   ['labels.geojson', labels],
   ['path-district.json', pathNetwork.district],
+  ['sheet-only-districts.json', sheetOnlyDistricts],
   ['path-routes.geojson', pathNetwork.routes],
   ['path-entrances.geojson', pathNetwork.entrances],
   ['path-interaction.geojson', pathNetwork.interaction],

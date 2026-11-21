@@ -69,6 +69,11 @@ const mapData = {
     resonancePlus: 'phlegmatic',
     resonanceMinus: 'choleric',
   },
+  sheetOnlyDistricts: [
+    { key: 'Sewers', name: 'The Sewers', huntingDifficulty: null, resonancePlus: 'primal', resonanceMinus: 'sanguine' },
+    { key: 'Streets', name: 'The Streets', huntingDifficulty: 3, resonancePlus: 'choleric', resonanceMinus: 'phlegmatic' },
+    { key: 'Subway', name: 'The Subway', huntingDifficulty: 5, resonancePlus: 'melancholic', resonanceMinus: 'choleric' },
+  ],
   pathRoutes: { type: 'FeatureCollection' as const, features: [] },
   pathEntrances: { type: 'FeatureCollection' as const, features: [] },
   pathInteraction: { type: 'FeatureCollection' as const, features: [] },

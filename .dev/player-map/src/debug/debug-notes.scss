@@ -73,7 +73,24 @@
     }
   }
 
-  &__actions { display: flex; gap: 0.4rem; }
+  &__actions { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+
+  &__layout {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: $paper;
+    font-size: 0.72rem;
+    font-weight: 700;
+
+    select {
+      min-height: 2.1rem;
+      padding: 0.2rem 0.35rem;
+      border: 1px solid rgba(#f2d4cf, 0.2);
+      color: $paper;
+      background: rgba(#fff, 0.035);
+    }
+  }
 
   &__zoom {
     display: flex;

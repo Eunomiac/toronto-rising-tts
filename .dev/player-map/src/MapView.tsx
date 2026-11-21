@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { siteCardUrl, siteHubCardUrl } from './districtAssets';
 import {
   AttributionControl,
   Map,
@@ -140,6 +141,7 @@ interface MapViewProps {
   selectedKey: string | null;
   toggledSiteKeys: readonly string[];
   onSelect: (key: string) => void;
+  onSiteSelect?: (key: string) => void;
   onMapReady?: (map: Map | null) => void;
 }
 
@@ -551,6 +553,7 @@ export function MapView({
   selectedKey,
   toggledSiteKeys,
   onSelect,
+  onSiteSelect,
   onMapReady,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -571,6 +574,7 @@ export function MapView({
   const layerVisibilityRef = useRef(layerVisibility);
   const regionVisibilityRef = useRef(regionVisibility);
   const onSelectRef = useRef(onSelect);
+  const onSiteSelectRef = useRef(onSiteSelect);
   const onMapReadyRef = useRef(onMapReady);
   const hoveredRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
@@ -579,6 +583,12 @@ export function MapView({
   const streetLabelMarkersRef = useRef<Marker[]>([]);
   const [status, setStatus] = useState('Loading street map…');
   const [distantView, setDistantView] = useState(false);
+  const [siteTooltip, setSiteTooltip] = useState<{
+    key: string;
+    hub: boolean;
+    left: number;
+    top: number;
+  } | null>(null);
   districtsRef.current = districts;
   regionsRef.current = regions;
   sitesRef.current = sites;
@@ -595,6 +605,7 @@ export function MapView({
   regionVisibilityRef.current = regionVisibility;
   toggledSiteKeysRef.current = toggledSiteKeys;
   onSelectRef.current = onSelect;
+  onSiteSelectRef.current = onSiteSelect;
   onMapReadyRef.current = onMapReady;
 
   useEffect(() => {
@@ -1057,6 +1068,24 @@ export function MapView({
       map.setFeatureState({ source: LABEL_SOURCE_ID, id: key }, { hovered: false });
     };
     const onMouseMove = (event: MapMouseEvent) => {
+      const siteHit = map.getLayer(SITE_LAYER_ID)
+        ? map.queryRenderedFeatures(event.point, { layers: [SITE_LAYER_ID] })[0]
+        : undefined;
+      const siteKey = typeof siteHit?.properties?.key === 'string' ? siteHit.properties.key : null;
+      if (siteKey) {
+        if (hoveredRef.current && hoveredRef.current !== 'PATH') clearDistrictHover(hoveredRef.current);
+        hoveredRef.current = null;
+        syncHoverBorders(map, districtsRef.current, null);
+        setSiteTooltip({
+          key: siteKey,
+          hub: Boolean(siteHit?.properties?.hub),
+          left: event.point.x,
+          top: event.point.y,
+        });
+        map.getCanvas().style.cursor = 'pointer';
+        return;
+      }
+      setSiteTooltip(null);
       const feature = map.queryRenderedFeatures(event.point, { layers: [PATH_INTERACTION_LAYER_ID, FILL_LAYER_ID] })[0];
       const key = districtKey(feature);
       if (key === hoveredRef.current) return;
@@ -1072,6 +1101,15 @@ export function MapView({
       map.getCanvas().style.cursor = key ? 'pointer' : '';
     };
     const onClick = (event: MapMouseEvent) => {
+      const siteHit = map.getLayer(SITE_LAYER_ID)
+        ? map.queryRenderedFeatures(event.point, { layers: [SITE_LAYER_ID] })[0]
+        : undefined;
+      const siteKey = typeof siteHit?.properties?.key === 'string' ? siteHit.properties.key : null;
+      if (siteKey) {
+        setSiteTooltip(null);
+        onSiteSelectRef.current?.(siteKey);
+        return;
+      }
       const key = districtKey(map.queryRenderedFeatures(event.point, { layers: [PATH_INTERACTION_LAYER_ID, FILL_LAYER_ID] })[0]);
       if (key) onSelectRef.current(key);
     };
@@ -1083,7 +1121,15 @@ export function MapView({
     map.on('style.load', onLoad);
     map.on('load', onLoad);
     if (map.isStyleLoaded()) onLoad();
+    const onMouseLeave = () => {
+      setSiteTooltip(null);
+      if (hoveredRef.current && hoveredRef.current !== 'PATH') clearDistrictHover(hoveredRef.current);
+      hoveredRef.current = null;
+      syncHoverBorders(map, districtsRef.current, null);
+      map.getCanvas().style.cursor = '';
+    };
     map.on('mousemove', onMouseMove);
+    map.on('mouseout', onMouseLeave);
     map.on('click', onClick);
     map.on('error', onError);
     map.on('move', updateBoundaryShade);
@@ -1268,6 +1314,21 @@ export function MapView({
         <div className="map-surface__path-legend" aria-hidden="true" data-gsap="path-legend">
           <span className="map-surface__path-legend-line" />
           <span className="map-surface__path-legend-label">P.A.T.H.</span>
+        </div>
+      ) : null}
+      {siteTooltip ? (
+        <div
+          className="site-card-tooltip"
+          style={{
+            left: siteTooltip.left,
+            top: siteTooltip.top,
+          } as CSSProperties}
+          aria-hidden="true"
+        >
+          <img
+            src={siteTooltip.hub ? siteHubCardUrl(siteTooltip.key) : siteCardUrl(siteTooltip.key)}
+            alt=""
+          />
         </div>
       ) : null}
       <p className="map-surface__status" role="status">{status}</p>
