@@ -19,7 +19,6 @@ import {
 } from "./glance";
 import { ScenePreview } from "./preview";
 import { PersonalDueList } from "./personalConditions";
-import { isFeedbackXpDoneForSession } from "./feedbackXpSession";
 import { requestRollControl } from "./dnd/rollControls";
 import { DndUiContext } from "./dnd/uiContext";
 import type { DndUiHooks } from "./dnd/apply";
@@ -401,11 +400,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   // Memoriam has no library scene but runs on the scene clock (set to its own date).
   const inMemoriam = phase?.phase === "Play" && phase.subPhase === "Memoriam";
   const inDowntime = phase?.phase === "Play" && phase.subPhase === "Downtime";
-  const showXpIdle =
-    phase?.phase === "End"
-    || (inDowntime
-      && phase.sessionNum !== undefined
-      && !isFeedbackXpDoneForSession(phase.sessionNum));
+  const showXpIdle = phase?.phase === "End" || (inDowntime && phase.sessionStartDowntime === true);
   const sceneActive = (scene?.liveKey !== undefined || inMemoriam) && clock?.activeClock === "scene";
   const sceneNow = sceneActive && clock ? clockNow(clock, now) : undefined;
   const sceneAt = sceneNow ? toDate(sceneNow) : null;

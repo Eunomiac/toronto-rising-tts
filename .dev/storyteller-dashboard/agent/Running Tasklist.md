@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 12. Feedback XP controls follow the opening Play downtime in the game, not a browser note that survived loading an earlier save.
+
 - ✔️ SD-ScenesPins-1121 pin 10. Play as NPC no longer crashes when it saves the assignment. Pending Save & Play under **TOR-806**.
 
 - ✔️ SD-ScenesPins-1121 pin 9. Session XP seat buttons light up once that award is on the character, or as soon as the button is clicked.

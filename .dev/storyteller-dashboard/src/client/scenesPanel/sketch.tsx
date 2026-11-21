@@ -37,7 +37,6 @@ import {
   type StageReminderContext,
   type StageReminderStore
 } from "./stageReminders";
-import { isFeedbackXpDoneForSession, markFeedbackXpDoneForSession } from "./feedbackXpSession";
 import { XpAwardPanel } from "./xpAwardPanel";
 
 /**
@@ -696,20 +695,11 @@ export const IdleBoard = ({
     setStore(next);
     writeStageReminderStore(next);
   };
-  const firstDowntimeFeedback =
+  const openingDowntime =
     phase === "Play"
     && (subPhase ?? "Main") === "Downtime"
-    && sessionNum !== undefined
-    && !isFeedbackXpDoneForSession(sessionNum);
-  useEffect(() => {
-    if (!firstDowntimeFeedback || sessionNum === undefined) {
-      return;
-    }
-    return () => {
-      markFeedbackXpDoneForSession(sessionNum);
-    };
-  }, [firstDowntimeFeedback, sessionNum]);
-  const xpPhase = phase === "End" ? "End" : firstDowntimeFeedback ? "Feedback" : null;
+    && sessionStartDowntime === true;
+  const xpPhase = phase === "End" ? "End" : openingDowntime ? "Feedback" : null;
   useEffect(() => {
     if (xpPhase) {
       liveSheet?.load();

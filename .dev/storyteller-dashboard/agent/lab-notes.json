@@ -31,16 +31,6 @@
       "updatedAt": "2026-11-21T21:58:46.386Z"
     },
     {
-      "id": 12,
-      "sketch": "scenes",
-      "x": 552,
-      "y": 253,
-      "text": "After experimentally awarding feedback XP using the controls presented on the Storyteller Dashboard, a subsequent reload of the save (before the XP was awarded) provided me with no controls to award feedback XP.  The source of truth on whether XP has been awarded should be the actual XP awarded to the PCs; it should not be something tracked by the Dashboard independently of the reality in-game.",
-      "status": "open",
-      "createdAt": "2026-11-21T22:07:36.227Z",
-      "updatedAt": "2026-11-21T22:07:36.227Z"
-    },
-    {
       "id": 13,
       "sketch": "scenes",
       "x": 1321,
