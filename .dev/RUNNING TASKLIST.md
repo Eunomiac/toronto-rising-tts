@@ -374,6 +374,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Scenes Panel & Scene State
 
+- [x] **Scene switch no longer renames the scene you left:** Playing the next scene was writing its title onto the scene still on the table before that scene was saved, so the deck showed the new name on the old place. Pending Save & Play. _(TOR-805)_
 - [x] **Live location change forks with seating:** Changing District/Site on a live scene opens the scene-switch seating popup, then forks a new ongoing scene at the new site and plays it so left-behind PCs keep map pins at the prior site (present-day clock rules). Pending Save & Play. _(TOR-783)_
 - [x] **Scenes pins batch (Prepare Onboarding, Memoriam calendar/location/conditions, Force Select, live NPC scale, TR theme, Discipline decks, seating Preload, Discipline tip):** Debug Prepare Onboarding parks the live scene as ongoing and opens full session-start join in quiet Downtime; Memoriam supports calendar date + optional Toronto location, clears/restores personal conditions while active; Complications Force Select; roster scale reapplied live; End→Intermission TR_Loop; Reset Discipline Hands stashes decks; seating modal Preload; NPC Stats tip on hover. Pending Save & Play. _(TOR-781)_
 - [x] **Scene within fifteen minutes of present day runs on present day:** `PresentDayClock.snapToPresentIfNear` moves the scene datetime onto present day on activation, time-animation settle, Scenes panel clock apply and each real-time tick. Pending Save & Play. _(TOR-682)_

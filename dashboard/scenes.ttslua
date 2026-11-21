@@ -662,9 +662,9 @@ local function applyCommand(cmd)
       return "playScene: " .. rowErr
     end
     S.setStateVal(cmd.key, "sceneLibrary", "activeKey")
-    if type(cmd.title) == "string" and cmd.title ~= "" then
-      S.setStateVal(cmd.title, "sceneLibrary", "liveTitle")
-    end
+    -- liveTitle stays the scene that is still on the table until Apply captures it.
+    -- Writing the incoming title first made the departing snapshot keep the old
+    -- scene's contents under the new scene's name, so the deck's labels and bodies swapped.
     S.validateState()
     Panel.refresh()
     Panel.applyActiveLibraryScene(player, cmd.from, {

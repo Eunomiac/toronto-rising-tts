@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-805 — Switching scenes kept the old place under the new scene's name
+
+> **Agent-assessment note:** The title was being copied before the departing scene was frozen. A live switch is still the check that the table and the phase bar stay on the same scene.
+
+**How to verify:** Save & Play. Play one scene, then another, then the first one again. Each time, the name in the phase bar and the place on the table should be that same scene. The scene you left should still have its own name in the scene list. If a scene was already renamed by the old bug, correct its name in the library first; this fix does not rename those by itself.
+
 #### 🟡 TOR-804 — Public Player Map live pins via Dashboard scene mapPins
 
 > **Agent-assessment note:** Worker and Dashboard relay unit tests pass; live Save & Play plus Worker secret + session URL still need a real table check.

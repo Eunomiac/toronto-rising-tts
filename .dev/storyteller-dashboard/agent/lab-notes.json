@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 5,
-      "sketch": "scenes",
-      "x": 847,
-      "y": 187,
-      "text": "SERIOUS BUG:  Scenes on deck are being scrambled:  Returning to Elysium shows \"Elysium\" selected, but loaded the Fire Sale Chantry scene I was just departing.",
-      "status": "open",
-      "createdAt": "2026-11-21T21:41:38.195Z",
-      "updatedAt": "2026-11-21T21:41:38.195Z"
-    },
-    {
       "id": 6,
       "sketch": "scenes",
       "x": 677,
