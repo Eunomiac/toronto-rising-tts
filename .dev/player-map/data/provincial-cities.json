@@ -17,6 +17,18 @@
     { "key": "Istanbul", "name": "Istanbul", "coordinates": [28.9784, 41.0082] },
     { "key": "Alamut", "name": "Alamut", "coordinates": [50.5864, 36.4469] },
     { "key": "Paris", "name": "Paris", "coordinates": [2.3522, 48.8566] },
-    { "key": "PortAuPrince", "name": "Port-au-Prince", "coordinates": [-72.3074, 18.5944] }
+    { "key": "PortAuPrince", "name": "Port-au-Prince", "coordinates": [-72.3074, 18.5944] },
+    { "key": "Detroit", "name": "Detroit", "coordinates": [-83.0458, 42.3314] },
+    { "key": "Chicago", "name": "Chicago", "coordinates": [-87.6298, 41.8781] },
+    { "key": "StAugustine", "name": "St. Augustine", "coordinates": [-81.3124, 29.8947] },
+    { "key": "Vienna", "name": "Vienna", "coordinates": [16.3738, 48.2082] },
+    { "key": "Toledo", "name": "Toledo", "coordinates": [-4.0273, 39.8628] },
+    { "key": "CircularQuay", "name": "Circular Quay", "coordinates": [151.2111, -33.8612] },
+    { "key": "Kiev", "name": "Kiev", "coordinates": [30.5234, 50.4501] },
+    { "key": "Jerusalem", "name": "Jerusalem", "coordinates": [35.2137, 31.7683] },
+    { "key": "MojaveDesert", "name": "The Mojave Desert", "coordinates": [-115.4734, 35.0117] },
+    { "key": "Lucerne", "name": "Lucerne", "coordinates": [8.3093, 47.0502] },
+    { "key": "Diriyah", "name": "Diriyah", "coordinates": [46.5728, 24.737] },
+    { "key": "Odense", "name": "Odense", "coordinates": [10.3883, 55.4038] }
   ]
 }
