@@ -25,13 +25,16 @@ export function buildOrientationStreets(config, snapshot) {
       properties: {
         category: street.category,
         displayName: street.displayName,
+        matchName: element.tags.name,
+        // One whitelist row → one label, even when West/East share a display name.
+        entryKey: street.matchNames[0],
         osmId: element.id,
       },
       geometry: { type: 'LineString', coordinates },
     });
   }
   const missing = streets
-    .filter((street) => !features.some((feature) => feature.properties.displayName === street.displayName))
+    .filter((street) => !features.some((feature) => feature.properties.entryKey === street.matchNames[0]))
     .map((street) => street.displayName);
   if (missing.length > 0) throw new Error(`Orientation street snapshot is missing ${missing.join(', ')}`);
   return { type: 'FeatureCollection', features };

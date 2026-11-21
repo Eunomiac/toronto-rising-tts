@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   AttributionControl,
   Map,
-  NavigationControl,
+  Marker,
   setWorkerUrl,
   type ErrorEvent as MapLibreErrorEvent,
   type ExpressionSpecification,
@@ -17,6 +17,10 @@ import { featureBounds } from './data';
 import { interiorDistrictBorders } from './district-borders';
 import { DISTRICT_GLOW_COLOR, districtPulseAmount, districtPulseFrame } from './district-pulse';
 import { ORIENTATION_STREETS, type OrientationStreetCategory } from './orientation-streets';
+import {
+  STREET_LABEL_MIN_ZOOM,
+  streetLabelCollection,
+} from './street-labels';
 import { labelsForViewport } from './viewport-labels';
 import type {
   DistrictFeatureCollection,
@@ -47,8 +51,11 @@ const BASEMAP_MASK_SOURCE_ID = 'basemap-masks';
 const BASEMAP_MASK_LABEL_SOURCE_ID = 'basemap-mask-labels';
 const FILL_LAYER_ID = 'district-fills';
 const BORDER_SOURCE_ID = 'district-borders';
+const HOVER_BORDER_SOURCE_ID = 'district-hover-borders';
+const HOVER_BORDER_LAYER_ID = 'district-hover-lines';
 const DISTRICT_GLOW_LAYER_IDS = ['district-selected-glow', 'district-selected-glow-b'] as const;
 const LINE_LAYER_ID = 'district-lines';
+const REGION_GLOW_LAYER_ID = 'region-glow';
 const BASEMAP_IMAGE_PREFIX = 'basemap-mask-image-';
 const LABEL_LAYER_ID = 'district-labels';
 const REGION_FILL_LAYER_ID = 'region-fills';
@@ -63,19 +70,38 @@ const CITY_MARKER_CIRCLE_LAYER_ID = 'province-city-markers';
 const CITY_MARKER_LABEL_LAYER_ID = 'province-city-labels';
 const PRIMARY_STREET_CASING_LAYER_ID = 'primary-street-casing';
 const PRIMARY_STREET_LINE_LAYER_ID = 'primary-street-lines';
-const PRIMARY_STREET_LABEL_LAYER_ID = 'primary-street-labels';
 const ORIENTATION_STREET_CASING_LAYER_ID = 'orientation-street-casing';
 const ORIENTATION_STREET_LINE_LAYER_ID = 'orientation-street-lines';
-const ORIENTATION_STREET_LABEL_LAYER_ID = 'orientation-street-labels';
 const ORIENTATION_STREET_SOURCE_ID = 'orientation-streets';
-const ORIENTATION_STREET_LABEL_SOURCE_ID = 'orientation-street-labels';
 const FORCED_STREET_NAMES = ORIENTATION_STREETS.flatMap((street) => street.matchNames);
+const STREET_LINE_LAYER_IDS = [
+  PRIMARY_STREET_CASING_LAYER_ID,
+  PRIMARY_STREET_LINE_LAYER_ID,
+  ORIENTATION_STREET_CASING_LAYER_ID,
+  ORIENTATION_STREET_LINE_LAYER_ID,
+] as const;
 const BASEMAP_MASK_FILL_LAYER_ID = 'basemap-mask-fills';
 const BASEMAP_MASK_LINE_LAYER_ID = 'basemap-mask-lines';
 const BASEMAP_MASK_LABEL_LAYER_ID = 'basemap-mask-labels';
 const PLAY_BOUNDS: [[number, number], [number, number]] = [[-130, 10], [70, 62]];
 const INITIAL_BOUNDS: [[number, number], [number, number]] = [[-79.44, 43.63], [-79.34, 43.70]];
 const CITY_SHADE_MIN_ZOOM = 10;
+const JOKE_HOME_COORDINATES: [number, number] = [-80.0197, 44.5101];
+/** Remap the last generated street snapshot onto the current whitelist until streets are re-fetched. */
+const ORIENTATION_STREET_DISPLAY_REMAP = new globalThis.Map<string, { category: OrientationStreetCategory; displayName: string }>([
+  ['Yonge Street', { category: 'orientation', displayName: 'YONGE' }],
+  ['Don Valley Parkway', { category: 'primary', displayName: 'DON VALLEY PKY' }],
+  ['Gardiner Expressway', { category: 'primary', displayName: 'GARDINER EXPY' }],
+  ['St. Clair West', { category: 'orientation', displayName: 'ST. CLAIR' }],
+  ['St. Clair East', { category: 'orientation', displayName: 'ST. CLAIR' }],
+  ['Bloor West', { category: 'orientation', displayName: 'BLOOR' }],
+  ['Bloor East', { category: 'orientation', displayName: 'BLOOR' }],
+  ['Dundas West', { category: 'orientation', displayName: 'DUNDAS' }],
+  ['Dundas East', { category: 'orientation', displayName: 'DUNDAS' }],
+  ['Front West', { category: 'orientation', displayName: 'FRONT' }],
+  ['Front East', { category: 'orientation', displayName: 'FRONT' }],
+  ...ORIENTATION_STREETS.map((street) => [street.displayName, { category: street.category, displayName: street.displayName }] as const),
+]);
 const BASEMAP_LABEL_LAYER_IDS = [
   'highway_name_other',
   'highway_name_motorway',
@@ -177,6 +203,32 @@ function syncDistrictBorders(map: Map, districts: DistrictFeatureCollection, sel
   source?.setData(interiorDistrictBorders(districts, selectedKey));
 }
 
+function syncHoverBorders(map: Map, districts: DistrictFeatureCollection, hoveredKey: string | null) {
+  const source = map.getSource(HOVER_BORDER_SOURCE_ID) as GeoJSONSource | undefined;
+  // Same edge-stripped outline as selection so map-rim districts stay open to the blur.
+  source?.setData(interiorDistrictBorders(districts, hoveredKey));
+}
+
+/** Pulse above white roads, under symbol labels (pin 11). HTML street labels sit above the canvas. */
+function restackPulseAboveStreets(map: Map) {
+  for (const layerId of STREET_LINE_LAYER_IDS) {
+    if (!map.getLayer(layerId)) return;
+  }
+  for (const layerId of [...DISTRICT_GLOW_LAYER_IDS, LINE_LAYER_ID, HOVER_BORDER_LAYER_ID]) {
+    if (map.getLayer(layerId)) map.moveLayer(layerId);
+  }
+  for (const layerId of [
+    REGION_GLOW_LAYER_ID,
+    REGION_LINE_LAYER_ID,
+    LABEL_LAYER_ID,
+    REGION_LABEL_LAYER_ID,
+    SITE_LAYER_ID,
+    BASEMAP_MASK_LABEL_LAYER_ID,
+  ]) {
+    if (map.getLayer(layerId)) map.moveLayer(layerId);
+  }
+}
+
 function syncPathVisibility(map: Map, selectedKey: string | null) {
   const show = selectedKey === 'PATH';
   if (map.getLayer(PATH_ROUTE_LAYER_ID)) map.setLayoutProperty(PATH_ROUTE_LAYER_ID, 'visibility', mapVisibility(show));
@@ -251,189 +303,16 @@ function hideBasemapLabels(map: Map) {
   }
 }
 
-interface StreetBox {
-  west: number;
-  south: number;
-  east: number;
-  north: number;
-}
-
-const CLIP_INSIDE = 0;
-const CLIP_LEFT = 1;
-const CLIP_RIGHT = 2;
-const CLIP_BOTTOM = 4;
-const CLIP_TOP = 8;
-
-function clipCode(x: number, y: number, box: StreetBox) {
-  let code = CLIP_INSIDE;
-  if (x < box.west) code |= CLIP_LEFT;
-  else if (x > box.east) code |= CLIP_RIGHT;
-  if (y < box.south) code |= CLIP_BOTTOM;
-  else if (y > box.north) code |= CLIP_TOP;
-  return code;
-}
-
-function clipSegment(start: number[], end: number[], box: StreetBox): [number[], number[]] | null {
-  let x0 = start[0] ?? 0;
-  let y0 = start[1] ?? 0;
-  let x1 = end[0] ?? 0;
-  let y1 = end[1] ?? 0;
-  let code0 = clipCode(x0, y0, box);
-  let code1 = clipCode(x1, y1, box);
-  for (let guard = 0; guard < 12; guard += 1) {
-    if ((code0 | code1) === 0) return [[x0, y0], [x1, y1]];
-    if ((code0 & code1) !== 0) return null;
-    const code = code0 !== 0 ? code0 : code1;
-    let x = 0;
-    let y = 0;
-    if ((code & CLIP_TOP) !== 0) {
-      x = x0 + (x1 - x0) * (box.north - y0) / (y1 - y0);
-      y = box.north;
-    } else if ((code & CLIP_BOTTOM) !== 0) {
-      x = x0 + (x1 - x0) * (box.south - y0) / (y1 - y0);
-      y = box.south;
-    } else if ((code & CLIP_RIGHT) !== 0) {
-      y = y0 + (y1 - y0) * (box.east - x0) / (x1 - x0);
-      x = box.east;
-    } else {
-      y = y0 + (y1 - y0) * (box.west - x0) / (x1 - x0);
-      x = box.west;
-    }
-    if (code === code0) {
-      x0 = x;
-      y0 = y;
-      code0 = clipCode(x0, y0, box);
-    } else {
-      x1 = x;
-      y1 = y;
-      code1 = clipCode(x1, y1, box);
-    }
-  }
-  return null;
-}
-
-function clipPolyline(coordinates: number[][], box: StreetBox) {
-  const parts: number[][][] = [];
-  let current: number[][] = [];
-  for (let index = 1; index < coordinates.length; index += 1) {
-    const start = coordinates[index - 1];
-    const end = coordinates[index];
-    if (!start || !end) continue;
-    const clipped = clipSegment(start, end, box);
-    if (!clipped) {
-      if (current.length > 1) parts.push(current);
-      current = [];
-      continue;
-    }
-    const [from, to] = clipped;
-    if (!from || !to) continue;
-    const last = current[current.length - 1];
-    const lastX = last?.[0];
-    const lastY = last?.[1];
-    const fromX = from[0];
-    const fromY = from[1];
-    if (lastX === undefined || lastY === undefined || fromX === undefined || fromY === undefined
-      || Math.hypot(lastX - fromX, lastY - fromY) > 1e-7) {
-      if (current.length > 1) parts.push(current);
-      current = [from, to];
-    } else current.push(to);
-  }
-  if (current.length > 1) parts.push(current);
-  return parts;
-}
-
-function lineLength(coordinates: number[][]) {
-  let length = 0;
-  for (let index = 1; index < coordinates.length; index += 1) {
-    const start = coordinates[index - 1];
-    const end = coordinates[index];
-    if (!start || !end || start[0] === undefined || start[1] === undefined || end[0] === undefined || end[1] === undefined) continue;
-    length += Math.hypot((end[0] - start[0]) * 82, (end[1] - start[1]) * 111);
-  }
-  return length;
-}
-
-function stitchLongest(parts: number[][][]) {
-  const unused = parts.map((part) => part.map((point) => [...point]));
-  const near = (a: number[], b: number[]) => Math.hypot(((a[0] ?? 0) - (b[0] ?? 0)) * 82, ((a[1] ?? 0) - (b[1] ?? 0)) * 111) < 0.04;
-  const chains: number[][][] = [];
-  while (unused.length > 0) {
-    const chain = unused.pop();
-    if (!chain) break;
-    let grew = true;
-    while (grew) {
-      grew = false;
-      for (let index = 0; index < unused.length; index += 1) {
-        const part = unused[index];
-        const head = chain[0];
-        const tail = chain[chain.length - 1];
-        const start = part?.[0];
-        const end = part?.[part.length - 1];
-        if (!part || !head || !tail || !start || !end) continue;
-        if (near(tail, start)) chain.push(...part.slice(1));
-        else if (near(tail, end)) chain.push(...part.slice().reverse().slice(1));
-        else if (near(head, end)) chain.unshift(...part.slice(0, -1));
-        else if (near(head, start)) chain.unshift(...part.slice().reverse().slice(1));
-        else continue;
-        unused.splice(index, 1);
-        grew = true;
-        break;
-      }
-    }
-    chains.push(chain);
-  }
-  chains.sort((left, right) => lineLength(right) - lineLength(left));
-  return chains[0] ?? [];
-}
-
-function streetLabelCollection(
-  collection: GeoJSON.FeatureCollection,
-  bounds: [[number, number], [number, number]],
-): GeoJSON.FeatureCollection {
-  const inset = 0.0016;
-  const box: StreetBox = {
-    west: bounds[0][0] + inset,
-    south: bounds[0][1] + inset,
-    east: bounds[1][0] - inset,
-    north: bounds[1][1] - inset,
-  };
-  const grouped = new globalThis.Map<string, { category: string; displayName: string; parts: number[][][] }>();
-  for (const feature of collection.features) {
-    if (feature.geometry.type !== 'LineString') continue;
-    const clipped = clipPolyline(feature.geometry.coordinates as number[][], box);
-    if (clipped.length === 0) continue;
-    const category = String(feature.properties?.category ?? '');
-    const displayName = String(feature.properties?.displayName ?? '');
-    const key = `${category}\0${displayName}`;
-    const group = grouped.get(key) ?? { category, displayName, parts: [] };
-    group.parts.push(...clipped);
-    grouped.set(key, group);
-  }
-  return {
-    type: 'FeatureCollection',
-    features: [...grouped.values()].flatMap((group) => {
-      const coordinates = stitchLongest(group.parts);
-      if (coordinates.length < 2) return [];
-      return [{
-        type: 'Feature' as const,
-        properties: { category: group.category, displayName: group.displayName },
-        geometry: { type: 'LineString' as const, coordinates },
-      }];
-    }),
-  };
-}
-
-function addStreetLayers(
+function addStreetLineLayers(
   map: Map,
   category: OrientationStreetCategory,
-  ids: { casing: string; line: string; label: string },
+  ids: { casing: string; line: string },
   style: {
     minzoom: number;
     casingWidth: ExpressionSpecification;
     lineWidth: ExpressionSpecification;
     lineColor: string;
     lineOpacity: number;
-    textSize: ExpressionSpecification;
   },
 ) {
   const filter: FilterSpecification = ['==', ['get', 'category'], category];
@@ -463,36 +342,86 @@ function addStreetLayers(
       'line-opacity': style.lineOpacity,
     },
   });
-  map.addLayer({
-    id: ids.label,
-    type: 'symbol',
-    source: ORIENTATION_STREET_LABEL_SOURCE_ID,
-    minzoom: style.minzoom,
-    filter,
-    layout: {
-      visibility: 'visible',
-      'symbol-placement': 'line',
-      'symbol-spacing': 200,
-      'text-field': ['get', 'displayName'],
-      'text-font': ['Noto Sans Bold'],
-      'text-size': style.textSize,
-      'text-letter-spacing': 0.08,
-      'text-max-angle': 28,
-      'text-padding': 1,
-      'text-optional': false,
-      'text-allow-overlap': true,
-      'text-ignore-placement': true,
-    },
-    paint: {
-      'text-color': '#ffffff',
-      'text-halo-color': '#14080a',
-      'text-halo-width': 2.5,
-      'text-opacity': style.lineOpacity,
-    },
-  });
 }
 
-function loadOrientationStreets(map: Map, bounds: [[number, number], [number, number]]) {
+function createStreetLabelMarkerElement(displayName: string, category: OrientationStreetCategory) {
+  const element = document.createElement('div');
+  element.className = `street-label street-label--${category}`;
+  element.textContent = displayName;
+  element.setAttribute('aria-hidden', 'true');
+  return element;
+}
+
+function syncStreetLabelVisibility(markers: Marker[], zoom: number) {
+  const visible = zoom >= STREET_LABEL_MIN_ZOOM;
+  for (const marker of markers) {
+    const element = marker.getElement();
+    element.style.display = visible ? '' : 'none';
+  }
+}
+
+function mountStreetLabelMarkers(
+  map: Map,
+  labels: GeoJSON.FeatureCollection<GeoJSON.Point, { category: string; displayName: string; entryKey: string }>,
+): Marker[] {
+  const markers: Marker[] = [];
+  for (const feature of labels.features) {
+    const category = feature.properties.category === 'primary' ? 'primary' : 'orientation';
+    const marker = new Marker({
+      element: createStreetLabelMarkerElement(feature.properties.displayName, category),
+      anchor: 'center',
+      pitchAlignment: 'map',
+      rotationAlignment: 'map',
+    })
+      .setLngLat(feature.geometry.coordinates as [number, number])
+      .addTo(map);
+    markers.push(marker);
+  }
+  syncStreetLabelVisibility(markers, map.getZoom());
+  return markers;
+}
+
+function resolveOrientationStreetFeature(feature: GeoJSON.Feature): GeoJSON.Feature | null {
+  const displayName = typeof feature.properties?.displayName === 'string' ? feature.properties.displayName : '';
+  const matchName = typeof feature.properties?.matchName === 'string' ? feature.properties.matchName : '';
+  const entryKey = typeof feature.properties?.entryKey === 'string' ? feature.properties.entryKey : '';
+  const byMatch = matchName
+    ? ORIENTATION_STREETS.find((street) => street.matchNames.includes(matchName))
+    : undefined;
+  const byEntry = entryKey
+    ? ORIENTATION_STREETS.find((street) => street.matchNames[0] === entryKey)
+    : undefined;
+  const byDisplay = ORIENTATION_STREET_DISPLAY_REMAP.get(displayName);
+  const resolved = byMatch ?? byEntry;
+  if (resolved) {
+    return {
+      ...feature,
+      properties: {
+        ...feature.properties,
+        category: resolved.category,
+        displayName: resolved.displayName,
+        entryKey: resolved.matchNames[0],
+        matchName: matchName || resolved.matchNames[0],
+      },
+    };
+  }
+  if (!byDisplay) return null;
+  return {
+    ...feature,
+    properties: {
+      ...feature.properties,
+      category: byDisplay.category,
+      displayName: byDisplay.displayName,
+      entryKey: entryKey || displayName,
+    },
+  };
+}
+
+function loadOrientationStreets(
+  map: Map,
+  bounds: [[number, number], [number, number]],
+  onLabelsMounted: (markers: Marker[]) => void,
+) {
   void fetch('/generated/orientation-streets.geojson')
     .then((response) => {
       if (!response.ok) throw new Error('Could not load the orientation streets');
@@ -500,34 +429,39 @@ function loadOrientationStreets(map: Map, bounds: [[number, number], [number, nu
     })
     .then((data) => {
       if (!map.getLayer(FILL_LAYER_ID) || map.getSource(ORIENTATION_STREET_SOURCE_ID)) return;
-      map.addSource(ORIENTATION_STREET_SOURCE_ID, { type: 'geojson', data });
-      map.addSource(ORIENTATION_STREET_LABEL_SOURCE_ID, { type: 'geojson', data: streetLabelCollection(data, bounds) });
-      addStreetLayers(map, 'primary', {
+      const filtered: GeoJSON.FeatureCollection = {
+        type: 'FeatureCollection',
+        features: data.features.flatMap((feature) => {
+          const next = resolveOrientationStreetFeature(feature);
+          return next ? [next] : [];
+        }),
+      };
+      // Full OSM geometry — lines continue under the exterior blur (pin 7).
+      map.addSource(ORIENTATION_STREET_SOURCE_ID, { type: 'geojson', data: filtered });
+      addStreetLineLayers(map, 'primary', {
         casing: PRIMARY_STREET_CASING_LAYER_ID,
         line: PRIMARY_STREET_LINE_LAYER_ID,
-        label: PRIMARY_STREET_LABEL_LAYER_ID,
       }, {
         minzoom: 9,
         casingWidth: ['interpolate', ['linear'], ['zoom'], 10.2, 4.2, 15, 8],
         lineWidth: ['interpolate', ['linear'], ['zoom'], 10.2, 1.6, 15, 3.8],
-        lineColor: '#f5efeb',
+        lineColor: '#BBBBBB',
         lineOpacity: 0.96,
-        textSize: ['interpolate', ['linear'], ['zoom'], 10.2, 11, 15, 16],
       });
-      addStreetLayers(map, 'orientation', {
+      addStreetLineLayers(map, 'orientation', {
         casing: ORIENTATION_STREET_CASING_LAYER_ID,
         line: ORIENTATION_STREET_LINE_LAYER_ID,
-        label: ORIENTATION_STREET_LABEL_LAYER_ID,
       }, {
         minzoom: 10,
         casingWidth: ['interpolate', ['linear'], ['zoom'], 11.1, 3.2, 15, 6],
         lineWidth: ['interpolate', ['linear'], ['zoom'], 11.1, 1.05, 15, 2.6],
-        lineColor: '#d8d0cb',
-        lineOpacity: 0.78,
-        textSize: ['interpolate', ['linear'], ['zoom'], 11.1, 10, 15, 14],
+        lineColor: '#FFFFFF',
+        lineOpacity: 0.92,
       });
-      if (map.getLayer(LABEL_LAYER_ID)) map.moveLayer(LABEL_LAYER_ID);
-      if (map.getLayer(SITE_LAYER_ID)) map.moveLayer(SITE_LAYER_ID);
+      // HTML labels: Voltaire (orientation) / one marker per whitelist entry; hidden below zoom 12.
+      const labelPoints = streetLabelCollection(filtered, bounds);
+      onLabelsMounted(mountStreetLabelMarkers(map, labelPoints));
+      restackPulseAboveStreets(map);
     })
     .catch((error: unknown) => {
       console.error(error instanceof Error ? error.message : 'Could not load the orientation streets');
@@ -642,6 +576,7 @@ export function MapView({
   const selectedRef = useRef<string | null>(null);
   const toggledSiteKeysRef = useRef(toggledSiteKeys);
   const pulseOriginRef = useRef<number | null>(null);
+  const streetLabelMarkersRef = useRef<Marker[]>([]);
   const [status, setStatus] = useState('Loading street map…');
   const [distantView, setDistantView] = useState(false);
   districtsRef.current = districts;
@@ -679,8 +614,15 @@ export function MapView({
     });
     mapRef.current = map;
     onMapReadyRef.current?.(map);
-    map.addControl(new NavigationControl({ showCompass: false }), 'bottom-right');
     map.addControl(new AttributionControl({ compact: true }), 'bottom-left');
+    const jokeHome = document.createElement('button');
+    jokeHome.type = 'button';
+    jokeHome.className = 'joke-home-pin';
+    jokeHome.title = 'I Live Here!';
+    jokeHome.setAttribute('aria-label', 'I Live Here!');
+    const jokeMarker = new Marker({ element: jokeHome, anchor: 'center' })
+      .setLngLat(JOKE_HOME_COORDINATES)
+      .addTo(map);
     let boundaryFrame: number | null = null;
     let labelTimer: number | null = null;
     const updateBoundaryShade = () => {
@@ -689,6 +631,7 @@ export function MapView({
         boundaryFrame = null;
         if (boundaryShadeRef.current) positionBoundaryShade(map, chronicleBounds, boundaryShadeRef.current);
         setDistantView(map.getZoom() < CITY_SHADE_MIN_ZOOM);
+        syncStreetLabelVisibility(streetLabelMarkersRef.current, map.getZoom());
       });
     };
     const finalizeViewportLabels = () => {
@@ -737,16 +680,15 @@ export function MapView({
         type: 'fill',
         source: SOURCE_ID,
         paint: {
+          // Hover no longer fills the district (pin 9) — only selection keeps a faint wash.
           'fill-color': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], '#c22933',
-            ['boolean', ['feature-state', 'hovered'], false], '#7e2029',
             '#2a0b10',
           ],
           'fill-opacity': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], 0.06,
-            ['boolean', ['feature-state', 'hovered'], false], 0.34,
             0,
           ],
         },
@@ -755,6 +697,10 @@ export function MapView({
       map.addSource(BORDER_SOURCE_ID, {
         type: 'geojson',
         data: interiorDistrictBorders(districtsRef.current, selectedRef.current),
+      });
+      map.addSource(HOVER_BORDER_SOURCE_ID, {
+        type: 'geojson',
+        data: interiorDistrictBorders(districtsRef.current, null),
       });
       for (const layerId of DISTRICT_GLOW_LAYER_IDS) {
         map.addLayer({
@@ -790,6 +736,22 @@ export function MapView({
         },
       });
       map.addLayer({
+        id: HOVER_BORDER_LAYER_ID,
+        type: 'line',
+        source: HOVER_BORDER_SOURCE_ID,
+        layout: {
+          visibility: mapVisibility(layerVisibilityRef.current.districts),
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
+        paint: {
+          'line-color': '#ff2a2a',
+          'line-width': 1.35,
+          'line-dasharray': [0.8, 1.4],
+          'line-opacity': 0.95,
+        },
+      });
+      map.addLayer({
         id: REGION_FILL_LAYER_ID,
         type: 'fill',
         source: REGION_SOURCE_ID,
@@ -804,7 +766,28 @@ export function MapView({
             'UniversityOfToronto', '#06fbff',
             '#8e343b',
           ],
-          'fill-opacity': 0.22,
+          // Pin 10: drop the heavy wash; keep a whisper of tint under the inner glow.
+          'fill-opacity': 0.06,
+        },
+      });
+      map.addLayer({
+        id: REGION_GLOW_LAYER_ID,
+        type: 'line',
+        source: REGION_SOURCE_ID,
+        filter: regionFilter(regionVisibilityRef.current),
+        layout: { visibility: mapVisibility(layerVisibilityRef.current.regions) },
+        paint: {
+          'line-color': [
+            'match', ['get', 'key'],
+            'AnarchFreeZone', '#ff5a63',
+            'TheRack', '#ff7ef5',
+            'TheBarrens', '#a56a3a',
+            'UniversityOfToronto', '#7ff6ff',
+            '#d9878d',
+          ],
+          'line-width': 10,
+          'line-blur': 7,
+          'line-opacity': 0.45,
         },
       });
       map.addLayer({
@@ -822,34 +805,56 @@ export function MapView({
             'UniversityOfToronto', '#7ff6ff',
             '#d9878d',
           ],
-          'line-width': 2.2,
+          'line-width': 1.15,
           'line-dasharray': [2, 1.5],
-          'line-opacity': 0.92,
+          'line-opacity': 0.78,
         },
       });
       map.addLayer({
         id: SITE_LAYER_ID,
         type: 'symbol',
         source: SITE_SOURCE_ID,
+        minzoom: 12.5,
         filter: siteFilter(selectedRef.current, toggledSiteKeysRef.current),
         layout: {
           'icon-image': ['concat', 'site-icon-', ['get', 'icon']],
           'icon-anchor': 'bottom',
-          'icon-size': ['interpolate', ['linear'], ['zoom'], 8, 0.4, 12, 0.62, 16, 0.95],
+          'icon-size': [
+            'case',
+            ['get', 'hub'],
+            ['*', 1.25, ['interpolate', ['linear'], ['zoom'], 12.5, 0.5, 16, 0.95]],
+            ['interpolate', ['linear'], ['zoom'], 12.5, 0.5, 16, 0.95],
+          ],
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
-          'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular'],
-          'text-size': 11,
+          'text-field': [
+            'case',
+            ['get', 'hub'], ['upcase', ['get', 'name']],
+            ['get', 'name'],
+          ],
+          'text-font': [
+            'case',
+            ['get', 'hub'], ['literal', ['Noto Sans Bold']],
+            ['literal', ['Noto Sans Regular']],
+          ],
+          'text-size': [
+            'case',
+            ['get', 'hub'], 13,
+            11,
+          ],
           'text-anchor': 'bottom',
-          'text-offset': ['interpolate', ['linear'], ['zoom'], 8, ['literal', [0, -2.6]], 12, ['literal', [0, -3.3]], 16, ['literal', [0, -4.6]]],
+          'text-offset': ['interpolate', ['linear'], ['zoom'], 12.5, ['literal', [0, -3.1]], 16, ['literal', [0, -4.6]]],
           'text-max-width': 12,
           'text-justify': 'center',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
-          'text-color': '#f7f4ef',
+          'text-color': [
+            'case',
+            ['get', 'hub'], '#ffffff',
+            '#f7f4ef',
+          ],
           'text-halo-color': '#000000',
           'text-halo-width': 1.35,
           'text-halo-blur': 0,
@@ -902,19 +907,27 @@ export function MapView({
         layout: { visibility: 'none' },
       });
 
-      loadOrientationStreets(map, chronicleBounds);
+      loadOrientationStreets(map, chronicleBounds, (markers) => {
+        for (const marker of streetLabelMarkersRef.current) marker.remove();
+        streetLabelMarkersRef.current = markers;
+      });
 
       map.addLayer({
         id: LABEL_LAYER_ID,
         type: 'symbol',
         source: LABEL_SOURCE_ID,
-        minzoom: 11.25,
+        minzoom: 12,
         filter: ['==', ['get', 'kind'], 'district'],
         layout: {
           visibility: mapVisibility(layerVisibilityRef.current.districts),
           'text-field': ['get', 'name'],
-          'text-font': ['Noto Sans Regular'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 11.25, 10, 14, 13],
+          'text-font': ['Noto Sans Bold'],
+          // Pin 9: hover scales the name up; MapLibre feature-state drives the resting↔hover jump.
+          'text-size': [
+            'interpolate', ['linear'], ['zoom'],
+            12, ['case', ['boolean', ['feature-state', 'hovered'], false], 14, 10],
+            14, ['case', ['boolean', ['feature-state', 'hovered'], false], 18, 13],
+          ],
           'text-transform': 'uppercase',
           'text-letter-spacing': 0.12,
           'text-max-width': 10,
@@ -923,9 +936,22 @@ export function MapView({
           'text-optional': false,
         },
         paint: {
-          'text-color': '#f0d9d5',
+          'text-color': [
+            'case',
+            ['boolean', ['feature-state', 'hovered'], false], '#ff2424',
+            '#6f6a66',
+          ],
+          'text-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'hovered'], false], 1,
+            0.72,
+          ],
           'text-halo-color': '#000000',
-          'text-halo-width': 1.4,
+          'text-halo-width': [
+            'case',
+            ['boolean', ['feature-state', 'hovered'], false], 2,
+            1.2,
+          ],
           'text-halo-blur': 0,
         },
       });
@@ -1026,15 +1052,23 @@ export function MapView({
       finalizeViewportLabels();
     };
 
+    const clearDistrictHover = (key: string) => {
+      map.setFeatureState({ source: SOURCE_ID, id: key }, { hovered: false });
+      map.setFeatureState({ source: LABEL_SOURCE_ID, id: key }, { hovered: false });
+    };
     const onMouseMove = (event: MapMouseEvent) => {
       const feature = map.queryRenderedFeatures(event.point, { layers: [PATH_INTERACTION_LAYER_ID, FILL_LAYER_ID] })[0];
       const key = districtKey(feature);
       if (key === hoveredRef.current) return;
-      if (hoveredRef.current && hoveredRef.current !== 'PATH') {
-        map.setFeatureState({ source: SOURCE_ID, id: hoveredRef.current }, { hovered: false });
-      }
+      if (hoveredRef.current && hoveredRef.current !== 'PATH') clearDistrictHover(hoveredRef.current);
       hoveredRef.current = key;
-      if (key && key !== 'PATH') map.setFeatureState({ source: SOURCE_ID, id: key }, { hovered: true });
+      if (key && key !== 'PATH') {
+        map.setFeatureState({ source: SOURCE_ID, id: key }, { hovered: true });
+        map.setFeatureState({ source: LABEL_SOURCE_ID, id: key }, { hovered: true });
+        syncHoverBorders(map, districtsRef.current, key);
+      } else {
+        syncHoverBorders(map, districtsRef.current, null);
+      }
       map.getCanvas().style.cursor = key ? 'pointer' : '';
     };
     const onClick = (event: MapMouseEvent) => {
@@ -1060,6 +1094,9 @@ export function MapView({
     return () => {
       if (boundaryFrame !== null) window.cancelAnimationFrame(boundaryFrame);
       if (labelTimer !== null) window.clearTimeout(labelTimer);
+      for (const marker of streetLabelMarkersRef.current) marker.remove();
+      streetLabelMarkersRef.current = [];
+      jokeMarker.remove();
       onMapReadyRef.current?.(null);
       map.remove();
       mapRef.current = null;
@@ -1130,18 +1167,20 @@ export function MapView({
     const map = mapRef.current;
     if (!map) return undefined;
     return applyWhenStyleReady(map, FILL_LAYER_ID, () => {
-      for (const layer of [FILL_LAYER_ID, ...DISTRICT_GLOW_LAYER_IDS, LINE_LAYER_ID, LABEL_LAYER_ID]) {
+      for (const layer of [FILL_LAYER_ID, ...DISTRICT_GLOW_LAYER_IDS, LINE_LAYER_ID, HOVER_BORDER_LAYER_ID, LABEL_LAYER_ID]) {
         if (map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.districts));
       }
-      for (const layer of [REGION_FILL_LAYER_ID, REGION_LINE_LAYER_ID, REGION_LABEL_LAYER_ID]) {
+      for (const layer of [REGION_FILL_LAYER_ID, REGION_GLOW_LAYER_ID, REGION_LINE_LAYER_ID, REGION_LABEL_LAYER_ID]) {
         if (map.getLayer(layer)) map.setLayoutProperty(layer, 'visibility', mapVisibility(layerVisibility.regions));
       }
       syncPathVisibility(map, selectedRef.current);
       if (!layerVisibility.districts && hoveredRef.current) {
         if (hoveredRef.current !== 'PATH') {
           map.setFeatureState({ source: SOURCE_ID, id: hoveredRef.current }, { hovered: false });
+          map.setFeatureState({ source: LABEL_SOURCE_ID, id: hoveredRef.current }, { hovered: false });
         }
         hoveredRef.current = null;
+        syncHoverBorders(map, districtsRef.current, null);
         map.getCanvas().style.cursor = '';
       }
     });
@@ -1153,6 +1192,7 @@ export function MapView({
     return applyWhenStyleReady(map, REGION_FILL_LAYER_ID, () => {
       const filter = regionFilter(regionVisibility);
       map.setFilter(REGION_FILL_LAYER_ID, filter);
+      if (map.getLayer(REGION_GLOW_LAYER_ID)) map.setFilter(REGION_GLOW_LAYER_ID, filter);
       map.setFilter(REGION_LINE_LAYER_ID, filter);
       map.setFilter(REGION_LABEL_LAYER_ID, ['all', ['==', ['get', 'kind'], 'region'], filter] as FilterSpecification);
     });
@@ -1175,7 +1215,6 @@ export function MapView({
       map.setPaintProperty(FILL_LAYER_ID, 'fill-opacity', [
         'case',
         ['boolean', ['feature-state', 'selected'], false], paint.fillOpacity,
-        ['boolean', ['feature-state', 'hovered'], false], 0.34,
         0,
       ]);
       map.setPaintProperty(LINE_LAYER_ID, 'line-width', paint.lineWidth);
@@ -1223,10 +1262,7 @@ export function MapView({
         className={`chronicle-boundary-shade${distantView ? ' chronicle-boundary-shade--distant' : ''}`}
         aria-hidden="true"
       >
-        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--north" />
-        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--south" />
-        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--west" />
-        <div className="chronicle-boundary-shade__panel chronicle-boundary-shade__panel--east" />
+        <div className="chronicle-boundary-shade__veil" />
       </div>
       {selectedKey === 'PATH' ? (
         <div className="map-surface__path-legend" aria-hidden="true" data-gsap="path-legend">

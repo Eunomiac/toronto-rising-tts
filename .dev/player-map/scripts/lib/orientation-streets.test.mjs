@@ -18,6 +18,9 @@ test('keeps named ways and labels them with the catalog display name', () => {
     ],
   });
   assert.deepEqual(collection.features.map((feature) => feature.properties.displayName), ['Yonge Street', 'Spadina']);
+  assert.equal(collection.features[0].properties.entryKey, 'Yonge Street');
+  assert.equal(collection.features[1].properties.entryKey, 'Spadina Avenue');
+  assert.equal(collection.features[1].properties.matchName, 'Spadina Road');
   assert.equal(collection.features[1].properties.category, 'orientation');
 });
 

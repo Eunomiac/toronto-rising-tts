@@ -6,7 +6,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const config = JSON.parse(await fs.readFile(path.join(root, 'data/orientation-streets.json'), 'utf8'));
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'public/generated/map-data-manifest.json'), 'utf8'));
 const [[west, south], [east, north]] = manifest.bounds;
-const pad = 0.012;
+// Reach well into the exterior blur so primary/orientation paint continues past the clear zone.
+const pad = 0.045;
 const bbox = `${south - pad},${west - pad},${north + pad},${east + pad}`;
 const names = config.streets.flatMap((street) => street.matchNames);
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

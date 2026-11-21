@@ -133,12 +133,13 @@ select,
 }
 
 .chronicle-boundary-shade {
+  // One full-viewport veil with a feathered rectangular hole. Four abutting
+  // side panels left hard-edged clear strips at the corners.
   --chronicle-west: 0px;
   --chronicle-east: 100%;
   --chronicle-north: 0px;
   --chronicle-south: 100%;
   --feather: 48px;
-  --blur-overlap: 18px;
   position: absolute;
   z-index: 1;
   inset: 0;
@@ -147,42 +148,57 @@ select,
 
   &--distant { display: none; }
 
-  &__panel {
+  &__veil {
     position: absolute;
+    inset: 0;
     background: transparent;
     backdrop-filter: blur(3.5px) saturate(0.7);
-
-    &--north {
-      top: 0;
-      right: 0;
-      left: 0;
-      height: calc(var(--chronicle-north) + var(--blur-overlap));
-      mask-image: linear-gradient(to top, transparent, #000 var(--feather));
-    }
-
-    &--south {
-      top: calc(var(--chronicle-south) - var(--blur-overlap));
-      right: 0;
-      bottom: 0;
-      left: 0;
-      mask-image: linear-gradient(to bottom, transparent, #000 var(--feather));
-    }
-
-    &--west {
-      top: calc(var(--chronicle-north) + var(--blur-overlap));
-      right: calc(100% - var(--chronicle-west) - var(--blur-overlap));
-      bottom: calc(100% - var(--chronicle-south) + var(--blur-overlap));
-      left: 0;
-      mask-image: linear-gradient(to left, transparent, #000 var(--feather));
-    }
-
-    &--east {
-      top: calc(var(--chronicle-north) + var(--blur-overlap));
-      right: 0;
-      bottom: calc(100% - var(--chronicle-south) + var(--blur-overlap));
-      left: calc(var(--chronicle-east) - var(--blur-overlap));
-      mask-image: linear-gradient(to right, transparent, #000 var(--feather));
-    }
+    // Union of vertical + horizontal "outside" masks → blur everywhere except
+    // the chronicle rectangle, with a soft feather on each edge (including corners).
+    -webkit-mask-image:
+      linear-gradient(
+        to bottom,
+        #000 0,
+        #000 max(0px, calc(var(--chronicle-north) - var(--feather))),
+        transparent var(--chronicle-north),
+        transparent var(--chronicle-south),
+        #000 min(100%, calc(var(--chronicle-south) + var(--feather))),
+        #000 100%
+      ),
+      linear-gradient(
+        to right,
+        #000 0,
+        #000 max(0px, calc(var(--chronicle-west) - var(--feather))),
+        transparent var(--chronicle-west),
+        transparent var(--chronicle-east),
+        #000 min(100%, calc(var(--chronicle-east) + var(--feather))),
+        #000 100%
+      );
+    -webkit-mask-size: 100% 100%, 100% 100%;
+    -webkit-mask-repeat: no-repeat, no-repeat;
+    -webkit-mask-composite: source-over;
+    mask-image:
+      linear-gradient(
+        to bottom,
+        #000 0,
+        #000 max(0px, calc(var(--chronicle-north) - var(--feather))),
+        transparent var(--chronicle-north),
+        transparent var(--chronicle-south),
+        #000 min(100%, calc(var(--chronicle-south) + var(--feather))),
+        #000 100%
+      ),
+      linear-gradient(
+        to right,
+        #000 0,
+        #000 max(0px, calc(var(--chronicle-west) - var(--feather))),
+        transparent var(--chronicle-west),
+        transparent var(--chronicle-east),
+        #000 min(100%, calc(var(--chronicle-east) + var(--feather))),
+        #000 100%
+      );
+    mask-size: 100% 100%, 100% 100%;
+    mask-repeat: no-repeat, no-repeat;
+    mask-composite: add;
   }
 }
 
@@ -299,6 +315,39 @@ select,
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Voltaire';
+  src:
+    url('/assets/fonts/VOLTAIRE-REGULAR.OTF') format('opentype'),
+    url('/assets/fonts/VOLTAIRE-REGULAR.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+// HTML street labels (MapLibre cannot load local TTFs into the basemap glyph stack).
+.street-label {
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 2px #14080a;
+  text-shadow: 0 0 2px #14080a;
+
+  &--orientation {
+    color: #ffff00;
+    font: 400 2.25rem/1 'Voltaire', 'Segoe UI', sans-serif;
+    -webkit-text-stroke-width: 3px;
+  }
+
+  &--primary {
+    color: #ffffff;
+    font: 700 0.85rem/1 'Noto Sans', 'Segoe UI', sans-serif;
+    -webkit-text-stroke-width: 2px;
+  }
+}
+
 .icon-rail {
   --rail-stride: 3.9rem;
   position: absolute;
@@ -357,7 +406,7 @@ select,
   }
 
   &__glyph {
-    inset: 24%;
+    inset: 10%;
     z-index: 2;
     background: #e6c36a;
     mask: var(--glyph) center / contain no-repeat;
@@ -410,7 +459,7 @@ select,
   &__panel {
     position: absolute;
     top: 112.5%;
-    left: 0;
+    left: calc(3.15rem * 1.25 + 0.35rem);
     width: min(16.25rem, calc(100vw - 5.5rem));
     max-height: calc(100dvh - 8rem);
     overflow: hidden;
@@ -685,6 +734,17 @@ select,
   }
 }
 
+.joke-home-pin {
+  width: 0.7rem;
+  height: 0.7rem;
+  padding: 0;
+  border: 2px solid #f4f8ff;
+  border-radius: 50%;
+  background: #3a7bff;
+  box-shadow: 0 0 0.45rem rgba(#3a7bff, 0.75);
+  cursor: help;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -692,5 +752,5 @@ select,
 }
 
 @supports not ((backdrop-filter: blur(1px))) {
-  .chronicle-boundary-shade__panel { background: rgba(#030304, 0.18); }
+  .chronicle-boundary-shade__veil { background: rgba(#030304, 0.18); }
 }
