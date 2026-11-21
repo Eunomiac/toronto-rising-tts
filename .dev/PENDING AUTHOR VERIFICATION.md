@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-806 — Play as NPC crashed because the seat write had its arguments backwards
+
+> **Agent-assessment note:** The crash is the path and the value being swapped in `setStateVal`. A live drop is still the check that the assignment sticks.
+
+**How to verify:** Save & Play. On the Storyteller Dashboard, drop an NPC onto a seated player and confirm Play as NPC. That player should be marked as portraying the NPC, and the console should not show the concat error. Clear the assignment and confirm that works too.
+
 #### 🟡 TOR-805 — Switching scenes kept the old place under the new scene's name
 
 > **Agent-assessment note:** The title was being copied before the departing scene was frozen. A live switch is still the check that the table and the phase bar stay on the same scene.

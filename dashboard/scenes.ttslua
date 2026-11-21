@@ -390,7 +390,7 @@ local function applyCommand(cmd)
         entry.tier = cmd.tier
       end
       membership[cmd.npcCharacterKey] = entry
-      S.setStateVal("sessionScene", "npcWorld", "genericMembership", membership)
+      S.setStateVal(membership, "sessionScene", "npcWorld", "genericMembership")
     end
     row.isPlayingNPC = true
     row.npcCharacterKey = cmd.npcCharacterKey
@@ -399,13 +399,13 @@ local function applyCommand(cmd)
       row.playAsRoleplayNotes = cmd.roleplayNotes
     end
     slots[cmd.color] = row
-    S.setStateVal("sessionScene", "seatSlots", slots)
+    S.setStateVal(slots, "sessionScene", "seatSlots")
     local seatPresent = S.getStateVal("sessionScene", "seatPresent")
     if type(seatPresent) ~= "table" then
       seatPresent = {}
     end
     seatPresent[cmd.color] = true
-    S.setStateVal("sessionScene", "seatPresent", seatPresent)
+    S.setStateVal(seatPresent, "sessionScene", "seatPresent")
     local SceneLibrary = require("core.scene_library")
     SceneLibrary.syncNpcRoleOverrideFromSeatSlots(S.getStateVal("sessionScene"))
     require("core.npc_trackers").ensure(cmd.npcCharacterKey)
@@ -429,7 +429,7 @@ local function applyCommand(cmd)
     row.npcCharacterKey = nil
     row.playAsRoleplayNotes = nil
     slots[cmd.color] = row
-    S.setStateVal("sessionScene", "seatSlots", slots)
+    S.setStateVal(slots, "sessionScene", "seatSlots")
     local SceneLibrary = require("core.scene_library")
     SceneLibrary.syncNpcRoleOverrideFromSeatSlots(S.getStateVal("sessionScene"))
     S.validateState()

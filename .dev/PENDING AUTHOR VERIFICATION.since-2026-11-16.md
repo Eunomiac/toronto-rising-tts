@@ -4,7 +4,7 @@ Filtered slice of [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATI
 
 **Filter rule:** keep only Outstanding rows whose `####` header was first added in a commit on or after **2026-11-16** (matched via `git blame` on those headers and the shipping commits that introduced them). Older backlog rows from before that date are omitted.
 
-**Included (9 rows):** TOR-805, TOR-796, TOR-795, TOR-794, TOR-792, TOR-791, TOR-790, TOR-789, TOR-788.
+**Included (10 rows):** TOR-806, TOR-805, TOR-796, TOR-795, TOR-794, TOR-792, TOR-791, TOR-790, TOR-789, TOR-788.
 
 **Not listed here:** Dashboard-only pin work from the same day (pin 8 stage NPC right-click → roster config; pin 9 NPC-drop difficulty strip) — those never got PAV rows. Everything else still Outstanding in the full checklist was first added before 2026-11-16.
 
@@ -32,6 +32,12 @@ Unmarked = shipped and waiting for your first pass. Full agent policy: [PENDING 
 ---
 
 ## Outstanding (on or after 2026-11-16)
+
+#### 🟡 TOR-806 — Play as NPC crashed because the seat write had its arguments backwards
+
+> **Agent-assessment note:** The crash is the path and the value being swapped in `setStateVal`. A live drop is still the check that the assignment sticks.
+
+**How to verify:** Save & Play. On the Storyteller Dashboard, drop an NPC onto a seated player and confirm Play as NPC. That player should be marked as portraying the NPC, and the console should not show the concat error. Clear the assignment and confirm that works too.
 
 #### 🟡 TOR-805 — Switching scenes kept the old place under the new scene's name
 

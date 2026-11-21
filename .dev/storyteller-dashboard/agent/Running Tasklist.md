@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 10. Play as NPC no longer crashes when it saves the assignment. Pending Save & Play under **TOR-806**.
+
 - ✔️ SD-ScenesPins-1121 pin 9. Session XP seat buttons light up once that award is on the character, or as soon as the button is clicked.
 
 - ✔️ SD-ScenesPins-1121 pin 8. The "ensure scenes are preloaded" reminder shows on the opening Play downtime, not during Intermission.

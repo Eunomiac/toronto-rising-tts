@@ -21,16 +21,6 @@
       "updatedAt": "2026-11-21T21:47:44.746Z"
     },
     {
-      "id": 10,
-      "sketch": "scenes",
-      "x": 789,
-      "y": 399,
-      "text": "Error upon attempting to assign an NPC to a PC, referring to line 1811 of state.ttslua:\n\n-1 [Global] Lua Error <executeScript>: Global:(37873,4-43): invalid value (table) at index 2 in table for 'concat'\n    at concat\n    at S.setStateVal\n    at applyCommand (local)\n    at Dash.apply\n    at GlobalDashboardScenesApply\n    at",
-      "status": "open",
-      "createdAt": "2026-11-21T21:57:30.536Z",
-      "updatedAt": "2026-11-21T21:57:30.536Z"
-    },
-    {
       "id": 11,
       "sketch": "scenes",
       "x": 1770,
