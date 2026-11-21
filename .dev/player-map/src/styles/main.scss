@@ -315,6 +315,13 @@ select,
     pointer-events: auto;
   }
 
+  &__item {
+    position: relative;
+
+    &.is-open { z-index: 2; }
+    &.is-open .icon-rail__diamond { background: #8d1c28; }
+  }
+
   &__button {
     position: relative;
     width: 3.15rem;
@@ -324,22 +331,17 @@ select,
     background: transparent;
     cursor: pointer;
     overflow: visible;
-
-    &.is-open .icon-rail__diamond { background: #8d1c28; }
   }
 
-  &__shape {
+  &__lift,
+  &__expand {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 3.15rem;
-    height: 3.15rem;
-    transform-origin: right center;
+    inset: 0;
+    transform-origin: left center;
   }
 
   &__diamond,
-  &__glyph,
-  &__label {
+  &__glyph {
     position: absolute;
     display: block;
     pointer-events: none;
@@ -347,41 +349,71 @@ select,
 
   &__diamond {
     inset: 0;
+    z-index: 1;
     transform-origin: center;
     background: #6e1520;
     mask: url('/assets/icons/left_panel/bg_diamond.svg') center / contain no-repeat;
     -webkit-mask: url('/assets/icons/left_panel/bg_diamond.svg') center / contain no-repeat;
   }
 
-  &__label {
-    top: 0;
-    bottom: 0;
-    right: calc(100% + 0.4rem);
-    display: flex;
-    align-items: center;
-    color: #e6c36a;
-    font: 600 0.72rem/1 'Penumbra Flare', Georgia, serif;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-  }
-
   &__glyph {
     inset: 24%;
+    z-index: 2;
     background: #e6c36a;
     mask: var(--glyph) center / contain no-repeat;
     -webkit-mask: var(--glyph) center / contain no-repeat;
   }
 
+  &__hover-window {
+    position: absolute;
+    z-index: 4;
+    left: calc(3.15rem * 1.25 + 0.4rem);
+    top: 0;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  &__hover-label {
+    color: #fff;
+    font: 600 0.68rem/1 'Penumbra Flare', Georgia, serif;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    -webkit-text-stroke: 1px #000;
+    paint-order: stroke fill;
+  }
+
+  &__header {
+    position: absolute;
+    z-index: 3;
+    left: calc(3.15rem * 1.25);
+    top: 0;
+    display: flex;
+    width: 0;
+    height: 100%;
+    align-items: center;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  &__header-text {
+    padding-left: 0.45rem;
+    color: #f6efe6;
+    font: 600 1.12rem/1 'Penumbra Flare', Georgia, serif;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
   &__panel {
     position: absolute;
-    top: calc(var(--rail-open-index) * var(--rail-stride));
-    left: 3.35rem;
-    display: flex;
-    flex-direction: column;
+    top: 112.5%;
+    left: 0;
     width: min(16.25rem, calc(100vw - 5.5rem));
-    max-height: calc(100dvh - 6.5rem - (var(--rail-open-index) * var(--rail-stride)));
+    max-height: calc(100dvh - 8rem);
+    overflow: hidden;
     background: #2a0a0e;
     box-shadow: $shadow;
     pointer-events: auto;
@@ -389,21 +421,9 @@ select,
     &--wide { width: min(24rem, calc(100vw - 5.5rem)); }
   }
 
-  &__title {
-    flex: 0 0 auto;
-    margin: 0;
-    padding: 0.5rem 0.75rem;
-    background: #7c1822;
-    color: #f6efe6;
-    font-size: 1.12rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    line-height: 1;
-    text-transform: uppercase;
-  }
-
   &__list {
     min-height: 0;
+    max-height: calc(100dvh - 12rem);
     overflow: auto;
     padding: 0.2rem 0.55rem 0.35rem;
   }
