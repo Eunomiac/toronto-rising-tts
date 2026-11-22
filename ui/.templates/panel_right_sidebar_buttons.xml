@@ -10,15 +10,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
-        id="playerHud_RSidebarBtn_core_map_@@color@@"
-        class="hover_button hover_button_base RSidebar_btn"
-        image="toggle_CorePanel_Map_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_@@color@@"
         class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"

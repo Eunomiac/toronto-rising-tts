@@ -2612,1685 +2612,6 @@
         }
       ]
     },
-    "hudMapControls": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/map_panDown_hover.webp",
-          "name": "map_panDown_hover",
-          "sha1": "EFEA1E33D28F91F0E692B3D8A5D02A0A28B9778F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9405648731187082206/EFEA1E33D28F91F0E692B3D8A5D02A0A28B9778F/",
-          "size": 4220
-        },
-        {
-          "path": "HUD/CorePanel_Map/map_panDown_inactive.webp",
-          "name": "map_panDown_inactive",
-          "sha1": "FB6DF38758F8E0F13D5C202150292B0E3FF15BC4",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14005963973307249330/FB6DF38758F8E0F13D5C202150292B0E3FF15BC4/",
-          "size": 3848
-        },
-        {
-          "path": "HUD/CorePanel_Map/map_panUp_hover.webp",
-          "name": "map_panUp_hover",
-          "sha1": "72BA53623AEBD96206DF8D4453F860D0DA5C4A6F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12600525962925820838/72BA53623AEBD96206DF8D4453F860D0DA5C4A6F/",
-          "size": 3894
-        },
-        {
-          "path": "HUD/CorePanel_Map/map_panUp_inactive.webp",
-          "name": "map_panUp_inactive",
-          "sha1": "EE10405A3009A637B1A8F446832384E1708E9A0A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16139370188661497742/EE10405A3009A637B1A8F446832384E1708E9A0A/",
-          "size": 4050
-        },
-        {
-          "path": "HUD/CorePanel_Map/mapBase.webp",
-          "name": "mapBase",
-          "sha1": "6925B7716E6938D5B3FD86452BF66C72B648F3BF",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14575662140629883121/6925B7716E6938D5B3FD86452BF66C72B648F3BF/",
-          "size": 2483634
-        }
-      ]
-    },
-    "hudMapRecenter": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/toggle_mapRecenter_hover.webp",
-          "name": "toggle_mapRecenter_hover",
-          "sha1": "E41985C85E30E6666D9CEDCA19C0AE26F2A6387B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10390968361762237222/E41985C85E30E6666D9CEDCA19C0AE26F2A6387B/",
-          "size": 5624
-        },
-        {
-          "path": "HUD/CorePanel_Map/toggle_mapRecenter_inactive.webp",
-          "name": "toggle_mapRecenter_inactive",
-          "sha1": "2A067F595DE8FCE9A8EDE29635C714E1210CC449",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18396973312901446958/2A067F595DE8FCE9A8EDE29635C714E1210CC449/",
-          "size": 5190
-        }
-      ]
-    },
-    "hudMapOverlayToggles": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map/Left Sidebar",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_districtsAll_active.webp",
-          "name": "toggleOverlay_districtsAll_active",
-          "sha1": "7A271C0F1FD794EFA15FCC2319768359CAFA9FAC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11608419537015458822/7A271C0F1FD794EFA15FCC2319768359CAFA9FAC/",
-          "size": 3006
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_districtsAll_hover.webp",
-          "name": "toggleOverlay_districtsAll_hover",
-          "sha1": "F0001CDDCB1E6E6ABDE4023D9C8E840A74A39612",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16687637746459933467/F0001CDDCB1E6E6ABDE4023D9C8E840A74A39612/",
-          "size": 2696
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_districtsAll_inactive.webp",
-          "name": "toggleOverlay_districtsAll_inactive",
-          "sha1": "F1E18DD5A21FE30D1BC58CA004CBE6A109DEF4CA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14866231814808571864/F1E18DD5A21FE30D1BC58CA004CBE6A109DEF4CA/",
-          "size": 1914
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_anarchFreeZone_active.webp",
-          "name": "toggleOverlay_domain_anarchFreeZone_active",
-          "sha1": "65AF28E2C40A68EE1960E5A740821A832FCA2B57",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16885304562805449431/65AF28E2C40A68EE1960E5A740821A832FCA2B57/",
-          "size": 4540
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_anarchFreeZone_hover.webp",
-          "name": "toggleOverlay_domain_anarchFreeZone_hover",
-          "sha1": "F4547B8833C7CA27B9C309BF10864104F0EFE234",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17850010343307137482/F4547B8833C7CA27B9C309BF10864104F0EFE234/",
-          "size": 3320
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_anarchFreeZone_inactive.webp",
-          "name": "toggleOverlay_domain_anarchFreeZone_inactive",
-          "sha1": "7F2B2324DD3CC27A51D5CE7133C6A561382D375A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9234277057167333131/7F2B2324DD3CC27A51D5CE7133C6A561382D375A/",
-          "size": 2656
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_barrens_active.webp",
-          "name": "toggleOverlay_domain_barrens_active",
-          "sha1": "8CEDF4F5F4BCE10EFF011E1DB1EA522FDC97A0BA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9711975745999652034/8CEDF4F5F4BCE10EFF011E1DB1EA522FDC97A0BA/",
-          "size": 2602
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_barrens_hover.webp",
-          "name": "toggleOverlay_domain_barrens_hover",
-          "sha1": "4E6D4B03B372F7AFFC4E8A66E6A8FE2F16BD0932",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18350554040196052739/4E6D4B03B372F7AFFC4E8A66E6A8FE2F16BD0932/",
-          "size": 1934
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_barrens_inactive.webp",
-          "name": "toggleOverlay_domain_barrens_inactive",
-          "sha1": "DDC1CE12C8D2BE5FEC75BD603249757443314D09",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10028969536220884051/DDC1CE12C8D2BE5FEC75BD603249757443314D09/",
-          "size": 1312
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_bertrice_active.webp",
-          "name": "toggleOverlay_domain_bertrice_active",
-          "sha1": "0A4200DB1C37425E8C8669A5616BB490616DCAD6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12824215423900951560/0A4200DB1C37425E8C8669A5616BB490616DCAD6/",
-          "size": 1952
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_bertrice_hover.webp",
-          "name": "toggleOverlay_domain_bertrice_hover",
-          "sha1": "A20212A0F5CDE44E626709938FA5B9A41A599A0C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12989882369297185625/A20212A0F5CDE44E626709938FA5B9A41A599A0C/",
-          "size": 1790
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_bertrice_inactive.webp",
-          "name": "toggleOverlay_domain_bertrice_inactive",
-          "sha1": "174D87D1CD6D09CA4912A3B6D6E1BDCD9CCCAEC6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9744971482468944071/174D87D1CD6D09CA4912A3B6D6E1BDCD9CCCAEC6/",
-          "size": 1318
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_domainConflicts_active.webp",
-          "name": "toggleOverlay_domain_domainConflicts_active",
-          "sha1": "6EF8A73250D34058662E56372B82AE386789B194",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16982043634723006276/6EF8A73250D34058662E56372B82AE386789B194/",
-          "size": 3960
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_domainConflicts_hover.webp",
-          "name": "toggleOverlay_domain_domainConflicts_hover",
-          "sha1": "7E2B1C4700CA695A2E74ED7F9C5EA3BA9E017C92",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15231030429566430331/7E2B1C4700CA695A2E74ED7F9C5EA3BA9E017C92/",
-          "size": 3170
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_domainConflicts_inactive.webp",
-          "name": "toggleOverlay_domain_domainConflicts_inactive",
-          "sha1": "1BB5BEEE70978A1631EDC1165E85B0E7FCCEB51F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16422057609099646572/1BB5BEEE70978A1631EDC1165E85B0E7FCCEB51F/",
-          "size": 2526
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_fiveKeys_active.webp",
-          "name": "toggleOverlay_domain_fiveKeys_active",
-          "sha1": "7EC44241A385C504D1AEC594608F927CB7917B5E",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11427285638141085219/7EC44241A385C504D1AEC594608F927CB7917B5E/",
-          "size": 4388
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_fiveKeys_hover.webp",
-          "name": "toggleOverlay_domain_fiveKeys_hover",
-          "sha1": "9FFD4CAD3F0A825A39636909B8B0A459D794C298",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13365851509957301674/9FFD4CAD3F0A825A39636909B8B0A459D794C298/",
-          "size": 3826
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_fiveKeys_inactive.webp",
-          "name": "toggleOverlay_domain_fiveKeys_inactive",
-          "sha1": "0F0736B1F179DE0D9A1251F50BDEAC1796956D26",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10565888817142645870/0F0736B1F179DE0D9A1251F50BDEAC1796956D26/",
-          "size": 2830
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_freeChantry_active.webp",
-          "name": "toggleOverlay_domain_freeChantry_active",
-          "sha1": "2776CA39B1BA5E5C6EDC844DF7FCA61B1EB9FE53",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11367920351530028602/2776CA39B1BA5E5C6EDC844DF7FCA61B1EB9FE53/",
-          "size": 3232
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_freeChantry_hover.webp",
-          "name": "toggleOverlay_domain_freeChantry_hover",
-          "sha1": "1C46DBA86F59A76020E44EC8D24B5742FFE858A0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11741024842561965727/1C46DBA86F59A76020E44EC8D24B5742FFE858A0/",
-          "size": 2940
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_freeChantry_inactive.webp",
-          "name": "toggleOverlay_domain_freeChantry_inactive",
-          "sha1": "1A28DEEDF1E648E570CCF52EE9B00775AE7D590A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18386329144425220004/1A28DEEDF1E648E570CCF52EE9B00775AE7D590A/",
-          "size": 2268
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_hecata_active.webp",
-          "name": "toggleOverlay_domain_hecata_active",
-          "sha1": "2F107567C6BB56360DF47E31D10AB1B0257CAFD1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9725256098225131644/2F107567C6BB56360DF47E31D10AB1B0257CAFD1/",
-          "size": 1978
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_hecata_hover.webp",
-          "name": "toggleOverlay_domain_hecata_hover",
-          "sha1": "2445CAA2C8A401E5E6A54931F9A1B0F07340C1F9",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18351601793058912555/2445CAA2C8A401E5E6A54931F9A1B0F07340C1F9/",
-          "size": 1814
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_hecata_inactive.webp",
-          "name": "toggleOverlay_domain_hecata_inactive",
-          "sha1": "9C23346E2F23F12D1DAD1EC02812706D6B080C10",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15012554973536248431/9C23346E2F23F12D1DAD1EC02812706D6B080C10/",
-          "size": 1340
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_ironGuard_active.webp",
-          "name": "toggleOverlay_domain_ironGuard_active",
-          "sha1": "FDE044FF6AF11981C12AF613F17FE68C4CAD7DA0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18325891458667812370/FDE044FF6AF11981C12AF613F17FE68C4CAD7DA0/",
-          "size": 2994
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_ironGuard_hover.webp",
-          "name": "toggleOverlay_domain_ironGuard_hover",
-          "sha1": "F434893D6B7B51705A1156A170829988E20392E2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17557319678131983421/F434893D6B7B51705A1156A170829988E20392E2/",
-          "size": 2606
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_ironGuard_inactive.webp",
-          "name": "toggleOverlay_domain_ironGuard_inactive",
-          "sha1": "02E17EAC0208A675D3B10B401A506FD0E9333ACB",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17338106862255686107/02E17EAC0208A675D3B10B401A506FD0E9333ACB/",
-          "size": 2018
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_islandDevil_active.webp",
-          "name": "toggleOverlay_domain_islandDevil_active",
-          "sha1": "4318FF88F32CA02437B8B1057AC46CACFBB1E956",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10327425869976342694/4318FF88F32CA02437B8B1057AC46CACFBB1E956/",
-          "size": 2446
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_islandDevil_hover.webp",
-          "name": "toggleOverlay_domain_islandDevil_hover",
-          "sha1": "DE954016D83BC966B7F819771EEDB024DC7BFE84",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10982169703698215360/DE954016D83BC966B7F819771EEDB024DC7BFE84/",
-          "size": 2504
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_islandDevil_inactive.webp",
-          "name": "toggleOverlay_domain_islandDevil_inactive",
-          "sha1": "B62C7484749AC9B192A1150B663733927CC85582",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12137577221619123713/B62C7484749AC9B192A1150B663733927CC85582/",
-          "size": 1802
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_moonClub_active.webp",
-          "name": "toggleOverlay_domain_moonClub_active",
-          "sha1": "3F5DB7B1173678BDFA96960BDD53EA79B6E11657",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18062572547239961386/3F5DB7B1173678BDFA96960BDD53EA79B6E11657/",
-          "size": 4710
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_moonClub_hover.webp",
-          "name": "toggleOverlay_domain_moonClub_hover",
-          "sha1": "546AB2A794C83643E327DFB9DC023B0190166B2D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18431955118435996107/546AB2A794C83643E327DFB9DC023B0190166B2D/",
-          "size": 4332
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_moonClub_inactive.webp",
-          "name": "toggleOverlay_domain_moonClub_inactive",
-          "sha1": "DD30336E65B758E36E16DC8C753C86619100D9E8",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15749360074404142472/DD30336E65B758E36E16DC8C753C86619100D9E8/",
-          "size": 3188
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_scarlett_active.webp",
-          "name": "toggleOverlay_domain_scarlett_active",
-          "sha1": "10D5C4AFB1EAD58919689BECD528512E1E0347A0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11842929630428563620/10D5C4AFB1EAD58919689BECD528512E1E0347A0/",
-          "size": 3398
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_scarlett_hover.webp",
-          "name": "toggleOverlay_domain_scarlett_hover",
-          "sha1": "A54A03A6D57E191AD199F85921E4433AC488C600",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18014350793904156099/A54A03A6D57E191AD199F85921E4433AC488C600/",
-          "size": 3150
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_scarlett_inactive.webp",
-          "name": "toggleOverlay_domain_scarlett_inactive",
-          "sha1": "A53BA9507E8303C1B46F16B2FD6B8FDEC22F05E2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15528836227705008030/A53BA9507E8303C1B46F16B2FD6B8FDEC22F05E2/",
-          "size": 2346
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_theCourt_active.webp",
-          "name": "toggleOverlay_domain_theCourt_active",
-          "sha1": "80FD9179BD116F83624E400E27AC76FC31A10CC0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9228610792957219836/80FD9179BD116F83624E400E27AC76FC31A10CC0/",
-          "size": 5476
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_theCourt_hover.webp",
-          "name": "toggleOverlay_domain_theCourt_hover",
-          "sha1": "4AB135DE3E9A1C2A036169E4C7EFBE419DE2F8D5",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11786034327905423296/4AB135DE3E9A1C2A036169E4C7EFBE419DE2F8D5/",
-          "size": 5020
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_theCourt_inactive.webp",
-          "name": "toggleOverlay_domain_theCourt_inactive",
-          "sha1": "DF68C77762C26C5A78414FFCE8A8D2256BEE5194",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17296299360549722549/DF68C77762C26C5A78414FFCE8A8D2256BEE5194/",
-          "size": 3724
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_theRack_active.webp",
-          "name": "toggleOverlay_domain_theRack_active",
-          "sha1": "B3B3C6CBE6A32D3A7060A291DE617BE940122FC4",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18050688468850025969/B3B3C6CBE6A32D3A7060A291DE617BE940122FC4/",
-          "size": 2584
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_theRack_hover.webp",
-          "name": "toggleOverlay_domain_theRack_hover",
-          "sha1": "660BB5E1D2636706AE920A2D761C223F28ECD2D1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12404080941317120435/660BB5E1D2636706AE920A2D761C223F28ECD2D1/",
-          "size": 1876
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_theRack_inactive.webp",
-          "name": "toggleOverlay_domain_theRack_inactive",
-          "sha1": "D3157193E8E80553F62F0A0E2A40480178B43DA3",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12124403984835479933/D3157193E8E80553F62F0A0E2A40480178B43DA3/",
-          "size": 1342
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_universityChantry_active.webp",
-          "name": "toggleOverlay_domain_universityChantry_active",
-          "sha1": "90C81567C54D424D7C456BAC20A898A83B758354",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9840660089436437867/90C81567C54D424D7C456BAC20A898A83B758354/",
-          "size": 5706
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_universityChantry_hover.webp",
-          "name": "toggleOverlay_domain_universityChantry_hover",
-          "sha1": "08207118EA54D76FA2B76641C830E50DE6D23AF7",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13883709207660077601/08207118EA54D76FA2B76641C830E50DE6D23AF7/",
-          "size": 5328
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_domain_universityChantry_inactive.webp",
-          "name": "toggleOverlay_domain_universityChantry_inactive",
-          "sha1": "FE7BCAF02DB3062F1B44AD73D391759377B18A3A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9559090788161949128/FE7BCAF02DB3062F1B44AD73D391759377B18A3A/",
-          "size": 3908
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_localRoads_active.webp",
-          "name": "toggleOverlay_localRoads_active",
-          "sha1": "C88CB354DFDF60BB4AF9534AA8C31D3D2E60B4D8",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11868943773516547634/C88CB354DFDF60BB4AF9534AA8C31D3D2E60B4D8/",
-          "size": 3018
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_localRoads_hover.webp",
-          "name": "toggleOverlay_localRoads_hover",
-          "sha1": "9B6D455D93B589ACB15512CA20BEFC2B34F84555",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14158149367007384949/9B6D455D93B589ACB15512CA20BEFC2B34F84555/",
-          "size": 2694
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_localRoads_inactive.webp",
-          "name": "toggleOverlay_localRoads_inactive",
-          "sha1": "634E59A8362BDE623D29CD8C377BD8CC98888DA1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14001645679835889593/634E59A8362BDE623D29CD8C377BD8CC98888DA1/",
-          "size": 1984
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_majorRoads_active.webp",
-          "name": "toggleOverlay_majorRoads_active",
-          "sha1": "10AFEFBAF7AB84E5565F8C8834E901F1507484D7",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11874561643226202198/10AFEFBAF7AB84E5565F8C8834E901F1507484D7/",
-          "size": 3458
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_majorRoads_hover.webp",
-          "name": "toggleOverlay_majorRoads_hover",
-          "sha1": "5726E7014B8FD569379F809034F700B387633B19",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11880888249219900705/5726E7014B8FD569379F809034F700B387633B19/",
-          "size": 3144
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_majorRoads_inactive.webp",
-          "name": "toggleOverlay_majorRoads_inactive",
-          "sha1": "3A06D619563067BEB2A199CDC497937928604EAB",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17087044762647328860/3A06D619563067BEB2A199CDC497937928604EAB/",
-          "size": 2270
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_majorSites_active.webp",
-          "name": "toggleOverlay_majorSites_active",
-          "sha1": "A7421393324A0FC63EB6238B437A2CB99ADB6318",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16262175834330384170/A7421393324A0FC63EB6238B437A2CB99ADB6318/",
-          "size": 3440
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_majorSites_hover.webp",
-          "name": "toggleOverlay_majorSites_hover",
-          "sha1": "76B7227AEBBF82220817ADB4A0C86328C83BC818",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18031567499227375403/76B7227AEBBF82220817ADB4A0C86328C83BC818/",
-          "size": 3096
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/toggleOverlay_majorSites_inactive.webp",
-          "name": "toggleOverlay_majorSites_inactive",
-          "sha1": "D2649CCE0206DFE20860F3BE226133DD7DA350A4",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11686154485234742558/D2649CCE0206DFE20860F3BE226133DD7DA350A4/",
-          "size": 2220
-        }
-      ]
-    },
-    "hudMapOverlayDividers": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map/Left Sidebar",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/overlayDivider_cityFeatures.webp",
-          "name": "overlayDivider_cityFeatures",
-          "sha1": "7B5AB79E65B92608E9C1F55963C89A5598E5B8FC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18045308924830868416/7B5AB79E65B92608E9C1F55963C89A5598E5B8FC/",
-          "size": 4248
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/overlayDivider_domains.webp",
-          "name": "overlayDivider_domains",
-          "sha1": "4B202B6F039D24EA7DA21900427A0ED5EE201D5A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16093940592263134815/4B202B6F039D24EA7DA21900427A0ED5EE201D5A/",
-          "size": 3832
-        },
-        {
-          "path": "HUD/CorePanel_Map/Left Sidebar/overlayDivider_regions.webp",
-          "name": "overlayDivider_regions",
-          "sha1": "C9B9E44137B17FB06C78BDBBDF274BC644672660",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16454334451662388067/C9B9E44137B17FB06C78BDBBDF274BC644672660/",
-          "size": 3806
-        }
-      ]
-    },
-    "hudMapOverlays": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map/Overlays",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Annex.webp",
-          "name": "mapOverlay_Annex",
-          "sha1": "4B0D1E3C14AED4F0B7F9D10F1AB66613531F0560",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15469423589269320228/4B0D1E3C14AED4F0B7F9D10F1AB66613531F0560/",
-          "size": 92356
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_BayStFinancial.webp",
-          "name": "mapOverlay_BayStFinancial",
-          "sha1": "42919B8BBFBE48971E34F248C3B2461103D459B1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16196204642727230633/42919B8BBFBE48971E34F248C3B2461103D459B1/",
-          "size": 91206
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Bennington.webp",
-          "name": "mapOverlay_Bennington",
-          "sha1": "A8C822C514037E0A944409358C7E24CF5FF3B8DB",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12044345732616043653/A8C822C514037E0A944409358C7E24CF5FF3B8DB/",
-          "size": 80192
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Cabbagetown.webp",
-          "name": "mapOverlay_Cabbagetown",
-          "sha1": "3F41CE1F0135FC242C7284403BD7C9EF5F4D0B44",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9276428030696014791/3F41CE1F0135FC242C7284403BD7C9EF5F4D0B44/",
-          "size": 108348
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_CentreIsland.webp",
-          "name": "mapOverlay_CentreIsland",
-          "sha1": "8B92063434B227C762D29F32C46B1D7CD96D6362",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13797025948995278512/8B92063434B227C762D29F32C46B1D7CD96D6362/",
-          "size": 328334
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Chinatown.webp",
-          "name": "mapOverlay_Chinatown",
-          "sha1": "A0F04D7C08118BEBD1A3D6F8521850544103AA5B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12139079015420473880/A0F04D7C08118BEBD1A3D6F8521850544103AA5B/",
-          "size": 87684
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Corktown.webp",
-          "name": "mapOverlay_Corktown",
-          "sha1": "1C12063F0CD34A943C352F9C2C6C6CFB14A7C2FA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18271264263804804655/1C12063F0CD34A943C352F9C2C6C6CFB14A7C2FA/",
-          "size": 109126
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Danforth.webp",
-          "name": "mapOverlay_Danforth",
-          "sha1": "23F647D5BD370A3B66A944D19466566F793B7085",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16127465380956865858/23F647D5BD370A3B66A944D19466566F793B7085/",
-          "size": 100764
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_DeerPark.webp",
-          "name": "mapOverlay_DeerPark",
-          "sha1": "20B8301362B8C1ECB760BE5F2CAD7F6CE0B8E33D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9234393393820563719/20B8301362B8C1ECB760BE5F2CAD7F6CE0B8E33D/",
-          "size": 95164
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Discovery.webp",
-          "name": "mapOverlay_Discovery",
-          "sha1": "D493CDF139CBEF97521F57A9CCB6962F56B1ABC6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17999380052968409802/D493CDF139CBEF97521F57A9CCB6962F56B1ABC6/",
-          "size": 109344
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_DistilleryDist.webp",
-          "name": "mapOverlay_DistilleryDist",
-          "sha1": "4F4FD49DFE62919A728A847417B6C2552F8C33CB",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14231460693868017779/4F4FD49DFE62919A728A847417B6C2552F8C33CB/",
-          "size": 135152
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_districtsAll.webp",
-          "name": "mapOverlay_districtsAll",
-          "sha1": "42E2414F69DB50B275E3A7BD5404B7740AA77F96",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11385961713125356617/42E2414F69DB50B275E3A7BD5404B7740AA77F96/",
-          "size": 1786072
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_anarchFreeZone.webp",
-          "name": "mapOverlay_domain_anarchFreeZone",
-          "sha1": "F899266F943A930E9B324109026381F1F082B8C0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15424379056100591904/F899266F943A930E9B324109026381F1F082B8C0/",
-          "size": 415770
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_barrens.webp",
-          "name": "mapOverlay_domain_barrens",
-          "sha1": "9B3B81004AF01E001528F06B1BEB607DD2CED518",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11546507336657238153/9B3B81004AF01E001528F06B1BEB607DD2CED518/",
-          "size": 374054
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_bertrice.webp",
-          "name": "mapOverlay_domain_bertrice",
-          "sha1": "09E3638608BB038DE2EDCF35CBBCBC75C41CB584",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17748586059234624316/09E3638608BB038DE2EDCF35CBBCBC75C41CB584/",
-          "size": 123244
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_domainConflicts.webp",
-          "name": "mapOverlay_domain_domainConflicts",
-          "sha1": "A42F9F132A1DDDE98A60F8D596801D374D19C759",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15749383613387353884/A42F9F132A1DDDE98A60F8D596801D374D19C759/",
-          "size": 423580
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_fiveKeys.webp",
-          "name": "mapOverlay_domain_fiveKeys",
-          "sha1": "542EFF3769414B0B0121B724191587540732E0F1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9535472209276685347/542EFF3769414B0B0121B724191587540732E0F1/",
-          "size": 112804
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_freeChantry.webp",
-          "name": "mapOverlay_domain_freeChantry",
-          "sha1": "B3A81D728B129986B63CE32114845ECDB4B31CD7",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11333445117208908692/B3A81D728B129986B63CE32114845ECDB4B31CD7/",
-          "size": 119828
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_hecata.webp",
-          "name": "mapOverlay_domain_hecata",
-          "sha1": "E6DC2F3997EE102648A86F8B6F7D79280501992A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18361476054933885884/E6DC2F3997EE102648A86F8B6F7D79280501992A/",
-          "size": 126510
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_ironGuard.webp",
-          "name": "mapOverlay_domain_ironGuard",
-          "sha1": "DF69D53654787F18669545A0F6B393E54E99C345",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16939056245460196492/DF69D53654787F18669545A0F6B393E54E99C345/",
-          "size": 95540
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_islandDevil.webp",
-          "name": "mapOverlay_domain_islandDevil",
-          "sha1": "65143D915EA50C93628FCD7443B0331211DC4D3D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16275352969774431593/65143D915EA50C93628FCD7443B0331211DC4D3D/",
-          "size": 238892
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_moonClub.webp",
-          "name": "mapOverlay_domain_moonClub",
-          "sha1": "4C5B27EFE0EFDDCB3EE14B85FF06832AFCEE37A8",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14371792555813612588/4C5B27EFE0EFDDCB3EE14B85FF06832AFCEE37A8/",
-          "size": 254050
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_scarlett.webp",
-          "name": "mapOverlay_domain_scarlett",
-          "sha1": "2A6DA013CDBA8B318C244E1FF24EC41238067EE0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17634213264923590483/2A6DA013CDBA8B318C244E1FF24EC41238067EE0/",
-          "size": 145334
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_theCourt.webp",
-          "name": "mapOverlay_domain_theCourt",
-          "sha1": "1B4808AEF9865B48D8E3BDFFF8D6433B8231BB4A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15071529164203964049/1B4808AEF9865B48D8E3BDFFF8D6433B8231BB4A/",
-          "size": 269762
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_theRack.webp",
-          "name": "mapOverlay_domain_theRack",
-          "sha1": "C1CDD6711530978C8A1F8B5B9AA4D8DD91A7E4D2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13302078100219581825/C1CDD6711530978C8A1F8B5B9AA4D8DD91A7E4D2/",
-          "size": 261930
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_domain_universityChantry.webp",
-          "name": "mapOverlay_domain_universityChantry",
-          "sha1": "BE0FA5E5A614E38CDBA216413D748DB3F03169CD",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17634700500463546435/BE0FA5E5A614E38CDBA216413D748DB3F03169CD/",
-          "size": 116224
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_DonRavine.webp",
-          "name": "mapOverlay_DonRavine",
-          "sha1": "F1E8F34D10C1D313EE3844825896A196C3198EDF",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11005418614356999383/F1E8F34D10C1D313EE3844825896A196C3198EDF/",
-          "size": 179624
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_DupontByTheCastle.webp",
-          "name": "mapOverlay_DupontByTheCastle",
-          "sha1": "1FC276CA7D12AFDC526A08F49538259FDA58698A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11605741298695641697/1FC276CA7D12AFDC526A08F49538259FDA58698A/",
-          "size": 95500
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_GayVillage.webp",
-          "name": "mapOverlay_GayVillage",
-          "sha1": "9B815E2C49C47B03913681AF6A18C968CCEDCF8B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16613450620477917338/9B815E2C49C47B03913681AF6A18C968CCEDCF8B/",
-          "size": 102660
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_HarbordVillage.webp",
-          "name": "mapOverlay_HarbordVillage",
-          "sha1": "6E912F00C0DDB5BE3BA53CB00AE24BC7941F5BA4",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17901864285423112728/6E912F00C0DDB5BE3BA53CB00AE24BC7941F5BA4/",
-          "size": 96884
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Humewood.webp",
-          "name": "mapOverlay_Humewood",
-          "sha1": "2F1D96E3431E810555DA4C3A6BDE963230CC2F0D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10622005686919563356/2F1D96E3431E810555DA4C3A6BDE963230CC2F0D/",
-          "size": 82788
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_LakeOntario.webp",
-          "name": "mapOverlay_LakeOntario",
-          "sha1": "369D032A3C5ED46A605E9EBC0500621A88C28187",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17480732062349593746/369D032A3C5ED46A605E9EBC0500621A88C28187/",
-          "size": 449404
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_LibertyVillage.webp",
-          "name": "mapOverlay_LibertyVillage",
-          "sha1": "BF6E96B3F552D1C1941DC60FC5D989A22F6B5A4C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13749173714779669028/BF6E96B3F552D1C1941DC60FC5D989A22F6B5A4C/",
-          "size": 103126
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_LittleItaly.webp",
-          "name": "mapOverlay_LittleItaly",
-          "sha1": "143BD302C9F336CF3FB7B8DE993439C3F0878979",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9671654577020979639/143BD302C9F336CF3FB7B8DE993439C3F0878979/",
-          "size": 116196
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_LittlePortugal.webp",
-          "name": "mapOverlay_LittlePortugal",
-          "sha1": "55A548BDED96C7DB3097EE91A7692E5E4032A00A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15848605202211071252/55A548BDED96C7DB3097EE91A7692E5E4032A00A/",
-          "size": 100412
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_localRoads.webp",
-          "name": "mapOverlay_localRoads",
-          "sha1": "35C08A7FAFBF1DBB1ECA97B0FB7715C3E0B4667D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13364275810052359676/35C08A7FAFBF1DBB1ECA97B0FB7715C3E0B4667D/",
-          "size": 197036
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_majorRoads.webp",
-          "name": "mapOverlay_majorRoads",
-          "sha1": "D7A904116EC75EC68155CC0753DD589257C54D7E",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15408464666464758716/D7A904116EC75EC68155CC0753DD589257C54D7E/",
-          "size": 262668
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_majorSites.webp",
-          "name": "mapOverlay_majorSites",
-          "sha1": "B5677DA7E575674E40075C29787E384F72F9DAD5",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15384155835802617832/B5677DA7E575674E40075C29787E384F72F9DAD5/",
-          "size": 200764
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_RegentPark.webp",
-          "name": "mapOverlay_RegentPark",
-          "sha1": "CB497DDC5C56C2A2BFFC1F80B63F9BC81B8D315D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12254686471352288763/CB497DDC5C56C2A2BFFC1F80B63F9BC81B8D315D/",
-          "size": 91842
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Riverdale.webp",
-          "name": "mapOverlay_Riverdale",
-          "sha1": "059E081F7C21E8D47351E87AC7515B874928BF4B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16071427042292932587/059E081F7C21E8D47351E87AC7515B874928BF4B/",
-          "size": 100150
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Rosedale.webp",
-          "name": "mapOverlay_Rosedale",
-          "sha1": "8F1DE3B7D896C15EAD08EAD8A2C7865EE72ABE4A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11550281682093646348/8F1DE3B7D896C15EAD08EAD8A2C7865EE72ABE4A/",
-          "size": 108218
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_StJamesTown.webp",
-          "name": "mapOverlay_StJamesTown",
-          "sha1": "85014A9630E59802B58B7E17AC3FFF1AD7262A9A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13505461808118334562/85014A9630E59802B58B7E17AC3FFF1AD7262A9A/",
-          "size": 111116
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Summerhill.webp",
-          "name": "mapOverlay_Summerhill",
-          "sha1": "CA0125D7154C4B4DA727CC3A03C3CDDCB4A35EB0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11951004099375780547/CA0125D7154C4B4DA727CC3A03C3CDDCB4A35EB0/",
-          "size": 114656
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Waterfront.webp",
-          "name": "mapOverlay_Waterfront",
-          "sha1": "CB8EB31929047DD880FCB6624A1EA04574CEE8D1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10874075178970178472/CB8EB31929047DD880FCB6624A1EA04574CEE8D1/",
-          "size": 234914
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_WestQueenWest.webp",
-          "name": "mapOverlay_WestQueenWest",
-          "sha1": "355E0B3B2F8922D1ACFB414175A795081BCB030D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15111786635755952200/355E0B3B2F8922D1ACFB414175A795081BCB030D/",
-          "size": 111998
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Wychwood.webp",
-          "name": "mapOverlay_Wychwood",
-          "sha1": "4175A546B105546AE63B1D92A020B74EC696F996",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15206532602541150445/4175A546B105546AE63B1D92A020B74EC696F996/",
-          "size": 103500
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_YongeBloorMuseum.webp",
-          "name": "mapOverlay_YongeBloorMuseum",
-          "sha1": "AC9F2F206CD6F9CFDA4DF9D97356C6B5C4DC0416",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15843125738534975586/AC9F2F206CD6F9CFDA4DF9D97356C6B5C4DC0416/",
-          "size": 92042
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_YongeDundasHospital.webp",
-          "name": "mapOverlay_YongeDundasHospital",
-          "sha1": "F4B5E325EE4C528F75019D7ABA95B5D1EE68A328",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10072846836153444895/F4B5E325EE4C528F75019D7ABA95B5D1EE68A328/",
-          "size": 103930
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_YongeStreet.webp",
-          "name": "mapOverlay_YongeStreet",
-          "sha1": "003358E55EF02F0A792B16B06DBD4FECABB4FD66",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14156741635742882240/003358E55EF02F0A792B16B06DBD4FECABB4FD66/",
-          "size": 109782
-        },
-        {
-          "path": "HUD/CorePanel_Map/Overlays/mapOverlay_Yorkville.webp",
-          "name": "mapOverlay_Yorkville",
-          "sha1": "7A828C524B86C528BE15229485636CF9BC6CAAF1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15837217654907662735/7A828C524B86C528BE15229485636CF9BC6CAAF1/",
-          "size": 95510
-        }
-      ]
-    },
-    "hudDistrictToggles": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map/Right Sidebar",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Annex_active.webp",
-          "name": "toggleDistrict_Annex_active",
-          "sha1": "4F7B451D0252C1E397BE52C3E53CE72CC858D11A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13841662424328145967/4F7B451D0252C1E397BE52C3E53CE72CC858D11A/",
-          "size": 2492
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Annex_hover.webp",
-          "name": "toggleDistrict_Annex_hover",
-          "sha1": "F61F25A951E13458929E32EC72CF66629DF1FA0F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18105962239758001094/F61F25A951E13458929E32EC72CF66629DF1FA0F/",
-          "size": 2296
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Annex_inactive.webp",
-          "name": "toggleDistrict_Annex_inactive",
-          "sha1": "966A89ABE91D3BD9814A3C84654E83DEB04EEA33",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17439342050145172073/966A89ABE91D3BD9814A3C84654E83DEB04EEA33/",
-          "size": 2054
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_BayStFinancial_active.webp",
-          "name": "toggleDistrict_BayStFinancial_active",
-          "sha1": "D33DAFE7E027DAA8CD90EE0AD26BC61064052009",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15202672043247792327/D33DAFE7E027DAA8CD90EE0AD26BC61064052009/",
-          "size": 3222
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_BayStFinancial_hover.webp",
-          "name": "toggleDistrict_BayStFinancial_hover",
-          "sha1": "0749905831EB716AD6442967216DCE4402B1B857",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13303483883357979259/0749905831EB716AD6442967216DCE4402B1B857/",
-          "size": 3062
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_BayStFinancial_inactive.webp",
-          "name": "toggleDistrict_BayStFinancial_inactive",
-          "sha1": "8BFBB6DDC277A5F4530AE6787CBD093C0BCB8A51",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9486913452730888731/8BFBB6DDC277A5F4530AE6787CBD093C0BCB8A51/",
-          "size": 2848
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Bennington_active.webp",
-          "name": "toggleDistrict_Bennington_active",
-          "sha1": "7BDB012A55B52CEDAFCC8426CC65F1CD4DFCA8C1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10982805468424087132/7BDB012A55B52CEDAFCC8426CC65F1CD4DFCA8C1/",
-          "size": 3614
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Bennington_hover.webp",
-          "name": "toggleDistrict_Bennington_hover",
-          "sha1": "1BBAAF4AE54F4C5EB69899BA68B421DA6539D2F6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14038333741566888561/1BBAAF4AE54F4C5EB69899BA68B421DA6539D2F6/",
-          "size": 3494
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Bennington_inactive.webp",
-          "name": "toggleDistrict_Bennington_inactive",
-          "sha1": "06A5C4ABB2C25EDB86888A4AA0F2F21B7405F854",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15708466537995925233/06A5C4ABB2C25EDB86888A4AA0F2F21B7405F854/",
-          "size": 3342
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Cabbagetown_active.webp",
-          "name": "toggleDistrict_Cabbagetown_active",
-          "sha1": "0FA111B99EE25F1F6DF82FB6CAAED91AA582790A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15263379180030153181/0FA111B99EE25F1F6DF82FB6CAAED91AA582790A/",
-          "size": 3068
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Cabbagetown_hover.webp",
-          "name": "toggleDistrict_Cabbagetown_hover",
-          "sha1": "3AC8161CD59323E4D8A37EA69AEED6F7ABDBF853",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18176950952539902534/3AC8161CD59323E4D8A37EA69AEED6F7ABDBF853/",
-          "size": 2942
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Cabbagetown_inactive.webp",
-          "name": "toggleDistrict_Cabbagetown_inactive",
-          "sha1": "8B7A3E2C1FEC886E7C759119B476C1C98BA9B6F9",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16707082309167787924/8B7A3E2C1FEC886E7C759119B476C1C98BA9B6F9/",
-          "size": 2728
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_CentreIsland_active.webp",
-          "name": "toggleDistrict_CentreIsland_active",
-          "sha1": "C575ED8354139A4F351BDE5C811ABF13F7881214",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12152491020991074882/C575ED8354139A4F351BDE5C811ABF13F7881214/",
-          "size": 2950
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_CentreIsland_hover.webp",
-          "name": "toggleDistrict_CentreIsland_hover",
-          "sha1": "855E2245EBC59A6DBB96AF45ADBF5131B52098F6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13693604603348505471/855E2245EBC59A6DBB96AF45ADBF5131B52098F6/",
-          "size": 2784
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_CentreIsland_inactive.webp",
-          "name": "toggleDistrict_CentreIsland_inactive",
-          "sha1": "8CCFB666F78B084AF7384D6469D834A9D10CD4A6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16932766980571864458/8CCFB666F78B084AF7384D6469D834A9D10CD4A6/",
-          "size": 2536
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Chinatown_active.webp",
-          "name": "toggleDistrict_Chinatown_active",
-          "sha1": "8B2F99EE7EEA6F8F1CEA484BAB52BE044157B216",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12891876918190380565/8B2F99EE7EEA6F8F1CEA484BAB52BE044157B216/",
-          "size": 2724
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Chinatown_hover.webp",
-          "name": "toggleDistrict_Chinatown_hover",
-          "sha1": "6F8A770A18C519A2687F7E23A24151FF88520CBF",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15007091895005932478/6F8A770A18C519A2687F7E23A24151FF88520CBF/",
-          "size": 2438
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Chinatown_inactive.webp",
-          "name": "toggleDistrict_Chinatown_inactive",
-          "sha1": "83BBFE0B31242CFEB668CD72C141B7E6EF204021",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13074564190047349824/83BBFE0B31242CFEB668CD72C141B7E6EF204021/",
-          "size": 2160
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Corktown_active.webp",
-          "name": "toggleDistrict_Corktown_active",
-          "sha1": "DF79D212B6B3998FA51865604A21690BDAF3C449",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13670511492660549973/DF79D212B6B3998FA51865604A21690BDAF3C449/",
-          "size": 2668
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Corktown_hover.webp",
-          "name": "toggleDistrict_Corktown_hover",
-          "sha1": "6091560699BB5D907D166BBB55D1F0B470AD0013",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12076512311919167978/6091560699BB5D907D166BBB55D1F0B470AD0013/",
-          "size": 2434
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Corktown_inactive.webp",
-          "name": "toggleDistrict_Corktown_inactive",
-          "sha1": "EE9938AEF7538C5A767E07DC9B78B3BD793EF4A6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16236101787216936432/EE9938AEF7538C5A767E07DC9B78B3BD793EF4A6/",
-          "size": 2194
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Danforth_active.webp",
-          "name": "toggleDistrict_Danforth_active",
-          "sha1": "0D3D3A936C5A6B03F5580C9CF5A087F4017BC2B9",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16390775502540251227/0D3D3A936C5A6B03F5580C9CF5A087F4017BC2B9/",
-          "size": 2832
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Danforth_hover.webp",
-          "name": "toggleDistrict_Danforth_hover",
-          "sha1": "530C162D6A9FA89523F37F69E957FE79F035428E",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13729675232332305579/530C162D6A9FA89523F37F69E957FE79F035428E/",
-          "size": 2708
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Danforth_inactive.webp",
-          "name": "toggleDistrict_Danforth_inactive",
-          "sha1": "1A4E2CB80786F490113541729EA7BE8CFEEF8FE7",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10556967406232369660/1A4E2CB80786F490113541729EA7BE8CFEEF8FE7/",
-          "size": 2482
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DeerPark_active.webp",
-          "name": "toggleDistrict_DeerPark_active",
-          "sha1": "68F442ACE468AE5B00165B669CA7A5B40D16F581",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9374103462744539390/68F442ACE468AE5B00165B669CA7A5B40D16F581/",
-          "size": 2576
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DeerPark_hover.webp",
-          "name": "toggleDistrict_DeerPark_hover",
-          "sha1": "D2FCE1AB9BD22C57E0A785D57752432C43F2ADB4",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10494166935227884625/D2FCE1AB9BD22C57E0A785D57752432C43F2ADB4/",
-          "size": 2360
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DeerPark_inactive.webp",
-          "name": "toggleDistrict_DeerPark_inactive",
-          "sha1": "B6F0EF7839247365DCBBA6D9ADA50E87BD816729",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15464627557424217965/B6F0EF7839247365DCBBA6D9ADA50E87BD816729/",
-          "size": 2058
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Discovery_active.webp",
-          "name": "toggleDistrict_Discovery_active",
-          "sha1": "EE362400BDE2919B569FB516595704F554B6721C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13660542310222030942/EE362400BDE2919B569FB516595704F554B6721C/",
-          "size": 3454
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Discovery_hover.webp",
-          "name": "toggleDistrict_Discovery_hover",
-          "sha1": "B0FD23F89F9ABD0E4CC9001E298F461369C6FBEA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12771652038862883190/B0FD23F89F9ABD0E4CC9001E298F461369C6FBEA/",
-          "size": 3432
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Discovery_inactive.webp",
-          "name": "toggleDistrict_Discovery_inactive",
-          "sha1": "6DB36A1007DD85288E8DAC1E5A8E9A177BEAE704",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14233545460702817159/6DB36A1007DD85288E8DAC1E5A8E9A177BEAE704/",
-          "size": 3214
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DistilleryDist_active.webp",
-          "name": "toggleDistrict_DistilleryDist_active",
-          "sha1": "A6D7EA5A95501510B191FE3305587227B722537C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16442039774278034613/A6D7EA5A95501510B191FE3305587227B722537C/",
-          "size": 3286
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DistilleryDist_hover.webp",
-          "name": "toggleDistrict_DistilleryDist_hover",
-          "sha1": "5F473630C7259AFD7F98FDC7AD0B26AF6BFB7DED",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17830851164375513775/5F473630C7259AFD7F98FDC7AD0B26AF6BFB7DED/",
-          "size": 3278
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DistilleryDist_inactive.webp",
-          "name": "toggleDistrict_DistilleryDist_inactive",
-          "sha1": "AAA8E230769162043DF24B0C328F09D17C5FEBEA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9424616887762254988/AAA8E230769162043DF24B0C328F09D17C5FEBEA/",
-          "size": 3136
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DonRavine_active.webp",
-          "name": "toggleDistrict_DonRavine_active",
-          "sha1": "BEB0E5A52418F002875C7667F0078A4D38F9EEBE",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15053567383414699784/BEB0E5A52418F002875C7667F0078A4D38F9EEBE/",
-          "size": 3668
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DonRavine_hover.webp",
-          "name": "toggleDistrict_DonRavine_hover",
-          "sha1": "4F2DC08FD56CD47E4C85FDF6A7279C804992D7BA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12281581398610051892/4F2DC08FD56CD47E4C85FDF6A7279C804992D7BA/",
-          "size": 3638
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DonRavine_inactive.webp",
-          "name": "toggleDistrict_DonRavine_inactive",
-          "sha1": "8E70F18E8EABAB583806B8E14461F6A697CB66FF",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14962077601425879413/8E70F18E8EABAB583806B8E14461F6A697CB66FF/",
-          "size": 3492
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DupontByTheCastle_active.webp",
-          "name": "toggleDistrict_DupontByTheCastle_active",
-          "sha1": "CFFD0BBE3AD9DA2C8B4AF516CB790A95891CDCCA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12702716312402346691/CFFD0BBE3AD9DA2C8B4AF516CB790A95891CDCCA/",
-          "size": 3490
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DupontByTheCastle_hover.webp",
-          "name": "toggleDistrict_DupontByTheCastle_hover",
-          "sha1": "EC5E253AB7D017225656A6F9F454EC285186E21E",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12597708205576656210/EC5E253AB7D017225656A6F9F454EC285186E21E/",
-          "size": 3504
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_DupontByTheCastle_inactive.webp",
-          "name": "toggleDistrict_DupontByTheCastle_inactive",
-          "sha1": "5EA26819B6BADA419F3590854D3561D856F58523",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12710965040044942445/5EA26819B6BADA419F3590854D3561D856F58523/",
-          "size": 3302
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_GayVillage_active.webp",
-          "name": "toggleDistrict_GayVillage_active",
-          "sha1": "AD1E93C9B8A8E7861F8056DE287D7C8D507D8AD9",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16924316125233610222/AD1E93C9B8A8E7861F8056DE287D7C8D507D8AD9/",
-          "size": 3026
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_GayVillage_hover.webp",
-          "name": "toggleDistrict_GayVillage_hover",
-          "sha1": "D97922009C282721A24937FE434C8B1B480D0B3F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14506822538474957164/D97922009C282721A24937FE434C8B1B480D0B3F/",
-          "size": 2820
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_GayVillage_inactive.webp",
-          "name": "toggleDistrict_GayVillage_inactive",
-          "sha1": "EB627CBEC274F15752A12A2D4D4426AD96B8C884",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9406667532133720111/EB627CBEC274F15752A12A2D4D4426AD96B8C884/",
-          "size": 2632
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_HarbordVillage_active.webp",
-          "name": "toggleDistrict_HarbordVillage_active",
-          "sha1": "266C34F2B07504059C5DB2244DDEC492549BCD15",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12049802812339841276/266C34F2B07504059C5DB2244DDEC492549BCD15/",
-          "size": 3216
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_HarbordVillage_hover.webp",
-          "name": "toggleDistrict_HarbordVillage_hover",
-          "sha1": "BD181CF28398459E3B275AE82D5B71DE4F74F1CC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18208003265789054308/BD181CF28398459E3B275AE82D5B71DE4F74F1CC/",
-          "size": 3106
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_HarbordVillage_inactive.webp",
-          "name": "toggleDistrict_HarbordVillage_inactive",
-          "sha1": "A602FC424CC54F53290EB8C8BD2B4B88B6F8782B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18313597333022979042/A602FC424CC54F53290EB8C8BD2B4B88B6F8782B/",
-          "size": 2984
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Humewood_active.webp",
-          "name": "toggleDistrict_Humewood_active",
-          "sha1": "A10BDE3F3BEFC68EFF698036E81D86BEA830D3AC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14288588806745571422/A10BDE3F3BEFC68EFF698036E81D86BEA830D3AC/",
-          "size": 2676
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Humewood_hover.webp",
-          "name": "toggleDistrict_Humewood_hover",
-          "sha1": "B473C1B4288D01C7C24F3E14204BB2B889244193",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9900646317288292372/B473C1B4288D01C7C24F3E14204BB2B889244193/",
-          "size": 2482
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Humewood_inactive.webp",
-          "name": "toggleDistrict_Humewood_inactive",
-          "sha1": "138BFE29444E76FF5EE09C458FCA5EEB50824F68",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13842598138619582692/138BFE29444E76FF5EE09C458FCA5EEB50824F68/",
-          "size": 2144
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LakeOntario_active.webp",
-          "name": "toggleDistrict_LakeOntario_active",
-          "sha1": "F3988BC02A66F8C0A8AA67F8B8762CC62FD6C506",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16489624451713884331/F3988BC02A66F8C0A8AA67F8B8762CC62FD6C506/",
-          "size": 2842
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LakeOntario_hover.webp",
-          "name": "toggleDistrict_LakeOntario_hover",
-          "sha1": "ABC0CD7B3FC62FCA9DC3DC96D78FF1931C058F95",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10834475851504782246/ABC0CD7B3FC62FCA9DC3DC96D78FF1931C058F95/",
-          "size": 2678
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LakeOntario_inactive.webp",
-          "name": "toggleDistrict_LakeOntario_inactive",
-          "sha1": "9F556829054B81B3C692CF4E522C4DF65FF2943B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16536802269410975570/9F556829054B81B3C692CF4E522C4DF65FF2943B/",
-          "size": 2456
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LibertyVillage_active.webp",
-          "name": "toggleDistrict_LibertyVillage_active",
-          "sha1": "4F45CA62B91083D4EE3041B0ADDFB31F0BBBE326",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15795590206896014443/4F45CA62B91083D4EE3041B0ADDFB31F0BBBE326/",
-          "size": 3024
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LibertyVillage_hover.webp",
-          "name": "toggleDistrict_LibertyVillage_hover",
-          "sha1": "B9FD4C12A68DBE5F6847BB934DFE367915BBEF7C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9369137816348568844/B9FD4C12A68DBE5F6847BB934DFE367915BBEF7C/",
-          "size": 2770
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LibertyVillage_inactive.webp",
-          "name": "toggleDistrict_LibertyVillage_inactive",
-          "sha1": "05D95DBDB9B571DC8282B6F8456633184F900E3F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18234274346505661002/05D95DBDB9B571DC8282B6F8456633184F900E3F/",
-          "size": 2664
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LittleItaly_active.webp",
-          "name": "toggleDistrict_LittleItaly_active",
-          "sha1": "21984A6F9116FAFC90449E8E948143BA5FFD7E37",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13372940400255242428/21984A6F9116FAFC90449E8E948143BA5FFD7E37/",
-          "size": 2424
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LittleItaly_hover.webp",
-          "name": "toggleDistrict_LittleItaly_hover",
-          "sha1": "F7C2A14B78183DEF3A5D2945249D9C8BA062381D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11771617099009983001/F7C2A14B78183DEF3A5D2945249D9C8BA062381D/",
-          "size": 2232
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LittleItaly_inactive.webp",
-          "name": "toggleDistrict_LittleItaly_inactive",
-          "sha1": "5C0B4CD270980B0C7F0E5765C174028245A02037",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11905678605447727050/5C0B4CD270980B0C7F0E5765C174028245A02037/",
-          "size": 2000
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LittlePortugal_active.webp",
-          "name": "toggleDistrict_LittlePortugal_active",
-          "sha1": "846D6C8B2056590A7A7DCB7E572B99F854EDBCEC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16533656197935036529/846D6C8B2056590A7A7DCB7E572B99F854EDBCEC/",
-          "size": 2896
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LittlePortugal_hover.webp",
-          "name": "toggleDistrict_LittlePortugal_hover",
-          "sha1": "F904EAE6C98B615B4417E8E80992B648B9B83DA7",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13975402531598011799/F904EAE6C98B615B4417E8E80992B648B9B83DA7/",
-          "size": 2864
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_LittlePortugal_inactive.webp",
-          "name": "toggleDistrict_LittlePortugal_inactive",
-          "sha1": "37B3F71AB31502F4DC6CA03F2AC3A9A21BB4FD78",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13582902430852247576/37B3F71AB31502F4DC6CA03F2AC3A9A21BB4FD78/",
-          "size": 2628
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_PATH_active.webp",
-          "name": "toggleDistrict_PATH_active",
-          "sha1": "8C16FBE750D5529B3B442AACE8A9F39974E9A01E",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13717488397781623309/8C16FBE750D5529B3B442AACE8A9F39974E9A01E/",
-          "size": 2054
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_PATH_hover.webp",
-          "name": "toggleDistrict_PATH_hover",
-          "sha1": "D60D4027A83442208327DBA114D72506D700F822",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16652280829418160779/D60D4027A83442208327DBA114D72506D700F822/",
-          "size": 1738
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_PATH_inactive.webp",
-          "name": "toggleDistrict_PATH_inactive",
-          "sha1": "DA4DDE34CB9A6F57635B143326CD49811FB16D67",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16315377254342665796/DA4DDE34CB9A6F57635B143326CD49811FB16D67/",
-          "size": 1486
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_RegentPark_active.webp",
-          "name": "toggleDistrict_RegentPark_active",
-          "sha1": "272FEF3189917FB0687B2627A2C4B0BA19669B87",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14559617720582193646/272FEF3189917FB0687B2627A2C4B0BA19669B87/",
-          "size": 2852
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_RegentPark_hover.webp",
-          "name": "toggleDistrict_RegentPark_hover",
-          "sha1": "65F21AB2D161D354E0FED187DF2FB0047B8A6DB2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15727876246540720579/65F21AB2D161D354E0FED187DF2FB0047B8A6DB2/",
-          "size": 2668
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_RegentPark_inactive.webp",
-          "name": "toggleDistrict_RegentPark_inactive",
-          "sha1": "DE64C9740D21F537D8EAE453E8F8A73519CB1C00",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15620072964824124666/DE64C9740D21F537D8EAE453E8F8A73519CB1C00/",
-          "size": 2374
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Riverdale_active.webp",
-          "name": "toggleDistrict_Riverdale_active",
-          "sha1": "B5B6A5280434383C1BD13D957487848266872A31",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17239659564783506906/B5B6A5280434383C1BD13D957487848266872A31/",
-          "size": 2022
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Riverdale_hover.webp",
-          "name": "toggleDistrict_Riverdale_hover",
-          "sha1": "D956AC5F7D6D6D5E6A1574EDE0556795C1BABD1E",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9538730573523283587/D956AC5F7D6D6D5E6A1574EDE0556795C1BABD1E/",
-          "size": 2402
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Riverdale_inactive.webp",
-          "name": "toggleDistrict_Riverdale_inactive",
-          "sha1": "7BFBE15034E4342307BF43F52BFB29B1E5B23485",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11895128973610422008/7BFBE15034E4342307BF43F52BFB29B1E5B23485/",
-          "size": 2120
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Rosedale_active.webp",
-          "name": "toggleDistrict_Rosedale_active",
-          "sha1": "45FC84BA4DC614C2464D3404931F3CFF95F786D2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14651046405820807012/45FC84BA4DC614C2464D3404931F3CFF95F786D2/",
-          "size": 1842
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Rosedale_hover.webp",
-          "name": "toggleDistrict_Rosedale_hover",
-          "sha1": "90569733C70D94FDAA044CDF6A897513C1675CD6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9863932136329239746/90569733C70D94FDAA044CDF6A897513C1675CD6/",
-          "size": 2268
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Rosedale_inactive.webp",
-          "name": "toggleDistrict_Rosedale_inactive",
-          "sha1": "FAD844E9247928AAAB1DAF0937F96DE4445B55BF",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14258739379012441569/FAD844E9247928AAAB1DAF0937F96DE4445B55BF/",
-          "size": 1968
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Sewers_active.webp",
-          "name": "toggleDistrict_Sewers_active",
-          "sha1": "BF5538C782B580D3485CA812B7D03573A1669516",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18283937402980897113/BF5538C782B580D3485CA812B7D03573A1669516/",
-          "size": 2188
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Sewers_hover.webp",
-          "name": "toggleDistrict_Sewers_hover",
-          "sha1": "6D22B6913D1A0DE80EBEE5C29BD058A23577A193",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18315274972317515471/6D22B6913D1A0DE80EBEE5C29BD058A23577A193/",
-          "size": 2538
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Sewers_inactive.webp",
-          "name": "toggleDistrict_Sewers_inactive",
-          "sha1": "96E38F45EBF3F1013DE622E4AF9B9971D38607FF",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13365035750305508230/96E38F45EBF3F1013DE622E4AF9B9971D38607FF/",
-          "size": 2344
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_StJamesTown_active.webp",
-          "name": "toggleDistrict_StJamesTown_active",
-          "sha1": "F6A676A6D94191E563F2E1393DAFB4B64F3B77F5",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11301556109111499766/F6A676A6D94191E563F2E1393DAFB4B64F3B77F5/",
-          "size": 2610
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_StJamesTown_hover.webp",
-          "name": "toggleDistrict_StJamesTown_hover",
-          "sha1": "8A5DCFD6F450094A1EA5F31111AF13DE8EFEE8CA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16254431078353136084/8A5DCFD6F450094A1EA5F31111AF13DE8EFEE8CA/",
-          "size": 2904
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_StJamesTown_inactive.webp",
-          "name": "toggleDistrict_StJamesTown_inactive",
-          "sha1": "04246C4B5C30A925B28546B742027616A6AF2131",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13963835310096244565/04246C4B5C30A925B28546B742027616A6AF2131/",
-          "size": 2640
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Streets_active.webp",
-          "name": "toggleDistrict_Streets_active",
-          "sha1": "27E38FA897E8D8CD2FC4B8C9CBFACDAFDD39ADAF",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12995857026067143476/27E38FA897E8D8CD2FC4B8C9CBFACDAFDD39ADAF/",
-          "size": 2200
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Streets_hover.webp",
-          "name": "toggleDistrict_Streets_hover",
-          "sha1": "AE8BD1E93D35110A1AA713A6BE00272A57FF639D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13624301954263554812/AE8BD1E93D35110A1AA713A6BE00272A57FF639D/",
-          "size": 2508
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Streets_inactive.webp",
-          "name": "toggleDistrict_Streets_inactive",
-          "sha1": "6AA786BA49D352276339668A5CC595D2478979F1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17847801000982909561/6AA786BA49D352276339668A5CC595D2478979F1/",
-          "size": 2318
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Subway_active.webp",
-          "name": "toggleDistrict_Subway_active",
-          "sha1": "69B40927558C4E7FD3907685A38B0043EA990AB2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13057694038402977446/69B40927558C4E7FD3907685A38B0043EA990AB2/",
-          "size": 2018
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Subway_hover.webp",
-          "name": "toggleDistrict_Subway_hover",
-          "sha1": "A7E0765A51745E4F90241F662988E56A47A77219",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11621125529744113510/A7E0765A51745E4F90241F662988E56A47A77219/",
-          "size": 2508
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Subway_inactive.webp",
-          "name": "toggleDistrict_Subway_inactive",
-          "sha1": "F0FB483A5B8E17669C81C3CB1C5E7C98A9B0BA14",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15089351037264562911/F0FB483A5B8E17669C81C3CB1C5E7C98A9B0BA14/",
-          "size": 2290
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Summerhill_active.webp",
-          "name": "toggleDistrict_Summerhill_active",
-          "sha1": "638AD4486B7F2585FA912236C5E1B2957B479881",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12758727814379299863/638AD4486B7F2585FA912236C5E1B2957B479881/",
-          "size": 2130
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Summerhill_hover.webp",
-          "name": "toggleDistrict_Summerhill_hover",
-          "sha1": "E39DA2C623665E61EECEAC55EB0FD66A365B1FF3",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15097562769570031985/E39DA2C623665E61EECEAC55EB0FD66A365B1FF3/",
-          "size": 2426
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Summerhill_inactive.webp",
-          "name": "toggleDistrict_Summerhill_inactive",
-          "sha1": "C9567DC11F5D13EA3ED02FDC0A48E0CCDDD9A706",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18377089193322678049/C9567DC11F5D13EA3ED02FDC0A48E0CCDDD9A706/",
-          "size": 2266
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Waterfront_active.webp",
-          "name": "toggleDistrict_Waterfront_active",
-          "sha1": "F8402752BCE8155D48FFE1E7F9B9CAEEEC7C2DA6",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17503806399309376570/F8402752BCE8155D48FFE1E7F9B9CAEEEC7C2DA6/",
-          "size": 3216
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Waterfront_hover.webp",
-          "name": "toggleDistrict_Waterfront_hover",
-          "sha1": "21369DB317B598AB9631EA8858F749B613400BD8",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18277672229067169191/21369DB317B598AB9631EA8858F749B613400BD8/",
-          "size": 3142
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Waterfront_inactive.webp",
-          "name": "toggleDistrict_Waterfront_inactive",
-          "sha1": "3E2CD8E2A8803334D5F39B8541E8EE2F7170D049",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13480696484455277382/3E2CD8E2A8803334D5F39B8541E8EE2F7170D049/",
-          "size": 2894
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_WestQueenWest_active.webp",
-          "name": "toggleDistrict_WestQueenWest_active",
-          "sha1": "9A362A274921FC958B441C1E4659DE497988F6A9",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9310310108481981184/9A362A274921FC958B441C1E4659DE497988F6A9/",
-          "size": 3406
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_WestQueenWest_hover.webp",
-          "name": "toggleDistrict_WestQueenWest_hover",
-          "sha1": "6F0B30E8937292CAA04D71FD32BE3DB75ADF92BC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15286881079019264222/6F0B30E8937292CAA04D71FD32BE3DB75ADF92BC/",
-          "size": 3274
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_WestQueenWest_inactive.webp",
-          "name": "toggleDistrict_WestQueenWest_inactive",
-          "sha1": "10B752B062802E3707806D1C297A37C6284F4AE9",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15656320528186117210/10B752B062802E3707806D1C297A37C6284F4AE9/",
-          "size": 3002
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Wychwood_active.webp",
-          "name": "toggleDistrict_Wychwood_active",
-          "sha1": "6282DCB71089573E6FBFA4AC9456E5474007FEBE",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15035435348070264786/6282DCB71089573E6FBFA4AC9456E5474007FEBE/",
-          "size": 2800
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Wychwood_hover.webp",
-          "name": "toggleDistrict_Wychwood_hover",
-          "sha1": "9A7547840A0D292E2142ECA1AEA2FD01081FF30F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13341306008310547960/9A7547840A0D292E2142ECA1AEA2FD01081FF30F/",
-          "size": 2472
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Wychwood_inactive.webp",
-          "name": "toggleDistrict_Wychwood_inactive",
-          "sha1": "4D859372FE7CD4CE2DF462D413BEA5F5B8D27A11",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16962615779637517511/4D859372FE7CD4CE2DF462D413BEA5F5B8D27A11/",
-          "size": 2240
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeBloorMuseum_active.webp",
-          "name": "toggleDistrict_YongeBloorMuseum_active",
-          "sha1": "5896A40C5FB4498A1C1AF79D6D4FF069697040BC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16037158534535340748/5896A40C5FB4498A1C1AF79D6D4FF069697040BC/",
-          "size": 3496
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeBloorMuseum_hover.webp",
-          "name": "toggleDistrict_YongeBloorMuseum_hover",
-          "sha1": "CB740057EF59AB4DD81CE6547A1AD74610B02A0C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11033707386450936779/CB740057EF59AB4DD81CE6547A1AD74610B02A0C/",
-          "size": 3552
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeBloorMuseum_inactive.webp",
-          "name": "toggleDistrict_YongeBloorMuseum_inactive",
-          "sha1": "99751AE8F514255AB8074F5523FD201D056D0C16",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12546597685548015757/99751AE8F514255AB8074F5523FD201D056D0C16/",
-          "size": 3254
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeDundasHospital_active.webp",
-          "name": "toggleDistrict_YongeDundasHospital_active",
-          "sha1": "BCC739A52CB86D0E703C636CD14E0430E1165C31",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11033294409854205908/BCC739A52CB86D0E703C636CD14E0430E1165C31/",
-          "size": 3664
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeDundasHospital_hover.webp",
-          "name": "toggleDistrict_YongeDundasHospital_hover",
-          "sha1": "3FECB301F9F53967C1B46B1F8A10A970F33F89C0",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11167074676674099679/3FECB301F9F53967C1B46B1F8A10A970F33F89C0/",
-          "size": 3680
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeDundasHospital_inactive.webp",
-          "name": "toggleDistrict_YongeDundasHospital_inactive",
-          "sha1": "2519553E1DE70E489FF0EF49CAA0196D22761618",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13285737694039104045/2519553E1DE70E489FF0EF49CAA0196D22761618/",
-          "size": 3542
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeStreet_active.webp",
-          "name": "toggleDistrict_YongeStreet_active",
-          "sha1": "DD36B1343229B4EC16632E604E0683044F64EF8C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15635800485130309727/DD36B1343229B4EC16632E604E0683044F64EF8C/",
-          "size": 2932
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeStreet_hover.webp",
-          "name": "toggleDistrict_YongeStreet_hover",
-          "sha1": "8DED4B926A89E4C17A1925609CC840177617EF04",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17354198837678706884/8DED4B926A89E4C17A1925609CC840177617EF04/",
-          "size": 2796
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_YongeStreet_inactive.webp",
-          "name": "toggleDistrict_YongeStreet_inactive",
-          "sha1": "93E54F3EF9F641F582334BE3A89FC41B1AB114B9",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18439565155924949689/93E54F3EF9F641F582334BE3A89FC41B1AB114B9/",
-          "size": 2494
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Yorkville_active.webp",
-          "name": "toggleDistrict_Yorkville_active",
-          "sha1": "C1C6EB491C83C79475C094D97D75A96F184CAA50",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18340620705637574455/C1C6EB491C83C79475C094D97D75A96F184CAA50/",
-          "size": 2514
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Yorkville_hover.webp",
-          "name": "toggleDistrict_Yorkville_hover",
-          "sha1": "595F778CE70C45C795D8E2409766767475BB8DD1",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16050708663010855749/595F778CE70C45C795D8E2409766767475BB8DD1/",
-          "size": 2236
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/toggleDistrict_Yorkville_inactive.webp",
-          "name": "toggleDistrict_Yorkville_inactive",
-          "sha1": "0ACBC70E4D2C00A9223453492902F31509F9914F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16899902010517418123/0ACBC70E4D2C00A9223453492902F31509F9914F/",
-          "size": 2024
-        }
-      ]
-    },
-    "hudDistrictDividers": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map/Right Sidebar",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/districtDivider_cityCenter.webp",
-          "name": "districtDivider_cityCenter",
-          "sha1": "96E3CAD61D4F3356ECB60C6051F68B4A77DF7227",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14959222571500247337/96E3CAD61D4F3356ECB60C6051F68B4A77DF7227/",
-          "size": 3932
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/districtDivider_eastToronto.webp",
-          "name": "districtDivider_eastToronto",
-          "sha1": "F01E11BE91291B8BC83BC2A81ED13A1AD3A05792",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17372693212160820928/F01E11BE91291B8BC83BC2A81ED13A1AD3A05792/",
-          "size": 4168
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/districtDivider_northOfBloor.webp",
-          "name": "districtDivider_northOfBloor",
-          "sha1": "2DB6856A7A922812354B7905F3F796650B3FD4AC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9350821338690912869/2DB6856A7A922812354B7905F3F796650B3FD4AC/",
-          "size": 4358
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/districtDivider_notDepicted.webp",
-          "name": "districtDivider_notDepicted",
-          "sha1": "A1B1FE2B6B3EE380ED2F0AED1F7AA30D3341D4DA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12326020451621651713/A1B1FE2B6B3EE380ED2F0AED1F7AA30D3341D4DA/",
-          "size": 4068
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/districtDivider_shoreline.webp",
-          "name": "districtDivider_shoreline",
-          "sha1": "6825E83E9EE2B5580400901E8F53A9266F9634E5",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17320293404658398438/6825E83E9EE2B5580400901E8F53A9266F9634E5/",
-          "size": 4564
-        },
-        {
-          "path": "HUD/CorePanel_Map/Right Sidebar/districtDivider_westToronto.webp",
-          "name": "districtDivider_westToronto",
-          "sha1": "1903E6D6E0F27038377D986FB474E7778AA35060",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10669554427979713874/1903E6D6E0F27038377D986FB474E7778AA35060/",
-          "size": 4254
-        }
-      ]
-    },
-    "hudMapPins": {
-      "output": "GlobalCustomUIAssets",
-      "folder": "HUD/CorePanel_Map/Pins",
-      "rows": [
-        {
-          "path": "HUD/CorePanel_Map/Pins/pin_Aishe.webp",
-          "name": "pin_Aishe",
-          "sha1": "2136EEBC65A1977A9F5478CC54BE5DC74A97311F",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17240270269783326513/2136EEBC65A1977A9F5478CC54BE5DC74A97311F/",
-          "size": 36774
-        },
-        {
-          "path": "HUD/CorePanel_Map/Pins/pin_BlackCaesar.webp",
-          "name": "pin_BlackCaesar",
-          "sha1": "EEC529688B274A8D82CBDAE28151B548E9CF95EA",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14982527673482453711/EEC529688B274A8D82CBDAE28151B548E9CF95EA/",
-          "size": 36014
-        },
-        {
-          "path": "HUD/CorePanel_Map/Pins/pin_Fomorach.webp",
-          "name": "pin_Fomorach",
-          "sha1": "04E05C1122DF61A4AC424FCCA67833437F3EEB4A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9696175077056497013/04E05C1122DF61A4AC424FCCA67833437F3EEB4A/",
-          "size": 35452
-        },
-        {
-          "path": "HUD/CorePanel_Map/Pins/pin_LordLucien.webp",
-          "name": "pin_LordLucien",
-          "sha1": "3B5E2B29A95B0D4D5F8EE0FA8819A645328B625A",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14893834133610813612/3B5E2B29A95B0D4D5F8EE0FA8819A645328B625A/",
-          "size": 36228
-        },
-        {
-          "path": "HUD/CorePanel_Map/Pins/pin_Rashid.webp",
-          "name": "pin_Rashid",
-          "sha1": "356104D3C082486D5026C2AC79CFFAC5AD07CB57",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11950025628502116406/356104D3C082486D5026C2AC79CFFAC5AD07CB57/",
-          "size": 38882
-        }
-      ]
-    },
     "hudPanelToggles": {
       "output": "GlobalCustomUIAssets",
       "folder": "HUD/Right Sidebar",
@@ -4336,27 +2657,6 @@
           "sha1": "31F748B91AF7A715782DB4B904DD392F89D591F3",
           "url": "https://steamusercontent-a.akamaihd.net/ugc/18249701944218657347/31F748B91AF7A715782DB4B904DD392F89D591F3/",
           "size": 3896
-        },
-        {
-          "path": "HUD/Right Sidebar/toggle_CorePanel_Map_active.webp",
-          "name": "toggle_CorePanel_Map_active",
-          "sha1": "C23E2F18270BCBEBAFB35DC1FC3F17F9373EDCE3",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11155645914294519747/C23E2F18270BCBEBAFB35DC1FC3F17F9373EDCE3/",
-          "size": 3574
-        },
-        {
-          "path": "HUD/Right Sidebar/toggle_CorePanel_Map_hover.webp",
-          "name": "toggle_CorePanel_Map_hover",
-          "sha1": "8C1D9DE888A99C4AFF2F0735AC90200A9CF44CDB",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11862899670200066046/8C1D9DE888A99C4AFF2F0735AC90200A9CF44CDB/",
-          "size": 3052
-        },
-        {
-          "path": "HUD/Right Sidebar/toggle_CorePanel_Map_inactive.webp",
-          "name": "toggle_CorePanel_Map_inactive",
-          "sha1": "F9E83B88BC99132B8B1C5D92F55643A818811012",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13718855685235140302/F9E83B88BC99132B8B1C5D92F55643A818811012/",
-          "size": 6854
         },
         {
           "path": "HUD/Right Sidebar/toggle_Coteries_active.webp",
@@ -15001,9 +13301,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_adrianVarga.front.webp",
           "name": "adrianVarga.front",
-          "sha1": "41F0528C9676BE55C2EB12935A0C4A37B16020F3",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15707296634668814393/41F0528C9676BE55C2EB12935A0C4A37B16020F3/",
-          "size": 19982
+          "sha1": "E15CBE89CE7B966F7A4F17486308A1B1CB07CE94",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9511508647542060451/E15CBE89CE7B966F7A4F17486308A1B1CB07CE94/",
+          "size": 23984
         },
         {
           "path": "NPC Art/Tokens/npcToken_agnesBellanger_1900.back.webp",
@@ -15141,9 +13441,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_anitaMorris.front.webp",
           "name": "anitaMorris.front",
-          "sha1": "7B92E4A6B6F45EC0F4D8DE3BEF667E814A7DB859",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/18225724331868493231/7B92E4A6B6F45EC0F4D8DE3BEF667E814A7DB859/",
-          "size": 22518
+          "sha1": "CB280E6CD1EDAE271BFECF00F7753056D15D22D6",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10428012801346981676/CB280E6CD1EDAE271BFECF00F7753056D15D22D6/",
+          "size": 26578
         },
         {
           "path": "NPC Art/Tokens/npcToken_anitaMorrisDaeva.back.webp",
@@ -15281,9 +13581,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_bee.front.webp",
           "name": "bee.front",
-          "sha1": "227CCB6C64BBD4839C603434427E693E9EC0C756",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17969211986226685479/227CCB6C64BBD4839C603434427E693E9EC0C756/",
-          "size": 22030
+          "sha1": "EA6ED642BA7CC27DEADB26298A870AF89F6E500A",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14679958620587329354/EA6ED642BA7CC27DEADB26298A870AF89F6E500A/",
+          "size": 26298
         },
         {
           "path": "NPC Art/Tokens/npcToken_benedictKincaid.back.webp",
@@ -16002,9 +14302,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_carol.front.webp",
           "name": "carol.front",
-          "sha1": "AD23226E0E90EA9CA4E4D9C1035365EBA1085EE8",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13512382798753898139/AD23226E0E90EA9CA4E4D9C1035365EBA1085EE8/",
-          "size": 22050
+          "sha1": "5D19A5974F66CA3EF70B3CAB31C4D58E0911AD01",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14570193962728839979/5D19A5974F66CA3EF70B3CAB31C4D58E0911AD01/",
+          "size": 26146
         },
         {
           "path": "NPC Art/Tokens/npcToken_chokesOnMoonlight_Garou.back.webp",
@@ -16044,9 +14344,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_christianne.front.webp",
           "name": "christianne.front",
-          "sha1": "10995DE23BE977B42D8569D0B389221C281F6A29",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11602535332433607153/10995DE23BE977B42D8569D0B389221C281F6A29/",
-          "size": 24378
+          "sha1": "24D9FEF6E6A5307C96D80B9BECF22FD39B55824D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13581300704637830593/24D9FEF6E6A5307C96D80B9BECF22FD39B55824D/",
+          "size": 28148
         },
         {
           "path": "NPC Art/Tokens/npcToken_christopherGiovanniJr.back.webp",
@@ -18690,9 +16990,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_emilyTheDuskRose.front.webp",
           "name": "emilyTheDuskRose.front",
-          "sha1": "FC8189F5B6F2E17E18592A9E4186B8D39FE7F355",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14896690755355403792/FC8189F5B6F2E17E18592A9E4186B8D39FE7F355/",
-          "size": 21510
+          "sha1": "7F90D1A8766671187F57413F53A8DEFF79FEC50E",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12366454782158041606/7F90D1A8766671187F57413F53A8DEFF79FEC50E/",
+          "size": 25456
         },
         {
           "path": "NPC Art/Tokens/npcToken_enzoCaruso.back.webp",
@@ -18872,9 +17172,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_gabrielCollard.front.webp",
           "name": "gabrielCollard.front",
-          "sha1": "A7FE581819AF265121109AC92F9BF9F8C12A31FC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13945969033904193968/A7FE581819AF265121109AC92F9BF9F8C12A31FC/",
-          "size": 22710
+          "sha1": "816099FD1A9C197B0EF5A3FFFF3CA4D9B16A608A",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14952474383058785993/816099FD1A9C197B0EF5A3FFFF3CA4D9B16A608A/",
+          "size": 26492
         },
         {
           "path": "NPC Art/Tokens/npcToken_gabrielCollardDaeva.back.webp",
@@ -19964,9 +18264,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_ianRammond.front.webp",
           "name": "ianRammond.front",
-          "sha1": "B2E6EB305C9E7C5E2C8EFE2B20CCB82220FD5AEC",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13341056229392118403/B2E6EB305C9E7C5E2C8EFE2B20CCB82220FD5AEC/",
-          "size": 22812
+          "sha1": "8DD112A98BDF67E5863A08ED99DAC03D04DAB56E",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10924143723371302397/8DD112A98BDF67E5863A08ED99DAC03D04DAB56E/",
+          "size": 26732
         },
         {
           "path": "NPC Art/Tokens/npcToken_ibrahimKethuda.back.webp",
@@ -19992,9 +18292,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_iq.front.webp",
           "name": "iq.front",
-          "sha1": "C48EBB407A649326828F46DB45FC1A7A685BADE2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16126777379540827553/C48EBB407A649326828F46DB45FC1A7A685BADE2/",
-          "size": 26002
+          "sha1": "6DC878E53371041B017E1FC46CF88FEC947DA058",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13304802677435018166/6DC878E53371041B017E1FC46CF88FEC947DA058/",
+          "size": 29840
         },
         {
           "path": "NPC Art/Tokens/npcToken_jackBeNimble.back.webp",
@@ -20104,9 +18404,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_jesseSharp.front.webp",
           "name": "jesseSharp.front",
-          "sha1": "E5C428095AE83F6EAC90B7EA6F457E86B99CC9A5",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12011281012245496867/E5C428095AE83F6EAC90B7EA6F457E86B99CC9A5/",
-          "size": 18956
+          "sha1": "3A6507339F06209B9110607BE6D54BE8C8FF8BE7",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14916973549422101117/3A6507339F06209B9110607BE6D54BE8C8FF8BE7/",
+          "size": 22790
         },
         {
           "path": "NPC Art/Tokens/npcToken_jezdimirDucheski.back.webp",
@@ -20748,9 +19048,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_laz.front.webp",
           "name": "laz.front",
-          "sha1": "417B2BD9D64AA162ADD8C4C9DDA45ADBFD01AFED",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9886123968452546746/417B2BD9D64AA162ADD8C4C9DDA45ADBFD01AFED/",
-          "size": 16484
+          "sha1": "B33565AC95BF8940E397A97F7818ECE82AA9FD04",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/15827140497598369805/B33565AC95BF8940E397A97F7818ECE82AA9FD04/",
+          "size": 20390
         },
         {
           "path": "NPC Art/Tokens/npcToken_learnedMedia_01.back.webp",
@@ -21784,9 +20084,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_merrickSingh.front.webp",
           "name": "merrickSingh.front",
-          "sha1": "9829B1A6FA86AAAF486E0296F799FB30AF666B25",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16871191566306589165/9829B1A6FA86AAAF486E0296F799FB30AF666B25/",
-          "size": 17756
+          "sha1": "286F47E8DA7E880FA520AC85285D9FB04B4C1486",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17776615654530017160/286F47E8DA7E880FA520AC85285D9FB04B4C1486/",
+          "size": 21506
         },
         {
           "path": "NPC Art/Tokens/npcToken_michaelTheArchangel.back.webp",
@@ -22218,9 +20518,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_myleneHamelin.front.webp",
           "name": "myleneHamelin.front",
-          "sha1": "BB1EC0E1E723F6973605664E82C497646AA31881",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/13637584154254810206/BB1EC0E1E723F6973605664E82C497646AA31881/",
-          "size": 18992
+          "sha1": "DD494D6759EBB2EDA8BF22AF606C7DA0D649DDA2",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16397215554161154672/DD494D6759EBB2EDA8BF22AF606C7DA0D649DDA2/",
+          "size": 22790
         },
         {
           "path": "NPC Art/Tokens/npcToken_nasirKhan.back.webp",
@@ -22232,9 +20532,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_nasirKhan.front.webp",
           "name": "nasirKhan.front",
-          "sha1": "064F69F46D8E3E86F6F12CA311DC8915809FE76D",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9362620640982680300/064F69F46D8E3E86F6F12CA311DC8915809FE76D/",
-          "size": 25666
+          "sha1": "C91867AD20BF30BE06509D37704D953B4FA4B485",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13777707816415104056/C91867AD20BF30BE06509D37704D953B4FA4B485/",
+          "size": 29392
         },
         {
           "path": "NPC Art/Tokens/npcToken_nasirKhanDaeva.back.webp",
@@ -22876,9 +21176,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_oliverGagnon.front.webp",
           "name": "oliverGagnon.front",
-          "sha1": "E336F6E119FA4609A2C67B1660ACBF16B91AE4B3",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14561128904721283824/E336F6E119FA4609A2C67B1660ACBF16B91AE4B3/",
-          "size": 25104
+          "sha1": "EE4142628BA06EF3223894FBA95F2E16AFB93517",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/17057740704118274721/EE4142628BA06EF3223894FBA95F2E16AFB93517/",
+          "size": 28770
         },
         {
           "path": "NPC Art/Tokens/npcToken_osborneLowell.back.webp",
@@ -22890,9 +21190,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_osborneLowell.front.webp",
           "name": "osborneLowell.front",
-          "sha1": "240F903EA3868569730FB9F9A624CE524531AC65",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10722609914802478825/240F903EA3868569730FB9F9A624CE524531AC65/",
-          "size": 20942
+          "sha1": "99AA701E9CEF4540D07ED13C258D5BD098C51727",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12068810764069912457/99AA701E9CEF4540D07ED13C258D5BD098C51727/",
+          "size": 25128
         },
         {
           "path": "NPC Art/Tokens/npcToken_palis_preEmbrace.back.webp",
@@ -22918,9 +21218,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_palis.front.webp",
           "name": "palis.front",
-          "sha1": "67A1CAE97E66BCB311861A4694AFB936CB1C3B14",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/11139304847967108189/67A1CAE97E66BCB311861A4694AFB936CB1C3B14/",
-          "size": 26656
+          "sha1": "6F421849B3D93BC72C4904C30EB71E0D95A96D23",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16677850552918099632/6F421849B3D93BC72C4904C30EB71E0D95A96D23/",
+          "size": 29870
         },
         {
           "path": "NPC Art/Tokens/npcToken_percivalCavendish.back.webp",
@@ -23072,9 +21372,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_razorWhit.front.webp",
           "name": "razorWhit.front",
-          "sha1": "8C7381429615795CADD3F15491EFA83FD981B71B",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/15299382799622674738/8C7381429615795CADD3F15491EFA83FD981B71B/",
-          "size": 23784
+          "sha1": "1FCE1192C2FA33A7F58652830CA59A78C6F28752",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14200645805113398631/1FCE1192C2FA33A7F58652830CA59A78C6F28752/",
+          "size": 27546
         },
         {
           "path": "NPC Art/Tokens/npcToken_rebeccaRossellini.back.webp",
@@ -23142,9 +21442,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_robin.front.webp",
           "name": "robin.front",
-          "sha1": "EF869BC5F550C33A14279CB1EE9D95F3B1419B50",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9476487268429332137/EF869BC5F550C33A14279CB1EE9D95F3B1419B50/",
-          "size": 36262
+          "sha1": "5A645BD2B1BA6D1D858E94FDD57B17641EC03D39",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/14459276932689007698/5A645BD2B1BA6D1D858E94FDD57B17641EC03D39/",
+          "size": 39498
         },
         {
           "path": "NPC Art/Tokens/npcToken_rosie.back.webp",
@@ -23408,9 +21708,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_scarlett.front.webp",
           "name": "scarlett.front",
-          "sha1": "0BB8ABC68DF61C50E1FB8A25E8E19EA683D0974E",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12821001919987943179/0BB8ABC68DF61C50E1FB8A25E8E19EA683D0974E/",
-          "size": 19856
+          "sha1": "E0A7416ACC006D55D81413C3A4753143D66272A4",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13219749624097062514/E0A7416ACC006D55D81413C3A4753143D66272A4/",
+          "size": 23320
         },
         {
           "path": "NPC Art/Tokens/npcToken_scottTempo.back.webp",
@@ -23506,9 +21806,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_stirlingSiskin.front.webp",
           "name": "stirlingSiskin.front",
-          "sha1": "643158BD5E5E3A0449BFEA7E89C92EBB94869D5C",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/9552918110725265825/643158BD5E5E3A0449BFEA7E89C92EBB94869D5C/",
-          "size": 22516
+          "sha1": "F8B9B906F6C6551198765E5D3A58425C3597AD70",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/9392864364262146227/F8B9B906F6C6551198765E5D3A58425C3597AD70/",
+          "size": 26306
         },
         {
           "path": "NPC Art/Tokens/npcToken_supernatural_alamut_1800_01.back.webp",
@@ -23576,9 +21876,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_sylvain.front.webp",
           "name": "sylvain.front",
-          "sha1": "F0C3E2EF8E4A32586F382C0148CA1E98E5442528",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12202125926710139620/F0C3E2EF8E4A32586F382C0148CA1E98E5442528/",
-          "size": 33344
+          "sha1": "20AD2BDD79F2401C3650DD553F5A2A703F3D23AD",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/18052103693677502138/20AD2BDD79F2401C3650DD553F5A2A703F3D23AD/",
+          "size": 36666
         },
         {
           "path": "NPC Art/Tokens/npcToken_technicalTransport_01.back.webp",
@@ -23674,9 +21974,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_terry.front.webp",
           "name": "terry.front",
-          "sha1": "A49B50B4B76396A5A46078A29389158CAD51EE91",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/12761456182692306680/A49B50B4B76396A5A46078A29389158CAD51EE91/",
-          "size": 24276
+          "sha1": "5014E7D1DAA2F2C54C8C8DB4301D4DF2C2E557A6",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16809673882885609424/5014E7D1DAA2F2C54C8C8DB4301D4DF2C2E557A6/",
+          "size": 28132
         },
         {
           "path": "NPC Art/Tokens/npcToken_theAristocrat.back.webp",
@@ -23688,9 +21988,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_theAristocrat.front.webp",
           "name": "theAristocrat.front",
-          "sha1": "1474AA55C395C7230C59644ADDD11061D1C097F5",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/10174222367020704349/1474AA55C395C7230C59644ADDD11061D1C097F5/",
-          "size": 30646
+          "sha1": "5F5519671F56C8B51D2CDBF01998D6572E937C39",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/12666337059179413118/5F5519671F56C8B51D2CDBF01998D6572E937C39/",
+          "size": 33712
         },
         {
           "path": "NPC Art/Tokens/npcToken_theBleakBokor_1800.back.webp",
@@ -23758,9 +22058,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_tommy.front.webp",
           "name": "tommy.front",
-          "sha1": "60FE1A6E317CE9B1AC8944F4A504D336570074EE",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/17541362696445184580/60FE1A6E317CE9B1AC8944F4A504D336570074EE/",
-          "size": 30894
+          "sha1": "FCEBC7FA936D46B7C7E246E8A3E5B8052DCE6507",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/10322631268564409414/FCEBC7FA936D46B7C7E246E8A3E5B8052DCE6507/",
+          "size": 35332
         },
         {
           "path": "NPC Art/Tokens/npcToken_tremereApprentice_01.back.webp",
@@ -23912,9 +22212,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_ulyssesCelaj.front.webp",
           "name": "ulyssesCelaj.front",
-          "sha1": "0B1871F24531DEC34BD70B1F5650181F12C5B118",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/14057871663168039420/0B1871F24531DEC34BD70B1F5650181F12C5B118/",
-          "size": 20844
+          "sha1": "08CCC1A544F04E6A1B7C65DFE3E1EA6656A26E5D",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/18436125383461712427/08CCC1A544F04E6A1B7C65DFE3E1EA6656A26E5D/",
+          "size": 24142
         },
         {
           "path": "NPC Art/Tokens/npcToken_uwuByteMe.back.webp",
@@ -24220,9 +22520,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_xavierWhitchurch.front.webp",
           "name": "xavierWhitchurch.front",
-          "sha1": "7DE7A13F43A12F16BF57955A82889D73C26D64E2",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16307276531875025232/7DE7A13F43A12F16BF57955A82889D73C26D64E2/",
-          "size": 16030
+          "sha1": "E64F6D24AD09ED5A05FAC7B02C2EE3E0418158C5",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/13475530759544123158/E64F6D24AD09ED5A05FAC7B02C2EE3E0418158C5/",
+          "size": 19828
         },
         {
           "path": "NPC Art/Tokens/npcToken_yusefShamsin.back.webp",
@@ -24248,9 +22548,9 @@
         {
           "path": "NPC Art/Tokens/npcToken_zuriOluwusi.front.webp",
           "name": "zuriOluwusi.front",
-          "sha1": "294FEE11EA7E011D6BD77A86B82671548A2446CD",
-          "url": "https://steamusercontent-a.akamaihd.net/ugc/16156412126246193499/294FEE11EA7E011D6BD77A86B82671548A2446CD/",
-          "size": 17220
+          "sha1": "4AE9D7583138CA3C0995802F4502C4A7B4A1EFAE",
+          "url": "https://steamusercontent-a.akamaihd.net/ugc/16570017781207390347/4AE9D7583138CA3C0995802F4502C4A7B4A1EFAE/",
+          "size": 20752
         }
       ]
     },

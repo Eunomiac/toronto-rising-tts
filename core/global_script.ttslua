@@ -939,7 +939,6 @@ local function pcSeatHudRootIds(seatColor)
         "playerHud_overlays_" .. seatColor,
         "playerHud_rightSidebar_" .. seatColor,
         "playerHud_referenceLayer_" .. seatColor,
-        "playerHud_corePanel_map_" .. seatColor,
         "playerHud_overlay_camera_" .. seatColor,
         "gameStateOverlay_location_" .. seatColor,
         "playerHud_overlay_blindfold_" .. seatColor,

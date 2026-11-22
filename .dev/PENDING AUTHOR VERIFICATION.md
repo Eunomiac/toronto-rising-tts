@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-809 — In-game map removed
+
+> **Agent-assessment note:** The missing Map button is in the HUD files. You still need to confirm it in the game, and that district and site cards and the player-map pins still behave.
+
+**How to verify:** Save & Play. If the save was already open, load save 230 again so it picks up the updated picture list. The right sidebar should have no Map button, and the map should not open. Load a scene in a district and confirm the district and site cards still show. On the player map, pins should still move when the scene location changes. In a solo game, `DEBUG.listHiddenObjects()` should write a numbered list to `.dev/.debug/hidden-objects.txt`. Storing into the bag waits until you paste the bag GUID into `HIDDEN_STORAGE` and Save & Play again.
+
 #### 🟡 TOR-808 — Intermission stays put until onboarding is finished
 
 > **Agent-assessment note:** The button state can be checked on the dashboard. You still need to confirm the in-game phase button also refuses, and that finishing the third onboarding step unlocks Play.

@@ -6261,4 +6261,135 @@ function DEBUG.rollBroadcastMessageAudit()
     print("[TOR-296] Panel-only (not broadcast): Roll complete. | Roll complete — clear slot on dashboard")
 end
 
+-- In-memory index from DEBUG.listHiddenObjects. Cleared by Save & Play. Not gameState.
+local hiddenObjectIndex = nil
+
+local function csvField(value)
+    local text = tostring(value or "")
+    if string.find(text, "[,\"\r\n]", 1) then
+        return '"' .. string.gsub(text, '"', '""') .. '"'
+    end
+    return text
+end
+
+local function hiddenObjectRow(obj)
+    local pos = obj.getPosition()
+    local tags = obj.getTags() or {}
+    return {
+        guid = obj.getGUID(),
+        nickname = obj.getNickname() or "",
+        name = obj.getName() or "",
+        tags = table.concat(tags, "|"),
+        position = DEBUG.fmtVec(pos),
+    }
+end
+
+--- Numbered list of objects that are tagged HiddenObject or parked at the hidden height.
+--- Replaces the in-memory index used by DEBUG.storeHiddenObjects. Solo file export.
+--- @usage lua DEBUG.listHiddenObjects()
+function DEBUG.listHiddenObjects()
+    local hiddenY = C.HIDDEN_OBJECT_WORLD_Y
+    local rows = {}
+    for _, obj in ipairs(getObjects()) do
+        if obj ~= nil and obj.getGUID ~= nil then
+            local tagged = obj.hasTag ~= nil and obj.hasTag(O.HIDDEN_OBJECT_TAG) == true
+            local pos = obj.getPosition()
+            local y = pos and tonumber(pos.y)
+            local parked = y ~= nil and math.abs(y - hiddenY) < 1
+            if tagged or parked then
+                rows[#rows + 1] = hiddenObjectRow(obj)
+            end
+        end
+    end
+    table.sort(rows, function(a, b)
+        if a.nickname ~= b.nickname then
+            return a.nickname < b.nickname
+        end
+        return a.guid < b.guid
+    end)
+    hiddenObjectIndex = rows
+    local lines = {
+        "index\tguid\tnickname\tname\ttags\tposition",
+    }
+    for i, row in ipairs(rows) do
+        lines[#lines + 1] = string.format(
+            "%d\t%s\t%s\t%s\t%s\t%s",
+            i, row.guid, row.nickname, row.name, row.tags, row.position
+        )
+    end
+    local body = table.concat(lines, "\n") .. "\n"
+    DEBUG.writeWorkspaceFile("hidden-objects.txt", body, "none")
+    print(string.format("[DEBUG.listHiddenObjects] %d hidden objects. Index is in memory until Save & Play.", #rows))
+    return #rows
+end
+
+--- Move indexed hidden objects into G.GUIDS.HIDDEN_STORAGE.
+--- Run DEBUG.listHiddenObjects() first, in the same session.
+--- @param indexes number[] e.g. { 1, 4, 12 }
+--- @usage lua DEBUG.storeHiddenObjects({1, 4, 12})
+function DEBUG.storeHiddenObjects(indexes)
+    if type(hiddenObjectIndex) ~= "table" then
+        error("DEBUG.storeHiddenObjects: run DEBUG.listHiddenObjects() first in this session")
+    end
+    if type(indexes) ~= "table" then
+        error("DEBUG.storeHiddenObjects: pass a table of index numbers, e.g. {1, 4, 12}")
+    end
+    local storageGuid = G.GUIDS.HIDDEN_STORAGE
+    if type(storageGuid) ~= "string" or storageGuid == "" then
+        error("DEBUG.storeHiddenObjects: paste the bag GUID into G.GUIDS.HIDDEN_STORAGE, then Save & Play")
+    end
+    local container = getObjectFromGUID(storageGuid)
+    if container == nil then
+        error("DEBUG.storeHiddenObjects: no object with GUID " .. storageGuid)
+    end
+    if type(container.putObject) ~= "function" then
+        error("DEBUG.storeHiddenObjects: " .. storageGuid .. " is not a container")
+    end
+
+    local seen = {}
+    local stored = {}
+    local missing = {}
+    for _, raw in ipairs(indexes) do
+        local index = tonumber(raw)
+        if index == nil or hiddenObjectIndex[index] == nil then
+            missing[#missing + 1] = tostring(raw)
+        elseif seen[index] ~= true then
+            seen[index] = true
+            local row = hiddenObjectIndex[index]
+            local obj = getObjectFromGUID(row.guid)
+            if obj == nil then
+                missing[#missing + 1] = tostring(index) .. " (gone)"
+            else
+                container.putObject(obj)
+                stored[#stored + 1] = {
+                    index = index,
+                    guid = row.guid,
+                    nickname = row.nickname,
+                    name = row.name,
+                }
+                print(string.format("[DEBUG.storeHiddenObjects] %d %s %s", index, row.guid, row.nickname))
+            end
+        end
+    end
+
+    local lines = { "index,guid,nickname,name" }
+    for _, row in ipairs(stored) do
+        lines[#lines + 1] = table.concat({
+            csvField(row.index),
+            csvField(row.guid),
+            csvField(row.nickname),
+            csvField(row.name),
+        }, ",")
+    end
+    DEBUG.writeWorkspaceFile("hidden-storage.csv", table.concat(lines, "\n") .. "\n", "none")
+    if #missing > 0 then
+        print("[DEBUG.storeHiddenObjects] missing indexes: " .. table.concat(missing, ", "))
+    end
+    print(string.format(
+        "[DEBUG.storeHiddenObjects] stored %d. File → Save so the bag contents stay in the save.",
+        #stored
+    ))
+    return #stored
+end
+
 return DEBUG

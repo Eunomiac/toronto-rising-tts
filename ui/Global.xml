@@ -16,7 +16,6 @@
   <!-- Defaults -->
   <Include src="player/panel_overlays_defaults.xml" />
   <Include src="player/panel_right_sidebar_defaults.xml" />
-  <Include src="player/panel_map_core_defaults.xml" />
 
   <!-- 4a. Player HUD Overlays -->
   <Include src="player/panel_overlays.xml" />
@@ -31,11 +30,6 @@
 
   <!-- Location Overlay (generated per player color) -->
   <Include src="player/panel_overlay_location.xml" />
-
-  <!-- Map panels (generated per player color) -->
-  <Include src="player/panel_map_core.xml" />
-  <!-- Shared map overlay + district toggle sidebars (TOR-444 Option B) -->
-  <Include src="shared/panel_map_sidebars.xml" />
 
   <!-- Right sidebar buttons (generated per player color) -->
   <Include src="player/panel_right_sidebar_buttons.xml" />
@@ -83,6 +77,6 @@
 <Include src="storyteller/project_editor_modal.xml" />
 <Include src="storyteller/panel_session_start_join.xml" />
 
-<!-- Shared click-and-hold reference images are deliberately the final Global UI layer so maps,
+<!-- Shared click-and-hold reference images are deliberately the final Global UI layer so
      roll panels, modals, and other HUD chrome cannot cover them. -->
 <Include src="shared/panel_ref_panels_nestedless.xml" />

@@ -10,15 +10,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
-        id="playerHud_RSidebarBtn_core_map_Brown"
-        class="hover_button hover_button_base RSidebar_btn"
-        image="toggle_CorePanel_Map_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Brown"
         class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
@@ -163,15 +154,6 @@
   <Panel class="hover_button_panel_container">
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Orange"
-        class="hover_button hover_button_base RSidebar_btn"
-        image="toggle_CorePanel_Map_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Orange"
         class="hover_button hover_button_base RSidebar_btn"
@@ -318,15 +300,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
-        id="playerHud_RSidebarBtn_core_map_Red"
-        class="hover_button hover_button_base RSidebar_btn"
-        image="toggle_CorePanel_Map_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Red"
         class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
@@ -472,15 +445,6 @@
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
-        id="playerHud_RSidebarBtn_core_map_Pink"
-        class="hover_button hover_button_base RSidebar_btn"
-        image="toggle_CorePanel_Map_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
-      <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Pink"
         class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
@@ -625,15 +589,6 @@
   <Panel class="hover_button_panel_container">
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Purple"
-        class="hover_button hover_button_base RSidebar_btn"
-        image="toggle_CorePanel_Map_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Purple"
         class="hover_button hover_button_base RSidebar_btn"

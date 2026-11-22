@@ -284,6 +284,10 @@ function G.assertGuidRefList(list, label)
 end
 
 G.GUIDS = {
+    -- Locked bag under the table. Paste the GUID after the bag is in the save.
+    -- DEBUG.storeHiddenObjects moves chosen hidden objects into it.
+    HIDDEN_STORAGE = "",
+
     -- Table & Floor objects
     TABLES = {
       TABLE_A = "8d650e",

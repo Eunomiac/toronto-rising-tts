@@ -146,33 +146,6 @@ end
 local function getDefaultPlayerHUD()
     return {
         activeCorePanel = nil,
-        map = {
-            overlays = {
-                districtsAll = false,
-                localRoads = false,
-                majorRoads = false,
-                majorSites = false,
-                domain_theCourt = false,
-                domain_fiveKeys = false,
-                domain_moonClub = false,
-                domain_universityChantry = false,
-                domain_freeChantry = false,
-                domain_ironGuard = false,
-                domain_scarlett = false,
-                domain_anarchFreeZone = false,
-                domain_hecata = false,
-                domain_bertrice = false,
-                domain_islandDevil = false,
-                domain_domainConflicts = false,
-                domain_barrens = false,
-                domain_theRack = false
-            },
-            location = {
-                district = nil,
-                site = nil,
-                position = nil -- { x, y } in UI space relative to the map corner (set by storyteller later)
-            }
-        },
         reference = {
             -- Nested panels: nil until opened (Lua will create tables keyed by internal ids)
             coteries = nil,
@@ -1253,12 +1226,11 @@ function S.validateState()
                     playerData.hud = getDefaultPlayerHUD()
                 end
 
-                -- activeCorePanel is either nil or one of the known core panel keys
-                if playerData.hud.activeCorePanel ~= nil then
-                    if playerData.hud.activeCorePanel ~= "map" and playerData.hud.activeCorePanel ~= "sheet" then
-                        playerData.hud.activeCorePanel = nil
-                    end
+                -- activeCorePanel is nil or "sheet". A saved "map" value is closed.
+                if playerData.hud.activeCorePanel ~= nil and playerData.hud.activeCorePanel ~= "sheet" then
+                    playerData.hud.activeCorePanel = nil
                 end
+                playerData.hud.map = nil
 
                 if type(playerData.hud.reference) ~= "table" then
                     playerData.hud.reference = {}
@@ -1307,60 +1279,6 @@ function S.validateState()
                     elseif type(ref[k]) ~= "boolean" then
                         ref[k] = defaultVal
                     end
-                end
-
-                -- Ensure map subtree exists for the HUD.
-                if type(playerData.hud.map) ~= "table" then
-                    playerData.hud.map = {}
-                end
-
-                local map = playerData.hud.map
-
-                if type(map.overlays) ~= "table" then
-                    map.overlays = {}
-                end
-
-                local overlayKeys = {
-                    "districtsAll",
-                    "localRoads",
-                    "majorRoads",
-                    "majorSites",
-                    "domain_theCourt",
-                    "domain_fiveKeys",
-                    "domain_moonClub",
-                    "domain_universityChantry",
-                    "domain_freeChantry",
-                    "domain_ironGuard",
-                    "domain_scarlett",
-                    "domain_anarchFreeZone",
-                    "domain_hecata",
-                    "domain_bertrice",
-                    "domain_islandDevil",
-                    "domain_domainConflicts",
-                    "domain_barrens",
-                    "domain_theRack"
-                }
-                for _, key in ipairs(overlayKeys) do
-                    if map.overlays[key] == nil then
-                        map.overlays[key] = false
-                    elseif type(map.overlays[key]) ~= "boolean" then
-                        map.overlays[key] = false
-                    end
-                end
-
-                if type(map.location) ~= "table" then
-                    map.location = {}
-                end
-
-                local loc = map.location
-                if loc.district ~= nil and type(loc.district) ~= "string" then
-                    loc.district = nil
-                end
-                if loc.site ~= nil and type(loc.site) ~= "string" then
-                    loc.site = nil
-                end
-                if loc.position ~= nil and type(loc.position) ~= "table" then
-                    loc.position = nil
                 end
             end
         end

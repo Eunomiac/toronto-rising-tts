@@ -97,6 +97,8 @@ Nav: XmlUI `(player, value, id)` → `getPlayerIDAndColor(player)`.
 
 ### Map
 
+The in-game map panel, its sidebars, and the right-sidebar Map button have been removed. District and site cards stay on the location dock. Player pin locations stay in `gameState.lastActiveMapPin`. The notes below describe the retired map stacks.
+
 Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base, feature/domain overlays, pins, district highlight (collapsed), district card (collapsed; selection still per-player).
 
 | Slice | Locked approach |
