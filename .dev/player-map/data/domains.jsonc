@@ -1,0 +1,591 @@
+// Position contract for overlay and label domains.
+// x, y, fontSize, and icon width are pixels on the source artboard
+// (4318×5400, origin at the top-left, y increasing downward — the same
+// space as data/source/toronto-rising-map.svg). The map projects those
+// pixels through data/calibration.json, so a point stays on its district
+// while the player pans and zooms.
+//
+// Text: x,y is the center of the painted letters, including every line.
+// In Photoshop, center-align the type, convert it to a smart object, trim
+// it to its pixels, then read that object's center in the main document.
+// Lines stay center-aligned and grow equally above and below that point.
+// fontSize is the Character panel point size from before the conversion,
+// not the smart object's width. The Photoshop master is 72 ppi at this
+// artboard size, so that point size is already in artboard pixels. It
+// scales with the map.
+//
+// Icons: x,y is the center of the graphic. width is the rendered width in
+// artboard pixels; height follows the SVG. Place an icon under a label by
+// giving it a larger y than the label.
+//
+// A placement of 0,0 with fontSize or width 0 is unfinished and is not drawn.
+// Site domains do not use x,y. They name an existing site key and sit with
+// that site's icon and label.
+{
+  "bertrice": {
+    "type": "overlay",
+    "displayName": "Bertrice",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#FFFFFF",
+    "displayNamePositionData": [
+      {
+        "x": 1191,
+        "y": 389,
+        "fontSize": 200
+      }
+    ],
+    "displayIcon": "assets/icons/domains/bertrice.svg",
+    "displayIconColor": "#000000",
+    "displayIconPositionData": {
+      "x": 1191,
+      "y": 389,
+      "width": 582
+    },
+    "districtOverlays": {
+      "Humewood": "full",
+      "DeerPark": "full"
+    },
+    "districtOverlayColor": "#FFFFFF",
+    "affiliations": ["Independent"],
+    "order": 2
+  },
+  "hecata": {
+    "type": "overlay",
+    "displayName": "Hecata",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#FFFFFF",
+    "displayNamePositionData": [
+      {
+        "x": 500,
+        "y": 1500,
+        "fontSize": 200
+      }
+    ],
+    "displayIcon": "assets/icons/domains/hecata.svg",
+    "displayIconColor": "#000000",
+    "displayIconPositionData": {
+      "x": 500,
+      "y": 1500,
+      "width": 650
+    },
+    "districtOverlays": {
+      "Wychwood": "full"
+    },
+    "districtOverlayColor": "#FFFFFF",
+    "coterie": "wychwoodHecata",
+    "affiliations": ["Independent"],
+    "order": 1
+  },
+  "fiveKeys": {
+    "type": "overlay",
+    "displayName": "Five Keys",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#FFD800",
+    "displayNamePositionData": [
+      {
+        "displayNameOverride": "Five\nKeys",
+        "x": 1080,
+        "y": 1080,
+        "fontSize": 80
+      },
+      {
+        "x": 3000,
+        "y": 55,
+        "fontSize": 90
+      }
+    ],
+    "districtOverlays": {
+      "DupontByTheCastle": "halfA",
+      "Bennington": "full"
+    },
+    "districtOverlayColor": "#FFD800",
+    "coterie": "fiveKeys",
+    "affiliations": ["Camarilla"],
+    "order": 1
+  },
+  "princesCourt": {
+    "type": "overlay",
+    "displayName": "The Court",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#FFFFFF",
+    "displayNamePositionData": [
+      {
+        "x": 1232,
+        "y": 1200,
+        "fontSize": 80
+      },
+      {
+        "x": 1972,
+        "y": 3575,
+        "fontSize": 80
+      },
+      {
+        "displayNameOverride": "The\nCourt",
+        "x": 1900,
+        "y": 3050,
+        "fontSize": 80
+      },
+      {
+        "displayNameOverride": "The\nCourt",
+        "x": 2425,
+        "y": 3150,
+        "fontSize": 80
+      }
+    ],
+    "districtOverlays": {
+      "DupontByTheCastle": "halfB",
+      "BayStFinancial": "full",
+      "WestQueenWest": "halfA",
+      "Waterfront": "halfA"
+    },
+    "districtOverlayColor": "#DD0000",
+    "affiliations": ["Camarilla"],
+    "order": 2
+  },
+  "regencyUniversityChantry": {
+    "type": "overlay",
+    "displayName": "University\nChantry",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#FFC87A",
+    "displayNamePositionData": [
+      {
+        "x": 1950,
+        "y": 2240,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "Discovery": "full",
+      "YongeBloorMuseum": "full",
+      "YongeDundasHospital": "full"
+    },
+    "districtOverlayColor": "#FFC87A",
+    "coterie": "regencyUniversityChantry",
+    "affiliations": ["Camarilla"],
+    "order": 1
+  },
+  "freeChantry": {
+    "type": "overlay",
+    "displayName": "Free\nChantry",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#FFC87A",
+    "displayNamePositionData": [
+      {
+        "x": 950,
+        "y": 2310,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "LittleItaly": "halfA"
+    },
+    "districtOverlayColor": "#FFC87A",
+    "coterie": "freeChantry",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "scarlettAndTheBoys": {
+    "type": "overlay",
+    "displayName": "Scarlett\n& the Boys",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#C600FF",
+    "displayNamePositionData": [
+      {
+        "displayNameOverride": "Scarlett & the Boys",
+        "x": 2225,
+        "y": 2825,
+        "fontSize": 64
+      },
+      {
+        "x": 609,
+        "y": 3970,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "LibertyVillage": "full",
+      "WestQueenWest": "halfB"
+    },
+    "districtOverlayColor": "#C600FF",
+    "coterie": "scarlettAndTheBoys",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "moonClub": {
+    "type": "overlay",
+    "displayName": "Moon Club",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#00FFFF",
+    "displayNamePositionData": [
+      {
+        "displayNameOverride": "Moon\nClub",
+        "x": 4038,
+        "y": 3119,
+        "fontSize": 100
+      },
+      {
+        "x": 1972,
+        "y": 3475,
+        "fontSize": 80
+      }
+    ],
+    "districtOverlays": {
+      "DistilleryDist": "full",
+      "Waterfront": "halfB"
+    },
+    "districtOverlayColor": "#00FFFF",
+    "coterie": "moonClub",
+    "affiliations": ["Camarilla"],
+    "order": 1
+  },
+  "ironGuard": {
+    "type": "overlay",
+    "displayName": "Iron Guard",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#00FF00",
+    "displayNamePositionData": [
+      {
+        "x": 2780,
+        "y": 701,
+        "fontSize": 95
+      }
+    ],
+    "districtOverlays": {
+      "Rosedale": "halfA"
+    },
+    "districtOverlayColor": "#00FF00",
+    "coterie": "ironGuard",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "theIslandDevil": {
+    "type": "overlay",
+    "displayName": "Island-Devil",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#FFFFFF",
+    "displayNamePositionData": [
+      {
+        "x": 1940,
+        "y": 4433,
+        "fontSize": 200
+      }
+    ],
+    "displayIcon": "assets/icons/domains/islandDevil.svg",
+    "displayIconColor": "#000000",
+    "displayIconPositionData": {
+      "x": 1940,
+      "y": 4433,
+      "width": 614
+    },
+    "districtOverlays": {
+      "CentreIsland": "full"
+    },
+    "districtOverlayColor": "#FFFFFF",
+    "affiliations": ["Independent"],
+    "order": 2
+  },
+  "redeemersRen": {
+    "type": "overlay",
+    "displayName": "Redeemers\n-Ren-",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameWeight": "bold",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 4006,
+        "y": 562,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "Danforth": "full"
+    },
+    "districtOverlayColor": "#00FF00",
+    "coterie": "redeemers",
+    "affiliations": ["Anarchs"],
+    "menuItem": "Redeemers",
+    "order": 1
+  },
+  "redeemersKai": {
+    "type": "overlay",
+    "displayName": "Redeemers\n-Kai-",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 2736,
+        "y": 2099,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "GayVillage": "halfA"
+    },
+    "districtOverlayColor": "#00FF00",
+    "coterie": "redeemers",
+    "affiliations": ["Anarchs"],
+    "menuItem": "Redeemers",
+    "order": 1
+  },
+  "redFlag": {
+    "type": "overlay",
+    "displayName": "Red Flag",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 2775,
+        "y": 789,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "Rosedale": "halfB"
+    },
+    "districtOverlayColor": "#FF0000",
+    "coterie": "redFlag",
+    "affiliations": ["Anarchs"],
+    "order": 1
+  },
+  "jarvisJacks": {
+    "type": "overlay",
+    "displayName": "Jarvis Jacks",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 3150,
+        "y": 2896,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "Corktown": "halfA"
+    },
+    "districtOverlayColor": "#A70047",
+    "coterie": "jarvisJacks",
+    "affiliations": ["Anarchs"],
+    "order": 1,
+    "menuItem": "Jarvis Jacks"
+  },
+  "everymen": {
+    "type": "overlay",
+    "displayName": "The Everymen",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 3343,
+        "y": 2285,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "Cabbagetown": "halfA"
+    },
+    "districtOverlayColor": "#4943C5",
+    "affiliations": ["Anarchs"],
+    "order": 0
+  },
+  "houseRustovich": {
+    "type": "overlay",
+    "displayName": "House of Rustovich",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 3262,
+        "y": 2788,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "Corktown": "halfB"
+    },
+    "districtOverlayColor": "#C5AB43",
+    "affiliations": ["Anarchs"],
+    "order": 0
+  },
+  "menInBlack": {
+    "type": "overlay",
+    "displayName": "Men-In-Black",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 2774,
+        "y": 1327,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "StJamesTown": "halfA"
+    },
+    "districtOverlayColor": "#888888",
+    "affiliations": ["Anarchs"],
+    "order": 0
+  },
+  "nightwolves": {
+    "type": "overlay",
+    "displayName": "Nightwolves",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 3273,
+        "y": 1976,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "Riverdale": "halfA"
+    },
+    "districtOverlayColor": "#990000",
+    "affiliations": ["Anarchs"],
+    "order": 0
+  },
+  "openSanctum": {
+    "type": "overlay",
+    "displayName": "Open\nSanctum",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameColor": "#FF0000",
+    "displayNamePositionData": [
+      {
+        "x": 4098,
+        "y": 1841,
+        "fontSize": 100
+      }
+    ],
+    "districtOverlays": {
+      "RegentPark": "halfA"
+    },
+    "districtOverlayColor": "#FFC87A",
+    "affiliations": ["Anarchs"],
+    "order": 0
+  },
+  "redeemersAlexandraContested": {
+    "type": "label",
+    "displayName": "⚠️ Redeemers -Alexandra-",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameWeight": "bold",
+    "displayNameColor": "#FF0000",
+    "displayNameBGColor": "#000000",
+    "displayNameBorderColor": "#FFFF00",
+    "displayNamePositionData": [
+      {
+        "x": 1287,
+        "y": 3480,
+        "fontSize": 45
+      }
+    ],
+    "coterie": "redeemers",
+    "affiliations": ["Anarchs", "Contested"],
+    "menuItem": "Redeemers",
+    "districts": ["Chinatown"],
+    "order": 1
+  },
+  "redeemersTylerContested": {
+    "type": "label",
+    "displayName": "⚠️ Redeemers -Tyler-",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameWeight": "bold",
+    "displayNameColor": "#FF0000",
+    "displayNameBGColor": "#000000",
+    "displayNameBorderColor": "#FFFF00",
+    "displayNamePositionData": [
+      {
+        "x": 975,
+        "y": 2700,
+        "fontSize": 45
+      }
+    ],
+    "coterie": "redeemers",
+    "affiliations": ["Anarchs", "Contested"],
+    "menuItem": "Redeemers",
+    "districts": ["LittleItaly"],
+    "order": 1
+  },
+  "theLineContested": {
+    "type": "label",
+    "displayName": "⚠️ The Line",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameWeight": "bold",
+    "displayNameColor": "#FF0000",
+    "displayNameBGColor": "#000000",
+    "displayNameBorderColor": "#FFFF00",
+    "displayNamePositionData": [
+      {
+        "x": 1900,
+        "y": 3370,
+        "fontSize": 45
+      },
+      {
+        "x": 2553,
+        "y": 2405,
+        "rotate": 72,
+        "fontSize": 45
+      }
+    ],
+    "coterie": "theLine",
+    "affiliations": ["Anarchs", "Contested"],
+    "order": 1,
+    "districts": ["YongeStreet", "Waterfront"]
+  },
+  "jarvisJacksContested": {
+    "type": "label",
+    "displayName": "⚠️ Jarvis Jacks",
+    "displayNameFont": "WolvesEngraven",
+    "displayNameWeight": "bold",
+    "displayNameColor": "#FF0000",
+    "displayNameBGColor": "#000000",
+    "displayNameBorderColor": "#FFFF00",
+    "displayNamePositionData": [
+      {
+        "x": 3969,
+        "y": 2930,
+        "fontSize": 45
+      }
+    ],
+    "coterie": "jarvisJacks",
+    "affiliations": ["Anarchs", "Contested"],
+    "order": 1,
+    "menuItem": "Jarvis Jacks",
+    "districts": ["DistilleryDist"]
+  },
+  "flyCooksContested": {
+    "type": "site",
+    "displayName": "⚠️ Fly Cooks",
+    "displayNameFont": "CormorantGaramond",
+    "displayNameWeight": "bold",
+    "displayNameColor": "#FFDD00",
+    "displayNameBGColor": "#000000",
+    "displayNameBorderColor": "#FFFF00",
+    "displayNameOrientation": "left",
+    "displayNamePositionData": [
+      {
+        "site": "Kensington",
+        "fontSize": 45
+      }
+    ],
+    "affiliations": ["Independent", "Contested"],
+    "order": 0
+  },
+  "midnightMass": {
+    "type": "site",
+    "displayName": "Midnight Mass",
+    "displayNameFont": "PenumbraFlare",
+    "displayNameColor": "#000000",
+    "displayNameBGColor": "#FFDD00",
+    "displayNameBorderColor": "#000000",
+    "displayNameOrientation": "right",
+    "displayNamePositionData": [
+      {
+        "site": "StMichaelsCathedral",
+        "fontSize": 45
+      }
+    ],
+    "coterie": "midnightMass",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  }
+}

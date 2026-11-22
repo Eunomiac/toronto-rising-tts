@@ -1,0 +1,98 @@
+{
+  "beesHive": {
+    "displayName": "Bee's Hive",
+    "image": "assets/coteries/coterie_beesHive.webp",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "fiveKeys": {
+    "displayName": "Five Keys",
+    "image": "assets/coteries/coterie_fiveKeys.webp",
+    "affiliations": ["Camarilla"],
+    "order": 1
+  },
+  "freeChantry": {
+    "displayName": "Free Chantry",
+    "image": "assets/coteries/coterie_freeChantry.webp",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "harpies": {
+    "displayName": "the Harpies",
+    "image": "assets/coteries/coterie_harpies.webp",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "ironGuard": {
+    "displayName": "Iron Guard",
+    "image": "assets/coteries/coterie_ironGuard.webp",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "midnightMass": {
+    "displayName": "Midnight Mass",
+    "image": "assets/coteries/coterie_midnightMass.webp",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "moonClub": {
+    "displayName": "Moon Club",
+    "image": "assets/coteries/coterie_moonClub.webp",
+    "affiliations": ["Camarilla"],
+    "order": 1
+  },
+  "regencyUniversityChantry": {
+    "displayName": "University Chantry",
+    "image": "assets/coteries/coterie_regencyUniversityChantry.webp",
+    "affiliations": ["Camarilla"],
+    "order": 1
+  },
+  "scarlettAndTheBoys": {
+    "displayName": "Scarlett & the Boys",
+    "image": "assets/coteries/coterie_scarlettAndTheBoys.webp",
+    "affiliations": ["Camarilla"],
+    "order": 0
+  },
+  "colorBlitz": {
+    "displayName": "Color Blitz",
+    "image": "assets/coteries/coterie_colorBlitz.webp",
+    "affiliations": ["Anarchs"],
+    "order": 0
+  },
+  "goodDoctors": {
+    "displayName": "the Good Doctors",
+    "image": "assets/coteries/coterie_goodDoctors.webp",
+    "affiliations": ["Anarchs"],
+    "order": 2
+  },
+  "jarvisJacks": {
+    "displayName": "Jarvis Jacks",
+    "image": "assets/coteries/coterie_jarvisJacks.webp",
+    "affiliations": ["Anarchs"],
+    "order": 0
+  },
+  "redeemers": {
+    "displayName": "Redeemers",
+    "image": "assets/coteries/coterie_redeemers.webp",
+    "affiliations": ["Anarchs"],
+    "order": 1
+  },
+  "redFlag": {
+    "displayName": "Red Flag",
+    "image": "assets/coteries/coterie_redFlag.webp",
+    "affiliations": ["Anarchs"],
+    "order": 1
+  },
+  "theLine": {
+    "displayName": "the Line",
+    "image": "assets/coteries/coterie_theLine.webp",
+    "affiliations": ["Anarchs"],
+    "order": 1
+  },
+  "wychwoodHecata": {
+    "displayName": "Wychwood Hecata",
+    "image": "assets/coteries/coterie_wychwoodHecata.webp",
+    "affiliations": ["Independent"],
+    "order": 0
+  }
+}

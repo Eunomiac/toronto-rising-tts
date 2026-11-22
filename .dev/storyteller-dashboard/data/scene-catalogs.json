@@ -963,7 +963,9 @@
       "catalog": true,
       "filename": "npc_robin.webp",
       "variantOfUnique": "",
-      "pickerGroups": []
+      "pickerGroups": [
+        "custom-1795299440361"
+      ]
     },
     {
       "characterKey": "rosie",
@@ -1115,7 +1117,9 @@
       "catalog": true,
       "filename": "npc_sylvain.webp",
       "variantOfUnique": "",
-      "pickerGroups": []
+      "pickerGroups": [
+        "custom-1795299440361"
+      ]
     },
     {
       "characterKey": "terry",
@@ -6118,6 +6122,7 @@
     "friendlyNeighborhoodSpiders": "Friendly Neighborhood Spiders",
     "friendlyNeighborhoodSpidersGarou": "Friendly Neighborhood Spiders (Garou)",
     "touchstone": "Touchstone",
+    "custom-1795299440361": "Famuli",
     "autarkis": "Autarkis",
     "beesHive": "Bee's Hive",
     "colorBlitz": "Color Blitz",

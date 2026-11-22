@@ -9,6 +9,18 @@ import type {
   SheetOnlyDistrictFacts,
 } from './types';
 import {
+  DOMAIN_CATALOG,
+  EMPTY_DOMAIN_SELECTION,
+  domainMenu,
+  domainMenuItemSelected,
+  splitDomainMenu,
+  toggleDomainAffiliation,
+  toggleDomainKey,
+  toggleDomainMenuItem,
+  type DomainSelection,
+} from './domains';
+import { COTERIE_CATALOG, coterieMenu } from './coteries';
+import {
   HOMESTEAD_BLURBS,
   HOMESTEAD_TRAITS,
   HUNTING_FLAVORS,
@@ -28,11 +40,14 @@ interface IconRailProps {
   sites?: PublicSiteProperties[];
   toggledSiteKeys?: readonly string[];
   overlay: MapOverlaySelection;
+  domainSelection?: DomainSelection;
   onToggleRegion: (key: string) => void;
   onSelectDistrict: (key: string) => void;
   onToggleSite?: (key: string) => void;
   onFocusHub?: (key: string) => void;
   onOverlayChange: (overlay: MapOverlaySelection) => void;
+  onDomainSelectionChange?: (selection: DomainSelection) => void;
+  onOpenCoterie?: (key: string) => void;
 }
 
 function districtSortName(name: string) {
@@ -255,7 +270,7 @@ function IconRailItem({
       </button>
       <div
         id={`icon-rail-body-${menu.id}`}
-        className={`icon-rail__panel${wide ? ' icon-rail__panel--wide' : ''}${menu.id === 'sites' ? ' icon-rail__panel--sites' : ''}`}
+        className={`icon-rail__panel${wide ? ' icon-rail__panel--wide' : ''}${menu.id === 'sites' ? ' icon-rail__panel--sites' : ''}${menu.id === 'domains' ? ' icon-rail__panel--domains' : ''}`}
         data-gsap={`rail-body-${menu.id}`}
         hidden={!shown}
       >
@@ -277,11 +292,14 @@ export function IconRail({
   sites = [],
   toggledSiteKeys = [],
   overlay,
+  domainSelection = EMPTY_DOMAIN_SELECTION,
   onToggleRegion,
   onSelectDistrict,
   onToggleSite,
   onFocusHub,
   onOverlayChange,
+  onDomainSelectionChange,
+  onOpenCoterie,
 }: IconRailProps) {
   const rootRef = useRef<HTMLElement>(null);
   const columnRef = useRef<HTMLDivElement>(null);
@@ -304,11 +322,13 @@ export function IconRail({
     const onPointerDown = (event: PointerEvent) => {
       if (!rootRef.current) return;
       if (rootRef.current.contains(event.target as Node)) return;
+      if (event.target instanceof Node && document.querySelector('[data-modal="coterie"]')?.contains(event.target)) return;
       setOpenMenu(null);
       setExpandedRail(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (document.querySelector('[data-modal="coterie"]')) return;
         setOpenMenu(null);
         setExpandedRail(false);
       }
@@ -407,16 +427,17 @@ export function IconRail({
           const chipForMenu = overlayChip && overlayChip.menuId === menu.id && !isOpen
             ? overlayChip
             : null;
+          const domainChip = menu.id === 'domains' && !isOpen && domainSelection.domainKeys.length > 0;
           return (
             <div
               key={menu.id}
-              className={`icon-rail__slot${isOpen ? ' is-open' : ''}${chipForMenu ? ' has-chip' : ''}`}
+              className={`icon-rail__slot${isOpen ? ' is-open' : ''}${chipForMenu || domainChip ? ' has-chip' : ''}`}
               data-menu={menu.id}
             >
             <IconRailItem
               menu={menu}
               isOpen={isOpen}
-              wide={menu.id === 'sites' || menu.id === 'hunting' || menu.id === 'homestead'}
+              wide={menu.id === 'sites' || menu.id === 'domains' || menu.id === 'hunting' || menu.id === 'homestead'}
               onToggle={() => openMenuAndExpand(menu.id)}
             >
           {menu.id === 'map-layers' ? (
@@ -534,6 +555,68 @@ export function IconRail({
                 );
               })}
             </div>
+          ) : menu.id === 'domains' ? (
+            <div className="icon-rail__list icon-rail__list--domains">
+              {splitDomainMenu(domainMenu(DOMAIN_CATALOG)).map((column, columnIndex) => (
+                <div key={columnIndex} className="icon-rail__column">
+                  {column.map((group) => {
+                    const headerOn = domainSelection.affiliations.includes(group.affiliation);
+                    return (
+                      <div key={group.affiliation} className="icon-rail__group">
+                        <button
+                          type="button"
+                          className={`icon-rail__option icon-rail__option--affiliation${headerOn ? ' is-selected' : ''}`}
+                          aria-pressed={headerOn}
+                          onClick={() => onDomainSelectionChange?.(
+                            toggleDomainAffiliation(domainSelection, DOMAIN_CATALOG, group.affiliation),
+                          )}
+                        >
+                          {group.affiliation}
+                        </button>
+                        {group.entries.map((entry) => {
+                          const selected = domainMenuItemSelected(domainSelection, entry.domainKeys);
+                          return (
+                            <button
+                              key={entry.label}
+                              type="button"
+                              className={`icon-rail__option icon-rail__option--district icon-rail__option--domain${selected ? ' is-selected' : ''}`}
+                              aria-pressed={selected}
+                              onClick={() => onDomainSelectionChange?.(
+                                entry.menuItem
+                                  ? toggleDomainMenuItem(domainSelection, DOMAIN_CATALOG, entry.menuItem)
+                                  : toggleDomainKey(domainSelection, DOMAIN_CATALOG, entry.domainKeys[0] ?? ''),
+                              )}
+                            >
+                              {entry.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ) : menu.id === 'coteries' ? (
+            <div className="icon-rail__list">
+              {coterieMenu(COTERIE_CATALOG).map((group) => (
+                <div key={group.affiliation} className="icon-rail__group">
+                  <div className="icon-rail__option icon-rail__option--affiliation icon-rail__option--heading">
+                    {group.affiliation}
+                  </div>
+                  {group.entries.map((entry) => (
+                    <button
+                      key={entry.key}
+                      type="button"
+                      className="icon-rail__option icon-rail__option--district"
+                      onClick={() => onOpenCoterie?.(entry.key)}
+                    >
+                      {entry.displayName}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
           ) : (
             <p className="icon-rail__empty">Nothing revealed yet.</p>
           )}
@@ -546,6 +629,16 @@ export function IconRail({
                 onClick={() => onOverlayChange({ kind: 'none' })}
               >
                 {chipForMenu.label}
+              </button>
+            ) : null}
+            {domainChip ? (
+              <button
+                type="button"
+                className="icon-rail__overlay-chip"
+                aria-label="Clear Domains overlay"
+                onClick={() => onDomainSelectionChange?.(EMPTY_DOMAIN_SELECTION)}
+              >
+                Domains
               </button>
             ) : null}
             </div>

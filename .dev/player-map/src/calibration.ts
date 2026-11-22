@@ -135,3 +135,87 @@ export function applyVisualCalibrationToLabels(
 export function serializeVisualCalibration(calibration: VisualCalibration) {
   return JSON.stringify(calibration, null, 2);
 }
+
+export interface ArtboardControlPoint {
+  readonly source: readonly [number, number];
+  readonly lngLat: readonly [number, number];
+}
+
+export interface ArtboardProjectorInput {
+  readonly sourceViewBox: readonly [number, number, number, number];
+  readonly controlPoints: readonly ArtboardControlPoint[];
+  readonly adjustments?: { readonly horizontalScale?: number; readonly anchorSourceX?: number } | null;
+  readonly visualCalibration?: VisualCalibration | null;
+}
+
+function fitAxis(sourceValues: number[], targetValues: number[]) {
+  const sourceMean = sourceValues.reduce((sum, value) => sum + value, 0) / sourceValues.length;
+  const targetMean = targetValues.reduce((sum, value) => sum + value, 0) / targetValues.length;
+  const denominator = sourceValues.reduce((sum, value) => sum + (value - sourceMean) ** 2, 0);
+  if (denominator < 1e-12) throw new Error('Calibration control points do not span both source axes');
+  const scale = sourceValues.reduce(
+    (sum, value, index) => sum + (value - sourceMean) * ((targetValues[index] ?? targetMean) - targetMean),
+    0,
+  ) / denominator;
+  return { scale, offset: targetMean - scale * sourceMean };
+}
+
+/** Artboard pixels to the same longitude/latitude the district polygons use. */
+export function createArtboardProjector(input: ArtboardProjectorInput) {
+  if (input.controlPoints.length < 2) throw new Error('At least two calibration control points are required');
+  const targets = input.controlPoints.map((control) => [
+    longitudeToMetres(control.lngLat[0]),
+    latitudeToMetres(control.lngLat[1]),
+  ]);
+  const fittedX = fitAxis(
+    input.controlPoints.map((control) => control.source[0]),
+    targets.map((target) => target[0] ?? 0),
+  );
+  const fittedY = fitAxis(
+    input.controlPoints.map((control) => control.source[1]),
+    targets.map((target) => target[1] ?? 0),
+  );
+  const horizontalScale = input.adjustments?.horizontalScale ?? 1;
+  const anchorSourceX = input.adjustments?.anchorSourceX ?? 0;
+  const xScale = fittedX.scale * horizontalScale;
+  const xOffset = fittedX.offset + (fittedX.scale - xScale) * anchorSourceX;
+  const projectFitted = (point: readonly [number, number]): [number, number] => [
+    metresToLongitude(xScale * point[0] + xOffset),
+    metresToLatitude(fittedY.scale * point[1] + fittedY.offset),
+  ];
+
+  const [minX, minY, width, height] = input.sourceViewBox;
+  const corners = [
+    projectFitted([minX, minY]),
+    projectFitted([minX + width, minY]),
+    projectFitted([minX + width, minY + height]),
+    projectFitted([minX, minY + height]),
+  ];
+  const bounds: [[number, number], [number, number]] = [
+    [Math.min(...corners.map((corner) => corner[0])), Math.min(...corners.map((corner) => corner[1]))],
+    [Math.max(...corners.map((corner) => corner[0])), Math.max(...corners.map((corner) => corner[1]))],
+  ];
+  const visual = input.visualCalibration ?? DEFAULT_VISUAL_CALIBRATION;
+
+  return (point: readonly [number, number]): [number, number] => {
+    const fitted = projectFitted(point);
+    if (
+      visual.horizontalScale === 1
+      && visual.verticalScale === 1
+      && visual.offsetEastMetres === 0
+      && visual.offsetNorthMetres === 0
+    ) return fitted;
+    const west = longitudeToMetres(bounds[0][0]);
+    const east = longitudeToMetres(bounds[1][0]);
+    const south = latitudeToMetres(bounds[0][1]);
+    const north = latitudeToMetres(bounds[1][1]);
+    const anchorX = anchorValue(west, east, visual.horizontalAnchor);
+    const anchorY = anchorValue(south, north, visual.verticalAnchor);
+    const sourceX = longitudeToMetres(fitted[0]);
+    const sourceY = latitudeToMetres(fitted[1]);
+    return [
+      metresToLongitude(anchorX + (sourceX - anchorX) * visual.horizontalScale + visual.offsetEastMetres),
+      metresToLatitude(anchorY + (sourceY - anchorY) * visual.verticalScale + visual.offsetNorthMetres),
+    ];
+  };
+}

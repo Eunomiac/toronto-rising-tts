@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type MutableRefObject } from 'react';
-import { siteCardUrl, siteHubCardUrl } from './districtAssets';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { overlayPaintForDistrict, type MapOverlaySelection } from './mapOverlays';
 import {
   AttributionControl,
@@ -205,7 +204,7 @@ function focusDistrict(map: Map, districts: DistrictFeatureCollection, key: stri
 function focusPath(map: Map, bounds: MapViewProps['pathBounds']) {
   map.fitBounds([[bounds.west, bounds.south], [bounds.east, bounds.north]], {
     padding: { top: 116, right: 52, bottom: 260, left: 120 },
-    // Stay at/above the pin-18 clear threshold so PATH focus cannot wipe its own selection.
+    // Stay above the zoom where a selection is cleared, so PATH focus cannot wipe its own selection.
     maxZoom: 14,
     duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 850,
   });
@@ -619,10 +618,17 @@ function createSiteMarkerElement(name: string, icon: string, hub: boolean) {
   return root;
 }
 
-function syncSiteLabelVisibility(markers: Marker[], zoom: number) {
-  const visible = zoom >= SITE_LABEL_MIN_ZOOM;
+/** Names stay hidden until the site is hovered, or the map reaches zoom 14.5. */
+const SITE_NAME_LABEL_ZOOM = 14.5;
+
+function syncSiteLabelVisibility(markers: Marker[], zoom: number, hoveredSiteKey: string | null = null) {
+  const markerVisible = zoom >= SITE_LABEL_MIN_ZOOM;
+  const zoomedIn = zoom >= SITE_NAME_LABEL_ZOOM;
   for (const marker of markers) {
-    marker.getElement().style.display = visible ? '' : 'none';
+    const element = marker.getElement();
+    element.style.display = markerVisible ? '' : 'none';
+    const hovered = hoveredSiteKey !== null && element.dataset.siteKey === hoveredSiteKey;
+    element.classList.toggle('is-label-visible', zoomedIn || hovered);
   }
 }
 
@@ -646,6 +652,7 @@ function mountSiteLabelMarkers(
     })
       .setLngLat(feature.geometry.coordinates as [number, number])
       .addTo(map);
+    marker.getElement().dataset.siteKey = feature.properties.key;
     markers.push(marker);
   }
   syncSiteLabelVisibility(markers, map.getZoom());
@@ -793,6 +800,7 @@ export function MapView({
   const onSiteSelectRef = useRef(onSiteSelect);
   const onMapReadyRef = useRef(onMapReady);
   const hoveredRef = useRef<string | null>(null);
+  const hoveredSiteKeyRef = useRef<string | null>(null);
   const selectedRef = useRef<string | null>(null);
   const toggledSiteKeysRef = useRef(toggledSiteKeys);
   const revealedSiteKeysRef = useRef(revealedSiteKeys);
@@ -802,12 +810,6 @@ export function MapView({
   const siteLabelMarkersRef = useRef<Marker[]>([]);
   const [status, setStatus] = useState('Loading street map…');
   const [distantView, setDistantView] = useState(false);
-  const [siteTooltip, setSiteTooltip] = useState<{
-    key: string;
-    hub: boolean;
-    left: number;
-    top: number;
-  } | null>(null);
   districtsRef.current = districts;
   regionsRef.current = regions;
   sitesRef.current = sites;
@@ -869,7 +871,7 @@ export function MapView({
           zoom,
           layerVisibilityRef.current.districts,
         );
-        syncSiteLabelVisibility(siteLabelMarkersRef.current, zoom);
+        syncSiteLabelVisibility(siteLabelMarkersRef.current, zoom, hoveredSiteKeyRef.current);
       });
     };
     const finalizeViewportLabels = () => {
@@ -1260,26 +1262,26 @@ export function MapView({
         selectedRef.current,
       );
     };
+    const rememberHoveredSite = (siteKey: string | null) => {
+      if (siteKey === hoveredSiteKeyRef.current) return;
+      hoveredSiteKeyRef.current = siteKey;
+      syncSiteLabelVisibility(siteLabelMarkersRef.current, map.getZoom(), siteKey);
+    };
     const onMouseMove = (event: MapMouseEvent) => {
       const siteHit = map.getLayer(SITE_LAYER_ID)
         ? map.queryRenderedFeatures(event.point, { layers: [SITE_LAYER_ID] })[0]
         : undefined;
       const siteKey = typeof siteHit?.properties?.key === 'string' ? siteHit.properties.key : null;
       if (siteKey) {
+        rememberHoveredSite(siteKey);
         if (hoveredRef.current && hoveredRef.current !== 'PATH') clearDistrictHover(hoveredRef.current);
         hoveredRef.current = null;
         syncHoverBorders(map, districtsRef.current, null);
         refreshDistrictHtmlLabelStates();
-        setSiteTooltip({
-          key: siteKey,
-          hub: Boolean(siteHit?.properties?.hub),
-          left: event.point.x,
-          top: event.point.y,
-        });
         map.getCanvas().style.cursor = 'pointer';
         return;
       }
-      setSiteTooltip(null);
+      rememberHoveredSite(null);
       const feature = map.queryRenderedFeatures(event.point, { layers: [PATH_INTERACTION_LAYER_ID, FILL_LAYER_ID] })[0];
       const key = districtKey(feature);
       if (key === hoveredRef.current) return;
@@ -1301,7 +1303,6 @@ export function MapView({
         : undefined;
       const siteKey = typeof siteHit?.properties?.key === 'string' ? siteHit.properties.key : null;
       if (siteKey) {
-        setSiteTooltip(null);
         onSiteSelectRef.current?.(siteKey);
         return;
       }
@@ -1317,7 +1318,7 @@ export function MapView({
     map.on('load', onLoad);
     if (map.isStyleLoaded()) onLoad();
     const onMouseLeave = () => {
-      setSiteTooltip(null);
+      rememberHoveredSite(null);
       if (hoveredRef.current && hoveredRef.current !== 'PATH') clearDistrictHover(hoveredRef.current);
       hoveredRef.current = null;
       syncHoverBorders(map, districtsRef.current, null);
@@ -1586,21 +1587,6 @@ export function MapView({
         <div className="map-surface__path-legend" aria-hidden="true" data-gsap="path-legend">
           <span className="map-surface__path-legend-line" />
           <span className="map-surface__path-legend-label">P.A.T.H.</span>
-        </div>
-      ) : null}
-      {siteTooltip ? (
-        <div
-          className="site-card-tooltip"
-          style={{
-            left: siteTooltip.left,
-            top: siteTooltip.top,
-          } as CSSProperties}
-          aria-hidden="true"
-        >
-          <img
-            src={siteTooltip.hub ? siteHubCardUrl(siteTooltip.key) : siteCardUrl(siteTooltip.key)}
-            alt=""
-          />
         </div>
       ) : null}
       <p className="map-surface__status" role="status">{status}</p>

@@ -7,6 +7,8 @@ interface CardModalProps {
   readonly onClose: () => void;
   /** Accessible name when visible titles are omitted. */
   readonly ariaLabel: string;
+  /** Marks this dialog so an open menu can stay open while it is showing. */
+  readonly marker?: string;
   readonly children: ReactNode;
 }
 
@@ -15,7 +17,7 @@ interface CardModalProps {
  * without forwarding through to the map. Card images (and flip controls) mark
  * themselves as the only interactive surface.
  */
-export function CardModal({ open, onClose, ariaLabel, children }: CardModalProps) {
+export function CardModal({ open, onClose, ariaLabel, marker, children }: CardModalProps) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export function CardModal({ open, onClose, ariaLabel, children }: CardModalProps
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
+      data-modal={marker}
       data-note-surface="card-modal"
       onMouseDown={onBackdrop}
       onClick={onBackdrop}

@@ -1,6 +1,7 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { EMPTY_DOMAIN_SELECTION, type DomainSelection } from './domains';
 import { IconRail } from './IconRail';
 
 describe('IconRail', () => {
@@ -231,5 +232,87 @@ describe('IconRail', () => {
     expect(chip.textContent).toBe('CHOLERIC');
     await user.click(chip);
     expect(onOverlayChange).toHaveBeenCalledWith({ kind: 'none' });
+  });
+
+  it('lists coteries under unclickable headers and opens a picture without marking the row selected', async () => {
+    cleanup();
+    const user = userEvent.setup();
+    const onOpenCoterie = vi.fn();
+    render(
+      <IconRail
+        regions={[]}
+        districts={[]}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        overlay={{ kind: 'none' }}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+        onOverlayChange={vi.fn()}
+        onOpenCoterie={onOpenCoterie}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Coteries' }));
+    const panel = document.getElementById('icon-rail-body-coteries');
+    if (!(panel instanceof HTMLElement)) throw new Error('Coteries menu did not open');
+    const menu = within(panel);
+    expect(menu.queryByRole('button', { name: 'Camarilla' })).toBeNull();
+    expect(menu.getByText('Camarilla')).toBeVisible();
+    const names = menu.getAllByRole('button').map((button) => button.textContent);
+    expect(names.slice(0, 3)).toEqual(['Five Keys', 'Moon Club', 'University Chantry']);
+    expect(names).toContain('the Harpies');
+    expect(names.indexOf('the Good Doctors')).toBeLessThan(names.indexOf('Color Blitz'));
+    const fiveKeys = menu.getByRole('button', { name: 'Five Keys' });
+    await user.click(fiveKeys);
+    expect(onOpenCoterie).toHaveBeenCalledWith('fiveKeys');
+    expect(fiveKeys.className).not.toContain('is-selected');
+    expect(menu.getByText('Camarilla')).toBeVisible();
+  });
+
+  it('toggles an affiliation, keeps the matching domain lit, and clears every domain from the chip', async () => {
+    cleanup();
+    const user = userEvent.setup();
+    const onDomainSelectionChange = vi.fn();
+    const { rerender } = render(
+      <IconRail
+        regions={[]}
+        districts={[]}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        overlay={{ kind: 'none' }}
+        domainSelection={EMPTY_DOMAIN_SELECTION}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+        onOverlayChange={vi.fn()}
+        onDomainSelectionChange={onDomainSelectionChange}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Domains' }));
+    await user.click(screen.getByRole('button', { name: 'Independent' }));
+    const next = onDomainSelectionChange.mock.calls[0]?.[0] as DomainSelection;
+    expect(next.affiliations).toEqual(['Independent']);
+    expect(next.domainKeys).toContain('bertrice');
+
+    rerender(
+      <IconRail
+        regions={[]}
+        districts={[]}
+        regionVisibility={{}}
+        selectedDistrictKey={null}
+        overlay={{ kind: 'none' }}
+        domainSelection={next}
+        onToggleRegion={vi.fn()}
+        onSelectDistrict={vi.fn()}
+        onOverlayChange={vi.fn()}
+        onDomainSelectionChange={onDomainSelectionChange}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Independent' })).toHaveClass('is-selected');
+    expect(screen.getByRole('button', { name: 'Bertrice' })).toHaveClass('is-selected');
+
+    await user.click(screen.getByRole('button', { name: 'Domains' }));
+    const chip = screen.getByRole('button', { name: 'Clear Domains overlay' });
+    expect(chip.textContent).toBe('Domains');
+    await user.click(chip);
+    expect(onDomainSelectionChange).toHaveBeenLastCalledWith(EMPTY_DOMAIN_SELECTION);
   });
 });

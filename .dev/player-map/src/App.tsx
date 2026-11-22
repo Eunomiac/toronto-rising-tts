@@ -10,6 +10,15 @@ import {
 } from './calibration';
 import { DistrictChrome } from './DistrictChrome';
 import { DistrictPanel } from './DistrictPanel';
+import { CoterieModal } from './CoterieModal';
+import { coterieByKey } from './coteries';
+import { DomainOverlay } from './DomainOverlay';
+import {
+  DOMAIN_CATALOG,
+  domainSiteKeys,
+  EMPTY_DOMAIN_SELECTION,
+  type DomainSelection,
+} from './domains';
 import { IconRail } from './IconRail';
 import { MapView, type BasemapMaskImage } from './MapView';
 import {
@@ -33,6 +42,10 @@ import type { PublicMapData, PublicSiteProperties, RegionVisibility } from './ty
 import { useDistrictLayout } from './useDistrictLayout';
 
 const CALIBRATION_STORAGE_PREFIX = 'toronto-rising-map-visual-calibration';
+/** Districts and colored overlays turn off once the map is this far out. */
+const OVERLAY_CLEAR_ZOOM = 11.5;
+/** Turning an overlay on from farther out comes back to the city at this zoom. */
+const OVERLAY_RETURN_ZOOM = 12;
 
 function loadVisualCalibration(revision: number): VisualCalibration {
   try {
@@ -66,6 +79,11 @@ export function App() {
   }, [map]);
   const [activeSite, setActiveSite] = useState<PublicSiteProperties | null>(null);
   const [overlay, setOverlay] = useState<MapOverlaySelection>({ kind: 'none' });
+  const [domainSelection, setDomainSelection] = useState<DomainSelection>(EMPTY_DOMAIN_SELECTION);
+  const [openCoterieKey, setOpenCoterieKey] = useState<string | null>(null);
+  const openCoterie = useCallback((key: string) => {
+    if (coterieByKey(key)) setOpenCoterieKey(key);
+  }, []);
   const [pinSnapshot, setPinSnapshot] = useState<PublicPlayerPinsSnapshot | null>(null);
   const skipNextDistrictFocusRef = useRef(false);
   /** Ignore pin-18 zoom-out clears while fitBounds/easeTo from a selection is still running. */
@@ -91,6 +109,11 @@ export function App() {
       .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : String(reason)); });
     return () => { active = false; };
   }, []);
+
+  const activeDomains = useMemo(
+    () => DOMAIN_CATALOG.domains.filter((domain) => domainSelection.domainKeys.includes(domain.key)),
+    [domainSelection],
+  );
 
   const pinRevealedSiteKeys = useMemo(() => {
     if (!pinSnapshot?.live) return [] as string[];
@@ -133,15 +156,20 @@ export function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [focusHomeIfPins, selectedKey]);
 
-  // Zooming out past city scale clears overlay + district selection (pin 18).
-  // Use zoomend so mid-animation dips during fitBounds do not clear; also suppress
+  // Zooming out past the district streets clears the district and every overlay.
+  // Use zoomend so a dip in the middle of a focus animation does not clear; also suppress
   // briefly after a selection so PATH/district focus on narrow viewports can finish.
   useEffect(() => {
     if (!map) return undefined;
     const onZoomEnd = () => {
       if (performance.now() < ignoreZoomClearUntilRef.current) return;
-      if (map.getZoom() >= 12) return;
+      if (map.getZoom() >= OVERLAY_CLEAR_ZOOM) return;
       setOverlay((current) => (current.kind === 'none' ? current : { kind: 'none' }));
+      setDomainSelection((current) => (
+        current.domainKeys.length === 0 && current.affiliations.length === 0
+          ? current
+          : EMPTY_DOMAIN_SELECTION
+      ));
       setSelectedKey((current) => {
         if (!current) return current;
         window.history.replaceState(null, '', updateDistrictInUrl(null));
@@ -272,6 +300,25 @@ export function App() {
       duration: 700,
     });
   }, [data, map]);
+  const focusToronto = useCallback(() => {
+    if (!map) return;
+    armZoomClearSuppress();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      map.jumpTo({ center: TORONTO_HOME, zoom: OVERLAY_RETURN_ZOOM });
+      return;
+    }
+    map.easeTo({ center: TORONTO_HOME, zoom: OVERLAY_RETURN_ZOOM, duration: 700 });
+  }, [map]);
+  const changeOverlay = useCallback((next: MapOverlaySelection) => {
+    if (next.kind !== 'none' && map && map.getZoom() < OVERLAY_CLEAR_ZOOM) focusToronto();
+    setOverlay(next);
+  }, [focusToronto, map]);
+  const changeDomains = useCallback((next: DomainSelection) => {
+    const adding = next.domainKeys.some((key) => !domainSelection.domainKeys.includes(key));
+    if (adding && map && map.getZoom() < OVERLAY_CLEAR_ZOOM) focusToronto();
+    setDomainSelection(next);
+  }, [domainSelection, focusToronto, map]);
   const toggleRegion = useCallback((key: string) => {
     setRegionVisibility((current) => {
       const next = { ...current, [key]: !current[key] };
@@ -316,7 +363,7 @@ export function App() {
         regionVisibility={regionVisibility}
         selectedKey={mapSelectedKey}
         toggledSiteKeys={toggledSiteKeys}
-        revealedSiteKeys={pinRevealedSiteKeys}
+        revealedSiteKeys={[...pinRevealedSiteKeys, ...domainSiteKeys(activeDomains)]}
         overlay={overlay}
         skipNextDistrictFocusRef={skipNextDistrictFocusRef}
         onSelect={selectDistrict}
@@ -325,6 +372,13 @@ export function App() {
           if (site) setActiveSite(site.properties);
         }}
         onMapReady={setMap}
+      />
+      <DomainOverlay
+        map={map}
+        districts={calibratedDistricts ?? data.districts}
+        sites={data.sites}
+        domains={activeDomains}
+        onOpenCoterie={openCoterie}
       />
       <TorontoLocator map={map} resolveHomeCenter={resolveHomeCenter} />
       <PlayerPinsLayer map={map} sites={data.sites} onSnapshot={onPinSnapshot} />
@@ -339,11 +393,14 @@ export function App() {
           sites={data.sites.features.map((feature) => feature.properties)}
           toggledSiteKeys={toggledSiteKeys}
           overlay={overlay}
+          domainSelection={domainSelection}
           onToggleRegion={toggleRegion}
           onSelectDistrict={selectDistrict}
           onToggleSite={toggleSite}
           onFocusHub={focusSite}
-          onOverlayChange={setOverlay}
+          onOverlayChange={changeOverlay}
+          onDomainSelectionChange={changeDomains}
+          onOpenCoterie={openCoterie}
         />
       ) : null}
       {calibrationMode ? (
@@ -366,6 +423,7 @@ export function App() {
           onClear={clearDistrict}
         />
       )}
+      <CoterieModal coterieKey={openCoterieKey} onClose={() => setOpenCoterieKey(null)} />
       {activeSite ? (
         <SiteCardModal
           open
