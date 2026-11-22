@@ -483,7 +483,11 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     const current = await store.get();
     const key = characterKey.trim();
     const group = groupKey.trim();
-    const next = await store.patch({ members: { ...current.members, [key]: [group] } });
+    const label = current.layout.groupLabels[group]?.trim() ?? "";
+    const next = await store.patch({
+      members: { ...current.members, [key]: [group] },
+      ...(label !== "" ? { groupLabels: { ...current.groupLabels, [group]: label } } : {})
+    });
     sendJson(response, 200, { characterKey: key, pickerGroups: next.members[key] });
     return;
   }

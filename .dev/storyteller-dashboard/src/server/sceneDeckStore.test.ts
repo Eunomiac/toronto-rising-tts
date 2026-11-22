@@ -37,6 +37,20 @@ describe("scene deck store", () => {
     expect(await readJson("npc-roster.json")).toEqual({ ...ROSTER, layout: { ...LAYOUT, leaders } });
   });
 
+  it("registers a new group's name where the catalog build reads it", async () => {
+    await writeFile(path.join(dir, "npc-roster.json"), JSON.stringify(ROSTER));
+    const store = await createSceneDeckStore({ dataDir: dir, backupDir: null });
+    const layout = {
+      ...LAYOUT,
+      groupLabels: { "custom-1": "Famuli" },
+      assigned: { ...LAYOUT.assigned, "custom-1": "cat-1" }
+    };
+    await store.patch({ roster: layout });
+    const saved = await readJson("npc-roster.json") as { groupLabels: Record<string, string>; layout: { groupLabels: Record<string, string> } };
+    expect(saved.groupLabels).toEqual({ civilian: "Civilian", "custom-1": "Famuli" });
+    expect(saved.layout.groupLabels["custom-1"]).toBe("Famuli");
+  });
+
   it("moves a roster left in scene-deck.json into npc-roster.json once", async () => {
     await writeFile(path.join(dir, "npc-roster.json"), JSON.stringify({ ...ROSTER, layout: { categories: [], assigned: {}, groupLabels: {}, groupColors: {}, leaders: {} } }));
     await writeFile(path.join(dir, "scene-deck.json"), JSON.stringify({ deck: [{ key: "elysium", title: "Elysium" }], roster: LAYOUT, seeded: true }));

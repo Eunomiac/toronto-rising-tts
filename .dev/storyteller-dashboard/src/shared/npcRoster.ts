@@ -1,8 +1,9 @@
 import { parseRosterLayout, type RosterLayout } from "./sceneDeck.js";
 
 /**
- * `data/npc-roster.json` (tracked). `groupLabels` names the roster groups that are not coteries (coterie names come
- * from `C.CHRONICLE_DATA.coteries`), `bosses` gives each group's default leader (it mirrors the "Boss?" column of the
+ * `data/npc-roster.json` (tracked). `groupLabels` names every roster group that is not a coterie, including groups
+ * created on the dashboard (the catalog build reads this, not `layout.groupLabels`). Coterie display names still come
+ * from `C.CHRONICLE_DATA.coteries`. `bosses` gives each group's default leader (it mirrors the "Boss?" column of the
  * chronicle sheet's NPCs tab), and `members` lists each named NPC's groups, primary first. The scene catalog
  * generator reads those three into `scene-catalogs.json`. `layout` is the roster tab's categories, colours and
  * picked leaders: the dashboard server writes it, and `npm run npc-art` reads it for token ring colours.

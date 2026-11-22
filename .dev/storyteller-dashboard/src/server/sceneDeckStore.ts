@@ -61,7 +61,15 @@ export const createSceneDeckStore = async (options: {
     get,
     patch: async ({ roster: layout, ...rest }) => {
       if (layout !== undefined) {
-        await roster.patch({ layout });
+        const current = await roster.get();
+        const groupLabels = { ...current.groupLabels };
+        for (const [key, label] of Object.entries(layout.groupLabels)) {
+          const name = label.trim();
+          if (key.trim() !== "" && name !== "") {
+            groupLabels[key] = name;
+          }
+        }
+        await roster.patch({ layout, groupLabels });
       }
       if (Object.keys(rest).length > 0) {
         await deck.patch(rest);
