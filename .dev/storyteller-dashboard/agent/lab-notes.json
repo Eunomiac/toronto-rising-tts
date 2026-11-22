@@ -11,16 +11,6 @@
       "updatedAt": "2026-11-21T21:44:05.961Z"
     },
     {
-      "id": 7,
-      "sketch": "scenes",
-      "x": 453,
-      "y": 380,
-      "text": "Ensure that all communication between the Dashboard and posts to the player map app (as well as the Deck of Complications) do not involve unnecessary interaction with TTS, as ANY interaction between the Dashboard and TTS causes noticeable performance lag.",
-      "status": "open",
-      "createdAt": "2026-11-21T21:47:04.465Z",
-      "updatedAt": "2026-11-21T21:47:44.746Z"
-    },
-    {
       "id": 11,
       "sketch": "scenes",
       "x": 1770,

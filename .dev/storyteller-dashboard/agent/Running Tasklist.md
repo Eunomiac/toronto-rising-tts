@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 7. Map pins stay on the scene line the table already prints. Complications calls the table only when applying a finished roll.
+
 - ✔️ SD-ScenesPins-1121 pin 16. The player Scatter strip has a gap between each group name and the NPC names under it. Pending Save & Play (TOR-807).
 
 - ✔️ SD-ScenesPins-1121 pin 15. The Catalog roster's new-group control is a "+" beside the Unsorted header.
