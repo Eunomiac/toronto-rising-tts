@@ -374,6 +374,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Scenes Panel & Scene State
 
+- [x] **Intermission cannot advance until onboarding finishes:** Play stays blocked until the third onboarding button seats the players. A save that has never recorded that step is treated as not finished. Pending Save & Play. _(TOR-808)_
 - [x] **Scatter strip separates the group name from the NPC list:** A short spacer sits between each group's title and the names under it on the player group strip. Pending Save & Play. _(TOR-807)_
 - [x] **Play as NPC no longer crashes on the seat write:** The command passed the path and the seat table in the wrong order, so saving the assignment tried to join a table into the state path. Pending Save & Play. _(TOR-806)_
 - [x] **Scene switch no longer renames the scene you left:** Playing the next scene was writing its title onto the scene still on the table before that scene was saved, so the deck showed the new name on the old place. Pending Save & Play. _(TOR-805)_

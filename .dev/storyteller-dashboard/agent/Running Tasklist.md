@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ SD-ScenesPins-1121 pin 11. Intermission cannot advance to Play until the third onboarding step finishes. Pending Save & Play (TOR-808).
+
 - ✔️ SD-ScenesPins-1121 pin 7. Map pins stay on the scene line the table already prints. Complications calls the table only when applying a finished roll.
 
 - ✔️ SD-ScenesPins-1121 pin 16. The player Scatter strip has a gap between each group name and the NPC names under it. Pending Save & Play (TOR-807).

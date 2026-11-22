@@ -4,7 +4,7 @@ Filtered slice of [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATI
 
 **Filter rule:** keep only Outstanding rows whose `####` header was first added in a commit on or after **2026-11-16** (matched via `git blame` on those headers and the shipping commits that introduced them). Older backlog rows from before that date are omitted.
 
-**Included (11 rows):** TOR-807, TOR-806, TOR-805, TOR-796, TOR-795, TOR-794, TOR-792, TOR-791, TOR-790, TOR-789, TOR-788.
+**Included (12 rows):** TOR-808, TOR-807, TOR-806, TOR-805, TOR-796, TOR-795, TOR-794, TOR-792, TOR-791, TOR-790, TOR-789, TOR-788.
 
 **Not listed here:** Dashboard-only pin work from the same day (pin 8 stage NPC right-click → roster config; pin 9 NPC-drop difficulty strip) — those never got PAV rows. Everything else still Outstanding in the full checklist was first added before 2026-11-16.
 
@@ -32,6 +32,12 @@ Unmarked = shipped and waiting for your first pass. Full agent policy: [PENDING 
 ---
 
 ## Outstanding (on or after 2026-11-16)
+
+#### 🟡 TOR-808 — Intermission stays put until onboarding is finished
+
+> **Agent-assessment note:** The button state can be checked on the dashboard. You still need to confirm the in-game phase button also refuses, and that finishing the third onboarding step unlocks Play.
+
+**How to verify:** Save & Play. On the dashboard, the Play button should stay disabled and tell you to run onboarding. Click Prepare Onboarding and finish all three steps on the bar in the center of the host's screen. Play should then be available, as long as the session has a title. Trying to advance before those three steps, from the dashboard or the in-game phase button, should leave the table in Intermission.
 
 #### 🟡 TOR-807 — Scatter strip: a gap between the group name and the NPC list
 

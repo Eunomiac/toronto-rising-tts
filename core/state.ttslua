@@ -387,6 +387,9 @@ function S.GetDefaultGameState()
                 Pink = false,
                 Purple = false,
             },
+            --- False until the host finishes session-start onboarding (the third button on the host bar).
+            --- A missing value is the same as false: Intermission cannot advance to Play.
+            onboardingComplete = false,
         },
         --- Narrative/session scene bundle (table presence, location, clock, roll defaults).
         sessionScene = {
@@ -911,6 +914,9 @@ function S.validateState()
             end
             if type(gameState.connectionControls.joinColdPoolsActive) ~= "boolean" then
                 gameState.connectionControls.joinColdPoolsActive = false
+            end
+            if gameState.connectionControls.onboardingComplete ~= true then
+                gameState.connectionControls.onboardingComplete = false
             end
             do
                 local cold = gameState.connectionControls.joinColdPoolsBackup

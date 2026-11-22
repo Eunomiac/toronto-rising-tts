@@ -190,6 +190,10 @@ local function applyCommand(cmd)
     if Phases.isAdvancing() then
       return "A phase change is already running."
     end
+    local blocked = Phases.intermissionOnboardingBlock()
+    if blocked ~= nil then
+      return blocked
+    end
     if Phases.advanceNext() ~= true then
       return "TTS refused the phase change (see the in-game Storyteller alert)."
     end
@@ -634,6 +638,10 @@ local function applyCommand(cmd)
     if op == "endScene" then
       Panel.endSceneNarrative(player)
       return nil
+    end
+    local blocked = require("core.phases").intermissionOnboardingBlock()
+    if blocked ~= nil then
+      return blocked
     end
     if type(cmd.key) ~= "string" or cmd.key == "" then
       return "playScene needs a scene key."

@@ -1184,6 +1184,19 @@ function Phases.ensurePlayPhaseForSceneApply()
     syncPhaseUi()
 end
 
+--- Intermission stays put until the host finishes the three onboarding steps.
+--- A missing flag counts as not finished.
+--- @return string|nil
+function Phases.intermissionOnboardingBlock()
+    if S.getStateVal("currentPhase") ~= C.Phases.INTERMISSION then
+        return nil
+    end
+    if S.getStateVal("connectionControls", "onboardingComplete") == true then
+        return nil
+    end
+    return "Run onboarding before leaving Intermission. Use Prepare Onboarding, then the three steps on the host's bar."
+end
+
 --- @param newPhase string
 --- @param opts table|nil unused reserved
 --- @return boolean
@@ -1207,6 +1220,13 @@ function Phases.advanceTo(newPhase, opts)
     if oldPhase == newPhase then
         print("Phases: already in " .. tostring(newPhase))
         return true
+    end
+    if newPhase == C.Phases.PLAY then
+        local blocked = Phases.intermissionOnboardingBlock()
+        if blocked ~= nil then
+            U.AlertGM(blocked)
+            return false
+        end
     end
 
     advancing = true

@@ -4570,6 +4570,11 @@ function HUD_scenesLibApply(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesLibApply") then
         return
     end
+    local blocked = require("core.phases").intermissionOnboardingBlock()
+    if blocked ~= nil then
+        U.AlertGM(blocked)
+        return
+    end
     StorytellerScenesPanel.applyActiveLibraryScene(player, id)
 end
 
@@ -4684,6 +4689,7 @@ function HUD_sessionStartJoinStep(player, button, id)
                 invalidateGlobalBlindfoldAppliedState()
                 applySessionBlindfoldImagesFromState()
                 applyGlobalBlindfoldFromPhase()
+                S.setStateVal(true, "connectionControls", "onboardingComplete")
                 S.setStateVal(nil, "connectionControls", "sessionStartJoinHudReady")
                 S.setStateVal(false, "connectionControls", "sessionStartJoin")
                 syncSessionStartJoinBar()

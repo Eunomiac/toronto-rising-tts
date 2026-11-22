@@ -786,6 +786,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                   subPhase: phase.subPhase,
                   sessionNum: phase.sessionNum,
                   sessionName: phase.sessionName,
+                  onboardingComplete: phase.onboardingComplete === true,
                   spotlight: spotlightView(seats),
                   ...(present ? { presentYear: present.getFullYear() } : {}),
                   ...(scene?.memoriamReturnTitle ? { memoriamReturn: scene.memoriamReturnTitle } : {})

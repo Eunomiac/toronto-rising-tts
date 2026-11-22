@@ -3377,6 +3377,8 @@ export type LivePhase = {
   readonly subPhase?: string;
   readonly sessionNum?: number;
   readonly sessionName: string;
+  /** False until the host finishes onboarding. Missing means not finished. */
+  readonly onboardingComplete?: boolean;
   readonly spotlight: SpotlightView;
   /** The Memoriam slider's right end. */
   readonly presentYear?: number;
@@ -3594,7 +3596,13 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   const phase: Phase = isPhase(live.phase) ? live.phase : "Intermission";
   const session = { number: live.sessionNum ?? 1, title: live.sessionName };
   const sessionTitleBlank = session.title.trim() === "";
-  const playBlocked = phase === "Intermission" && sessionTitleBlank;
+  const onboardingOwed = phase === "Intermission" && live.onboardingComplete !== true;
+  const playBlocked = phase === "Intermission" && (sessionTitleBlank || onboardingOwed);
+  const playBlockedTitle = onboardingOwed
+    ? "Run onboarding before advancing to Play. Use Prepare Onboarding, then the three steps on the host's bar."
+    : sessionTitleBlank
+      ? "Enter a session title before advancing to Play"
+      : undefined;
   const subPhase = live.subPhase ?? "Main";
   const command = useScenesCommand();
   const next = NEXT_PHASE[phase];
@@ -3688,7 +3696,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
             label={`${next} ▸`}
             className={`lab-btn primary${playBlocked ? " is-disabled" : ""}`}
             disabled={playBlocked}
-            title={playBlocked ? "Enter a session title before advancing to Play" : undefined}
+            title={playBlockedTitle}
             onConfirm={() => command({ op: "phaseAdvance" })}
           />
         </span>

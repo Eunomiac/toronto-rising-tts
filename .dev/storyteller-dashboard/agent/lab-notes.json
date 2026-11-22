@@ -11,16 +11,6 @@
       "updatedAt": "2026-11-21T21:44:05.961Z"
     },
     {
-      "id": 11,
-      "sketch": "scenes",
-      "x": 1770,
-      "y": 187,
-      "text": "Advancement from INTERMISSION to PLAY should not be permitted before the onboarding sequence has been run (i.e. the asset bundle load, the XML refresh, and the seating triggers)",
-      "status": "open",
-      "createdAt": "2026-11-21T21:58:46.386Z",
-      "updatedAt": "2026-11-21T21:58:46.386Z"
-    },
-    {
       "id": 13,
       "sketch": "scenes",
       "x": 1321,

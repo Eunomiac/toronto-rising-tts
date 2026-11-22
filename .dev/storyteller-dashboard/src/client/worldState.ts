@@ -19,6 +19,8 @@ export type PhaseSlice = {
   readonly sessionNum?: number;
   readonly sessionName: string;
   readonly sessionStartDowntime: boolean;
+  /** False until the host finishes the three onboarding steps. Missing means not finished. */
+  readonly onboardingComplete?: boolean;
   readonly memoriamActive: boolean;
   /** Skybox key of the open Memoriam period. Absent for Just Smoke and whenever Memoriam is not active. */
   readonly memoriamSkyboxKey?: string;

@@ -14,6 +14,7 @@ const renderStrip = (phase: string, subPhase?: string): void => {
     phase,
     sessionNum: 12,
     sessionName: "The Wake",
+    onboardingComplete: true,
     spotlight,
     presentYear: 2026,
     ...(subPhase ? { subPhase } : {})
@@ -74,7 +75,7 @@ describe("PhaseStrip scene library", () => {
             onPlay={() => {}}
             onEdit={onEdit}
             onPrepare={() => {}}
-            live={{ phase: "Intermission", sessionNum: 12, sessionName: "The Wake", spotlight, presentYear: 2026 }}
+            live={{ phase: "Intermission", sessionNum: 12, sessionName: "The Wake", onboardingComplete: true, spotlight, presentYear: 2026 }}
           />
         </ScenesCommandContext.Provider>
       </div>
@@ -88,6 +89,29 @@ describe("PhaseStrip scene library", () => {
     expect(screen.getByRole("button", { name: "Memoriam…" })).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "Edit" }));
     expect(onEdit).toHaveBeenCalledWith("elysium");
+  });
+
+  it("keeps Play blocked during Intermission until onboarding is finished", () => {
+    const { unmount } = render(
+      <div className="lab-canvas">
+        <ScenesCommandContext.Provider value={() => {}}>
+          <PhaseStrip
+            library={[]}
+            scenes={scenes}
+            onSwitch={() => {}}
+            onEndScene={() => {}}
+            onEndDeckScene={() => {}}
+            onRemoveFromDeck={() => {}}
+            onPlay={() => {}}
+            onEdit={() => {}}
+            onPrepare={() => {}}
+            live={{ phase: "Intermission", sessionNum: 12, sessionName: "The Wake", spotlight, presentYear: 2026 }}
+          />
+        </ScenesCommandContext.Provider>
+      </div>
+    );
+    expect(screen.getAllByRole("button", { name: "Play ▸" }).some((button) => button.hasAttribute("disabled"))).toBe(true);
+    unmount();
   });
 
   it("keeps Scene ▸ during Play and hides it in Spotlight and a Memoriam", () => {

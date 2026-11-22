@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-808 — Intermission stays put until onboarding is finished
+
+> **Agent-assessment note:** The button state can be checked on the dashboard. You still need to confirm the in-game phase button also refuses, and that finishing the third onboarding step unlocks Play.
+
+**How to verify:** Save & Play. On the dashboard, the Play button should stay disabled and tell you to run onboarding. Click Prepare Onboarding and finish all three steps on the bar in the center of the host's screen. Play should then be available, as long as the session has a title. Trying to advance before those three steps, from the dashboard or the in-game phase button, should leave the table in Intermission.
+
 #### 🟡 TOR-807 — Scatter strip: a gap between the group name and the NPC list
 
 > **Agent-assessment note:** The spacer is in the panel layout. You still need to look at the open strip and judge whether the gap is enough.
