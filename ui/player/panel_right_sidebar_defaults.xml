@@ -20,30 +20,7 @@
     childForceExpandWidth="false"
     childForceExpandHeight="false" />
 
-  <Panel class="coterie-reference"
-    rectAlignment="MiddleCenter"
-    preferredWidth="1800"
-    preferredHeight="100%"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false" />
-  <VerticalLayout class="coterie-grid"
-    rectAlignment="MiddleCenter"
-    preferredWidth="1400"
-    preferredHeight="640"
-    spacing="10"
-    childAlignment="UpperCenter"
-    flexibleWidth="0"
-    flexibleHeight="0"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false" />
-  <HorizontalLayout class="coterie-grid-row"
-    preferredHeight="150"
-    preferredWidth="1000"
-    childAlignment="MiddleCenter"
-    flexibleHeight="0"
-    flexibleWidth="0" />
-
-  <!-- Sidebar toggle rows: 30px tall; 175px row for sheet/map/princes/coteries active art, 150px for the rest. -->
+  <!-- Sidebar toggle rows: 30px tall; 175px row for the wide buttons, 150px for the rest. -->
   <!-- TOR-451: idle chrome matches SIDEBAR_BTN_COLOR_IDLE (#C9C9C9) so buttons are grey before first Lua hover. -->
   <Image class="RSidebar_btn"
     color="#C9C9C9"

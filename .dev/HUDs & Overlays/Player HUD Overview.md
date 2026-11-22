@@ -78,9 +78,9 @@ Core panels should be stacked in the central display panel at the bottom, so tha
 
 ### Group 2: Reference Panel Set #1
 
-This group contains buttons that reveal various reference panels. Only one reference panel can be visible at a time: when a reference panel is revealed, all other reference panels are hidden. Reference panel state is stored under `playerData.hud.reference` using canonical keys: `coteries`, `princesCourt`, `chronicleTenets`, `socialCombat`, `physicalCombat`, `threats`, `frenzy`, `rolls`, `memoriam`, `projects`, `experience`.
+This group contains buttons that reveal various reference panels. Only one reference panel can be visible at a time: when a reference panel is revealed, all other reference panels are hidden. Reference panel state is stored under `playerData.hud.reference` using canonical keys: `princesCourt`, `chronicleTenets`, `socialCombat`, `physicalCombat`, `threats`, `frenzy`, `rolls`, `memoriam`, `projects`, `experience`.
 
-Reference panels can be nested, containing their own set of buttons that reveal further reference panels. Coterie popups use keys like `playerData.hud.reference.coteries.<coterieId>`. Prince's Court uses a separate `princesCourtPage` field for pagination.
+Prince's Court uses a separate `princesCourtPage` field for pagination. The coteries grid is gone. A saved `reference.coteries` value is closed.
 
 **Click Action — panel has nested panels:** Turn off any other reference panels at the same level, then toggle this panel and set `playerData.hud.reference.[referencePanelKey] = true`.
 **Click Action - panel has no nested panels:** Show this panel (and hide any toggled-on reference panel at the same level) while the mouse button is held; on release, hide it and restore the previous toggled panel. Same rule for nested content: if a nested panel has its own nested panels, use toggle; otherwise use click-and-hold.
@@ -92,16 +92,14 @@ This first set of reference panel toggle buttons contains:
 | `toggle_PrincesCourt_inactive` | Inactive Princes Court toggle. | ✅ |
 | `toggle_PrincesCourt_hover` | Hovering over Princes Court toggle. | ✅ |
 | `toggle_PrincesCourt_active` | Active Princes Court toggle. | ✅ |
-| `toggle_Coteries_inactive` | Inactive Coteries toggle. | ✅ |
-| `toggle_Coteries_hover` | Hovering over Coteries toggle. | ✅ |
-| `toggle_Coteries_active` | Active Coteries toggle. | ✅ |
 | `toggle_ChronicleTenets_inactive` | Inactive Chronicle Tenets toggle. | ✅ |
 | `toggle_ChronicleTenets_hover` | Hovering over Chronicle Tenets toggle. | ✅ |
 | `toggle_ChronicleTenets_active` | Active Chronicle Tenets toggle. | ✅ |
 
 - **Prince's Court Reference** — Three double-page spreads (`refPanel_PrincesCourt_page1`–`page3` = facing pages 1–2 / 3–4 / 5–6). Page 3 has prev only. Sidebar opens on last `princesCourtPage`. Visibility uses Lua-side audience unions (`applyPrincesCourtPageVisibility`).
-- **Coteries Reference** — A central grid of images corresponding to NPC coteries in the city. Only coteries with `inCoterieRef = true` in `C.CHRONICLE_DATA.coteries` appear in this reference (e.g. `beesHive`, `fiveKeys`, `harpies`, `ironGuard`, `line`, `midnightMass`, `moonClub`, `petitioners`, `redeemers`, `redFlag`, `regencyUniversityChantry`, `scarlettAndBoys`, `wychwoodHecata`). Clicking a coterie image reveals a popup panel with more information; state uses `playerData.hud.reference.coteries.<coterieKey>`.
 - **Chronicle Tenets Reference** — A single `refPanel_ChronicleTenets` image.
+
+The coteries reference grid and its sidebar button are gone. Prince's Court still shows coterie advantages, domain, and haven.
 
 ### Group 3: Reference Panel Set #2
 
@@ -328,8 +326,7 @@ state.playerData[playerID]  (merged: static + dynamic)
 │   └── reference
 │       ├── princesCourt          table | nil   (open = table, closed = nil)
 │       ├── princesCourtPage      1 | 2 | 3     (default 1)
-│       ├── [referencePanelKey]   boolean   (e.g. chronicleTenets, socialCombat, …)
-│       └── coteries.<coterieKey> boolean   (true while holding coterie popup)
+│       └── [referencePanelKey]   boolean   (e.g. chronicleTenets, socialCombat, …)
 │
 ├── status
 │   ├── frenzy                    frenzyKey | nil   (hunger|fear|fury)

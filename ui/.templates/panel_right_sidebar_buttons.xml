@@ -18,15 +18,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_@@color@@"
-        class="hover_button hover_button_base RSidebar_btn"
-        image="toggle_Coteries_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
       <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />

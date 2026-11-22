@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-810 — In-game coteries menu removed
+
+> **Agent-assessment note:** The missing Coteries button is in the HUD files. You still need to confirm it in the game, and that Prince's Court still opens.
+
+**How to verify:** Save & Play. If the save was already open, load save 230 again so it picks up the updated picture list. The right sidebar should have no Coteries button, and the coterie grid should not open. Prince's Court should still open, and its pages should still show advantages, domain, and haven.
+
 #### 🟡 TOR-809 — In-game map removed
 
 > **Agent-assessment note:** The missing Map button is in the HUD files. You still need to confirm it in the game, and that district and site cards and the player-map pins still behave.
