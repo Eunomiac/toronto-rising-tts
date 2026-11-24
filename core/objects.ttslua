@@ -54,6 +54,32 @@ local function lockedRefIsDeferred(ref, deferredGuids)
     return true
 end
 
+--- True when this GUID is packed in hidden storage. It is not in the world, and waiting will not create it.
+--- @param guid string|nil
+--- @return boolean
+local function guidIsInHiddenStorage(guid)
+    if type(guid) ~= "string" or guid == "" then
+        return false
+    end
+    return require("core.staged_objects").isContained(guid) == true
+end
+
+--- True when every GUID in a LockedObjects ref is packed in hidden storage.
+--- @param ref string|table
+--- @return boolean
+local function lockedRefIsStored(ref)
+    local guids = G.collectGuidStrings(ref)
+    if #guids == 0 then
+        return false
+    end
+    for i = 1, #guids do
+        if not guidIsInHiddenStorage(guids[i]) then
+            return false
+        end
+    end
+    return true
+end
+
 --- Human-readable label for a LockedObjects entry (string GUID or multi-state table).
 --- @param ref string|table
 --- @return string
@@ -121,7 +147,7 @@ function O.classifyUnresolvedLockedObjectRefs(deferredGuids)
         if G.isGuidRef(ref) then
             local obj = G.getObject(ref)
             if obj == nil then
-                if not lockedRefIsDeferred(ref, deferredGuids) then
+                if not lockedRefIsDeferred(ref, deferredGuids) and not lockedRefIsStored(ref) then
                     missing[#missing + 1] = lockedRefLabel(ref)
                 end
             elseif obj.loading_custom == true then
@@ -189,7 +215,7 @@ local function applyLockedObjectsFromConstants(options)
                 if obj ~= nil then
                     obj.interactable = false
                     applied = applied + 1
-                elseif not lockedRefIsDeferred(ref, options.deferredGuids) then
+                elseif not lockedRefIsDeferred(ref, options.deferredGuids) and not lockedRefIsStored(ref) then
                     missing = missing + 1
                     local label = lockedRefLabel(ref)
                     missingGuids[#missingGuids + 1] = label
@@ -248,7 +274,7 @@ local function applyHiddenObjectsFromConstants(options)
                     obj.setInvisibleTo(colors)
                     applied = applied + 1
                 else
-                    if obj == nil and not (options.deferredGuids and options.deferredGuids[guid]) then
+                    if obj == nil and not (options.deferredGuids and options.deferredGuids[guid]) and not guidIsInHiddenStorage(guid) then
                         missing = missing + 1
                         missingGuids[#missingGuids + 1] = guid
                         if warnMissing then

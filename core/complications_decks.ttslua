@@ -57,9 +57,17 @@ function B.masters()
    found[kind][#found[kind]+1]=o
   end
  end
+ local G=require('lib.guids')
+ local Staged=require('core.staged_objects')
+ local stored={
+  standard=Staged.isContained(G.GUIDS.COMPLICATIONS_STANDARD_DECK),
+  enhanced=Staged.isContained(G.GUIDS.COMPLICATIONS_ENHANCED_DECK),
+ }
  local errors={}
  for _,kind in ipairs({'standard','enhanced'}) do
-  if #found[kind]~=1 then errors[#errors+1]='Expected exactly one '..kind..' Complications master Deck; found '..#found[kind]..'. Check its masterDeck and Complications tags.' end
+  if #found[kind]~=1 and not (#found[kind]==0 and stored[kind]) then
+   errors[#errors+1]='Expected exactly one '..kind..' Complications master Deck; found '..#found[kind]..'. Check its masterDeck and Complications tags.'
+  end
  end
  return found,errors
 end
