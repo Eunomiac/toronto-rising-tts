@@ -106,7 +106,7 @@ function Staged.isContained(guid)
         return false
     end
     for _, item in ipairs(container.getObjects() or {}) do
-        if item.guid == guid then
+        if type(item.guid) == "string" and string.lower(item.guid) == string.lower(guid) then
             return true
         end
     end

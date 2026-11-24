@@ -1231,6 +1231,40 @@ local function isProbablyObjectGuid(s)
     return string.match(s or "", "^%x%x%x%x%x%x$") ~= nil
 end
 
+--- Registry GUID, `npcLight_<guid>`, or a raw six-character ref.
+--- @param lightRef string
+--- @return string|nil
+local function lightGuidForRef(lightRef)
+    if U.Type(lightRef) ~= "string" then
+        return nil
+    end
+    local lData = L.LIGHTMODES[lightRef]
+    if U.Type(lData) == "table" and U.Type(lData.guid) == "string" and lData.guid ~= "" then
+        return lData.guid
+    end
+    if string.sub(lightRef, 1, 9) == "npcLight_" then
+        local guid = string.sub(lightRef, 10)
+        if isProbablyObjectGuid(guid) then
+            return guid
+        end
+    end
+    if isProbablyObjectGuid(lightRef) then
+        return lightRef
+    end
+    return nil
+end
+
+--- True when the light is inside the session-start bag. `getObjectFromGUID` cannot see it, and waiting will not bring it out.
+--- @param lightRef string
+--- @return boolean
+local function lightRefIsInHiddenStorage(lightRef)
+    local guid = lightGuidForRef(lightRef)
+    if guid == nil then
+        return false
+    end
+    return require("core.staged_objects").isContained(guid) == true
+end
+
 --- Resolve a raw object GUID to its registered LIGHTMODES key when possible.
 --- Returns nil when no registered light owns the GUID.
 --- @param guid string
@@ -1551,7 +1585,7 @@ function L.sanitizeLightsStateForSave()
             if findRegisteredLightRefByGuid(k) ~= nil then
                 cleaned[k] = nil
                 changed = true
-            elseif L.GetLight(k, true) == nil then
+            elseif L.GetLight(k, true) == nil and not lightRefIsInHiddenStorage(k) then
                 cleaned[k] = nil
                 changed = true
             elseif not isValidLightsStateValue(v) then
@@ -1561,7 +1595,7 @@ function L.sanitizeLightsStateForSave()
         elseif not isValidLightsStateValue(v) then
             cleaned[k] = nil
             changed = true
-        elseif L.GetLight(k, true) == nil then
+        elseif L.GetLight(k, true) == nil and not lightRefIsInHiddenStorage(k) then
             cleaned[k] = nil
             changed = true
         end
@@ -2082,6 +2116,9 @@ function L.reconcileLightRef(lightRef, transitionTime, opts)
     end
 
     if L.GetLight(lightRef, true) == nil then
+        if lightRefIsInHiddenStorage(lightRef) then
+            return true
+        end
         return false
     end
 
@@ -2628,6 +2665,9 @@ local function tryApplySavedLight(lightName, mData, transitionT)
 
     if isProbablyObjectGuid(lightName) and U.Type(mData) == "table" then
         if L.GetLight(lightName, true) == nil then
+            if lightRefIsInHiddenStorage(lightName) then
+                return true
+            end
             return false
         end
         L.SetLightMode(lightName, mData, nil, transitionT)
@@ -2695,6 +2735,7 @@ function L.computePcSeatPresentationInputFingerprint()
 end
 
 --- True when every persisted seat spotlight ref in `gameState.lights` resolves to a live object (bootstrap / overlay gate).
+--- A light still inside the hidden-storage bag does not block this: it cannot appear until a later show.
 --- @return boolean
 function L.seatSpotlightsResolvable()
     local savedLights = S.getStateVal("lights")
@@ -2703,7 +2744,7 @@ function L.seatSpotlightsResolvable()
     end
     for lightRef, _ in pairs(savedLights) do
         if U.Type(lightRef) == "string" and U.lightRefIsSeatSpotlight(lightRef) then
-            if L.GetLight(lightRef, true) == nil then
+            if L.GetLight(lightRef, true) == nil and not lightRefIsInHiddenStorage(lightRef) then
                 return false
             end
         end
