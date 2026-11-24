@@ -6275,10 +6275,13 @@ end
 local function hiddenObjectRow(obj)
     local pos = obj.getPosition()
     local tags = obj.getTags() or {}
+    -- getName() is the nickname. .name is the object type.
+    local nickname = obj.getName() or ""
+    local objectName = obj.name or ""
     return {
         guid = obj.getGUID(),
-        nickname = obj.getNickname() or "",
-        name = obj.getName() or "",
+        nickname = nickname,
+        name = objectName,
         tags = table.concat(tags, "|"),
         position = DEBUG.fmtVec(pos),
     }
