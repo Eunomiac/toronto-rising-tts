@@ -24,6 +24,8 @@ One pair of functions owns the full hide protocol and the matching restore path:
 
 **Constant:** `C.HIDDEN_OBJECT_WORLD_Y` in `lib/constants.ttslua`.
 
+Session-start save 9001 also packs `C.StagedObjects` into the bag `G.GUIDS.HIDDEN_STORAGE`. Onboarding step 2 shows anything that was not hidden, parks the entries marked `true` that were hidden, and leaves the hidden `false` entries in the bag. `O.hideGuid` treats an object already in that bag as already hidden. `O.showGuid` takes it out and then runs the normal restore. Do not put those objects back under the table by hand.
+
 ## When to use (mandatory)
 
 Use `O.hideObject` / `O.restoreObject` when code would otherwise:

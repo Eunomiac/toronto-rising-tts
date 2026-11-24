@@ -1114,6 +1114,10 @@ local function getSignalFireObject(color)
         fire = findSignalFireByTag(color)
     end
     if fire == nil then
+        local Staged = require("core.staged_objects")
+        if Staged.isContained(guid) or Staged.deferExtraction() then
+            return nil
+        end
         U.AlertGM(string.format("O.getSignalFireObject: Signal fire not found for color: %s", color))
         return nil
     end
@@ -1169,6 +1173,17 @@ function O.SetSignalFireState(color, state, duration)
 
     local fire = getSignalFireObject(color)
     if fire == nil then
+        local guid = G.GetSignalFireGUID(color)
+        if state == "off" then
+            return O.hideGuid(guid)
+        end
+        if state == "on" then
+            return O.showGuid(guid, nil, function(obj)
+                if U.isGameObject(obj) then
+                    O.SetSignalFireState(color, "on", 0)
+                end
+            end)
+        end
         return false
     end
 
@@ -1257,6 +1272,19 @@ function O.SetHungerSmokeState(color, state, duration)
 
     local smoke = G.getObject(guid)
     if not smoke then
+        if state == "off" then
+            if O.hideGuid(guid) then
+                return true
+            end
+        elseif state == "on" then
+            if O.showGuid(guid, nil, function(obj)
+                if U.isGameObject(obj) then
+                    O.SetHungerSmokeState(color, "on", 0)
+                end
+            end) then
+                return true
+            end
+        end
         if S.getStateVal("connectionControls", "sessionStartJoin") == true then return false end
         U.AlertGM("O.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
         return false
@@ -1286,6 +1314,87 @@ function O.SetHungerSmokeState(color, state, duration)
         O.restoreObject(smoke, { position = targetPos })
     end
 
+    return true
+end
+
+--- Hide a GUID that may already be inside hidden storage. Already stored counts as hidden.
+--- @param guid string
+--- @param opts table|nil
+--- @return boolean
+function O.hideGuid(guid, opts)
+    if type(guid) ~= "string" or guid == "" then
+        return false
+    end
+    local live = getObjectFromGUID(guid)
+    if U.isGameObject(live) then
+        return O.hideObject(live, opts)
+    end
+    if require("core.staged_objects").isContained(guid) then
+        return true
+    end
+    return false
+end
+
+--- Show a GUID, taking it out of hidden storage when that is where it is waiting.
+--- During onboarding, before step 2, a stored object stays in the bag.
+--- @param guid string
+--- @param opts table|nil
+--- @param callback fun(obj: Object|nil)|nil
+--- @return boolean
+function O.showGuid(guid, opts, callback)
+    opts = type(opts) == "table" and opts or {}
+    local function finish(obj, ok)
+        if callback ~= nil then
+            callback(obj)
+        end
+        return ok
+    end
+    if type(guid) ~= "string" or guid == "" then
+        return finish(nil, false)
+    end
+    local live = getObjectFromGUID(guid)
+    if U.isGameObject(live) then
+        O.restoreObject(live, opts)
+        return finish(live, true)
+    end
+    local Staged = require("core.staged_objects")
+    if not Staged.isContained(guid) then
+        return finish(nil, false)
+    end
+    if Staged.deferExtraction() then
+        return finish(nil, true)
+    end
+    local bag = getObjectFromGUID(G.GUIDS.HIDDEN_STORAGE)
+    if bag == nil or bag.takeObject == nil then
+        return finish(nil, false)
+    end
+    local snap = Staged.snapshot(guid) or {}
+    local position = opts.position or snap.position
+    local rotation = opts.rotation or snap.rotation
+    bag.takeObject({
+        guid = guid,
+        position = position,
+        rotation = rotation,
+        smooth = false,
+        callback_function = function(obj)
+            if not U.isGameObject(obj) then
+                error("[O.showGuid] Hidden storage returned no object for " .. guid)
+            end
+            local restoreOpts = {
+                position = opts.position or position,
+                rotation = opts.rotation or rotation,
+                locked = opts.locked,
+                interactable = opts.interactable,
+                keepWorldPose = opts.keepWorldPose,
+                invisibleTo = opts.invisibleTo,
+            }
+            O.restoreObject(obj, restoreOpts)
+            Staged.forget(guid)
+            if callback ~= nil then
+                callback(obj)
+            end
+        end,
+    })
     return true
 end
 

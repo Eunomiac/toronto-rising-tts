@@ -394,7 +394,14 @@ local function filterClone(g,op,done)
     end)
 end
 local function moveToPlayer(g,done)
-    local b=board();local anchor=obj(g.anchor);local p=anchor.getPosition()
+    local b=board()
+    if b==nil then
+        O.showGuid(G.GUIDS.COMPLICATIONS_BOARD,nil,function(shown)
+            if shown then moveToPlayer(g,done) else fail(g,'Complications board is missing.') end
+        end)
+        return
+    end
+    local anchor=obj(g.anchor);local p=anchor.getPosition()
     local length=math.sqrt(p.x*p.x+p.z*p.z);local dx,dz=-7*p.x/length,-7*p.z/length
     g.rotation={x=0,y=anchor.getRotation().y+180,z=0}
     O.restoreObject(b,{position={x=p.x+dx,y=7.75,z=p.z+dz},rotation=g.rotation,locked=true})
@@ -586,7 +593,20 @@ local function execute(g,op,done)
         end
         done()
     elseif op.kind=='home' then
-        local b=board(); O.restoreObject(b,{position=g.home.position,rotation=g.home.rotation,locked=true})
+        local b=board()
+        if b==nil then
+            O.showGuid(G.GUIDS.COMPLICATIONS_BOARD,{position=g.home.position,rotation=g.home.rotation,locked=true},function(shown)
+                if not shown then fail(g,'Complications board is missing.'); return end
+                local deck=g.version<2 and pile(g,'deck')
+                if deck then O.restoreObject(deck,{position=g.home.deck,rotation=g.home.rotation,locked=true}) end
+                local invisible={}; for _,color in ipairs(Player.getAvailableColors()) do if color~='Black' then invisible[#invisible+1]=color end end
+                shown.setInvisibleTo(invisible); if deck then deck.setInvisibleTo(invisible) end
+                local source=g.version<2 and obj(g.source); if source then source.setInvisibleTo(invisible) end
+                done()
+            end)
+            return
+        end
+        O.restoreObject(b,{position=g.home.position,rotation=g.home.rotation,locked=true})
         local deck=g.version<2 and pile(g,'deck')
         if deck then O.restoreObject(deck,{position=g.home.deck,rotation=g.home.rotation,locked=true}) end
         local invisible={}; for _,color in ipairs(Player.getAvailableColors()) do if color~='Black' then invisible[#invisible+1]=color end end

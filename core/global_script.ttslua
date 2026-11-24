@@ -1360,8 +1360,11 @@ local function nextSessionStartJoinStep()
     if require("core.join_cold_pools").isActive() then
         return "sessionStartJoinBundles", "When your players have connected, load the deferred bundles."
     end
+    if S.getStateVal("connectionControls", "sessionStartJoinStagedReady") ~= true then
+        return "sessionStartJoinStaged", "Bundles ready. Place the stored objects."
+    end
     if S.getStateVal("connectionControls", "sessionStartJoinHudReady") ~= true then
-        return "sessionStartJoinHud", "Bundles ready. Refresh the HUD."
+        return "sessionStartJoinHud", "Stored objects placed. Refresh the HUD."
     end
     return "sessionStartJoinFinish", "HUD ready. Seat the connected players to finish."
 end
@@ -1378,7 +1381,12 @@ local function syncSessionStartJoinBar(busyLabel, failed)
     elseif failed then
         status = "Step failed. Check the host console, then retry."
     end
-    for _, id in ipairs({ "sessionStartJoinBundles", "sessionStartJoinHud", "sessionStartJoinFinish" }) do
+    for _, id in ipairs({
+        "sessionStartJoinBundles",
+        "sessionStartJoinStaged",
+        "sessionStartJoinHud",
+        "sessionStartJoinFinish",
+    }) do
         U.setAttributes(id, { interactable = not startupCoverHeld and not pendingFullUiRemount and id == nextButton })
     end
     UI.setValue("sessionStartJoinStatus", status)
@@ -1618,8 +1626,7 @@ function GlobalHideObject(params)
     end
     local obj = params.obj
     if obj == nil and type(params.guid) == "string" then
-        local G = require("lib.guids")
-        obj = G.getObject(params.guid)
+        return O.hideGuid(params.guid, params)
     end
     return O.hideObject(obj, params)
 end
@@ -1633,8 +1640,7 @@ function GlobalRestoreObject(params)
     end
     local obj = params.obj
     if obj == nil and type(params.guid) == "string" then
-        local G = require("lib.guids")
-        obj = G.getObject(params.guid)
+        return O.showGuid(params.guid, params)
     end
     return O.restoreObject(obj, params)
 end
@@ -4656,6 +4662,15 @@ function HUD_sessionStartJoinStep(player, button, id)
             require("core.join_cold_pools").beginWarm,
             function() O.ApplyLockedAndHiddenAtStartupGate() end,
         }, { "warmBundles", "applyObjectVisibility" })
+    elseif id == "sessionStartJoinStaged" then
+        performJoinRestoreStep("Placing stored objects", {
+            function()
+                return require("core.staged_objects").beginRelease()
+            end,
+            function()
+                S.setStateVal(true, "connectionControls", "sessionStartJoinStagedReady")
+            end,
+        }, { "releaseStored", "markStagedReady" })
     elseif id == "sessionStartJoinHud" then
         performJoinRestoreStep("Refreshing HUD", {
             function()
@@ -4690,6 +4705,7 @@ function HUD_sessionStartJoinStep(player, button, id)
                 applyGlobalBlindfoldFromPhase()
                 S.setStateVal(true, "connectionControls", "onboardingComplete")
                 S.setStateVal(nil, "connectionControls", "sessionStartJoinHudReady")
+                S.setStateVal(nil, "connectionControls", "sessionStartJoinStagedReady")
                 S.setStateVal(false, "connectionControls", "sessionStartJoin")
                 syncSessionStartJoinBar()
             end,
@@ -7348,6 +7364,7 @@ function HUD_prepareOnboarding(player, value, id)
             S.setCurrentPhase(C.Phases.PLAY)
             S.setPlaySubPhase(C.PlaySubPhases.DOWNTIME)
             S.setStateVal(nil, "connectionControls", "sessionStartJoinHudReady")
+            S.setStateVal(nil, "connectionControls", "sessionStartJoinStagedReady")
             S.setStateVal(true, "connectionControls", "sessionStartJoin")
             return JoinColdPools.beginCold()
         end,
@@ -7361,7 +7378,7 @@ function HUD_prepareOnboarding(player, value, id)
                 syncStorytellerPhaseButtons()
             end
             HUDBF.scheduleEnd(0)
-            print("[PrepareOnboarding] Downtime onboarding is open. Run Load Bundles → Refresh HUD → Seat Players, then Play the parked scene.")
+            print("[PrepareOnboarding] Downtime onboarding is open. Run Load Bundles → Place Stored → Refresh HUD → Seat Players, then Play the parked scene.")
             return true
         end,
     }, {

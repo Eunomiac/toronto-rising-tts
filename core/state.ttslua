@@ -297,6 +297,8 @@ function S.GetDefaultGameState()
         },
         --- Fallback restore fields for `O.hideObject` / `O.restoreObject` (position?, lock?, interactable?, invisibleTo?).
         hiddenObjects = {},
+        --- Objects packed into HIDDEN_STORAGE for the session-start save. `[guid] = { position, rotation, locked, interactable, wasHidden, releaseHidden }`.
+        stagedObjects = {},
         seatLayout = {
             currentTableKey = nil, -- e.g. "Table A"; preferred over raw center persistence
             occupiedNPCSlots = {
@@ -359,9 +361,11 @@ function S.GetDefaultGameState()
                 Pink = false,
                 Purple = false,
             },
-            --- False until the host finishes session-start onboarding (the third button on the host bar).
+            --- False until the host finishes session-start onboarding (the last button on the host bar).
             --- A missing value is the same as false: Intermission cannot advance to Play.
             onboardingComplete = false,
+            --- False until onboarding step 2 has taken the joining-player objects out of hidden storage.
+            sessionStartJoinStagedReady = false,
         },
         --- Narrative/session scene bundle (table presence, location, clock, roll defaults).
         sessionScene = {
@@ -831,6 +835,9 @@ function S.validateState()
     if type(gameState.hiddenObjects) ~= "table" then
         gameState.hiddenObjects = {}
     end
+    if type(gameState.stagedObjects) ~= "table" then
+        gameState.stagedObjects = {}
+    end
     if not gameState.scene then gameState.scene = {} end
     if type(gameState.lastActiveMapPin) ~= "table" then gameState.lastActiveMapPin = {} end
     if type(gameState.projects) ~= "table" then gameState.projects = {} end
@@ -889,6 +896,9 @@ function S.validateState()
             end
             if gameState.connectionControls.onboardingComplete ~= true then
                 gameState.connectionControls.onboardingComplete = false
+            end
+            if type(gameState.connectionControls.sessionStartJoinStagedReady) ~= "boolean" then
+                gameState.connectionControls.sessionStartJoinStagedReady = false
             end
             do
                 local cold = gameState.connectionControls.joinColdPoolsBackup

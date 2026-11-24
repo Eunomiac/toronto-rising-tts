@@ -611,6 +611,7 @@ C.LockedObjects = {
   G.GUIDS.FAMULUS_FIGURINE_RED,
   G.GUIDS.FAMULUS_FIGURINE_BROWN,
   G.GUIDS.FAMULUS_FIGURINE_PURPLE,
+  G.GUIDS.HIDDEN_STORAGE
 }
 G.assertGuidRefList(C.LockedObjects, "C.LockedObjects")
 
@@ -634,10 +635,102 @@ C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = true
 C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = true
 C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = true
 
+-- C.StagedObjects lists every object, by GUID, that the session-start save (9001) puts into
+-- G.GUIDS.HIDDEN_STORAGE. The build records each object's position and whether it was hidden.
+-- Onboarding step 2 (after Load Bundles, before Refresh HUD) then:
+--  * shows any stored object that was not hidden, back where it was (`true` or `false`)
+--  * parks a stored object that was hidden and marked `true` at its usual hidden place
+--  * leaves a stored object that was hidden and marked `false` in the bag until a show asks for it
+-- Hide does not fail when the object is already in the bag. Show takes it out, puts it back, and continues.
+C.StagedObjects = {
+  [G.GUIDS.CSHEET_NPC_BROWN] = false,
+  [G.GUIDS.CSHEET_NPC_ORANGE] = false,
+  [G.GUIDS.CSHEET_NPC_PINK] = false,
+  [G.GUIDS.CSHEET_NPC_PURPLE] = false,
+  [G.GUIDS.CSHEET_NPC_RED] = false,
+  [G.GUIDS.CSHEET_PAGE_3_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_3_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_3_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_3_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_3_RED] = true,
+  [G.GUIDS.CSHEET_PAGE_4_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_4_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_4_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_4_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_4_RED] = true,
+  [G.GUIDS.CSHEET_PAGE_5_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_5_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_5_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_5_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_5_RED] = true,
+  [G.GUIDS.CSHEET_PAGE_6_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_6_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_6_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_6_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_6_RED] = true,
+  [G.GUIDS.CSHEET_PAGE_7_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_7_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_7_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_7_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_7_RED] = true,
+  [G.GUIDS.CSHEET_PAGE_8_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_8_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_8_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_8_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_8_RED] = true,
+  [G.GUIDS.HUNGER_SMOKE_BROWN] = false,
+  [G.GUIDS.HUNGER_SMOKE_ORANGE] = false,
+  [G.GUIDS.HUNGER_SMOKE_PINK] = false,
+  [G.GUIDS.HUNGER_SMOKE_PURPLE] = false,
+  [G.GUIDS.HUNGER_SMOKE_RED] = false,
+  [G.GUIDS.SEAT_CHAIR_NPC1] = false,
+  [G.GUIDS.SEAT_CHAIR_NPC2] = false,
+  [G.GUIDS.SEAT_CHAIR_NPC3] = false,
+  [G.GUIDS.SEAT_CHAIR_NPC4] = false,
+  [G.GUIDS.SEAT_LIGHT_1_NPC1] = false,
+  [G.GUIDS.SEAT_LIGHT_1_NPC2] = false,
+  [G.GUIDS.SEAT_LIGHT_1_NPC3] = false,
+  [G.GUIDS.SEAT_LIGHT_1_NPC4] = false,
+  [G.GUIDS.SEAT_LIGHT_2_NPC1] = false,
+  [G.GUIDS.SEAT_LIGHT_2_NPC2] = false,
+  [G.GUIDS.SEAT_LIGHT_2_NPC3] = false,
+  [G.GUIDS.SEAT_LIGHT_2_NPC4] = false,
+  [G.GUIDS.SIGNAL_FIRE_BROWN] = true,
+  [G.GUIDS.SIGNAL_FIRE_ORANGE] = true,
+  [G.GUIDS.SIGNAL_FIRE_PINK] = true,
+  [G.GUIDS.SIGNAL_FIRE_PURPLE] = true,
+  [G.GUIDS.SIGNAL_FIRE_RED] = true,
+  [G.GUIDS.SPOTLIGHT_FIGURE_BROWN] = false,
+  [G.GUIDS.SPOTLIGHT_FIGURE_ORANGE] = false,
+  [G.GUIDS.SPOTLIGHT_FIGURE_PINK] = false,
+  [G.GUIDS.SPOTLIGHT_FIGURE_PURPLE] = false,
+  [G.GUIDS.SPOTLIGHT_FIGURE_RED] = false,
+  [G.GUIDS.SPOTLIGHT_LIGHT_BROWN] = false,
+  [G.GUIDS.SPOTLIGHT_LIGHT_ORANGE] = false,
+  [G.GUIDS.SPOTLIGHT_LIGHT_PINK] = false,
+  [G.GUIDS.SPOTLIGHT_LIGHT_PURPLE] = false,
+  [G.GUIDS.SPOTLIGHT_LIGHT_RED] = false,
+  [G.GUIDS.TABLES.TABLE_A] = false,
+  [G.GUIDS.TABLES.TABLE_A_LEAF_FAR_LEFT] = false,
+  [G.GUIDS.TABLES.TABLE_A_LEAF_FAR_RIGHT] = false,
+  [G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_LEFT] = false,
+  [G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_RIGHT] = false,
+  [G.GUIDS.TABLES.TABLE_B1] = false,
+  [G.GUIDS.TABLES.TABLE_B2] = false,
+  [G.GUIDS.TABLES.TABLE_B3] = false,
+  [G.GUIDS.TABLES.TABLE_B4] = false,
+  [G.GUIDS.TABLES.TABLE_B5] = false,
+  [G.GUIDS.TABLES.TABLE_C] = false,
+  [G.GUIDS.COMPLICATIONS_BOARD] = false,
+  [G.GUIDS.COMPLICATIONS_STANDARD_DECK] = false,
+  [G.GUIDS.COMPLICATIONS_ENHANCED_DECK] = false
+}
+
 -- C.HiddenObjects: values are viewer colors for `setInvisibleTo`. Keys are GUID role
 -- names resolved through G.mapGuidKeys (missing G.GUIDS entries fail with one clear error
 -- instead of Lua's opaque "table index is nil").
 C.HiddenObjects = G.mapGuidKeys({
+  HIDDEN_STORAGE = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   GM_TABLE = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   SEAT_CHAIR_RED = { "Red" },
   SEAT_CHAIR_ORANGE = { "Orange" },

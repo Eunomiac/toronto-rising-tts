@@ -1,0 +1,199 @@
+--[[
+    Objects the session-start save packs into G.GUIDS.HIDDEN_STORAGE.
+    gameState.stagedObjects[guid] remembers where each one was, and whether it was hidden.
+]]
+
+local S = require("core.state")
+local G = require("lib.guids")
+local U = require("lib.util")
+
+local Staged = {}
+
+local guidKeys = nil
+
+local function ensureGuidKeys()
+    if guidKeys ~= nil then
+        return
+    end
+    guidKeys = {}
+    local function walk(node, prefix)
+        if type(node) ~= "table" then
+            return
+        end
+        for key, value in pairs(node) do
+            local label
+            if prefix == "" then
+                label = tostring(key)
+            elseif type(key) == "number" then
+                label = prefix .. "[" .. tostring(key) .. "]"
+            else
+                label = prefix .. "." .. tostring(key)
+            end
+            if type(value) == "string" and value ~= "" then
+                guidKeys[value] = label
+            elseif type(value) == "table" then
+                walk(value, label)
+            end
+        end
+    end
+    walk(G.GUIDS, "")
+end
+
+function Staged.guidKey(guid)
+    ensureGuidKeys()
+    if type(guid) ~= "string" then
+        return ""
+    end
+    return guidKeys[guid] or ""
+end
+
+--- Seat layout identity for a packed satellite, or nil for tables, decks, and spotlight pieces.
+--- @return string|nil occupantKey
+--- @return string|nil roleKey
+function Staged.seatIdentity(guid)
+    local key = Staged.guidKey(guid)
+    if key == "" or string.find(key, "TABLES.", 1, true) == 1
+        or string.find(key, "COMPLICATIONS", 1, true) == 1
+        or string.find(key, "SPOTLIGHT_", 1, true) == 1 then
+        return nil
+    end
+    local role, suffix = string.match(key, "^(.*)_((?:NPC[1-4])|(?:BROWN|ORANGE|RED|PINK|PURPLE))$")
+    if role == nil or role == "" then
+        return nil
+    end
+    local occupant = suffix
+    if suffix == "BROWN" then occupant = "Brown"
+    elseif suffix == "ORANGE" then occupant = "Orange"
+    elseif suffix == "RED" then occupant = "Red"
+    elseif suffix == "PINK" then occupant = "Pink"
+    elseif suffix == "PURPLE" then occupant = "Purple"
+    end
+    return occupant, role
+end
+
+function Staged.snapshot(guid)
+    local map = S.getStateVal("stagedObjects")
+    if type(map) ~= "table" or type(guid) ~= "string" then
+        return nil
+    end
+    local row = map[guid]
+    if type(row) ~= "table" then
+        return nil
+    end
+    return row
+end
+
+function Staged.forget(guid)
+    local map = S.getStateVal("stagedObjects")
+    if type(map) == "table" then
+        map[guid] = nil
+    end
+end
+
+local function bag()
+    if type(G.GUIDS) ~= "table" or type(G.GUIDS.HIDDEN_STORAGE) ~= "string" or G.GUIDS.HIDDEN_STORAGE == "" then
+        return nil
+    end
+    return getObjectFromGUID(G.GUIDS.HIDDEN_STORAGE)
+end
+
+function Staged.isContained(guid)
+    if type(guid) ~= "string" or guid == "" then
+        return false
+    end
+    local container = bag()
+    if container == nil or container.getObjects == nil then
+        return false
+    end
+    for _, item in ipairs(container.getObjects() or {}) do
+        if item.guid == guid then
+            return true
+        end
+    end
+    return false
+end
+
+--- Joining players have not reached the release step yet. Leave the bag closed.
+function Staged.deferExtraction()
+    return S.getStateVal("connectionControls", "sessionStartJoin") == true
+        and S.getStateVal("connectionControls", "sessionStartJoinStagedReady") ~= true
+end
+
+local function vec(value)
+    if type(value) ~= "table" then
+        return nil
+    end
+    if type(value.x) ~= "number" or type(value.y) ~= "number" or type(value.z) ~= "number" then
+        return nil
+    end
+    return { x = value.x, y = value.y, z = value.z }
+end
+
+local function applyReleased(obj, row)
+    local O = require("core.objects")
+    if row.wasHidden ~= true then
+        O.restoreObject(obj, {
+            position = vec(row.position),
+            rotation = vec(row.rotation),
+            locked = row.locked == true,
+            interactable = row.interactable == true,
+        })
+        return
+    end
+    O.hideObject(obj, {
+        parkPosition = vec(row.position),
+        parkRotation = vec(row.rotation),
+    })
+end
+
+--- Take out objects that step 2 should place. Returns a wait test for U.chain.
+--- @return function
+function Staged.beginRelease()
+    local map = S.getStateVal("stagedObjects")
+    local pending = {}
+    local container = bag()
+    if type(map) == "table" then
+        for guid, row in pairs(map) do
+            if type(guid) == "string" and type(row) == "table" and (row.wasHidden ~= true or row.releaseHidden == true) then
+                if getObjectFromGUID(guid) ~= nil then
+                    Staged.forget(guid)
+                elseif Staged.isContained(guid) then
+                    if container == nil or container.takeObject == nil then
+                        error("[StagedObjects] Hidden storage bag is missing; cannot release " .. guid)
+                    end
+                    pending[guid] = true
+                    local takenGuid = guid
+                    local takenRow = row
+                    container.takeObject({
+                        guid = takenGuid,
+                        position = vec(takenRow.position),
+                        rotation = vec(takenRow.rotation),
+                        smooth = false,
+                        callback_function = function(obj)
+                            pending[takenGuid] = nil
+                            if U.isGameObject(obj) then
+                                applyReleased(obj, takenRow)
+                                Staged.forget(takenGuid)
+                            else
+                                error("[StagedObjects] Hidden storage returned no object for " .. takenGuid)
+                            end
+                        end,
+                    })
+                else
+                    print("[StagedObjects] " .. guid .. " was neither in the world nor in hidden storage.")
+                    Staged.forget(guid)
+                end
+            end
+        end
+    end
+    local count = 0
+    for _ in pairs(pending) do
+        count = count + 1
+    end
+    print(string.format("[StagedObjects] Releasing %d stored objects.", count))
+    return function()
+        return next(pending) == nil
+    end
+end
+
+return Staged

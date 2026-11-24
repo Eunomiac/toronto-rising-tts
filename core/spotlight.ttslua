@@ -400,6 +400,17 @@ end
 local function placeStandIn(color, slotOffset, lightMode)
     local fig = figureObject(color)
     if not U.isGameObject(fig) then
+        local guid = figureGuid(color)
+        if slotOffset == nil then
+            O.hideGuid(guid)
+            O.hideGuid(lightGuid(color))
+            return
+        end
+        O.showGuid(guid, nil, function(obj)
+            if U.isGameObject(obj) then
+                placeStandIn(color, slotOffset, lightMode)
+            end
+        end)
         return
     end
     local figGuid = fig.getGUID and fig.getGUID() or nil
@@ -426,12 +437,22 @@ local function placeStandIn(color, slotOffset, lightMode)
                 parkRotation = { x = 0, y = 0, z = 0 },
             })
             applyStandInLight(color, "OFF", 0)
+        else
+            O.hideGuid(lightGuid(color))
         end
         return
     end
     local pos, rot = carouselPoseForSlot(slotOffset)
     revealStandInAtPose(fig, pos, rot)
     local lit = lightObject(color)
+    if not U.isGameObject(lit) then
+        O.showGuid(lightGuid(color), nil, function(obj)
+            if U.isGameObject(obj) then
+                placeStandIn(color, slotOffset, lightMode)
+            end
+        end)
+        return
+    end
     if U.isGameObject(lit) then
         -- Light pose is applied by SetLightMode from the figurine; clear park tag first.
         if O.isHiddenObject(lit) then

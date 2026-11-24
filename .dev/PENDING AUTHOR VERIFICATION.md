@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-811 — Joining players skip stored objects until onboarding asks for them
+
+> **Agent-assessment note:** The bag list and the new button are in the files. You still need a fresh session-start save, then a real join, to see that the stored objects stay out of the first download and come back at the right step.
+
+**How to verify:** With Tabletop Simulator closed, run a full build so save 9001 is written again. Load that save from the main menu. The host bar should show four buttons: Load Bundles, Place Stored, Refresh HUD, and Seat Players. Connect a player, then click **1 Load Bundles**. The table pieces that were packed away should still be missing. Click **2 Place Stored**. Anything that was out in the world when the copy was built should come back where it was. Character-sheet pages and signal fires should be in their usual hidden places, not still in the bag. Click **3 Refresh HUD**, then **4 Seat Players**. The bar should close. Later, showing a packed object that was hidden (an unused table, the complications board, an NPC chair) should take it out of the bag and put it where it belongs.
+
 #### 🟡 TOR-810 — In-game coteries menu removed
 
 > **Agent-assessment note:** The missing Coteries button is in the HUD files. You still need to confirm it in the game, and that Prince's Court still opens.
@@ -197,7 +203,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 **How to verify:** Save & Play, then:
 
-1. Mid-Play with a live scene, click **Prepare Onboarding** (Storyteller Debug, above Refresh UI). The table should go quiet in Downtime with that scene still ongoing; run Load Bundles → Refresh HUD → Seat Players; then Play the parked scene yourself.
+1. Mid-Play with a live scene, click **Prepare Onboarding** (Storyteller Debug, above Refresh UI). The table should go quiet in Downtime with that scene still ongoing; run Load Bundles → Place Stored → Refresh HUD → Seat Players; then Play the parked scene yourself.
 2. Change a staged NPC’s card scale in the roster — the stage figurine should resize without regenerating art.
 3. Drop Discipline cards into a table deck, then **Reset Discipline Hands** — the deck should clear and cards redeal.
 4. During Complications **Stop**, **Force Select** should appear and put the board into Storyteller Select control.
@@ -399,7 +405,7 @@ For the replacement bundle, load the main save from disk after a FULL build. Sta
 
 **Skybox retention:** Save the main game with any chosen skybox, then run FULL. The report should say the active skybox was kept automatically, even if that image has no review decision. Load the generated session-start copy and check that it uses that skybox. Other uses of the image still require a review decision.
 
-**How to verify:** Load the session-start copy from the TTS main menu. Check that only the host sees the centered onboarding bar. Once the host table is ready, connect a player. Check that their assigned color appears while their chair, camera, and HUD update wait. Click **1 Load Bundles**, **2 Refresh HUD**, then **3 Seat Players**, checking that each button becomes available after the previous one finishes. The bar should disappear and the player's chair, camera, and HUD should be ready. Check the soundscape, table fog, weather particles, and Hunger smoke. Connect again after finishing and check that seating works without rebuilding the Global HUD.
+**How to verify:** Load the session-start copy from the TTS main menu. Check that only the host sees the centered onboarding bar. Once the host table is ready, connect a player. Check that their assigned color appears while their chair, camera, and HUD update wait. Click **1 Load Bundles**, **2 Place Stored**, **3 Refresh HUD**, then **4 Seat Players**, checking that each button becomes available after the previous one finishes. Place Stored puts back anything that was out on the table, and parks the character-sheet pages and signal fires in their usual hidden spots. The bar should disappear and the player's chair, camera, and HUD should be ready. Check the soundscape, table fog, weather particles, and Hunger smoke. Connect again after finishing and check that seating works without rebuilding the Global HUD.
 
 #### 🔵 Global blindfold during scene and table changes
 

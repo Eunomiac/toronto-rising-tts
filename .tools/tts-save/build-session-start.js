@@ -18,6 +18,7 @@ const { appendReviewRows } = require("./review-sheet-write.js");
 const { ugcMatchKey } = require("../tts-cloud/lib/cloud_index.js");
 const { readManifest } = require("../cloud-asset-sync.js");
 const { assertStageBlock } = require("./stage-geometry.js");
+const { packStagedObjects } = require("./stage-hidden-storage.js");
 
 const root = path.resolve(__dirname, "../..");
 
@@ -56,10 +57,13 @@ function createSessionStart(save, plan, lua, xml) {
     },
   };
   state.debug = { ...state.debug, assumeConnected: false };
+  const packed = packStagedObjects(plan.retained);
+  state.stagedObjects = packed.stagedObjects;
+  state.connectionControls.sessionStartJoinStagedReady = false;
   return {
     ...save,
     SaveName: `${save.SaveName || "Toronto Rising"} — Session Start`,
-    ObjectStates: plan.retained,
+    ObjectStates: packed.objectStates,
     LuaScript: lua,
     XmlUI: xml,
     LuaScriptState: JSON.stringify(state),

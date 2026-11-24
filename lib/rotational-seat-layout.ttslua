@@ -2064,9 +2064,18 @@ local function applyTableComponentsState(tableCfg, occupiedNPCSlots, isActive)
   end
   for componentName, componentCfg in pairs(components) do
     if U.Type(componentCfg) == "table" and U.Type(componentCfg.guid) == "string" then
-      local obj = G.getObject(componentCfg.guid)
-      if obj ~= nil then
-        applyTableObjectState(obj, componentCfg, activateByName[componentName] == true)
+      local active = activateByName[componentName] == true
+      if active then
+        O.showGuid(componentCfg.guid, nil, function(obj)
+          applyTableObjectState(obj, componentCfg, true)
+        end)
+      else
+        local obj = G.getObject(componentCfg.guid)
+        if obj ~= nil then
+          applyTableObjectState(obj, componentCfg, false)
+        else
+          O.hideGuid(componentCfg.guid)
+        end
       end
     end
   end
@@ -2081,8 +2090,18 @@ local function applyAllTablesVisualState(activeTableKey, occupiedNPCSlots)
     if U.Type(tableKey) == "string" and U.Type(tableCfg) == "table" then
       local isActiveTable = tableKey == activeTableKey
       if U.Type(tableCfg.guid) == "string" then
-        local obj = G.getObject(tableCfg.guid)
-        applyTableObjectState(obj, tableCfg, isActiveTable)
+        if isActiveTable then
+          O.showGuid(tableCfg.guid, nil, function(obj)
+            applyTableObjectState(obj, tableCfg, true)
+          end)
+        else
+          local obj = G.getObject(tableCfg.guid)
+          if obj ~= nil then
+            applyTableObjectState(obj, tableCfg, false)
+          else
+            O.hideGuid(tableCfg.guid)
+          end
+        end
       end
       applyTableComponentsState(tableCfg, occupiedNPCSlots, isActiveTable)
     end

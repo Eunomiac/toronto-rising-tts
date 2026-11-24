@@ -1077,6 +1077,22 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             handle(hz, "HAND_ZONE")
         end
     end
+
+    local staged = S.getStateVal("stagedObjects")
+    if type(staged) == "table" then
+        local Staged = require("core.staged_objects")
+        for guid, row in pairs(staged) do
+            if type(row) == "table" and Staged.isContained(guid) then
+                local occupant, roleKey = Staged.seatIdentity(guid)
+                if occupant == occupantKey and type(roleKey) == "string"
+                    and FSL.lookupOffset(occupantKey, roleKey) ~= nil then
+                    O.showGuid(guid, nil, function(obj)
+                        handle(obj, roleKey)
+                    end)
+                end
+            end
+        end
+    end
 end
 
 local function allLayerColors()
