@@ -6272,18 +6272,62 @@ local function csvField(value)
     return text
 end
 
+-- Walk G.GUIDS, including nested tables such as TABLES and multi-state figurines.
+local function guidKeysMatching(guid, node, prefix, found)
+    if type(node) ~= "table" then
+        return
+    end
+    for key, value in pairs(node) do
+        local label
+        if prefix == "" then
+            label = tostring(key)
+        elseif type(key) == "number" then
+            label = prefix .. "[" .. tostring(key) .. "]"
+        else
+            label = prefix .. "." .. tostring(key)
+        end
+        if type(value) == "string" and value == guid then
+            found[#found + 1] = label
+        elseif type(value) == "table" then
+            guidKeysMatching(guid, value, label, found)
+        end
+    end
+end
+
+local function guidKeyFor(guid)
+    if type(guid) ~= "string" or guid == "" or type(G.GUIDS) ~= "table" then
+        return ""
+    end
+    local found = {}
+    guidKeysMatching(guid, G.GUIDS, "", found)
+    table.sort(found)
+    return table.concat(found, " | ")
+end
+
+-- Keep the tab-separated file to one row when a field contains a line break or a tab.
+local function hiddenListField(value)
+    return (string.gsub(tostring(value or ""), "[\r\n\t]", " "))
+end
+
 local function hiddenObjectRow(obj)
     local pos = obj.getPosition()
     local tags = obj.getTags() or {}
     -- getName() is the nickname. .name is the object type.
     local nickname = obj.getName() or ""
     local objectName = obj.name or ""
+    local guid = obj.getGUID()
+    local gmNotes = ""
+    if obj.getGMNotes ~= nil then
+        gmNotes = obj.getGMNotes() or ""
+    end
     return {
-        guid = obj.getGUID(),
+        guid = guid,
         nickname = nickname,
         name = objectName,
         tags = table.concat(tags, "|"),
         position = DEBUG.fmtVec(pos),
+        gmNotes = gmNotes,
+        guidKey = guidKeyFor(guid),
     }
 end
 
@@ -6312,12 +6356,19 @@ function DEBUG.listHiddenObjects()
     end)
     hiddenObjectIndex = rows
     local lines = {
-        "index\tguid\tnickname\tname\ttags\tposition",
+        "index\tguid\tnickname\tname\ttags\tposition\tGM Notes\tGUID Key",
     }
     for i, row in ipairs(rows) do
         lines[#lines + 1] = string.format(
-            "%d\t%s\t%s\t%s\t%s\t%s",
-            i, row.guid, row.nickname, row.name, row.tags, row.position
+            "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+            i,
+            hiddenListField(row.guid),
+            hiddenListField(row.nickname),
+            hiddenListField(row.name),
+            hiddenListField(row.tags),
+            hiddenListField(row.position),
+            hiddenListField(row.gmNotes),
+            hiddenListField(row.guidKey)
         )
     end
     local body = table.concat(lines, "\n") .. "\n"
