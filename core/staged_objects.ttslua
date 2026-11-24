@@ -146,6 +146,63 @@ local function applyReleased(obj, row)
     })
 end
 
+--- Page 4 paints its portraits before the sheet's own image files have downloaded.
+--- Reapply the page UI once those files are ready. The sheet will not do this itself.
+--- @param obj Object
+--- @param done function
+local function remountPage4Ui(obj, done)
+    local finished = false
+    local function finish()
+        if finished then
+            return
+        end
+        finished = true
+        done()
+    end
+    if not U.isGameObject(obj) or obj.UI == nil or type(obj.UI.getXml) ~= "function" or type(obj.UI.setXml) ~= "function" then
+        finish()
+        return
+    end
+    local started = os.clock()
+    local xml = nil
+    U.chain({
+        function()
+            return function()
+                local elapsed = os.clock() - started
+                if obj.UI ~= nil and obj.UI.loading == true and elapsed < 20 then
+                    return false
+                end
+                if elapsed < 2 then
+                    return false
+                end
+                return true
+            end
+        end,
+        function()
+            if obj.UI == nil or type(obj.UI.getXml) ~= "function" then
+                return
+            end
+            local current = obj.UI.getXml()
+            if type(current) ~= "string" or current == "" then
+                return
+            end
+            xml = current
+            obj.UI.setXml("")
+            return 0.1
+        end,
+        function()
+            if xml ~= nil and obj.UI ~= nil and type(obj.UI.setXml) == "function" then
+                obj.UI.setXml(xml)
+            end
+        end,
+    }, {
+        maxWait = 25,
+        onComplete = function()
+            finish()
+        end,
+    })
+end
+
 --- Take out objects that step 2 should place. Returns a wait test for U.chain.
 --- @return function
 function Staged.beginRelease()
@@ -170,13 +227,21 @@ function Staged.beginRelease()
                         rotation = vec(takenRow.rotation),
                         smooth = false,
                         callback_function = function(obj)
-                            pending[takenGuid] = nil
-                            if U.isGameObject(obj) then
-                                applyReleased(obj, takenRow)
-                                Staged.forget(takenGuid)
-                            else
+                            if not U.isGameObject(obj) then
+                                pending[takenGuid] = nil
                                 error("[StagedObjects] Hidden storage returned no object for " .. takenGuid)
                             end
+                            applyReleased(obj, takenRow)
+                            Staged.forget(takenGuid)
+                            local occupant, role = Staged.seatIdentity(takenGuid)
+                            if role ~= "CSHEET_PAGE_4" then
+                                pending[takenGuid] = nil
+                                return
+                            end
+                            remountPage4Ui(obj, function()
+                                pending[takenGuid] = nil
+                                print("[StagedObjects] Reapplied page 4 UI for " .. tostring(occupant) .. ".")
+                            end)
                         end,
                     })
                 else
