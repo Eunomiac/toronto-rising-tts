@@ -1,24 +1,204 @@
 {
   "notes": [
     {
+      "id": 2,
+      "sketch": "pcs",
+      "x": 1265,
+      "y": 288,
+      "text": "Change the text string for the Session Attendance award given via the XP controls during End phase from \"Session attendance\" to \"Session Attendance\"",
+      "status": "open",
+      "createdAt": "2026-11-24T21:10:48.531Z",
+      "updatedAt": "2026-11-24T21:10:48.531Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 1721,
+      "y": 150,
+      "text": "Upon transitioning to the Spotlight phase, all player dice trays were elevated and overlapping their character sheets.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:16:38.091Z",
+      "updatedAt": "2026-11-24T21:16:38.091Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 1595,
+      "y": 187,
+      "text": "Upon transition from End to Intermission, the TR Loop theme did not start playing.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:16:56.515Z",
+      "updatedAt": "2026-11-24T21:16:56.515Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 1403,
+      "y": 247,
+      "text": "If a transition happens while someone is in the middle of drawing/selecting Compulsion Cards (and the four options are locked in place awaiting their selection), the Compulsion Cards should move with their seat position under the blindfold.  Additionally, their camera angle should be set to the compulsion-selection view, and not their default camera angle.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:18:04.602Z",
+      "updatedAt": "2026-11-24T21:18:04.602Z"
+    },
+    {
       "id": 6,
       "sketch": "scenes",
-      "x": 677,
-      "y": 371,
-      "text": "Player assignments as NPCs should NEVER persist between scenes. If a scene is returned to and that character was playing themselves, or was playing a different NPC, the assignment they had at the scene they are returning to must be restored.",
+      "x": 1500,
+      "y": 261,
+      "text": "Add a reminder to save the game to the notifications displayed to the ST during the end phase.",
       "status": "open",
-      "createdAt": "2026-11-21T21:44:05.961Z",
-      "updatedAt": "2026-11-21T21:44:05.961Z"
+      "createdAt": "2026-11-24T21:18:27.546Z",
+      "updatedAt": "2026-11-24T21:18:27.546Z"
+    },
+    {
+      "id": 7,
+      "sketch": "scenes",
+      "x": 1585,
+      "y": 250,
+      "text": "Add removal reminders for Compulsions alongside the existing removal reminders for Conditions. Compulsions should be scheduled for removal at the end of the session _after_ they were applied (i.e. at the end of the next _full_ session).",
+      "status": "open",
+      "createdAt": "2026-11-24T21:19:40.563Z",
+      "updatedAt": "2026-11-24T21:19:40.563Z"
+    },
+    {
+      "id": 8,
+      "sketch": "scenes",
+      "x": 1444,
+      "y": 178,
+      "text": "Add a reminder to the Storyteller Dashboard, to tell the players to set their Desires. This reminder should be visible during the first Downtime phase of a session (i.e. after the initial session start sequence finishes playing)",
+      "status": "open",
+      "createdAt": "2026-11-24T21:20:30.227Z",
+      "updatedAt": "2026-11-24T21:20:30.227Z"
+    },
+    {
+      "id": 9,
+      "sketch": "scenes",
+      "x": 1292,
+      "y": 272,
+      "text": "Fully retire the \"hold hotkey over NPC token to spotlight them\" feature.\n\n- Fully remove the generation of and spawning of NPC tokens into the game world for the purpose of spotlighting. NPC tokens no longer have a use and should be removed entirely.\n- Remove the hotkey-triggered spotlighting mechanic itself\n- If NPCs have spotlight objects solely used for the spotlight effect, remove them as well (if the spotlight effect uses their normal NPC light, ignore this)",
+      "status": "open",
+      "createdAt": "2026-11-24T21:22:46.343Z",
+      "updatedAt": "2026-11-24T21:22:46.343Z"
+    },
+    {
+      "id": 10,
+      "sketch": "scenes",
+      "x": 839,
+      "y": 976,
+      "text": "Within the scene preview editor, all players should be visible, whether they are connected or not (since this panel could be used to create scenes for a later session). Upon editing the \"Dupont By The Castle - Vestibule: Casa Loma\" scene, Aishe Tache was inexplicably missing from the player seats.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:27:13.866Z",
+      "updatedAt": "2026-11-24T21:27:13.866Z"
+    },
+    {
+      "id": 11,
+      "sketch": "scenes",
+      "x": 1268,
+      "y": 209,
+      "text": "The sound control panel within the scene preview menu does not accurately show volume of tracks: They are all displayed as being at zero volume, rather than at the volume they will play at when the scene is loaded.\n\nAdditionally, upon changing the music scene from the default (for the location) of \"Casa Loma\" to \"Main\", the dropdown did not reflect the change and stayed showing \"Casa Loma\".",
+      "status": "open",
+      "createdAt": "2026-11-24T21:28:04.034Z",
+      "updatedAt": "2026-11-24T21:28:47.213Z"
+    },
+    {
+      "id": 12,
+      "sketch": "scenes",
+      "x": 473,
+      "y": 160,
+      "text": "Clicking on the scene name in the preview panel should allow editing the name of the scene. If the scene name chosen duplicates the name of another scene, a number should be appended to the end.\n\nNote: It should be possible for a non-template scene and a template scene to share the same name, since template scenes are distinguishable by the square brackets surrounding their names.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:30:10.771Z",
+      "updatedAt": "2026-11-24T21:30:10.771Z"
     },
     {
       "id": 13,
       "sketch": "scenes",
-      "x": 1321,
-      "y": 199,
-      "text": "Upon switching the music via the dropdown in the scene preview panel, the selected option did not change and remained showing the default scene audio. Volume for both the music and the ambient audio both display zero, instead of the actual volume of the tracks for the scene.",
+      "x": 983,
+      "y": 408,
+      "text": "Move the Session XP - Provide Feedback panel to the right side of the stage, as currently the notifications on the left overlap it.",
       "status": "open",
-      "createdAt": "2026-11-21T22:12:46.555Z",
-      "updatedAt": "2026-11-21T22:15:34.380Z"
+      "createdAt": "2026-11-24T21:49:21.515Z",
+      "updatedAt": "2026-11-24T21:49:21.515Z"
+    },
+    {
+      "id": 14,
+      "sketch": "scenes",
+      "x": 695,
+      "y": 615,
+      "text": "Add a reminder to the Intermission phase on session start to perform the full onboarding process before advancing to Play.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:49:47.291Z",
+      "updatedAt": "2026-11-24T21:49:47.291Z"
+    },
+    {
+      "id": 15,
+      "sketch": "scenes",
+      "x": 799,
+      "y": 624,
+      "text": "Reduce the height of the Storyteller Dashboard to 1065 pixels.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:50:23.027Z",
+      "updatedAt": "2026-11-24T21:50:23.027Z"
+    },
+    {
+      "id": 16,
+      "sketch": "scenes",
+      "x": 489,
+      "y": 578,
+      "text": "Remove reminder for Rats in the Walls from the end phase screen.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:56:09.947Z",
+      "updatedAt": "2026-11-24T21:56:09.947Z"
+    },
+    {
+      "id": 17,
+      "sketch": "scenes",
+      "x": 1094,
+      "y": 720,
+      "text": "Move Session XP panel to the right side of the stage panel, so the notifications on the left do not overlap it.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:56:25.427Z",
+      "updatedAt": "2026-11-24T21:56:25.427Z"
+    },
+    {
+      "id": 18,
+      "sketch": "scenes",
+      "x": 1333,
+      "y": 690,
+      "text": "Add five more rows to the Session XP panel at the end phase, in the same format as the  \"Award all\" line at the bottom (with the two input fields).  Each should be labeled with the name of a PC: \"Lord Lucien\", \"Rashid\", \"Aishe Tache\", \"Fomórach\" and \"Black Caesar\", with the button on the right each labelled \"Award\", but colored with that player's color. These fields should grant the entered award and description to that player only.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:58:16.323Z",
+      "updatedAt": "2026-11-24T21:58:16.323Z"
+    },
+    {
+      "id": 19,
+      "sketch": "scenes",
+      "x": 1319,
+      "y": 495,
+      "text": "In both XP award panels (the feedback one at session start, and the main one during end phase), replace the button names with the character names (instead of the colors): \"Lord Lucien\", \"Rashid\", \"Aishe Tache\", \"Fomórach\" and \"Black Caesar\", but color each button with the color of the character.\n\nWhen ANY of the XP award buttons have been clicked, its border should change to green, and it should be given a bright green glow.  Its main color (i.e. the player color) should remain unchanged.",
+      "status": "open",
+      "createdAt": "2026-11-24T21:59:51.771Z",
+      "updatedAt": "2026-11-24T21:59:51.771Z"
+    },
+    {
+      "id": 20,
+      "sketch": "scenes",
+      "x": 225,
+      "y": 516,
+      "text": "It should be possbile to reorder categories in the NPC Roster Catalog tab by dragging them into position.",
+      "status": "open",
+      "createdAt": "2026-11-24T22:00:51.260Z",
+      "updatedAt": "2026-11-24T22:00:51.260Z"
+    },
+    {
+      "id": 21,
+      "sketch": "scenes",
+      "x": 597,
+      "y": 284,
+      "text": "Remove the lengthy tests (including playwright tests) of the map and other apps from the FULL build process. Create a separate \"TEST\" build process to run those tests.",
+      "status": "open",
+      "createdAt": "2026-11-24T22:03:16.790Z",
+      "updatedAt": "2026-11-24T22:03:16.790Z"
     }
   ]
 }

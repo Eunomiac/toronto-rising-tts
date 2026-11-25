@@ -16,7 +16,7 @@ import { TokenBadges } from "./tierBadge";
 import { BoxRow, HUNGER_DOT, NpcLevelBadge, NpcLiveContext, NpcTrackerPopup } from "./npcTrackers";
 import { ConditionPanel, type ConditionPromptDraft } from "./personalConditions";
 import { subscribeTtsEvents } from "../ttsEvents";
-import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
+import { GENERIC_SKY, presentConnectedPcSeats, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
 import { beginDrag, endDrag } from "./dnd/session";
@@ -263,17 +263,21 @@ export type SeatDrops = {
  * tracker controls; clicking anywhere else closes them. Double-clicking it (or Open sheet in the controls) shows
  * the PC's sheet on the PCs tab. Right-clicking an occupied seat hands it to `onMenu`
  * (the wide board's roll ring, which also takes the character out of the scene or brings them back). With
- * `onPresence` (scene drafts) a click on an occupied, connected seat toggles presence instead. With `seating`
+ * `onPresence` (scene drafts) a click on an occupied, connected seat toggles presence instead. With
+ * `onTogglePresence` (a live scene) each occupied seat shows an In / Out button that does the same,
+ * and a click still opens trackers. With `seating`
  * (the live table, or a draft on a table TTS does not seat from the session chairs) a seated character drags as a token:
  * onto another chair to swap, and a seated NPC onto the stage; roster NPCs drop into empty chairs. Every cell
  * carries `data-chair` for stage tokens dropped on it.
  */
-export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, seating }: {
+export const Seats = ({ seats, liveSheet, onMenu, onPresence, onTogglePresence, onNpcTrackers, seating }: {
   seats: readonly SeatSketch[];
   /** Live sheets (fetched as soon as the seats show, for each PC's Desire); scene previews have none and show no sheet. */
   liveSheet?: LiveSheetAccess;
   onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
   onPresence?: (seatKey: string, present: boolean) => void;
+  /** Live scene: an In / Out button on the seat. Does not replace tracker clicks. */
+  onTogglePresence?: (seatKey: string, present: boolean) => void;
   /** The live table: a click on a seated NPC opens its trackers. */
   onNpcTrackers?: (event: MouseEvent<HTMLElement>, characterKey: string, name: string) => void;
   seating?: SeatDrops;
@@ -366,6 +370,8 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
         const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
         const open = seat.color !== undefined && seat.color === openColor;
         const togglesPresence = onPresence !== undefined && seat.seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc") && seat.state !== "disconnected";
+        const presenceButton = onTogglePresence !== undefined && seat.seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc") && seat.state !== "disconnected";
+        const outOfScene = seat.state === "absent";
         const controllable = !onPresence && liveSheet !== undefined && seat.color !== undefined && seat.kind === "pc";
         const npcTrackers = !onPresence && seat.kind === "npc" && seat.characterKey !== undefined ? onNpcTrackers : undefined;
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
@@ -381,7 +387,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
           controllable && !open ? "Click for this PC's trackers" : undefined,
           npcTrackers ? "Click for this NPC's trackers" : undefined,
           opensSheet ? "Double-click for their character sheet" : undefined,
-          togglesPresence ? (seat.state === "absent" ? "Out of this scene — click to bring them in" : "In this scene — click to take them out") : undefined,
+          togglesPresence || presenceButton ? (outOfScene ? "Out of this scene — click to bring them in" : "In this scene — click to take them out") : undefined,
           menu && !togglesPresence ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined,
           draggable ? `Drag to another chair to swap places${seat.kind === "npc" ? ", or onto the stage" : ""}` : undefined,
           seating && seat.kind === "empty" ? "Drop an NPC from the roster or the stage here to seat them" : undefined
@@ -463,7 +469,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
             }}
             onClick={(event) => {
               if (togglesPresence && seat.seatKey) {
-                onPresence(seat.seatKey, seat.state === "absent");
+                onPresence(seat.seatKey, outOfScene);
                 return;
               }
               if (npcTrackers && seat.characterKey) {
@@ -484,6 +490,24 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
               }
             }}
           >
+            {presenceButton && seat.seatKey && (
+              <button
+                type="button"
+                className={`lab-seat-presence${outOfScene ? " is-out" : " is-in"}`}
+                draggable={false}
+                title={outOfScene ? "Out of this scene — click to bring them in" : "In this scene — click to take them out"}
+                aria-label={outOfScene ? `Bring ${seat.name ?? "this character"} into the scene` : `Take ${seat.name ?? "this character"} out of the scene`}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (onTogglePresence && seat.seatKey) {
+                    onTogglePresence(seat.seatKey, outOfScene);
+                  }
+                }}
+              >
+                {outOfScene ? "Out" : "In"}
+              </button>
+            )}
             {desire !== "" && <span className="lab-seat-desire">{desire}</span>}
             {pcSheet?.compulsion && <CompulsionBadge active={pcSheet.compulsion} clan={pcSheet.clan} />}
             {seat.signal && seat.color && (
@@ -695,10 +719,31 @@ export const IdleBoard = ({
     setStore(next);
     writeStageReminderStore(next);
   };
-  const openingDowntime =
-    phase === "Play"
-    && (subPhase ?? "Main") === "Downtime"
-    && sessionStartDowntime === true;
+  const downtime = phase === "Play" && (subPhase ?? "Main") === "Downtime";
+  const send = useScenesCommand();
+  const broughtIn = useRef(new Set<string>());
+  useEffect(() => {
+    if (!downtime) {
+      broughtIn.current.clear();
+      return;
+    }
+    for (const seat of seats) {
+      if (seat.kind !== "pc" || !seat.seatKey) {
+        continue;
+      }
+      if (seat.state !== "absent") {
+        broughtIn.current.delete(seat.seatKey);
+        continue;
+      }
+      if (broughtIn.current.has(seat.seatKey)) {
+        continue;
+      }
+      broughtIn.current.add(seat.seatKey);
+      send({ op: "seatPresence", seat: seat.seatKey, present: true });
+    }
+  }, [downtime, seats, send]);
+  const seatsShown = downtime ? presentConnectedPcSeats(seats) : seats;
+  const openingDowntime = downtime && sessionStartDowntime === true;
   const xpPhase = phase === "End" ? "End" : openingDowntime ? "Feedback" : null;
   useEffect(() => {
     if (xpPhase) {
@@ -722,7 +767,7 @@ export const IdleBoard = ({
         <XpAwardPanel phase={xpPhase} seats={seats} sheetSeats={liveSheet.sheet?.seats} apply={liveSheet.apply} />
       ) : null}
       <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
-        <Seats seats={seats} {...(liveSheet ? { liveSheet } : {})} />
+        <Seats seats={seatsShown} {...(liveSheet ? { liveSheet } : {})} />
       </div>
     </div>
   );
@@ -967,7 +1012,9 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
       <Seats
         seats={seatsShown}
         {...(live.sheet ? { liveSheet: live.sheet } : {})}
-        {...(live.presenceClicks ? { onPresence: (seatKey: string, present: boolean) => command({ op: "seatPresence", seat: seatKey, present }) } : {})}
+        {...(live.presenceClicks
+          ? { onPresence: (seatKey: string, present: boolean) => command({ op: "seatPresence", seat: seatKey, present }) }
+          : { onTogglePresence: (seatKey: string, present: boolean) => command({ op: "seatPresence", seat: seatKey, present }) })}
         {...(npcLive ? { onNpcTrackers: (event: MouseEvent<HTMLElement>, characterKey: string, name: string) => openNpcTrackers(event.clientX, event.clientY, characterKey, name) } : {})}
         {...(seating ? { seating } : {})}
         onMenu={openSeatRing}

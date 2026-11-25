@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SceneCatalogs } from "./catalogs";
 import type { SeatsSlice, SoundscapeSlice } from "../worldState";
-import { liveSeats, liveTokens, soundView, spotlightView, tableUsesRandomSeating, toDate, weatherAxes } from "./liveScene";
+import { liveSeats, liveTokens, presentConnectedPcSeats, soundView, spotlightView, tableUsesRandomSeating, toDate, weatherAxes } from "./liveScene";
 
 const catalogs = {
   pcs: [
@@ -55,6 +55,16 @@ describe("liveSeats", () => {
     expect(row.find((seat) => seat.slot === 3)?.kind).toBe("empty");
     expect(row.find((seat) => seat.slot === 8)?.kind).toBe("nochair");
     expect(row.some((seat) => seat.characterKey === "lordLucien")).toBe(false);
+  });
+});
+
+describe("presentConnectedPcSeats", () => {
+  it("shows connected PCs as in the scene and leaves everyone else alone", () => {
+    const row = liveSeats(seats, "Table B", catalogs);
+    const shown = presentConnectedPcSeats(row);
+    expect(shown.find((seat) => seat.slot === 2)?.state).toBeUndefined();
+    expect(shown.find((seat) => seat.slot === 1)).toEqual(row.find((seat) => seat.slot === 1));
+    expect(shown.find((seat) => seat.slot === 6)).toEqual(row.find((seat) => seat.slot === 6));
   });
 });
 

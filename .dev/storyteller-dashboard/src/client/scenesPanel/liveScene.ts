@@ -147,6 +147,19 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
   });
 };
 
+/**
+ * Downtime has no scene cast. Every connected PC is in the scene; a disconnected PC is already
+ * left off the chair. Narrative "out of the scene" does not apply until a scene is on the table.
+ */
+export const presentConnectedPcSeats = (seats: readonly LiveSeat[]): readonly LiveSeat[] =>
+  seats.map((seat) => {
+    if (seat.kind !== "pc" || seat.state !== "absent") {
+      return seat;
+    }
+    const { state: _out, ...present } = seat;
+    return present;
+  });
+
 export type LiveToken = { readonly characterKey: string; readonly name: string; readonly lit: boolean; readonly u: number; readonly v: number };
 
 /** A stage token's short name: a named NPC's first name, a generic NPC's whole name, else the key. */

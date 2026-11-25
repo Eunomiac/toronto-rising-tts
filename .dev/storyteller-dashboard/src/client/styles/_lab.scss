@@ -667,6 +667,29 @@ $signal-fire: #ff9a1f;
     border-style: dashed;
     filter: brightness(0.4);
   }
+
+  &-presence {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    z-index: 3;
+    height: 18px;
+    padding: 0 5px;
+    border: 1px solid rgb(255 255 255 / 35%);
+    border-radius: 9px;
+    background: #d7ffe4;
+    color: #1a1a1a;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 16px;
+    cursor: pointer;
+
+    &.is-out {
+      border-style: dotted;
+      background: #3a3a42;
+      color: #f2f2f4;
+    }
+  }
 }
 
 .lab-board {
