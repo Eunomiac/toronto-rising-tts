@@ -2237,20 +2237,22 @@ input.lab-cat-rename {
 
 .lab-xp-row {
   display: grid;
-  grid-template-columns: minmax(140px, 1.1fr) minmax(0, 2fr);
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 8px;
   align-items: center;
 }
 
 .lab-xp-row-label {
-  font-size: 14px;
+  font-size: 13px;
+  white-space: nowrap;
   color: #a39a88;
 }
 
 .lab-xp-row-seats {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  gap: 4px;
 }
 
 .lab-xp-seat {
@@ -2261,6 +2263,16 @@ input.lab-cat-rename {
   font-size: 13px;
   background: #2a2620;
   cursor: pointer;
+
+  .lab-xp-row-seats & {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 2px 4px;
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   &.is-disabled {
     opacity: 0.35;

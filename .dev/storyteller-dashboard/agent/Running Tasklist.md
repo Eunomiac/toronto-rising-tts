@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Pin 5. The Feedback, Team Play, Compulsion Roleplay, and Compulsion Resolution seat buttons stay on one line. A long name ellipsizes instead of wrapping the row.
+
 - ✔️ Pin 4. An error at the bottom of the roll column clears when you click it. Deck and library errors had no way to dismiss them, so they stayed for the whole visit.
 
 - ✔️ Pin 3. Moving an NPC to another spot in the same snap group stays in the queue and is sent to the table. The queue was describing every spot in a group with only the group name, so the move looked like no change and was dropped.
