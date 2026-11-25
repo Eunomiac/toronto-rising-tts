@@ -1133,6 +1133,10 @@ $lab-live: #4caf6a;
 .lab-cat-name {
   flex: 1 1 auto;
 
+  &[draggable="true"] {
+    cursor: grab;
+  }
+
   .lab-cat-create {
     margin-left: 6px;
     padding: 0 6px;

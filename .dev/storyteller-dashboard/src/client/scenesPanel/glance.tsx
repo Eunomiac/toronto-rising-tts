@@ -21,6 +21,7 @@ import {
   setRosterLayout,
   useRosterLayout,
   useSceneCatalogs,
+  reorderCategories,
   type RosterCategory
 } from "./roster";
 import { SceneNotes } from "./sceneNotes";
@@ -55,7 +56,7 @@ import type { LibraryScene, SceneStatus } from "../../shared/sceneLibrary";
 import { displayTitle, entryPlan, libraryRank, type DeckScene } from "./sceneStatus";
 import { sceneDeckSnapshot } from "../sceneDeck";
 import { sceneLibrarySnapshot } from "../sceneLibrary";
-import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
+import { CATEGORY_DRAG_TYPE, GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 import { useNpcOverrides } from "../npcOverrides";
 import { configuredTiers, genericStatsKey, keptStatsKey, newStatId, type NpcTier } from "../../shared/npcStats";
@@ -906,7 +907,7 @@ const GroupEditor = ({ group, at, color, own, leader, onLabel, onColor, onLeader
  * Category header: twirl to show or hide its groups; drop a group on it to file the group there; right-click the
  * name to rename it (Enter or leaving the field keeps the new name, Escape cancels).
  */
-const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename, onCreate }: {
+const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename, onCreate, onReorder }: {
   category: RosterCategory | null;
   count: number;
   onToggle?: () => void;
@@ -915,6 +916,8 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename,
   onRename?: (name: string) => void;
   /** A "+" beside an Unsorted header; creates an empty group there. */
   onCreate?: () => void;
+  /** Drop another category here to move it to this position. */
+  onReorder?: (draggedId: string) => void;
 }): ReactElement => {
   const [over, setOver] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -928,6 +931,11 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename,
         }
       } : undefined}
       onDragOver={(event) => {
+        if (onReorder && event.dataTransfer.types.includes(CATEGORY_DRAG_TYPE)) {
+          event.preventDefault();
+          setOver(true);
+          return;
+        }
         if (event.dataTransfer.types.includes(GROUP_DRAG_TYPE)) {
           event.preventDefault();
           setOver(true);
@@ -936,6 +944,12 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename,
       onDragLeave={() => setOver(false)}
       onDrop={(event) => {
         setOver(false);
+        const draggedCategory = event.dataTransfer.getData(CATEGORY_DRAG_TYPE);
+        if (draggedCategory && onReorder) {
+          event.preventDefault();
+          onReorder(draggedCategory);
+          return;
+        }
         const key = event.dataTransfer.getData(GROUP_DRAG_TYPE);
         if (key) {
           onDrop(key);
@@ -976,7 +990,13 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename,
       ) : (
         <span
           className="lab-cat-name"
-          title={onRename ? "Right-click to rename" : undefined}
+          draggable={category !== null}
+          title={category ? "Drag to reorder. Right-click to rename." : undefined}
+          onDragStart={category ? (event) => {
+            event.stopPropagation();
+            event.dataTransfer.setData(CATEGORY_DRAG_TYPE, category.id);
+            event.dataTransfer.effectAllowed = "move";
+          } : undefined}
           onContextMenu={onRename ? (event) => {
             event.preventDefault();
             setRenaming(true);
@@ -1081,6 +1101,12 @@ export const MasonryRoster = (): ReactElement => {
     setRosterLayout({ ...layout, leaders: { ...layout.leaders, [groupKey]: characterKey } });
   const updateCategory = (id: string, change: Partial<RosterCategory>): void =>
     setRosterLayout({ ...layout, categories: layout.categories.map((category) => (category.id === id ? { ...category, ...change } : category)) });
+  const moveCategory = (draggedId: string, targetId: string): void => {
+    const categories = reorderCategories(layout.categories, draggedId, targetId);
+    if (categories !== layout.categories) {
+      setRosterLayout({ ...layout, categories });
+    }
+  };
   const removeCategory = (id: string): void =>
     setRosterLayout({
       ...layout,
@@ -1823,6 +1849,7 @@ export const MasonryRoster = (): ReactElement => {
                 onDrop={fileGroup(category.id)}
                 onRemove={() => removeCategory(category.id)}
                 onRename={(name) => updateCategory(category.id, { name })}
+                onReorder={(draggedId) => moveCategory(draggedId, category.id)}
               />
               {category.open && members.length > 0 && masonry(members)}
             </section>

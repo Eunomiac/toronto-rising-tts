@@ -10,6 +10,7 @@ import { boardToStage, stageToBoard, type StagePack, type StagePoint, type Stage
 /** Drag data from the roster: one NPC (`characterKey`) or a whole picker group (group key). */
 export const NPC_DRAG_TYPE = "application/x-tr-npc";
 export const GROUP_DRAG_TYPE = "application/x-tr-npc-group";
+export const CATEGORY_DRAG_TYPE = "application/x-tr-roster-category";
 /** A seated character dragged from their chair (the TTS seat key); seated NPCs also carry `NPC_DRAG_TYPE`. */
 export const SEAT_DRAG_TYPE = "application/x-tr-seat";
 /** A PC roll card that takes NPCs: stage tokens are pointer drags, so the stage hands the drop over by DOM event. */

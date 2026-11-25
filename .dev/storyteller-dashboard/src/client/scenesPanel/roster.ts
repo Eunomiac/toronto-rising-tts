@@ -96,6 +96,29 @@ export const assignNpcRosterGroup = async (characterKey: string, groupKey: strin
 
 export type { RosterCategory, RosterLayout } from "../../shared/sceneDeck";
 
+/** Move `draggedId` to `targetId`'s place. The same list comes back when nothing moves. */
+export const reorderCategories = <T extends { readonly id: string }>(
+  categories: readonly T[],
+  draggedId: string,
+  targetId: string
+): readonly T[] => {
+  if (draggedId === targetId) {
+    return categories;
+  }
+  const from = categories.findIndex((category) => category.id === draggedId);
+  const to = categories.findIndex((category) => category.id === targetId);
+  if (from < 0 || to < 0) {
+    return categories;
+  }
+  const next = [...categories];
+  const [moved] = next.splice(from, 1);
+  if (!moved) {
+    return categories;
+  }
+  next.splice(to, 0, moved);
+  return next;
+};
+
 export const setRosterLayout = (next: RosterLayout): void => setSceneDeckSection("roster", next);
 
 /** The roster layout from the dashboard's scene deck file; every subscriber sees the same copy. */
