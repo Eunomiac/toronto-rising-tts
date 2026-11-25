@@ -5,6 +5,7 @@
 
 local S = require("core.state")
 local G = require("lib.guids")
+local C = require("lib.constants")
 local U = require("lib.util")
 
 local Staged = {}
@@ -129,8 +130,54 @@ local function vec(value)
     return { x = value.x, y = value.y, z = value.z }
 end
 
+local function csheetPageNumber(guid)
+    local _, role = Staged.seatIdentity(guid)
+    if type(role) ~= "string" then
+        return nil
+    end
+    return tonumber(string.match(role, "^CSHEET_PAGE_(%d+)$"))
+end
+
+local function sheetShownY()
+    local entry = C.ObjectPositions and C.ObjectPositions.CSHEET_PAGE
+    local y = entry and entry.on and entry.on.position and entry.on.position.y
+    if type(y) == "number" then
+        return y
+    end
+    return 3.20
+end
+
+local function withY(position, y)
+    local pose = vec(position)
+    if pose == nil then
+        return nil
+    end
+    pose.y = y
+    return pose
+end
+
 local function applyReleased(obj, row)
     local O = require("core.objects")
+    local guid = obj.getGUID and obj.getGUID() or nil
+    local page = csheetPageNumber(guid)
+    -- Pages 1 and 2 are the open spread. Later pages stay under the table.
+    -- Which pages were open when the copy was built does not matter.
+    if page == 1 or page == 2 then
+        O.restoreObject(obj, {
+            position = withY(row.position, sheetShownY()),
+            rotation = vec(row.rotation),
+            locked = true,
+            invisibleTo = {},
+        })
+        return
+    end
+    if page ~= nil and page >= 3 then
+        O.hideObject(obj, {
+            parkPosition = withY(row.position, C.HIDDEN_OBJECT_WORLD_Y),
+            parkRotation = vec(row.rotation),
+        })
+        return
+    end
     if row.wasHidden ~= true then
         O.restoreObject(obj, {
             position = vec(row.position),

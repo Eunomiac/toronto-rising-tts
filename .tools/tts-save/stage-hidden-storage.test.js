@@ -10,6 +10,8 @@ test("the staged list resolves the live bag and both complications decks", () =>
   assert.equal(map.staged["11e747"], false);
   assert.equal(map.staged["2d57f2"], false);
   assert.equal(map.staged["f8e50c"], true);
+  assert.equal(map.staged["21d213"], true);
+  assert.equal(map.staged["c80132"], true);
 });
 
 test("packs staged objects into the bag and remembers whether each one was hidden", () => {

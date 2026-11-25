@@ -641,8 +641,20 @@ C.ClickableSeatControls[G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = true
 --  * shows any stored object that was not hidden, back where it was (`true` or `false`)
 --  * parks a stored object that was hidden and marked `true` at its usual hidden place
 --  * leaves a stored object that was hidden and marked `false` in the bag until a show asks for it
+-- Player sheet pages are the exception. Pages 1 and 2 are always shown on the table, and pages 3
+-- and later are always parked under the table, whichever pages were open when the copy was built.
 -- Hide does not fail when the object is already in the bag. Show takes it out, puts it back, and continues.
 C.StagedObjects = {
+  [G.GUIDS.CSHEET_PAGE_1_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_1_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_1_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_1_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_1_RED] = true,
+  [G.GUIDS.CSHEET_PAGE_2_BROWN] = true,
+  [G.GUIDS.CSHEET_PAGE_2_ORANGE] = true,
+  [G.GUIDS.CSHEET_PAGE_2_PINK] = true,
+  [G.GUIDS.CSHEET_PAGE_2_PURPLE] = true,
+  [G.GUIDS.CSHEET_PAGE_2_RED] = true,
   [G.GUIDS.CSHEET_NPC_BROWN] = false,
   [G.GUIDS.CSHEET_NPC_ORANGE] = false,
   [G.GUIDS.CSHEET_NPC_PINK] = false,
