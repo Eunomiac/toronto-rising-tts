@@ -9,6 +9,7 @@ import {
   draftSeatRows,
   ensureDraftPcSlot,
   previewSeatRows,
+  withPreviewChairs,
   draftSoundView,
   draftStage,
   draftTable,
@@ -273,6 +274,32 @@ describe("draft seating", () => {
     expect(disconnected.every((row) => row.kind !== "pc" || row.absentFromSession !== true)).toBe(true);
     const stored = previewSeatRows(seated, live);
     expect(stored.find((row) => row.seat === "Pink")).toMatchObject({ playingNpcKey: "drake", charKey: "aishe" });
+  });
+
+  it("gives a PC with no chair a free cell on the preview bar without touching taken chairs", () => {
+    const rows = withPreviewChairs(previewSeatRows(scene("bare", { sessionScene: {} }), [
+      { seat: "Pink", kind: "pc", isPresent: true, charKey: "aishe", absentFromSession: true },
+      { seat: "Red", kind: "pc", isPresent: true, tableSlot: 1, charKey: "lordLucien" }
+    ]));
+    expect(rows.find((row) => row.seat === "Red")?.tableSlot).toBe(1);
+    const pink = rows.find((row) => row.seat === "Pink");
+    expect(pink).toMatchObject({ charKey: "aishe", tableSlot: 2 });
+    expect(pink).not.toHaveProperty("absentFromSession");
+  });
+
+  it("dims a Scatter PC's stored row when that seat is taken out of the scene", () => {
+    const scattered = scene("a", {
+      placementMode: "scatter",
+      sessionScene: {
+        placementMode: "scatter",
+        seatSlots: { Orange: { characterKey: "rashid", isPresent: true, tableSlot: 1 } },
+        scatterPlacements: { scatter6: { centerCharacters: { rashid: { slot: 1, isPresent: true } }, orbitCharacters: {} } }
+      }
+    });
+    const draft = applyToDraft(scattered, { op: "seatPresence", seat: "Orange", present: false });
+    expect(draft.sessionScene.seatSlots).toMatchObject({ Orange: { isPresent: false } });
+    const group = (draft.sessionScene.scatterPlacements as { scatter6: { centerCharacters: { rashid: { isPresent: boolean } } } }).scatter6;
+    expect(group.centerCharacters.rashid.isPresent).toBe(false);
   });
 
   it("stores Play-as-NPC on a scene that has no seat row yet", () => {

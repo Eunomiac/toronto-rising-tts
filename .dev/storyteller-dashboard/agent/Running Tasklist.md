@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ A scene preview's seat bar shows all five players, even one with no chair right now. In Scatter, a player who is out of the scene has a blacked-out token, the same look as an NPC whose light is off.
+
 - ✔️ With no scene on the table, each occupied seat has an Out / In mark and a right-click choice to bring them into the scene or take them out. A fresh session-start save no longer keeps someone out of the scene from the previous night.
 
 - ✔️ SD-ScenesPins-1121 pin 11. Intermission cannot advance to Play until the third onboarding step finishes. Pending Save & Play (TOR-808).

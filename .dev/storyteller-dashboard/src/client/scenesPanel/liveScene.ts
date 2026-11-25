@@ -105,6 +105,8 @@ export type LiveSeat = {
   readonly seatKey?: string;
   readonly name?: string;
   readonly characterKey?: string;
+  /** The PC's own key when the seat is showing someone they are playing. */
+  readonly pcKey?: string;
   readonly kind: "pc" | "npc" | "empty" | "nochair";
   readonly state?: "absent" | "disconnected";
   readonly playedBy?: string;
@@ -155,6 +157,7 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
       seatKey: row.seat,
       kind: "pc",
       characterKey: playing ?? row.charKey,
+      ...(playing && row.charKey ? { pcKey: row.charKey } : {}),
       name: playing ? nameOf(playing) : pcName,
       ...(playing && pcName ? { playedBy: pcName } : {}),
       ...(color ? { color } : {}),

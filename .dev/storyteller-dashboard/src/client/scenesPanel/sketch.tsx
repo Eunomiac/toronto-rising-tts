@@ -1035,7 +1035,22 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     )}
     {snapsError && <span className="lab-board-error">{snapsError}</span>}
     {env.scatter ? (
-      <ScatterLayer w={w} h={h} board={board} groups={groups} catalogs={catalogs} nameOf={nameOf} onPlace={placeScatter} onMenu={openTokenRing} />
+      <ScatterLayer
+        w={w}
+        h={h}
+        board={board}
+        groups={groups}
+        catalogs={catalogs}
+        nameOf={nameOf}
+        onPlace={placeScatter}
+        onMenu={openTokenRing}
+        unlitPcs={new Set(seats.flatMap((seat) => {
+          if (seat.kind !== "pc" || seat.state !== "absent") {
+            return [];
+          }
+          return [seat.pcKey, seat.characterKey].filter((key): key is string => typeof key === "string");
+        }))}
+      />
     ) : (
       <StageLayer
         w={w}

@@ -836,16 +836,22 @@ $signal-fire: #ff9a1f;
     color: #fff3c8;
   }
 
-  // An unlit NPC is a black silhouette with no ring and an italic name; hovering shows the face.
-  &:not(.lit, .pc) &-head {
+  &.pc &-head {
+    border-color: #c9b98f;
+    border-radius: 6px;
+  }
+
+  // An unlit token, PC or NPC, is a black silhouette with no ring and an italic name; hovering shows the face.
+  &:not(.lit) &-head {
     border-color: transparent;
     background-color: transparent;
     box-shadow: none;
     filter: brightness(0) drop-shadow(0 0 2px rgb(255 255 255 / 35%));
   }
 
-  &:not(.lit, .pc) &-name {
+  &:not(.lit) &-name {
     font-style: italic;
+    color: #b8b0a0;
   }
 
   &:hover {
@@ -881,11 +887,6 @@ $signal-fire: #ff9a1f;
     .lab-token-name {
       visibility: visible;
     }
-  }
-
-  &.pc &-head {
-    border-color: #c9b98f;
-    border-radius: 6px;
   }
 }
 

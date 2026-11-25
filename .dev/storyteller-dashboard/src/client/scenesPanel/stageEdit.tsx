@@ -330,6 +330,8 @@ type ScatterLayerProps = {
   readonly nameOf: (characterKey: string) => string;
   readonly onPlace: (characterKey: string, kind: "pc" | "npc", group: number | undefined) => void;
   readonly onMenu: TokenMenu;
+  /** PC character keys whose Scatter token is unlit (out of the scene). */
+  readonly unlitPcs?: ReadonlySet<string>;
 };
 
 /** A dropped token joins the group whose circle it lands in (a little slack around the edge). */
@@ -347,7 +349,7 @@ const groupAt = (point: StagePoint, count: number, w: number, h: number, radius:
  * Scatter placement: six groups, each a circle of PCs and NPCs. Drag a token into another circle to move it there;
  * drag an NPC out of every circle to take them off. PCs always stand in a group.
  */
-export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, onMenu }: ScatterLayerProps): ReactElement => {
+export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, onMenu, unlitPcs }: ScatterLayerProps): ReactElement => {
   const roster = useRosterLayout();
   const world = useWorldState();
   const scenes = useScenesCommand();
@@ -464,7 +466,7 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
                   key={member.key}
                   characterKey={member.key}
                   name={nameOf(member.key)}
-                  lit
+                  lit={member.kind !== "pc" || unlitPcs?.has(member.key) !== true}
                   x={x}
                   y={y}
                   color={undefined}

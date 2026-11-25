@@ -268,10 +268,12 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
       // Same pair TTS keeps: `seatSlots[seat].isPresent` wins, `seatPresent` mirrors it.
       const slots = draftSeatSlots(scene);
       const row = slots[command.seat];
-      return withSession(scene, {
+      const charKey = isRecord(row) ? str(row.characterKey) : undefined;
+      const next = withSession(scene, {
         seatSlots: { ...slots, [command.seat]: { ...(isRecord(row) ? row : {}), isPresent: command.present } },
         seatPresent: { ...draftSeatPresent(scene), [command.seat]: command.present }
       });
+      return syncScatterPcPresence(next, charKey, command.present);
     }
     case "seatMove": {
       const slots = draftSeatSlots(scene);
@@ -499,6 +501,32 @@ export const draftStage = (scene: LibraryScene): readonly StageNpc[] =>
 
 const str = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
 
+/** Keep a Scatter group's stored PC row in step with the seat's narrative presence. */
+const syncScatterPcPresence = (scene: LibraryScene, charKey: string | undefined, present: boolean): LibraryScene => {
+  const scatter = scene.placementMode === "scatter" || scene.sessionScene.tableKey === "Scatter";
+  const pack = isRecord(scene.sessionScene.scatterPlacements) ? scene.sessionScene.scatterPlacements : undefined;
+  if (!scatter || !charKey || !pack) {
+    return scene;
+  }
+  let found = false;
+  const updated: Row = {};
+  for (const [key, area] of Object.entries(pack)) {
+    if (!isRecord(area) || !isRecord(area.centerCharacters) || !isRecord(area.centerCharacters[charKey])) {
+      updated[key] = area;
+      continue;
+    }
+    found = true;
+    updated[key] = {
+      ...area,
+      centerCharacters: {
+        ...area.centerCharacters,
+        [charKey]: { ...area.centerCharacters[charKey], isPresent: present }
+      }
+    };
+  }
+  return found ? withSession(scene, { scatterPlacements: updated }) : scene;
+};
+
 /**
  * The draft's seating as push seat rows, so the preview's seat strip reads it like the table's. Who sits where and
  * who is present come from the draft; whether a PC is connected is the table's (`absentFromSession` from `live`).
@@ -548,6 +576,34 @@ export const previewSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): 
   const stored = draftSeatRows(scene, live).map(previewSeat);
   const seen = new Set(stored.map((row) => row.seat));
   return [...stored, ...live.filter((row) => row.kind === "pc" && !seen.has(row.seat)).map(previewSeat)];
+};
+
+/**
+ * The preview seat bar always shows every PC, including one with no chair right now.
+ * A later session may connect them. The chair is only so the strip has a cell; it is not written into the scene.
+ */
+export const withPreviewChairs = (rows: readonly SeatRow[]): readonly SeatRow[] => {
+  const taken = new Set(rows.flatMap((row) => (typeof row.tableSlot === "number" ? [row.tableSlot] : [])));
+  let chair = 1;
+  const freeChair = (): number | undefined => {
+    while (chair <= 9 && taken.has(chair)) {
+      chair += 1;
+    }
+    if (chair > 9) {
+      return undefined;
+    }
+    const slot = chair;
+    taken.add(slot);
+    chair += 1;
+    return slot;
+  };
+  return rows.map((row) => {
+    if (row.kind !== "pc" || typeof row.tableSlot === "number") {
+      return row;
+    }
+    const tableSlot = freeChair();
+    return tableSlot === undefined ? row : { ...row, tableSlot };
+  });
 };
 
 /** Give a draft the PC's own seat row when Play-as-NPC is stored before the scene has seating of its own. */
