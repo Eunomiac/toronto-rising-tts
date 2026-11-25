@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-820 — Replaced pictures show on the next full build
+
+> **Agent-assessment note:** The save rewrite is covered by the cloud-asset tests. You still need to look at the cards and the companion tiles after the build, because the picture itself is the check.
+
+**How to verify:** Close Tabletop Simulator. Run a full build. Load the new 9001 save. The discipline cards, including the ones in players' hands, should show the new front and back immediately. The companion tiles for Robin, Jean-Francois, and Sylvain should show the new pictures immediately, without toggling them. The build review should no longer warn that those eight files are still referenced by save 230.
+
 #### 🟡 TOR-819 — Roll panel lists projects ending within seven days
 
 > **Agent-assessment note:** The list reads the end date the table now sends with each project. Until Save & Play, that date is missing and the list stays empty.

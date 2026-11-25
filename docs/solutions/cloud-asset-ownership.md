@@ -26,6 +26,7 @@ Status: current
 5. **Purging is automatic.** A job removes rows in its name family that no job owns any more. A row a job should keep must have its file in that job's folder.
 6. **TTS closed for Cloud writes.** The push and consolidate steps are skipped (with a warning) while TTS is open; never edit the Cloud index or save by hand while a sync runs.
 7. **Save-authored Cloud art.** Images you upload in TTS onto custom objects (not under a job folder) are gathered on Full build into Cloud `Save Only/<kind>/` and mirrored to `assets/Save Only/` (`cloud:consolidate --apply`). Links do not change.
+8. **Same-filename replacement.** Replacing a file under the same path uploads a new Cloud link. The sync rewrites every link in the current save that still names the previous upload, including card faces and tile images that no job owns. Full copies save 9001 from that save afterwards. Older saves are not rewritten.
 
 ## Adding art
 

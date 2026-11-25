@@ -17,7 +17,7 @@ You never paste a Cloud link by hand.
 2. Close TTS and run **`npm run build:full`**.
 3. Open TTS and load the save. The new art is in place.
 
-Replacing a file (same name, new content) uploads the new version and deletes the old Cloud copy once nothing uses it.
+Replacing a file (same name, new content) uploads the new version. The build then rewrites every old link in the current save, including pictures stored on cards and tiles, so a load shows the new picture without clicking each object. A full build copies save 9001 from that save afterwards, so 9001 does not need its own rewrite. The old Cloud copy is deleted once the current save no longer uses it. Older Toronto Rising saves are left unchanged; after that deletion they show a missing picture.
 
 ### Remove an asset
 

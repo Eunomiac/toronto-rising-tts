@@ -7,7 +7,8 @@
  * Config: .tools/cloud-asset-sync.jsonc. Docs: .tools/Cloud-Asset-Sync-Plan.md
  *
  * Flow: push assets/ to Cloud (skipped while TTS is open) → refresh assets/Save Only →
- * build each job's rows from its assets/ folder + the ledger's links → write outputs →
+ * build each job's rows from its assets/ folder + the ledger's links → rewrite the current
+ * save's links when a file was replaced under the same name → write outputs →
  * delete Cloud copies of files removed locally (kept while still used).
  *
  * Usage (repo root):
@@ -27,6 +28,7 @@ const MANIFEST_PATH = path.join(REPO_ROOT, "lib", "json", "cloud-assets.json");
 const { loadCloudConfig } = require("./tts-cloud/lib/cloud_config.js");
 const { loadLedger, scanAssets } = require("./tts-cloud/lib/assets_tree.js");
 const { planPush, applyPush, applyDeletes, refreshSaveOnly } = require("./tts-cloud/lib/push.js");
+const { buildSupersededRetargets, retargetSaveUrls } = require("./tts-cloud/lib/retarget-save-urls.js");
 const { readIndex, rowsFromIndex } = require("./tts-cloud/lib/cloud_index.js");
 const { resolveAssetTargets, writeAtomic, parseUserRegExp } = require("./custom-ui-assets/lib/custom-ui-assets-save.js");
 const { findExistingConfig, backupSaveBeforeWrite } = require("./custom-ui-assets/lib/tts-assets-config.js");
@@ -636,13 +638,22 @@ async function main() {
     }
 
     // --- Save outputs ---
+    // Same-filename replacements are rewritten here, before session-start copies this
+    // save to TS_Save_9001. Only the current save is changed.
     const saveJobs = active.filter((j) => SAVE_OUTPUTS.has(j.output));
+    const retargets = plan ? buildSupersededRetargets(plan.deleteCandidates, ledger.files) : [];
     let saveRoot = null;
     let saveBefore = "";
-    if (saveJobs.length > 0) {
+    if (saveJobs.length > 0 || retargets.length > 0) {
       saveRoot = JSON.parse(fs.readFileSync(cfg.saveFile, "utf8"));
       saveBefore = JSON.stringify(saveRoot);
       log(`Save: ${cfg.saveFile}`);
+      if (retargets.length > 0) {
+        const verb = cli.dryRun ? "Would retarget" : "Retargeted";
+        for (const item of retargetSaveUrls(saveRoot, retargets)) {
+          if (item.count > 0) log(`${verb} ${item.relPath}: ${item.count} link(s) in the current save`);
+        }
+      }
 
       const rowJobs = allJobs.filter((j) => j.output === OUTPUT_GLOBAL || j.output === OUTPUT_OBJECT);
       /** @type {Map<string, Set<string>>} target key → names some job owns there this run */

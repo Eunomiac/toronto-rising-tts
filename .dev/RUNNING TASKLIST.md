@@ -693,6 +693,7 @@ _Parent: the local, gitignored `assets/` folder is the one source of truth, push
 - [x] **Locations from Cloud:** site cards, district cards, skyboxes, scene catalogs from the manifest. _(TOR-732)_ — Pending Save & Play_
 - [x] **HUD image names owned by Cloud jobs:** Global HUD folders + jobs; dead bare-name banners removed; dashboard sheet art from `assets/`. _(TOR-730)_ — Pending Save & Play_
 - [x] **Asset gates, superseded tooling removal, docs, user guide.** _(TOR-731)_
+- [x] **Same-filename Cloud replacement rewrites save 230:** when a file is replaced under the same path, the sync points every old link in the current save at the new upload (cards, tiles, decals, UI, saved scripts) before Full copies that save to 9001. Older saves are left unchanged. Pending full build with TTS closed. _(TOR-820)_
 
 ## Agent Reviews
 
