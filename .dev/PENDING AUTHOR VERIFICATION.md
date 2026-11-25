@@ -31,6 +31,30 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-815 — NPC spotlight tokens removed
+
+> **Agent-assessment note:** The token cleanup is in the NPC sync. You still need to look at the Stage Control board and confirm the figurine lights are unchanged.
+
+**How to verify:** Save & Play. Spotlight tokens on the Stage Control board should disappear, including tokens for preloaded NPCs. Each NPC's normal light should still come on with the scene. Seat lights should be unchanged. Holding the old spotlight key over the board should not spotlight a figurine. Preloading an NPC should not add a token or a second light. There was no separate spotlight-only light on the stage; the hotkey was reusing the NPC's normal light.
+
+#### 🟡 TOR-814 — Compulsion removal offered at the end of the next session
+
+> **Agent-assessment note:** The row is built from the session recorded when the card is chosen. You still need to play through two session ends to see the timing.
+
+**How to verify:** Save & Play. Choose a Compulsion during this session. At the end of this same session, the condition list should not offer to remove it. Play through the next session and reach its end: the same list should name that Compulsion. Remove it should clear the card and its light. Not yet should hide the row until the end of the session after that. A Compulsion that was already out before this change has no recorded session, so it will not appear until it is chosen again.
+
+#### 🟡 TOR-813 — Compulsion cards and camera follow the seat
+
+> **Agent-assessment note:** The camera choice and the anchor snap are in the transition. You still need to draw the cards and move the table while they are out.
+
+**How to verify:** Save & Play. Draw from a compulsion deck and wait until the four choices are locked in place. Advance the phase or change the table while the blindfold is up. When it lifts, the drawn card and the four choices should still sit with that seat, and that player's camera should still be looking at those cards.
+
+#### 🟡 TOR-812 — End to Intermission theme logging
+
+> **Agent-assessment note:** The theme request was already TR Loop. The new console lines are what you can use if it stays silent.
+
+**How to verify:** Save & Play. Advance from End into Intermission and watch the console. You should see four `[End→Intermission]` lines, and the play line should name `TR_Loop`. If the theme is still silent, copy those lines back.
+
 #### 🟡 TOR-811 — Joining players skip stored objects until onboarding asks for them
 
 > **Agent-assessment note:** The bag list and the new button are in the files. You still need a fresh session-start save, then a real join, to see that the stored objects stay out of the first download and come back at the right step.
