@@ -125,7 +125,7 @@ export const XpAwardPanel = ({
 
   if (phase === "Feedback") {
     return (
-      <div className="lab-xp-panel">
+      <div className="lab-xp-panel is-feedback">
         <h3 className="lab-xp-title">Session XP</h3>
         <SeatRow
           label="Provided Feedback"

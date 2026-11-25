@@ -2207,6 +2207,13 @@ input.lab-cat-rename {
   padding: 14px 16px;
   border: 1px solid #4a463c;
   background: rgb(22 20 18 / 92%);
+
+  &.is-feedback {
+    left: auto;
+    right: 16px;
+    width: min(480px, 42%);
+    transform: none;
+  }
 }
 
 .lab-xp-title {
