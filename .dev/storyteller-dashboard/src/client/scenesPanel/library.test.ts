@@ -438,7 +438,12 @@ describe("draft Scatter layout", () => {
     expect(playing.levels.music).toBe(30);
     expect(playing.levels.location).toBe(5);
     expect(playing.levels.rain).toBe(0);
-    expect(draftSoundView(unset, site, { tracks: { casaLomaA: 0.5, softIndoor: 0.4 } }).levels).toMatchObject({ music: 50, location: 40 });
+    expect(draftSoundView(unset, site, { tracks: { casaLoma: 0.5, casaLomaA: 0.2, softIndoor: 0.4 } }).levels).toMatchObject({ music: 50, location: 40 });
+    expect(draftSoundView(unset, { backgroundMusic: "casaLoma", locationTrack: "airport" }, { tracks: { softIndoor: 0.9 } }).levels.location).toBe(5);
+    const wet = scene("elysium", {
+      sessionScene: { soundscapeNarrative: { rain: "rainHeavy", wind: "windLow" }, clock: { isPresentDay: true } }
+    });
+    expect(draftSoundView(wet, site, { tracks: { rain: 0.5, rainHeavy: 0.9, wind: 0.2, windLow: 0.8 } }).levels).toMatchObject({ rain: 50, wind: 20 });
     const storm = scene("elysium", {
       sessionScene: { siteKey: "CLGreatHall", soundscapeNarrative: { thunderstorm: true }, clock: { isPresentDay: true } }
     });

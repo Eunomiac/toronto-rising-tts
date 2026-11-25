@@ -121,6 +121,7 @@ describe("soundView", () => {
     expect(view.playing.featured).toBe(true);
     expect(view.levels.thunder).toBe(60);
     expect(soundView({ ...sound, featuredKey: "TR_Loop", trackVolumes: { TR_Loop: 0.4 } }).levels.featured).toBe(40);
+    expect(soundView({ ...sound, featuredKey: "TR_Loop", trackVolumes: { mainThemeLoop: 0.5, TR_Loop: 0.4 } }).levels.featured).toBe(50);
     expect(view.playing.thunder).toBe(false);
     expect(view.ambient).toBeUndefined();
     expect(soundView({ ...sound, musicEnabled: false }).playlist).toBe("Silent");

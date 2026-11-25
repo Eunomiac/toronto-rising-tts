@@ -284,9 +284,9 @@ local function defaultState()
         thunderEnabled = Catalog.DEFAULTS.thunderEnabled,
         --- Storyteller scale (0..1) on every thunder hit's catalog volume; the `thunder` lane.
         thunderVolume = 1,
-        --- Storyteller lane-slider levels (0..1, natural volume before weather ducking) keyed by catalog effect
-        --- name. Global, never per scene: the track plays at this level wherever it plays next.
-        --- The music slider writes the same level onto every clip in the playlist that was playing.
+        --- Storyteller lane-slider levels (0..1, natural volume before weather ducking).
+        --- Location ambience is keyed by the clip. Music, featured, rain, and wind are keyed by the playlist,
+        --- so every clip in that playlist plays at the same saved level. Global, never per scene.
         trackVolumes = {},
         location = Catalog.DEFAULTS.location,
         isIndoors = Catalog.DEFAULTS.isIndoors,
@@ -321,15 +321,94 @@ local function ensureState()
     return current
 end
 
---- The Storyteller's saved level for a catalog entry's clip (`trackVolumes`), or nil to use the catalog's.
+--- The Storyteller's saved level for a catalog entry, or nil to use the catalog's.
+--- Location ambience is stored on the clip. Music, featured, rain, and wind are stored on the playlist.
+--- A clip key is still read when the playlist has no saved level (levels saved before playlist storage).
 --- @param entry table|nil catalog entry (`effect`, else `key`, names the clip)
 --- @return number|nil
+local function catalogRowForEntry(entry)
+    if type(entry) ~= "table" then
+        return nil
+    end
+    if type(entry.key) == "string" then
+        local row = Catalog.TRACKS[entry.key]
+        if type(row) == "table" then
+            return row
+        end
+    end
+    local effect = type(entry.effect) == "string" and entry.effect or nil
+    if effect == nil then
+        return nil
+    end
+    local direct = Catalog.TRACKS[effect]
+    if type(direct) == "table" then
+        return direct
+    end
+    for _, candidate in pairs(Catalog.TRACKS) do
+        if type(candidate) == "table" and (candidate.effect == effect or candidate.key == effect) then
+            return candidate
+        end
+    end
+    return nil
+end
+
+local function volumePlaylistKey(entry)
+    local row = catalogRowForEntry(entry)
+    if type(row) ~= "table" or row.type == "location" or row.type == "silence" then
+        return nil
+    end
+    if row.type == "weather" and row.subType == "thunder" then
+        return nil
+    end
+    if (row.type == "backgroundMusic" or row.type == "featureMusic" or row.type == "weather")
+        and type(row.subType) == "string" and row.subType ~= "" then
+        return row.subType
+    end
+    return nil
+end
+
 local function savedTrackVolume(entry)
     if type(entry) ~= "table" then
         return nil
     end
-    local effect = type(entry.effect) == "string" and entry.effect or entry.key
-    return type(effect) == "string" and tonumber(ensureState().trackVolumes[effect]) or nil
+    local volumes = ensureState().trackVolumes
+    if type(volumes) ~= "table" then
+        return nil
+    end
+    local clip = type(entry.effect) == "string" and entry.effect or entry.key
+    local playlistKey = volumePlaylistKey(entry)
+    if playlistKey ~= nil and tonumber(volumes[playlistKey]) ~= nil then
+        return tonumber(volumes[playlistKey])
+    end
+    if type(clip) ~= "string" then
+        return nil
+    end
+    return tonumber(volumes[clip])
+end
+
+local function forgetClipLevels(playlist, keepKey)
+    if type(playlist) ~= "table" or type(playlist.tracks) ~= "table" then
+        return
+    end
+    local volumes = ensureState().trackVolumes
+    for _, track in ipairs(playlist.tracks) do
+        if type(track) == "table" then
+            for _, name in ipairs({ track.effect, track.key }) do
+                if type(name) == "string" and name ~= "" and name ~= keepKey and name ~= Catalog.SILENT_EFFECT then
+                    volumes[name] = nil
+                end
+            end
+        end
+    end
+end
+
+local function rememberPlaylistLevel(playlistKey, playlist, volume)
+    if type(playlistKey) ~= "string" or playlistKey == "" or type(playlist) ~= "table" then
+        return false
+    end
+    ensureState().trackVolumes[playlistKey] = volume
+    forgetClipLevels(playlist, playlistKey)
+    return true
 end
 
 --- Stores a serializable channel state patch.
@@ -2282,9 +2361,9 @@ function Soundscape.getPlayingLanesForUi()
 end
 
 --- Sets volume for a Storyteller panel lane id (`music`, `location`, `featured`, `rain`, `wind`, `thunder`).
---- The level is saved against the clip now playing (`trackVolumes`), so that clip plays at it wherever it
---- plays next. Music also saves the same level on every clip in the playlist, because the slider is one
---- level for that playlist. Thunder is a scale on each hit's catalog volume, applied from the next hit.
+--- Location ambience is saved on that one clip. Music, featured, rain, and wind are saved on the playlist,
+--- so every clip in it plays at that level next time. Thunder is a scale on each hit's catalog volume,
+--- applied from the next hit.
 -- @param laneId string
 -- @param volume01 number|string
 -- @return boolean
@@ -2307,21 +2386,40 @@ function Soundscape.setStorytellerLaneVolume(laneId, volume01)
         return false, "Unknown sound lane: " .. tostring(laneId)
     end
     local ok, message = setChannelImmediateVolume(channelKey, v)
-    if ok and laneId == "music" then
-        local playlistKey = state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and state.locationMusic or state.musicMood
-        local playlist = Catalog.getBackgroundPlaylist(playlistKey)
-        if type(playlist) == "table" and type(playlist.tracks) == "table" then
-            for _, track in ipairs(playlist.tracks) do
-                local effect = type(track) == "table" and (type(track.effect) == "string" and track.effect or track.key) or nil
-                if type(effect) == "string" and effect ~= "" and effect ~= Catalog.SILENT_EFFECT then
-                    state.trackVolumes[effect] = v
-                end
-            end
-        end
+    if ok ~= true then
+        return ok, message
     end
     local effect = state.channels[channelKey] and state.channels[channelKey].effect
-    if ok and type(effect) == "string" and effect ~= Catalog.SILENT_EFFECT then
-        state.trackVolumes[effect] = v
+    local function rememberClip()
+        if type(effect) == "string" and effect ~= "" and effect ~= Catalog.SILENT_EFFECT then
+            state.trackVolumes[effect] = v
+        end
+    end
+    if laneId == "location" then
+        rememberClip()
+    elseif laneId == "music" then
+        local playlistKey = state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and state.locationMusic or state.musicMood
+        local playlist = Catalog.getBackgroundPlaylist(playlistKey)
+        if rememberPlaylistLevel(playlistKey, playlist, v) ~= true then
+            rememberClip()
+        end
+    elseif laneId == "featured" then
+        local row = type(effect) == "string" and Catalog.TRACKS[effect] or nil
+        local playlistKey = type(row) == "table" and row.subType or nil
+        local playlist = type(playlistKey) == "string" and Catalog.PLAYLISTS.featureMusic[playlistKey] or nil
+        if rememberPlaylistLevel(playlistKey, playlist, v) ~= true then
+            rememberClip()
+        end
+    elseif laneId == "rain" then
+        if rememberPlaylistLevel("rain", Catalog.PLAYLISTS.weather.rain, v) ~= true then
+            rememberClip()
+        end
+    elseif laneId == "wind" then
+        if rememberPlaylistLevel("wind", Catalog.PLAYLISTS.weather.wind, v) ~= true then
+            rememberClip()
+        end
+    else
+        rememberClip()
     end
     return ok, message
 end

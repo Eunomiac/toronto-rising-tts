@@ -16,7 +16,15 @@ const clipCatalog = (key: string | undefined): number | undefined => {
 const playlistClipKeys = (key: string): readonly string[] =>
   (trackVolumes.playlistClips as Record<string, readonly string[]>)[key] ?? [];
 
-/** 0–100 slider value. A saved override is the clip's volume; otherwise the catalog level. */
+const clipPlaylist = (key: string | undefined): string | undefined => {
+  if (!key) {
+    return undefined;
+  }
+  const playlist = (trackVolumes.clipPlaylists as Record<string, string>)[key];
+  return typeof playlist === "string" ? playlist : undefined;
+};
+
+/** 0–100. Location ambience is stored on the clip. Other clips are not looked up here. */
 export const clipVolume = (
   key: string | undefined,
   saved?: Readonly<Record<string, number>>
@@ -31,6 +39,24 @@ export const clipVolume = (
 };
 
 /**
+ * Music, featured, rain, and wind. A saved playlist level applies to every clip in that playlist.
+ * A clip-only level is used when the playlist has not been saved (levels from before playlist storage).
+ */
+export const playedVolume = (
+  key: string | undefined,
+  saved?: Readonly<Record<string, number>>
+): number | undefined => {
+  const playlist = clipPlaylist(key);
+  if (playlist && saved) {
+    const override = saved[playlist];
+    if (typeof override === "number" && Number.isFinite(override)) {
+      return Math.round(Math.min(1, Math.max(0, override)) * 100);
+    }
+  }
+  return clipVolume(key, saved);
+};
+
+/**
  * The volume a background playlist plays at. Every clip shares the catalog level. A saved override replaces
  * it. When the clips disagree, one shared override is that playlist's level; otherwise the clip now playing.
  */
@@ -39,6 +65,12 @@ export const playlistVolume = (
   saved?: Readonly<Record<string, number>>,
   playingClip?: string
 ): number | undefined => {
+  if (saved) {
+    const direct = saved[key];
+    if (typeof direct === "number" && Number.isFinite(direct)) {
+      return Math.round(Math.min(1, Math.max(0, direct)) * 100);
+    }
+  }
   const catalog = playlistCatalog(key);
   const clips = playlistClipKeys(key);
   if (clips.length === 0) {

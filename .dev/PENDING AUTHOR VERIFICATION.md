@@ -35,7 +35,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 > **Agent-assessment note:** The saved level was already used the next time a clip started. The bars were still showing the catalog number while the channel was silent. You still need to hear a clip come back at the level you set.
 
-**How to verify:** Save & Play, and open the Storyteller Dashboard. On the Scenes tab, set the ambience slider to a level you will recognize, then pick a scene whose ambience is silent right now. The preview's ambience bar should show the level you set, not the original catalog level. Play that scene. The ambience should come in at that same level. Do the same with the music slider: every song in that playlist should come back at the level on the bar, including a song that was not the one playing when you moved the slider.
+**How to verify:** Save & Play, and open the Storyteller Dashboard. Set one location ambience, such as the church, to a level you will recognize, then switch the ambience to a different place. The new place should keep its own level, and switching back should show the church at the level you set. Music, featured music, rain, and wind are different: the level you set applies to every clip in that playlist. Set the music slider, then let another song from the same playlist start. It should come in at that same level. A scene preview whose channel is silent should show that saved level, not the catalog number.
 
 #### 🟡 TOR-815 — NPC spotlight tokens removed
 

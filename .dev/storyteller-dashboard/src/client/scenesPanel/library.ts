@@ -4,7 +4,7 @@ import type { ClockDatetime, GenericNpc, ScatterGroup, ScatterMember, SceneSlice
 import type { ScenesCommand, SoundLane } from "./commands";
 import { FEATURED_TRACKS, isSeatColor, NPC_SEATS, playlistLabel } from "../catalogVocab";
 import type { SoundView } from "./liveScene";
-import { clipVolume, playlistVolume, sliderPercent } from "./trackVolume";
+import { clipVolume, playedVolume, playlistVolume, sliderPercent } from "./trackVolume";
 import { fillOrder } from "./stage";
 import { boardToStage, stageToBoard, type StagePack, type StageSlot } from "./stageFrame";
 
@@ -618,7 +618,8 @@ export type DraftSoundSite = {
 /**
  * The draft's music and ambience as the mixer's view. An explicit narrative choice wins, including Main.
  * Only a scene that has not chosen music yet follows the site playlist (Casa Loma, and so on).
- * Each bar is the volume that clip plays at: a saved override, otherwise the catalog level.
+ * Each bar is the level that audio plays at. Location ambience is saved per track. Music, featured,
+ * rain, and wind are saved per playlist.
  */
 export const draftSoundView = (
   scene: LibraryScene,
@@ -643,9 +644,9 @@ export const draftSoundView = (
     levels: {
       music: playlistVolume(music, tracks) ?? 0,
       location: ambient ? clipVolume(ambient, tracks) ?? 0 : 0,
-      featured: clipVolume(featuredKey, tracks) ?? 0,
-      rain: rain && rain !== "none" ? clipVolume(rain, tracks) ?? 0 : 0,
-      wind: wind && wind !== "none" ? clipVolume(wind, tracks) ?? 0 : 0,
+      featured: playedVolume(featuredKey, tracks) ?? 0,
+      rain: rain && rain !== "none" ? playedVolume(rain, tracks) ?? 0 : 0,
+      wind: wind && wind !== "none" ? playedVolume(wind, tracks) ?? 0 : 0,
       thunder: narrative.thunderstorm === true ? sliderPercent(saved?.thunder ?? 1) : 0
     },
     playing: Object.fromEntries(LANES.map((lane) => [lane, lane === "music" || (lane === "location" && ambient !== undefined)])) as Record<SoundLane, boolean>

@@ -2,7 +2,7 @@ import { isSeatColor, LIGHTING_PRESETS, playlistLabel, type LightingPreset, type
 import type { SceneCatalogs } from "./catalogs";
 import type { RainKey, SoundLane } from "./commands";
 import type { ClockDatetime, GenericNpc, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
-import { clipVolume, playlistVolume, sliderPercent } from "./trackVolume";
+import { clipVolume, playedVolume, playlistVolume, sliderPercent } from "./trackVolume";
 
 /**
  * Pure adapters from the live world slices (`worldState.ts`) to what the Scenes tab panels draw.
@@ -90,9 +90,9 @@ export const soundView = (sound: SoundscapeSlice): SoundView => {
     levels: {
       music: musicKey ? playlistVolume(musicKey, saved, sound.backgroundTrackKey) ?? laneLevel("music") : 0,
       location: ambientKey ? clipVolume(ambientKey, saved) ?? laneLevel("location") : 0,
-      featured: sound.featuredKey ? clipVolume(sound.featuredKey, saved) ?? laneLevel("featured") : laneLevel("featured"),
-      rain: rainKey ? clipVolume(rainKey, saved) ?? laneLevel("rain") : laneLevel("rain"),
-      wind: windKey ? clipVolume(windKey, saved) ?? laneLevel("wind") : laneLevel("wind"),
+      featured: sound.featuredKey && sound.featuredKey !== "none" ? playedVolume(sound.featuredKey, saved) ?? laneLevel("featured") : laneLevel("featured"),
+      rain: rainKey ? playedVolume(rainKey, saved) ?? laneLevel("rain") : laneLevel("rain"),
+      wind: windKey ? playedVolume(windKey, saved) ?? laneLevel("wind") : laneLevel("wind"),
       thunder: typeof sound.thunderVolume === "number" ? sliderPercent(sound.thunderVolume) : laneLevel("thunder")
     },
     playing: { music: playing("music"), location: playing("location"), featured: playing("featured"), rain: playing("rain"), wind: playing("wind"), thunder: playing("thunder") }
