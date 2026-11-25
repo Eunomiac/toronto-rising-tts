@@ -692,6 +692,22 @@ $signal-fire: #ff9a1f;
   }
 }
 
+.lab-seat-presence-menu {
+  position: absolute;
+  z-index: 6;
+  transform: translate(-8px, -8px);
+
+  button {
+    padding: 6px 10px;
+    border: 1px solid rgb(255 255 255 / 35%);
+    border-radius: 8px;
+    background: #1c1c22;
+    color: #f2f2f4;
+    font-size: 13px;
+    cursor: pointer;
+  }
+}
+
 .lab-board {
   position: relative;
   background: #24211c;

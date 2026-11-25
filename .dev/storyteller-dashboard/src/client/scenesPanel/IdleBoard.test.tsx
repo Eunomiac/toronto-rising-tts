@@ -55,13 +55,26 @@ describe("IdleBoard stage reminders", () => {
     expect(send).toHaveBeenCalledWith({ op: "seatPresence", seat: "Pink", present: true });
   });
 
-  it("keeps an out-of-scene PC grey outside Downtime", () => {
-    mount({
-      phase: "Play",
-      subPhase: "Main",
-      seats: [{ slot: 1, seatKey: "Pink", kind: "pc", name: "Aishe Tache", state: "absent", color: "Pink" }]
-    });
+  it("keeps an out-of-scene PC grey outside Downtime and can bring them back", async () => {
+    const user = userEvent.setup();
+    const send = vi.fn();
+    render(
+      <ScenesCommandContext.Provider value={send}>
+        <IdleBoard
+          w={800}
+          h={500}
+          phase="Play"
+          subPhase="Main"
+          seats={[{ slot: 1, seatKey: "Pink", kind: "pc", name: "Aishe Tache", state: "absent", color: "Pink" }]}
+        />
+      </ScenesCommandContext.Provider>
+    );
     expect(document.querySelector(".lab-seat.absent")).not.toBeNull();
+    await user.click(screen.getByRole("button", { name: "Bring Aishe Tache into the scene" }));
+    expect(send).toHaveBeenCalledWith({ op: "seatPresence", seat: "Pink", present: true });
+    await user.pointer({ keys: "[MouseRight]", target: screen.getByText("Aishe Tache") });
+    await user.click(screen.getByRole("menuitem", { name: "Bring Aishe Tache into the scene" }));
+    expect(send).toHaveBeenCalledTimes(2);
   });
 
   it("shows the awakening reminder in Downtime at night and dismisses it for that night", async () => {

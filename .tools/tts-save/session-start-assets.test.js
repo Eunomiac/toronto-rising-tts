@@ -207,7 +207,19 @@ test("the skybox allowance does not exempt another use of the same URL", () => {
 
 test("preserves chronicle state and UI assets while staging only restore metadata in saved state", () => {
   const source = fixture();
-  source.LuaScriptState = JSON.stringify({ currentPhase: "Intermission", sessionNum: 42, debug: { assumeConnected: true } });
+  source.LuaScriptState = JSON.stringify({
+    currentPhase: "Intermission",
+    sessionNum: 42,
+    debug: { assumeConnected: true },
+    sessionScene: {
+      seatSlots: {
+        Brown: { tableSlot: 2, isPresent: false, characterKey: "fomorach" },
+        Red: { tableSlot: 4, isPresent: false, absentFromSession: true, characterKey: "lordLucien" },
+        NPC1: { isPresent: false, slotEmpty: true },
+      },
+      seatPresent: { Brown: false, Red: false },
+    },
+  });
   source.ObjectStates[0].GMNotes = "SOUNDSCAPE_MUSIC_C";
   const plan = planSessionStart(source, review);
   const output = createSessionStart(source, plan, "new lua", "new xml");
@@ -217,6 +229,11 @@ test("preserves chronicle state and UI assets while staging only restore metadat
   assert.deepEqual(output.CustomUIAssets, source.CustomUIAssets);
   assert.equal(state.sessionNum, 42);
   assert.equal(state.debug.assumeConnected, false);
+  assert.equal(state.sessionScene.seatSlots.Brown.isPresent, true);
+  assert.equal(state.sessionScene.seatSlots.Red.absentFromSession, true);
+  assert.equal(state.sessionScene.seatSlots.Red.isPresent, false);
+  assert.equal(state.sessionScene.seatSlots.NPC1.slotEmpty, true);
+  assert.equal(state.sessionScene.seatPresent.Brown, true);
   assert.equal(state.connectionControls.sessionStartJoin, true);
   assert.deepEqual(state.connectionControls.joinColdPoolsBackup.entries, [
     { kind: "soundscape_emitter", guid: "abcdef" },

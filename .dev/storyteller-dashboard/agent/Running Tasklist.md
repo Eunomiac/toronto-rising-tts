@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ With no scene on the table, each occupied seat has an Out / In mark and a right-click choice to bring them into the scene or take them out. A fresh session-start save no longer keeps someone out of the scene from the previous night.
+
 - ✔️ SD-ScenesPins-1121 pin 11. Intermission cannot advance to Play until the third onboarding step finishes. Pending Save & Play (TOR-808).
 
 - ✔️ SD-ScenesPins-1121 pin 7. Map pins stay on the scene line the table already prints. Complications calls the table only when applying a finished roll.
