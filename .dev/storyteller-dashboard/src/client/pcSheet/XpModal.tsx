@@ -96,7 +96,7 @@ export const XpModal = ({ seat, snapshot, send, onClose }: Props): ReactElement 
         <NumberInput value={amount} onChange={setAmount} min={1} max={99} />
       </Field>
       <Field label="Description" wide>
-        <TextInput value={description} onChange={setDescription} placeholder={kind === "gain" ? "e.g. Session attendance" : "e.g. Dominate 3"} />
+        <TextInput value={description} onChange={setDescription} placeholder={kind === "gain" ? "e.g. Session Attendance" : "e.g. Dominate 3"} />
       </Field>
       <p className="sheet-modal-note">
         {lastAll

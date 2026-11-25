@@ -148,8 +148,8 @@ export const XpAwardPanel = ({
     <div className="lab-xp-panel">
       <h3 className="lab-xp-title">Session XP</h3>
       <div className="lab-xp-bulk">
-        <button type="button" className="lab-btn" onClick={() => awardConnected("Session attendance")}>
-          +1 connected · Session attendance
+        <button type="button" className="lab-btn" onClick={() => awardConnected("Session Attendance")}>
+          +1 connected · Session Attendance
         </button>
         <button type="button" className="lab-btn" onClick={() => awardEveryone(1, "End of Story")}>
           +1 everyone · End of Story
