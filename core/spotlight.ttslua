@@ -8,6 +8,7 @@
     Workshop copies are created only by DEBUG.populateSpotlightFigurines()
     (Spotlight.populateWorkshopStandins). Play → Spotlight never auto-spawns;
     missing GUIDs abort the carousel loudly so duplicates cannot pile up.
+    Stand-ins packed in hidden storage are not missing: the carousel takes them out.
 
     Agent guidance: .dev/Phases/Phases Overview.md; hide-list must run after
     seat layout in Sync.full so bags/companions/compulsion decks stay stashed
@@ -916,15 +917,29 @@ function Spotlight.populateWorkshopStandins()
     })
 end
 
+--- A registered stand-in is available when it is in the world or still packed in hidden storage.
+--- @param guid string|nil
+--- @param obj Object|nil
+--- @return boolean
+local function standInResolvable(guid, obj)
+    if type(guid) ~= "string" or guid == "" then
+        return false
+    end
+    if U.isGameObject(obj) then
+        return true
+    end
+    return require("core.staged_objects").isContained(guid) == true
+end
+
 --- @return boolean, string|nil
 function Spotlight.auditStandins()
     local missing = {}
     for i = 1, #(C.PlayerColors or {}) do
         local color = C.PlayerColors[i]
-        if figureGuid(color) == nil or figureObject(color) == nil then
+        if not standInResolvable(figureGuid(color), figureObject(color)) then
             missing[#missing + 1] = "figurine " .. color .. " (" .. figureGuidKey(color) .. ")"
         end
-        if lightGuid(color) == nil or lightObject(color) == nil then
+        if not standInResolvable(lightGuid(color), lightObject(color)) then
             missing[#missing + 1] = "light " .. color .. " (" .. lightGuidKey(color) .. ")"
         end
     end
