@@ -1,8 +1,8 @@
 --[[
-    Storyteller spotlight hold preview (TOR-238).
+    Storyteller spotlight hold preview is retired.
 
-    While the Storyteller holds the hotkey and points at a spotlight token on the Stage Control board
-    (`core.stage_tokens`), that stage NPC is spotlit transiently. Never written into `gameState`.
+    The hold hotkey no longer moves NPC lights. Each staged NPC keeps the one light
+    spawned with the figurine; there is no second spotlight-only light to remove.
 ]]
 
 local Spotlight = {}
@@ -151,36 +151,8 @@ end
 --- @param playerColor string
 --- @param hoveredObject Object|nil
 --- @param isKeyUp boolean
-function Spotlight.onControlBoardSpotlightHotkey(playerColor, hoveredObject, isKeyUp)
-    if type(playerColor) ~= "string" or playerColor == "" then
-        return
-    end
-    if isKeyUp == true then
-        controlBoardSpotlightHeld = false
-        controlBoardSpotlightPlayerColor = nil
-        controlBoardSpotlightPollGen = controlBoardSpotlightPollGen + 1
-        clearControlBoardSpotlightPreview()
-        return
-    end
-
-    controlBoardSpotlightHeld = true
-    controlBoardSpotlightPlayerColor = playerColor
-    controlBoardSpotlightPollGen = controlBoardSpotlightPollGen + 1
-    local gen = controlBoardSpotlightPollGen
-
-    local token = hoveredObject
-    if StageTokens.characterKeyForToken(token) == nil then
-        token = hoveredObjectForPlayer(playerColor)
-    end
-    if not applyControlBoardSpotlightPreviewForToken(token) then
-        clearControlBoardSpotlightPreview()
-    end
-
-    U.await(function()
-        if controlBoardSpotlightHeld and controlBoardSpotlightPollGen == gen then
-            tickControlBoardSpotlightHoverPoll(playerColor)
-        end
-    end, 0.08)
+function Spotlight.onControlBoardSpotlightHotkey(_playerColor, _hoveredObject, _isKeyUp)
+    -- The hold-to-spotlight token path is retired. Complication selection still uses this hotkey.
 end
 
 return Spotlight

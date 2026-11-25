@@ -1,14 +1,13 @@
 --[[
     Static layout for the Stage Control board (CONTROL_BOARD) and the stage playfield (STAGE_BOARD).
-    Polar snap families drive dashboard stage editing + stage figurine poses; stage_token tiles are
-    spawned by core.stage_tokens for the spotlight hotkey. GUIDs live in lib/guids.ttslua.
+    Polar snap families drive dashboard stage editing and stage figurine poses. GUIDs live in lib/guids.ttslua.
 
     Agent: .dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md
 ]]
 
 local D = {}
 
---- GM notes prefix on stage spotlight tokens (`npcToken:<characterKey>`).
+--- GM notes prefix kept so a leftover token can still be recognized and removed.
 D.TOKEN_GM_PREFIX = "npcToken:"
 
 --- Extra world Y yaw (degrees) for stage figurines vs board-relative placement yaw (Figurine_Custom front/back vs tile).
@@ -17,7 +16,7 @@ D.STAGE_FIGURINE_YAW_OFFSET_DEG = 180
 --- Local Y above the CONTROL_BOARD tile surface for objects placed on it (object-local units).
 D.MINIMAP_SURFACE_LOCAL_Y = 0.24
 
---- Spotlight tokens spawned on the Stage Control board for stage NPCs (core.stage_tokens).
+--- Tag on retired spotlight tokens. Reconcile destroys anything still carrying it.
 D.TAG_STAGE_TOKEN = "stage_token"
 D.STAGE_TOKEN_SCALE = { x = 1.5, y = 1, z = 1.5 }
 

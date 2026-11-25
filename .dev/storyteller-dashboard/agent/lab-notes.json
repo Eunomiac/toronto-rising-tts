@@ -1,14 +1,3 @@
 {
-  "notes": [
-    {
-      "id": 9,
-      "sketch": "scenes",
-      "x": 1292,
-      "y": 272,
-      "text": "Fully retire the \"hold hotkey over NPC token to spotlight them\" feature.\n\n- Fully remove the generation of and spawning of NPC tokens into the game world for the purpose of spotlighting. NPC tokens no longer have a use and should be removed entirely.\n- Remove the hotkey-triggered spotlighting mechanic itself\n- If NPCs have spotlight objects solely used for the spotlight effect, remove them as well (if the spotlight effect uses their normal NPC light, ignore this)",
-      "status": "open",
-      "createdAt": "2026-11-24T21:22:46.343Z",
-      "updatedAt": "2026-11-24T21:22:46.343Z"
-    }
-  ]
+  "notes": []
 }

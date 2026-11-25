@@ -1,18 +1,9 @@
 --[[
-    Spotlight tokens on the Stage Control board (TOR-687).
+    Spotlight tokens on the Stage Control board are retired.
 
-    One token per stage NPC or parked preload NPC. Stage tokens are face down when the NPC stands dark.
-    Offstage tokens are face up, labelled, and parked at the Storyteller's right. Only stage tokens
-    accept the spotlight hold hotkey (`core.npc_gameboard_spotlight`).
-
-    Tokens spawn in horizontal rows across CONTROL_BOARD, read from the Storyteller's seat: top-left corner
-    first, left to right, then down (world +X to -X along the -Z edge, rows stepping toward +Z, where the
-    Storyteller sits), grouped by stage area in `POLAR_FAMILY_ORDER` (in Scatter, by
-    scatter group). A move within the stage leaves the token where it is. Entering or leaving the stage
-    moves the same token between the two areas.
-
-    `reconcileFromState` spawns / flips / destroys only the rows that changed since the last pass.
-    Token art (both sides, name baked in) comes from generated `lib/npc_art_urls.ttslua`.
+    `reconcileFromState` destroys any token still tagged for the old hold-to-spotlight
+    hotkey. It does not spawn replacements. Each staged NPC keeps its one normal light;
+    that light is not a separate spotlight-only object.
 ]]
 
 local StageTokens = {}
@@ -268,133 +259,26 @@ local function spawnToken(key, position, row)
     return obj
 end
 
---- Spawn, flip, move and remove tokens to match the stage and the parked preload pool.
---- @param opts table|nil `{ force?: boolean }` — force re-applies every token's flip
-function StageTokens.reconcileFromState(opts)
-    local S = stateModule()
-    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
-    local rows = {}
-    for key, row in pairs(type(placements) == "table" and placements or {}) do
-        if type(row) == "table" then rows[key] = row end
-    end
-    if Pool.isEnabled() then
-        local instances = S.getStateVal("npcs", "instances")
-        for key, rec in pairs(type(instances) == "table" and instances or {}) do
-            if Pool.shouldRetain(rec) and rec.areaKey == Pool.AREA_KEY then
-                rows[key] = OFFSTAGE_ROW
-            end
+--- Spotlight tokens are retired. This pass only removes any that are still on the board.
+--- The normal NPC light stays; the hold-to-spotlight hotkey no longer spawns or uses tokens.
+--- @param _opts table|nil
+function StageTokens.reconcileFromState(_opts)
+    local tagged = getObjectsWithTag(TAG) or {}
+    for _, obj in ipairs(tagged) do
+        if U.isGameObject(obj) and obj.destruct ~= nil then
+            obj.destruct()
         end
     end
-    local board = G.getObject(G.GUIDS.CONTROL_BOARD)
-    if not U.isGameObject(board) then
-        return
-    end
-    ensureIndex()
-    local force = type(opts) == "table" and opts.force == true
-    for key, guid in pairs(tokenGuidByKey) do
-        if rows[key] == nil then
-            local obj = G.getObject(guid)
-            if U.isGameObject(obj) then
-                obj.destruct()
-            end
-            tokenGuidByKey[key] = nil
-        end
-    end
-    for key in pairs(appliedSigByKey) do
-        if rows[key] == nil then
-            appliedSigByKey[key] = nil
-        end
-    end
-    -- Built on the first spawn of the pass: the sorted row slots and the spots tokens already hold.
-    local layout = nil
-    local function spawnPosition(key)
-        if layout == nil then
-            local slotByKey, spare, offstageSlot = layoutSlots(board, rows)
-            local taken = {}
-            for _, guid in pairs(tokenGuidByKey) do
-                local obj = G.getObject(guid)
-                if U.isGameObject(obj) then
-                    taken[#taken + 1] = obj.getPosition()
-                end
-            end
-            layout = { slotByKey = slotByKey, spare = spare, taken = taken, offstageSlot = offstageSlot }
-        end
-        local slot = layout.slotByKey[key]
-        if rows[key] == OFFSTAGE_ROW then
-            if slotTaken(slot, layout.taken) then
-                for index = 1, #layout.taken + 1 do
-                    slot = layout.offstageSlot(index)
-                    if not slotTaken(slot, layout.taken) then break end
-                end
-            end
-            return slot
-        end
-        if slotTaken(slot, layout.taken) then
-            slot = nil
-            for _, candidate in ipairs(layout.spare) do
-                if not slotTaken(candidate, layout.taken) then
-                    slot = candidate
-                    break
-                end
-            end
-            if slot == nil then
-                print("[StageTokens] every spare row slot on the Stage Control board is taken; `" .. key .. "` overlaps a token.")
-                slot = layout.slotByKey[key]
-            end
-        end
-        return slot
-    end
-    for key, row in pairs(rows) do
-        if type(row) == "table" then
-            local sig = rowSig(key, row)
-            local guid = tokenGuidByKey[key]
-            local obj = guid and G.getObject(guid) or nil
-            if not U.isGameObject(obj) then
-                -- A row with no art is retried only when it changes; a deleted token is respawned.
-                if guid ~= nil or force or appliedSigByKey[key] ~= sig then
-                    local slot = spawnPosition(key)
-                    obj = spawnToken(key, slot, row)
-                    tokenGuidByKey[key] = obj and obj.getGUID() or nil
-                    if obj ~= nil then
-                        layout.taken[#layout.taken + 1] = slot
-                    end
-                end
-                appliedSigByKey[key] = sig
-            elseif force or appliedSigByKey[key] ~= sig then
-                local changedRole = obj.hasTag(OFFSTAGE_TAG) ~= (row == OFFSTAGE_ROW)
-                local position = nil
-                if changedRole then
-                    position = spawnPosition(key)
-                    layout.taken[#layout.taken + 1] = position
-                end
-                if not tokenCurrent(obj, key) then
-                    position = position or obj.getPosition()
-                    obj.destruct()
-                    obj = spawnToken(key, position, row)
-                    tokenGuidByKey[key] = obj and obj.getGUID() or nil
-                else
-                    if changedRole then
-                        obj.setPosition(position)
-                        applyRole(obj, key, row)
-                    end
-                    obj.setRotationSmooth(tokenRotation(row), false, true)
-                end
-                appliedSigByKey[key] = sig
-            end
-        end
-    end
+    tokenGuidByKey = {}
+    appliedSigByKey = {}
 end
 
 --- Re-read an NPC's display name onto their spotlight token (generic NPC renamed).
---- @param key string
-function StageTokens.refreshName(key)
-    ensureIndex()
-    local guid = tokenGuidByKey[key]
-    local obj = guid and G.getObject(guid) or nil
-    if U.isGameObject(obj) then
-        obj.setName(displayName(key) .. (obj.hasTag(OFFSTAGE_TAG) and " (Offstage)" or ""))
-    end
+--- Tokens are no longer spawned, so a leftover name refresh is a no-op once they are gone.
+--- @param _key string
+function StageTokens.refreshName(_key)
 end
+
 
 --- @param obj Object|nil
 --- @return string|nil characterKey when `obj` is a spotlight token

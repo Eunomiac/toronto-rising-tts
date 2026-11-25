@@ -68,9 +68,14 @@ end
 
 local Pool = require("core.npc_preload_pool")
 local StageTokens = require("core.stage_tokens")
-local Spotlight = require("core.npc_gameboard_spotlight")
-local hovered
-Player = { Black = { getHoverObject = function() return hovered end } }
+local leftover = nil
+getObjectsWithTag = function(tag)
+    if tag == "stage_token" and leftover ~= nil and leftover.gone ~= true then
+        return { leftover }
+    end
+    return {}
+end
+
 placements.actor = { u = 0.5, v = 0.5, npcLightMode = "STANDARD" }
 instances.actor = { lightGuid = "actorLight" }
 objects.actorLight = {}
@@ -78,50 +83,15 @@ instances.guest = { preloadSlot = 1, areaKey = Pool.AREA_KEY, lightGuid = "guest
 objects.guestLight = {}
 
 StageTokens.reconcileFromState()
-assert(spawns == 1, "the cold pool must not add board tokens")
+assert(spawns == 0, "stage and preload NPCs must not spawn spotlight tokens")
 Pool.enable()
 StageTokens.reconcileFromState()
-local actor, guest = tokens["npcToken:actor"], tokens["npcToken:guest"]
-assert(spawns == 2 and guest.locked and guest.name == "Guest (Offstage)" and guest.position.x < actor.position.x)
-assert(StageTokens.characterKeyForSpotlight(guest) == nil)
-local guestPosition, before = guest.position, boundsReads
-StageTokens.reconcileFromState()
-assert(spawns == 2 and boundsReads == before and guest.position == guestPosition)
+assert(spawns == 0, "enabling the preload pool must not spawn spotlight tokens")
 
-hovered = guest
-Spotlight.onControlBoardSpotlightHotkey("Black", guest, false)
-Spotlight.onControlBoardSpotlightHotkey("Black", guest, true)
-assert(restores == 0 and lightWrites == 0, "offstage hover must leave both lights alone")
-
-hovered = actor
-Spotlight.onControlBoardSpotlightHotkey("Black", actor, false)
-assert(restores == 1 and lightWrites == 2)
-hovered = guest
-nextPoll()
-assert(restores == 1 and lightWrites == 3, "sweeping onto an offstage token must clear the preview")
-nextPoll()
-Spotlight.onControlBoardSpotlightHotkey("Black", guest, true)
-assert(lightWrites == 3, "remaining offstage or releasing the hotkey must not write the lights again")
-
-placements.guest = { u = 0.4, v = 0.4, npcLightMode = "OFF" }
-instances.guest.areaKey = "__stage_board__"
+leftover = { gone = false }
+leftover.destruct = function() leftover.gone = true end
 StageTokens.reconcileFromState()
-assert(spawns == 2 and guest.name == "Guest" and not guest.locked and guest.rotation.z == 180)
-assert(guest.position.x > guestPosition.x, "entering the stage must move the same token into the stage rows")
-assert(StageTokens.characterKeyForSpotlight(guest) == "guest")
-Spotlight.onControlBoardSpotlightHotkey("Black", guest, false)
-assert(restores == 2 and lightWrites == 5)
-
--- A park can precede the board reconcile. Stale placement/token state must
--- still refuse a Spotlight and clear the previous indicator.
-instances.guest.areaKey = Pool.AREA_KEY
-nextPoll()
-assert(restores == 2 and lightWrites == 6, "a parked instance with an old stage token must refuse Spotlight")
-placements.guest = nil
-StageTokens.reconcileFromState()
-assert(spawns == 2 and guest.locked and guest.name == "Guest (Offstage)" and guest.rotation.z == 0)
-Pool.disable("test reset")
-StageTokens.reconcileFromState()
-assert(objects[guest.getGUID()] == nil and objects[actor.getGUID()] == actor)
+assert(leftover.gone == true, "a token already in the world must be removed")
+assert(spawns == 0 and restores == 0 and lightWrites == 0, "removing tokens must not touch NPC lights")
 
 print("stage_tokens_preload.test.lua: OK")
