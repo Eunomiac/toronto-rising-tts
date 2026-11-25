@@ -51,16 +51,6 @@
       "updatedAt": "2026-11-24T21:22:46.343Z"
     },
     {
-      "id": 11,
-      "sketch": "scenes",
-      "x": 1268,
-      "y": 209,
-      "text": "The sound control panel within the scene preview menu does not accurately show volume of tracks: They are all displayed as being at zero volume, rather than at the volume they will play at when the scene is loaded.\n\nAdditionally, upon changing the music scene from the default (for the location) of \"Casa Loma\" to \"Main\", the dropdown did not reflect the change and stayed showing \"Casa Loma\".",
-      "status": "open",
-      "createdAt": "2026-11-24T21:28:04.034Z",
-      "updatedAt": "2026-11-24T21:28:47.213Z"
-    },
-    {
       "id": 12,
       "sketch": "scenes",
       "x": 473,

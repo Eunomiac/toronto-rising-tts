@@ -426,18 +426,19 @@ describe("draft Scatter layout", () => {
     expect((clearedTitle.sessionScene.scatterPlacements as Record<string, { summary?: string }>).scatter2?.summary).toBeUndefined();
   });
 
-  it("preview sound falls back to the site playlist when narrative is still main", () => {
-    const draft = scene("elysium", {
-      sessionScene: {
-        siteKey: "CLGreatHall",
-        soundscapeNarrative: { backgroundMusic: "main" },
-        clock: { isPresentDay: true }
-      }
+  it("preview sound keeps an explicit Main choice and uses the site playlist only when music is unset", () => {
+    const unset = scene("elysium", {
+      sessionScene: { siteKey: "CLGreatHall", soundscapeNarrative: {}, clock: { isPresentDay: true } }
     });
-    expect(draftSoundView(draft, { backgroundMusic: "casaLoma", locationTrack: "softIndoor" }).playlist).toBe("Casa Loma");
-    expect(draftSoundView(draft, { backgroundMusic: "casaLoma" }, { music: 8, location: 5, featured: 0, rain: 0, wind: 0, thunder: 100 }).levels.music).toBe(8);
-    const overridden = applyToDraft(draft, { op: "musicMood", mood: "melancholy" });
-    expect(draftSoundView(overridden, { backgroundMusic: "casaLoma" }).playlist).toBe("Melancholy");
+    const site = { backgroundMusic: "casaLoma", locationTrack: "softIndoor" };
+    expect(draftSoundView(unset, site).playlist).toBe("Casa Loma");
+    const chosen = applyToDraft(unset, { op: "musicMood", mood: "main" });
+    expect(draftSoundView(chosen, site).playlist).toBe("Main");
+    const silent = { music: 0, location: 0, featured: 0, rain: 0, wind: 0, thunder: 0 };
+    const playing = draftSoundView(unset, site, silent);
+    expect(playing.levels.music).toBe(30);
+    expect(playing.levels.location).toBe(5);
+    expect(draftSoundView(unset, site, { ...silent, music: 8 }).levels.music).toBe(8);
   });
 
   it("puts NPCs who only stood in groups onto free stage packs when the table leaves Scatter", () => {
