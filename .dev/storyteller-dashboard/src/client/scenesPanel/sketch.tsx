@@ -674,15 +674,7 @@ export type StageEnv = {
 /** An edit stays drawn until TTS pushes the stage back, or this long if it never does (TTS refused it). */
 const OPTIMISTIC_MS = 6000;
 
-type PresenceMenu = {
-  readonly x: number;
-  readonly y: number;
-  readonly seat: string;
-  readonly name: string;
-  readonly bringIn: boolean;
-};
-
-/** The stage with no scene on the table: seats stay along the bottom (trackers, sheets, and DnD to slide-out bins; no chair swaps). An occupied seat can still be brought into the scene or taken out of it. */
+/** The stage with no scene on the table: seats stay along the bottom (trackers, sheets, and DnD to slide-out bins; no chair swaps). A connected PC is always present; there is no scene to be out of. */
 export const IdleBoard = ({
   w,
   h,
@@ -729,14 +721,8 @@ export const IdleBoard = ({
   };
   const downtime = phase === "Play" && (subPhase ?? "Main") === "Downtime";
   const send = useScenesCommand();
-  const board = useRef<HTMLDivElement>(null);
-  const [presenceMenu, setPresenceMenu] = useState<PresenceMenu | null>(null);
   const broughtIn = useRef(new Set<string>());
   useEffect(() => {
-    if (!downtime) {
-      broughtIn.current.clear();
-      return;
-    }
     for (const seat of seats) {
       if (seat.kind !== "pc" || !seat.seatKey) {
         continue;
@@ -751,8 +737,8 @@ export const IdleBoard = ({
       broughtIn.current.add(seat.seatKey);
       send({ op: "seatPresence", seat: seat.seatKey, present: true });
     }
-  }, [downtime, seats, send]);
-  const seatsShown = downtime ? presentConnectedPcSeats(seats) : seats;
+  }, [seats, send]);
+  const seatsShown = presentConnectedPcSeats(seats);
   const openingDowntime = downtime && sessionStartDowntime === true;
   const xpPhase = phase === "End" ? "End" : openingDowntime ? "Feedback" : null;
   useEffect(() => {
@@ -760,11 +746,8 @@ export const IdleBoard = ({
       liveSheet?.load();
     }
   }, [xpPhase, liveSheet]);
-  const setPresence = (seat: string, present: boolean): void => {
-    send({ op: "seatPresence", seat, present });
-  };
   return (
-    <div ref={board} className={`lab-board wide idle${xpPhase ? " has-xp" : ""}`} style={{ width: w, height: h }}>
+    <div className={`lab-board wide idle${xpPhase ? " has-xp" : ""}`} style={{ width: w, height: h }}>
       {reminders.length > 0 ? (
         <div className={`lab-stage-reminders${xpPhase ? " lab-stage-reminders--side" : ""}`}>
           {reminders.map((row) => (
@@ -780,39 +763,8 @@ export const IdleBoard = ({
         <XpAwardPanel phase={xpPhase} seats={seats} sheetSeats={liveSheet.sheet?.seats} apply={liveSheet.apply} />
       ) : null}
       <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
-        <Seats
-          seats={seatsShown}
-          {...(liveSheet ? { liveSheet } : {})}
-          onTogglePresence={setPresence}
-          onMenu={(event, seat) => {
-            if (!seat.seatKey || seat.state === "disconnected") {
-              return;
-            }
-            const rect = board.current?.getBoundingClientRect();
-            setPresenceMenu({
-              x: rect ? event.clientX - rect.left : event.clientX,
-              y: rect ? event.clientY - rect.top : event.clientY,
-              seat: seat.seatKey,
-              name: seat.playedBy ?? seat.name ?? "this character",
-              bringIn: seat.state === "absent"
-            });
-          }}
-        />
+        <Seats seats={seatsShown} {...(liveSheet ? { liveSheet } : {})} />
       </div>
-      {presenceMenu && (
-        <div className="lab-seat-presence-menu" style={{ left: presenceMenu.x, top: presenceMenu.y }} role="menu">
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setPresence(presenceMenu.seat, presenceMenu.bringIn);
-              setPresenceMenu(null);
-            }}
-          >
-            {presenceMenu.bringIn ? `Bring ${presenceMenu.name} into the scene` : `Take ${presenceMenu.name} out of the scene`}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

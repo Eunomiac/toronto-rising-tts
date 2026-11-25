@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-817 — Connected players stay present when no scene is playing
+
+> **Agent-assessment note:** The empty-stage seat bar now paints them present and asks the table to record it. You still need to see the portrait and the seat light with no scene on the table.
+
+**How to verify:** Save & Play. End the scene, or load a save that is sitting with no scene (Intermission is fine). On the Storyteller Dashboard seat bar, every connected player should look present. There should be no Out mark and no right-click choice to take them out of the scene. In the game's Scenes panel, the Seat Activation buttons for the players should not switch anyone to absent. Open a scene preview: marking someone out of that scene should still work, and their Scatter token should go dark.
+
 #### 🟡 TOR-816 — Volume bars show the saved track level
 
 > **Agent-assessment note:** The saved level was already used the next time a clip started. The bars were still showing the catalog number while the channel was silent. You still need to hear a clip come back at the level you set.

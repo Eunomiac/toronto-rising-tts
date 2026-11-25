@@ -1227,11 +1227,13 @@ function StorytellerScenesPanel.refresh()
         U.setAttribute(LIVE_CLOCK_CONTROL_IDS[i], "interactable", clockEditable)
     end
 
+    -- A connected PC cannot be taken out of the scene while no scene is playing.
+    local sceneOnTable = require("core.scene_library").hasLiveSceneOnTable() == true
     local function syncSeatButton(seatKey, bid)
         local isNpcSeat = U.isIn(seatKey, C.NPCSeats or {})
         local occupied = not isNpcSeat or isNpcSeatOccupiedForDisplay(displayBundle, seatKey, pending)
         local present = occupied and resolveSeatPresenceFromBundle(displayBundle, seatKey) or false
-        local canToggle = canToggleNpcSeatForDisplay(displayBundle, seatKey, pending)
+        local canToggle = canToggleNpcSeatForDisplay(displayBundle, seatKey, pending) and (isNpcSeat or sceneOnTable)
         local label = seatKey
         if isNpcSeat and not occupied then
             label = seatKey .. " (empty)"
@@ -1984,6 +1986,9 @@ function StorytellerScenesPanel.setLiveSeatPresence(seatKey, present)
     end
     if not canToggleNpcSeatForDisplay(S.getStateVal("sessionScene"), seatKey, false) then
         return "No one is seated at `" .. seatKey .. "`."
+    end
+    if present ~= true and U.isIn(seatKey, C.PlayerColors or {}) and require("core.scene_library").hasLiveSceneOnTable() ~= true then
+        return nil
     end
     if resolveSeatNarrativePresence(seatKey) == present then
         return nil

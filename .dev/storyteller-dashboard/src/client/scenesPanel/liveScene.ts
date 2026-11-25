@@ -168,8 +168,8 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
 };
 
 /**
- * Downtime has no scene cast. Every connected PC is in the scene; a disconnected PC is already
- * left off the chair. Narrative "out of the scene" does not apply until a scene is on the table.
+ * No scene is on the table. Every connected PC counts as present; a disconnected PC is already
+ * left off the chair. Narrative "out of the scene" applies only while a scene is playing.
  */
 export const presentConnectedPcSeats = (seats: readonly LiveSeat[]): readonly LiveSeat[] =>
   seats.map((seat) => {
