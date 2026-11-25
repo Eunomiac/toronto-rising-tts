@@ -32,7 +32,7 @@ Target baseline: **`setXml≤4`**, **`setXmlTable=1`**.
 |------|--------|
 | CSHEET pages 2–5 `applyPageDynamicXml` (`self.UI.setXml` in `ui/ui_csheet_core.ttslua`) | Small object XML; max-slot static refactor is optional Future work ([TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376)). **Page 6 is not an exception** — build-baked `page6_<charKey>.xml` Include + `setAttribute` only. |
 | Global remount (`performFullUiResync` → `applyEmbeddedGlobalXml` in `core/global_script.ttslua`) | **Approved remount path** ([TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439) join spike + [TOR-384](https://linear.app/eunomiac-dev/issue/TOR-384) cold-load recovery): Arm Join XML (minimal), Restore HUD / Refresh XML (full), deferred join fallback when Defer setXML is off, and **onLoad startup-gate canary remount** when `overlay_globalBlindfold_panel` is missing. One lexical `UI.setXml` call site; remount source is build-embedded XML (`lib.ui_global_xml_docs`), not `UI.getXml()`. |
-| Page 4 portrait reapply (`core/staged_objects.ttslua`) | Two calls on the sheet object after it leaves hidden storage: clear the UI, then put the same document back. The page paints its portraits before those image files have downloaded, and setting the same XML once is not enough to bind them. |
+| Page 4 portrait reapply (`core/staged_objects.ttslua`) | Two calls on the sheet object during Refresh HUD, after Place Stored has taken the page out of hidden storage: clear the UI, then put the same document back. The page paints its portraits before those image files have downloaded, and setting the same XML once is not enough to bind them. |
 
 Do not add other call sites. Comments/strings that contain `setXml(` count — avoid that substring in scanned trees.
 
@@ -44,7 +44,7 @@ Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.
 |------|--------|
 | Global remount (`core/global_script.ttslua`) | **Visibility rebind** (TOR-375) + **deferred** join-client full remount fallback (TOR-381). Automatic remount gated by `connectionControls.deferSetXml` (TOR-428). Manual **Refresh XML** / **Arm Join XML** / **Disarm Join XML** on Phases panel (TOR-439). **Cold-load canary** (TOR-384): startup readiness gate remounts full Global when `overlay_globalBlindfold_panel` is missing, before gate `Sync.full`. |
 | CSHEET pages 2–5 (`ui/ui_csheet_core.ttslua`) | **Permitted exception** — TOR-376 Future optional migrate |
-| Page 4 after hidden storage (`core/staged_objects.ttslua`) | **Permitted exception** — clear, then reapply, so portraits bind once their files have downloaded |
+| Page 4 during Refresh HUD (`core/staged_objects.ttslua`) | **Permitted exception** — clear, then reapply, after Place Stored, so portraits bind once their files have downloaded |
 | CSHEET page 6 | **Not permitted** — baked Include + `setAttribute` (TOR-92) |
 
 **No `setXmlTable` in scanned trees.**

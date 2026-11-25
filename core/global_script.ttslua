@@ -4677,8 +4677,11 @@ function HUD_sessionStartJoinStep(player, button, id)
                 applyEmbeddedGlobalXml(resolveGlobalXmlDoc("full"))
                 return waitUiAssetsNotLoading()
             end,
+            function()
+                return require("core.staged_objects").remountReleasedPage4Sheets()
+            end,
             function() S.setStateVal(true, "connectionControls", "sessionStartJoinHudReady") end,
-        }, { "refreshHud", "markHudReady" })
+        }, { "refreshHud", "remountPage4", "markHudReady" })
     else
         performJoinRestoreStep("Seating players", {
             function()

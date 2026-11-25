@@ -147,7 +147,7 @@ local function applyReleased(obj, row)
 end
 
 --- Page 4 paints its portraits before the sheet's own image files have downloaded.
---- Reapply the page UI once those files are ready. The sheet will not do this itself.
+--- Reapply the page UI later, from the HUD refresh step, after that first paint has settled.
 --- @param obj Object
 --- @param done function
 local function remountPage4Ui(obj, done)
@@ -170,9 +170,6 @@ local function remountPage4Ui(obj, done)
             return function()
                 local elapsed = os.clock() - started
                 if obj.UI ~= nil and obj.UI.loading == true and elapsed < 20 then
-                    return false
-                end
-                if elapsed < 2 then
                     return false
                 end
                 return true
@@ -201,6 +198,30 @@ local function remountPage4Ui(obj, done)
             finish()
         end,
     })
+end
+
+--- Reapply every page 4 sheet that is already out of the bag. Returns a wait test for U.chain.
+--- @return function
+function Staged.remountReleasedPage4Sheets()
+    local pending = {}
+    local colors = { "BROWN", "ORANGE", "RED", "PINK", "PURPLE" }
+    for i = 1, #colors do
+        local guid = type(G.GUIDS) == "table" and G.GUIDS["CSHEET_PAGE_4_" .. colors[i]] or nil
+        local occupant = Staged.seatIdentity(guid)
+        local obj = type(guid) == "string" and getObjectFromGUID(guid) or nil
+        if not U.isGameObject(obj) then
+            print("[StagedObjects] Page 4 for " .. tostring(occupant or colors[i]) .. " is not in the world.")
+        else
+            pending[guid] = true
+            remountPage4Ui(obj, function()
+                pending[guid] = nil
+                print("[StagedObjects] Reapplied page 4 UI for " .. tostring(occupant) .. ".")
+            end)
+        end
+    end
+    return function()
+        return next(pending) == nil
+    end
 end
 
 --- Take out objects that step 2 should place. Returns a wait test for U.chain.
@@ -233,15 +254,7 @@ function Staged.beginRelease()
                             end
                             applyReleased(obj, takenRow)
                             Staged.forget(takenGuid)
-                            local occupant, role = Staged.seatIdentity(takenGuid)
-                            if role ~= "CSHEET_PAGE_4" then
-                                pending[takenGuid] = nil
-                                return
-                            end
-                            remountPage4Ui(obj, function()
-                                pending[takenGuid] = nil
-                                print("[StagedObjects] Reapplied page 4 UI for " .. tostring(occupant) .. ".")
-                            end)
+                            pending[takenGuid] = nil
                         end,
                     })
                 else
