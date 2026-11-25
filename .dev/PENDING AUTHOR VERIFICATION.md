@@ -35,7 +35,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 > **Agent-assessment note:** The token cleanup is in the NPC sync. You still need to look at the Stage Control board and confirm the figurine lights are unchanged.
 
-**How to verify:** Save & Play. Spotlight tokens on the Stage Control board should disappear, including tokens for preloaded NPCs. Each NPC's normal light should still come on with the scene. Seat lights should be unchanged. Holding the old spotlight key over the board should not spotlight a figurine. Preloading an NPC should not add a token or a second light. There was no separate spotlight-only light on the stage; the hotkey was reusing the NPC's normal light.
+**How to verify:** Save & Play. Spotlight tokens on the Stage Control board should disappear, including tokens for preloaded NPCs. Each NPC's normal light should still come on with the scene. Seat lights should be unchanged. Holding the old spotlight key over the board should not spotlight a figurine. Preloading an NPC should not add a token or a second light. There was no separate spotlight-only light on the stage; the hotkey was reusing the NPC's normal light. The build no longer draws those token images, and the local copies are gone. The Dashboard roster still draws its own picture from the figurine. Steam still has the old files until the next cloud sync with TTS closed, after a save that no longer contains the tokens.
 
 #### 🟡 TOR-814 — Compulsion removal offered at the end of the next session
 

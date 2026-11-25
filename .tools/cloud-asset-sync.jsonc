@@ -439,10 +439,10 @@
       "filenameToNameReplacePattern": "$1"
     },
 
-    // NPC art. npm run npc-art:draw draws the tokens before this sync; npm run npc-art:urls reads these jobs'
-    // manifest rows afterwards and writes lib/npc_art_urls.ttslua. Roll-banner figures (core/roll_ui.ttslua) are
-    // the rollFigure_<characterKey> rows. Present-day generic NPCs, and Memoriam generics
-    // (filename ending _NN), have no banner figure.
+    // NPC art. npm run npc-art:draw writes overrides before this sync; npm run npc-art:urls reads these jobs'
+    // manifest rows afterwards and writes lib/npc_art_urls.ttslua. Spotlight token images are no longer generated.
+    // Roll-banner figures (core/roll_ui.ttslua) are the rollFigure_<characterKey> rows. Present-day generic NPCs, and
+    // Memoriam generics (filename ending _NN), have no banner figure.
     {
       "id": "npcFiguresNamed",
       "folder": "NPC Art/Figurines/Named",
@@ -455,13 +455,6 @@
       "folder": "NPC Art/Figurines/Generic",
       "output": "Manifest",
       "filenameToNameSearchPattern": "^npc_(.*)\\.webp$",
-      "filenameToNameReplacePattern": "$1"
-    },
-    {
-      "id": "npcTokens",
-      "folder": "NPC Art/Tokens",
-      "output": "Manifest",
-      "filenameToNameSearchPattern": "^npcToken_(.*)\\.webp$",
       "filenameToNameReplacePattern": "$1"
     },
     {

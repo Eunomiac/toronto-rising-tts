@@ -10,7 +10,7 @@ import {
 
 /**
  * Per-NPC overrides live in `data/npc-overrides.json` (tracked). The roster's token configuration window writes
- * it; `npm run npc-art:draw` draws the token art from it and writes `lib/npc_overrides.ttslua` for TTS.
+ * it; `npm run npc-art:draw` writes `lib/npc_overrides.ttslua` for TTS. The roster picture itself is drawn in the browser.
  */
 
 export class NpcOverrideError extends Error {

@@ -2,10 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildSubject,
   DEFAULT_RING_COLOR,
-  fingerprint,
   renderLuaModule,
   renderOverridesLuaModule,
-  wrapName,
   type NameSources,
   type Roster
 } from "./model.ts";
@@ -73,49 +71,20 @@ describe("buildSubject", () => {
   });
 });
 
-describe("wrapName", () => {
-  const measure = (text: string): number => text.length * 10;
-
-  it("keeps a name that fits on one line", () => {
-    expect(wrapName("Rosie", [100, 100, 100], measure, "…")).toEqual(["Rosie"]);
-  });
-
-  it("wraps onto two lines by words", () => {
-    expect(wrapName("Wounded Civilian Seated", [100, 160, 100], measure, "…")).toEqual(["Wounded Civilian", "Seated"]);
-  });
-
-  it("ends the second line in an ellipsis when the rest does not fit", () => {
-    expect(wrapName("Alpha Beta Gamma Delta", [50, 110, 50], measure, "…")).toEqual(["Alpha Beta", "Gamm…"]);
-  });
-
-  it("ellipsizes a single word too long for any line", () => {
-    expect(wrapName("Extraordinarily", [50, 60, 50], measure, "…")).toEqual(["Extra…"]);
-  });
-});
-
-describe("fingerprint", () => {
-  it("is stable and changes with any input", () => {
-    expect(fingerprint("a", "b")).toBe(fingerprint("a", "b"));
-    expect(fingerprint("a", "b")).not.toBe(fingerprint("ab"));
-    expect(fingerprint("a")).toMatch(/^[0-9a-f]{12}$/);
-  });
-});
-
 describe("renderLuaModule", () => {
   it("writes sorted entries with a shared figurine back", () => {
     const lua = renderLuaModule(
       "https://cloud.test/back/",
       new Map([
-        ["zed", { figurineFront: "https://cloud.test/zed/", tokenFront: "https://cloud.test/zedF/", tokenBack: "https://cloud.test/zedB/" }],
-        ["amy", { figurineFront: "https://cloud.test/amy/", tokenFront: "https://cloud.test/amyF/", tokenBack: "https://cloud.test/amyB/", genericLabel: "Street \"Amy\"" }]
+        ["zed", { figurineFront: "https://cloud.test/zed/" }],
+        ["amy", { figurineFront: "https://cloud.test/amy/", genericLabel: "Street \"Amy\"" }]
       ]),
       "test"
     );
     expect(lua).toContain('local FIGURINE_BACK = "https://cloud.test/back/"');
     expect(lua.indexOf("  amy = {")).toBeLessThan(lua.indexOf("  zed = {"));
     expect(lua).toContain('figurine = { front = "https://cloud.test/amy/", back = FIGURINE_BACK },');
-    expect(lua).toContain('token = { front = "https://cloud.test/zedF/", back = "https://cloud.test/zedB/" },');
-    expect(lua).not.toContain("tierTokens");
+    expect(lua).not.toContain("token =");
     expect(lua).toContain('    genericLabel = "Street \\"Amy\\"",');
     expect(lua.match(/genericLabel = /g)).toHaveLength(1);
   });
