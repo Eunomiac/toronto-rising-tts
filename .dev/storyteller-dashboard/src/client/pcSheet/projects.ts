@@ -226,23 +226,36 @@ export const parseProjectsSnapshot = (value: unknown): ProjectsSnapshot => {
 /** Projects shown on a source's Page 5, in Lua's listForDisplaySource order. */
 const utcDay = (date: ProjectDate): number => Date.UTC(date.year, date.month - 1, date.day);
 
-/** Projects whose end date is within `withinDays` of present day, earliest end first. */
+const DUE_LIST_MINIMUM = 5;
+
+/**
+ * Projects for the roll column. Every project whose end date is within `withinDays` of present day is shown,
+ * earliest first. When that is fewer than five, the next active projects to finish after the window are added
+ * until five are shown, or until active projects run out. A project with no end date is skipped. One that
+ * already ended outside the window is not brought back to fill the list.
+ */
 export const projectsDueNearPresent = (snapshot: ProjectsSnapshot, withinDays = 7): readonly Project[] => {
   const today = snapshot.presentDay;
   if (!today) {
     return [];
   }
   const origin = utcDay(today);
-  return snapshot.projects
-    .filter((project) => {
-      const end = project.derived.endDate;
-      if (!end) {
-        return false;
-      }
-      const delta = Math.round((utcDay(end) - origin) / 86_400_000);
-      return Math.abs(delta) <= withinDays;
-    })
-    .sort((a, b) => utcDay(a.derived.endDate!) - utcDay(b.derived.endDate!));
+  const dated = snapshot.projects.flatMap((project) => {
+    const end = project.derived.endDate;
+    if (!end) {
+      return [];
+    }
+    return [{ project, delta: Math.round((utcDay(end) - origin) / 86_400_000), end: utcDay(end) }];
+  });
+  const near = dated.filter((row) => Math.abs(row.delta) <= withinDays).sort((a, b) => a.end - b.end);
+  if (near.length >= DUE_LIST_MINIMUM) {
+    return near.map((row) => row.project);
+  }
+  const later = dated
+    .filter((row) => row.delta > withinDays && row.project.phase !== PHASE.complete)
+    .sort((a, b) => a.end - b.end)
+    .slice(0, DUE_LIST_MINIMUM - near.length);
+  return [...near, ...later].map((row) => row.project);
 };
 
 export const projectsForSource = (snapshot: ProjectsSnapshot, sourceKey: string): Project[] => {

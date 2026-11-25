@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Pin 6. The roll column lists every project ending within seven days of the present-day clock. If that is fewer than five, it adds the next active projects to finish until five are shown, or until active projects run out.
+
 - ✔️ Pin 5. The Feedback, Team Play, Compulsion Roleplay, and Compulsion Resolution seat buttons stay on one line. A long name ellipsizes instead of wrapping the row.
 
 - ✔️ Pin 4. An error at the bottom of the roll column clears when you click it. Deck and library errors had no way to dismiss them, so they stayed for the whole visit.

@@ -71,19 +71,46 @@ describe("parseProjectsSnapshot", () => {
   });
 });
 
+const dueProject = (
+  id: string,
+  day: { year: number; month: number; day: number },
+  phase = "inProgress"
+): { id: string; owner: string; phase: string; goal: string; derived: { endDate: typeof day; endText: string } } => ({
+  id,
+  owner: "rashid",
+  phase,
+  goal: id,
+  derived: { endDate: day, endText: `${day.year}-${day.month}-${day.day}` }
+});
+
 describe("projectsDueNearPresent", () => {
-  it("keeps projects ending within seven days of present day, soonest first", () => {
+  it("keeps every project ending within seven days, then fills to five with the next active endings", () => {
     const snapshot = parseProjectsSnapshot({
       ok: true,
       presentDay: { year: 2026, month: 11, day: 25 },
       projects: [
-        { id: "later", owner: "aishe", goal: "Far", derived: { endDate: { year: 2026, month: 12, day: 20 }, endText: "December 20, 2026" } },
-        { id: "soon", owner: "rashid", goal: "Near", derived: { endDate: { year: 2026, month: 11, day: 28 }, endText: "November 28, 2026" } },
-        { id: "past", owner: "fomorach", goal: "Recent", derived: { endDate: { year: 2026, month: 11, day: 18 }, endText: "November 18, 2026" } },
-        { id: "old", owner: "lordLucien", goal: "Old", derived: { endDate: { year: 2026, month: 11, day: 10 }, endText: "November 10, 2026" } }
+        dueProject("later", { year: 2026, month: 12, day: 20 }),
+        dueProject("soon", { year: 2026, month: 11, day: 28 }),
+        dueProject("past", { year: 2026, month: 11, day: 18 }),
+        dueProject("old", { year: 2026, month: 11, day: 10 }),
+        dueProject("after", { year: 2027, month: 1, day: 4 }),
+        dueProject("done", { year: 2026, month: 12, day: 8 }, "complete"),
+        { id: "undated", owner: "rashid", phase: "inProgress", goal: "No date", derived: {} }
       ]
     });
-    expect(projectsDueNearPresent(snapshot).map((project) => project.id)).toEqual(["past", "soon"]);
+    expect(projectsDueNearPresent(snapshot).map((project) => project.id)).toEqual(["past", "soon", "later", "after"]);
+  });
+
+  it("shows more than five when they all end inside the seven-day window", () => {
+    const snapshot = parseProjectsSnapshot({
+      ok: true,
+      presentDay: { year: 2026, month: 11, day: 25 },
+      projects: [
+        ...[19, 20, 21, 22, 23, 24].map((day) => dueProject(`d${day}`, { year: 2026, month: 11, day })),
+        dueProject("far", { year: 2026, month: 12, day: 20 })
+      ]
+    });
+    expect(projectsDueNearPresent(snapshot).map((project) => project.id)).toEqual(["d19", "d20", "d21", "d22", "d23", "d24"]);
   });
 });
 

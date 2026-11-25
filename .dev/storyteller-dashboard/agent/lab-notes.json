@@ -21,16 +21,6 @@
       "updatedAt": "2026-11-25T19:50:05.481Z"
     },
     {
-      "id": 6,
-      "sketch": "scenes",
-      "x": 1738,
-      "y": 488,
-      "text": "Project display in the right panel should display all projects with an end date within seven days of the current in-game present day clock. Then, if fewer than five projects are displayed, the next projects to finish after those should be displayed until at least five projects are displayed (unless there are fewer than five projects active, of course.)",
-      "status": "open",
-      "createdAt": "2026-11-25T19:55:46.352Z",
-      "updatedAt": "2026-11-25T19:55:46.352Z"
-    },
-    {
       "id": 7,
       "sketch": "scenes",
       "x": 1301,
