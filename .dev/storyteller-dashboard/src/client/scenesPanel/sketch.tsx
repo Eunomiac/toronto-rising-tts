@@ -8,7 +8,7 @@ import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { ApplyCommand, ManualCondition, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
-import { LIGHTING_PRESETS, lightingLabel, isSeatColor, type LightingPreset } from "../catalogVocab";
+import { LIGHTING_PRESETS, SEAT_COLORS, lightingLabel, isSeatColor, type LightingPreset } from "../catalogVocab";
 import type { NpcTier } from "../../shared/npcStats";
 import { GenericTiersContext, useScenesCommand, type StageChanges } from "./commands";
 import { CompulsionBadge } from "./compulsionBadge";
@@ -702,6 +702,11 @@ export const IdleBoard = ({
   dusk?: Date;
   dawn?: Date;
 }): ReactElement => {
+  const seatOrder = new Map<string, number>(SEAT_COLORS.map((color, index) => [color, index]));
+  const stained = (liveSheet?.sheet?.seats ?? [])
+    .filter((seat) => seat.humanity.stains > 0)
+    .map((seat) => ({ color: seat.color, name: seat.charName.trim() !== "" ? seat.charName : seat.color }))
+    .sort((a, b) => (seatOrder.get(a.color) ?? 99) - (seatOrder.get(b.color) ?? 99));
   const reminderCtx: StageReminderContext = {
     ...(phase !== undefined ? { phase } : {}),
     ...(subPhase !== undefined ? { subPhase } : {}),
@@ -710,11 +715,16 @@ export const IdleBoard = ({
     ...(sessionStartDowntime ? { sessionStartDowntime: true } : {}),
     ...(narrativeNow ? { now: narrativeNow } : {}),
     ...(dusk ? { dusk } : {}),
-    ...(dawn ? { dawn } : {})
+    ...(dawn ? { dawn } : {}),
+    ...(stained.length > 0 ? { stained } : {})
   };
   const [store, setStore] = useState<StageReminderStore>(readStageReminderStore);
   const reminders = visibleStageReminders(reminderCtx, store);
+  const rollsSend = useContext(RollsCommandContext);
   const dismiss = (id: ReminderId): void => {
+    if (id.startsWith("remorse:")) {
+      rollsSend?.({ op: "initiate", color: id.slice("remorse:".length), rollType: "remorse" });
+    }
     const next = dismissStageReminder(store, id, reminderCtx);
     setStore(next);
     writeStageReminderStore(next);

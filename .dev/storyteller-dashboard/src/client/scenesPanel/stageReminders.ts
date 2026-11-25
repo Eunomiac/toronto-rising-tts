@@ -13,7 +13,8 @@ export type ReminderId =
   | "awakening"
   | "darkBetween"
   | "blackCaesar"
-  | "saveGame";
+  | "saveGame"
+  | `remorse:${string}`;
 
 export type StageReminder = { readonly id: ReminderId; readonly text: string };
 
@@ -29,6 +30,8 @@ export type StageReminderContext = {
   readonly now?: Date;
   readonly dusk?: Date;
   readonly dawn?: Date;
+  /** Players with one or more Humanity Stains, in seat order. End phase only. */
+  readonly stained?: readonly { readonly color: string; readonly name: string }[];
 };
 
 type IntermissionFlags = { readonly recorder: boolean; readonly scenesPreloaded: boolean; readonly sessionTitle: boolean };
@@ -44,6 +47,8 @@ export type StageReminderStore = {
   readonly onboardingDismissedSessions: Readonly<Record<string, true>>;
   /** Per sessionNum: true means still visible (not dismissed). */
   readonly endBySession: Readonly<Record<string, EndFlags>>;
+  /** Per sessionNum, seat colors whose Remorse reminder was clicked. */
+  readonly remorseDismissedBySession?: Readonly<Record<string, Readonly<Record<string, true>>>>;
 };
 
 const STORAGE_KEY = "tr.dashboard.stageReminders";
@@ -52,7 +57,9 @@ const LEGACY_INTERMISSION_KEY = "tr.dashboard.intermissionRemindersDismissed";
 const INTERMISSION_DEFAULT: IntermissionFlags = { recorder: true, scenesPreloaded: true, sessionTitle: true };
 const END_DEFAULT: EndFlags = { darkBetween: true, blackCaesar: true, saveGame: true };
 
-export const REMINDER_TEXT: Readonly<Record<ReminderId, string>> = {
+type StaticReminderId = Exclude<ReminderId, `remorse:${string}`>;
+
+export const REMINDER_TEXT: Readonly<Record<StaticReminderId, string>> = {
   recorder: "Ensure session recorder is connected",
   scenesPreloaded: "Ensure scenes are preloaded.",
   sessionTitle: "Enter a title for this session before advancing to Play.",
@@ -145,12 +152,25 @@ const parseStore = (raw: string | null): StageReminderStore => {
     for (const key of Object.keys(endRaw)) {
       endBySession[key] = readEndFlags(asObject(endRaw[key]));
     }
+    const remorseRaw = asObject(root.remorseDismissedBySession) ?? {};
+    const remorseDismissedBySession: Record<string, Record<string, true>> = {};
+    for (const key of Object.keys(remorseRaw)) {
+      const colors = asObject(remorseRaw[key]) ?? {};
+      const row: Record<string, true> = {};
+      for (const color of Object.keys(colors)) {
+        if (colors[color] === true) {
+          row[color] = true;
+        }
+      }
+      remorseDismissedBySession[key] = row;
+    }
     return {
       intermission: readIntermission(asObject(root.intermission)),
       awakeningDismissedNights: nights,
       desiresDismissedSessions,
       onboardingDismissedSessions,
-      endBySession
+      endBySession,
+      remorseDismissedBySession
     };
   } catch {
     return emptyStore();
@@ -227,6 +247,24 @@ export const dismissStageReminder = (
       onboardingDismissedSessions: { ...store.onboardingDismissedSessions, [key]: true }
     };
   }
+  if (id.startsWith("remorse:")) {
+    if (ctx.sessionNum === undefined) {
+      return store;
+    }
+    const key = String(ctx.sessionNum);
+    const color = id.slice("remorse:".length);
+    const current = store.remorseDismissedBySession?.[key] ?? {};
+    return {
+      ...store,
+      remorseDismissedBySession: {
+        ...store.remorseDismissedBySession,
+        [key]: { ...current, [color]: true }
+      }
+    };
+  }
+  if (id !== "darkBetween" && id !== "blackCaesar" && id !== "saveGame") {
+    return store;
+  }
   if (ctx.sessionNum === undefined) {
     return store;
   }
@@ -247,7 +285,7 @@ export const visibleStageReminders = (
   store: StageReminderStore
 ): readonly StageReminder[] => {
   const out: StageReminder[] = [];
-  const push = (id: ReminderId): void => {
+  const push = (id: StaticReminderId): void => {
     out.push({ id, text: REMINDER_TEXT[id] });
   };
 
@@ -292,6 +330,16 @@ export const visibleStageReminders = (
     }
     if (flags.saveGame) {
       push("saveGame");
+    }
+    const dismissed = store.remorseDismissedBySession?.[String(ctx.sessionNum)] ?? {};
+    for (const person of ctx.stained ?? []) {
+      if (person.color === "" || dismissed[person.color] === true) {
+        continue;
+      }
+      out.push({
+        id: `remorse:${person.color}`,
+        text: `Click to initiate ${person.name}'s Remorse Roll`
+      });
     }
   }
 

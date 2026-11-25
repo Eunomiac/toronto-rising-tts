@@ -129,6 +129,32 @@ describe("visibleStageReminders", () => {
   it("omits End reminders without a sessionNum", () => {
     expect(visibleStageReminders({ phase: "End" }, emptyStore())).toEqual([]);
   });
+
+  it("offers a Remorse reminder for each player with Stains, and a click clears only that player", () => {
+    const ctx = {
+      phase: "End" as const,
+      sessionNum: 4,
+      stained: [
+        { color: "Pink", name: "Aishe Tache" },
+        { color: "Red", name: "Lord Lucien" }
+      ]
+    };
+    expect(visibleStageReminders(ctx, emptyStore()).map((row) => row.text)).toEqual([
+      "Ask Aishe for her 'Dark Between the Stars' question.",
+      "Confirm Black Caesar has performed his nightly scourging.",
+      "Save the game.",
+      "Click to initiate Aishe Tache's Remorse Roll",
+      "Click to initiate Lord Lucien's Remorse Roll"
+    ]);
+    const after = dismissStageReminder(emptyStore(), "remorse:Pink", ctx);
+    expect(visibleStageReminders(ctx, after).map((row) => row.id)).toEqual([
+      "darkBetween",
+      "blackCaesar",
+      "saveGame",
+      "remorse:Red"
+    ]);
+    expect(visibleStageReminders({ ...ctx, sessionNum: 5 }, after).map((row) => row.id)).toContain("remorse:Pink");
+  });
 });
 
 describe("sessionStorage round-trip", () => {

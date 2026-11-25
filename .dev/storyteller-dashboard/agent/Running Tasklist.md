@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Pin 1. During End, each player with Stains gets a reminder. Clicking it starts that player's Remorse roll and clears the reminder.
+
 - ✔️ A scene preview's seat bar shows all five players. A chair the scene already assigned is not covered by someone else's current chair. In Scatter, a player who is out of the scene has a blacked-out token, the same look as an NPC whose light is off.
 
 - ✔️ With no scene on the table, every connected player is present. There is no control to mark them out of a scene that is not playing. Pending Save & Play. _(TOR-817)_ A fresh session-start save no longer keeps someone out of the scene from the previous night.

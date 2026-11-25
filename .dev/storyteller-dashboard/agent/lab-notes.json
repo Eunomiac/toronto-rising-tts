@@ -1,3 +1,64 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 1209,
+      "y": 527,
+      "text": "Expand the width of the \"Session XP\" panels (both of them) by about 50%.",
+      "status": "open",
+      "createdAt": "2026-11-25T18:52:10.505Z",
+      "updatedAt": "2026-11-25T19:02:03.160Z"
+    },
+    {
+      "id": 3,
+      "sketch": "scenes",
+      "x": 826,
+      "y": 186,
+      "text": "Clicking a scene on the deck should preload the scene if it is not preloaded. Only  once the scene is preloaded should a click bring up the scene transition window.  Also, with this change in place, the reminder to \"Ensure scenes are preloaded\" can be removed.",
+      "status": "open",
+      "createdAt": "2026-11-25T18:53:13.033Z",
+      "updatedAt": "2026-11-25T18:54:39.009Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 929,
+      "y": 904,
+      "text": "The In/Out",
+      "status": "open",
+      "createdAt": "2026-11-25T18:59:36.586Z",
+      "updatedAt": "2026-11-25T18:59:36.586Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 1178,
+      "y": 915,
+      "text": "The In/Out button on the seated players panel is hidden behind the Compulsion indicator. Move it to just below the seat number.",
+      "status": "open",
+      "createdAt": "2026-11-25T19:01:20.122Z",
+      "updatedAt": "2026-11-25T19:01:20.122Z"
+    },
+    {
+      "id": 6,
+      "sketch": "scenes",
+      "x": 884,
+      "y": 434,
+      "text": "We need to distinguish between the Intermission phase that a fresh 9001 save is in at the start of a session, and the Intermission phase at the end of the sessoion (when we advance from End).\n\nThe start Intermission phase should show the \"Enter a title\" and \"Run the onboarding process\" reminders.\n\nThe end Intermission phase should show the \"Save the game\" reminder (which should be moved from the End phase, where it currently is displayed.)",
+      "status": "open",
+      "createdAt": "2026-11-25T19:08:38.889Z",
+      "updatedAt": "2026-11-25T19:08:38.889Z"
+    },
+    {
+      "id": 7,
+      "sketch": "scenes",
+      "x": 1759,
+      "y": 909,
+      "text": "Directly beneath \"Recent Rolls\" in the roll panel, display a list of all Projects whose end date is within seven days of the present day clock, sorted by date (soonest first).  Each project should be colored with the player who originated it, and should display the full goal text as well as the full end date.  Keep the display compact, but allow the roll panel to scroll with a very thin scroll bar if necessary to display all live rolls and projects.",
+      "status": "open",
+      "createdAt": "2026-11-25T19:12:48.826Z",
+      "updatedAt": "2026-11-25T19:12:48.826Z"
+    }
+  ]
 }
