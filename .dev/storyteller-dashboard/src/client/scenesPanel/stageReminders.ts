@@ -11,7 +11,8 @@ export type ReminderId =
   | "awakening"
   | "darkBetween"
   | "ratsInWalls"
-  | "blackCaesar";
+  | "blackCaesar"
+  | "saveGame";
 
 export type StageReminder = { readonly id: ReminderId; readonly text: string };
 
@@ -30,7 +31,7 @@ export type StageReminderContext = {
 };
 
 type IntermissionFlags = { readonly recorder: boolean; readonly scenesPreloaded: boolean; readonly sessionTitle: boolean };
-type EndFlags = { readonly darkBetween: boolean; readonly ratsInWalls: boolean; readonly blackCaesar: boolean };
+type EndFlags = { readonly darkBetween: boolean; readonly ratsInWalls: boolean; readonly blackCaesar: boolean; readonly saveGame: boolean };
 
 export type StageReminderStore = {
   readonly intermission: IntermissionFlags;
@@ -44,7 +45,7 @@ const STORAGE_KEY = "tr.dashboard.stageReminders";
 const LEGACY_INTERMISSION_KEY = "tr.dashboard.intermissionRemindersDismissed";
 
 const INTERMISSION_DEFAULT: IntermissionFlags = { recorder: true, scenesPreloaded: true, sessionTitle: true };
-const END_DEFAULT: EndFlags = { darkBetween: true, ratsInWalls: true, blackCaesar: true };
+const END_DEFAULT: EndFlags = { darkBetween: true, ratsInWalls: true, blackCaesar: true, saveGame: true };
 
 export const REMINDER_TEXT: Readonly<Record<ReminderId, string>> = {
   recorder: "Ensure session recorder is connected",
@@ -53,7 +54,8 @@ export const REMINDER_TEXT: Readonly<Record<ReminderId, string>> = {
   awakening: "Confirm players have made their rouse checks for awakening from daysleep.",
   darkBetween: "Ask Aishe for her 'Dark Between the Stars' question.",
   ratsInWalls: "Ask Fomórach for his Rats in the Walls activation roll.",
-  blackCaesar: "Confirm Black Caesar has performed his nightly scourging."
+  blackCaesar: "Confirm Black Caesar has performed his nightly scourging.",
+  saveGame: "Save the game."
 };
 
 const pad2 = (n: number): string => String(n).padStart(2, "0");
@@ -89,7 +91,8 @@ const readEndFlags = (row: Record<string, unknown> | null): EndFlags => {
   return {
     darkBetween: row.darkBetween !== false,
     ratsInWalls: row.ratsInWalls !== false,
-    blackCaesar: row.blackCaesar !== false
+    blackCaesar: row.blackCaesar !== false,
+    saveGame: row.saveGame !== false
   };
 };
 
@@ -240,6 +243,9 @@ export const visibleStageReminders = (
     }
     if (flags.blackCaesar) {
       push("blackCaesar");
+    }
+    if (flags.saveGame) {
+      push("saveGame");
     }
   }
 
