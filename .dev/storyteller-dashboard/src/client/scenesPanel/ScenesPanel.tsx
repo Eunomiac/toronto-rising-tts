@@ -48,8 +48,8 @@ import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import type { SceneCatalogs } from "./catalogs";
 import { Box, CANVAS_H, IdleBoard, Overlay, WideBoard, type LiveBoard } from "./sketch";
 import { useLiveSheet } from "../pcSheet/useLiveSheet";
-import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
-import { sceneLibrarySnapshot, useSceneLibrary, useSceneLibraryStatus } from "../sceneLibrary";
+import { dismissSceneDeckError, sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
+import { dismissSceneLibraryError, sceneLibrarySnapshot, useSceneLibrary, useSceneLibraryStatus } from "../sceneLibrary";
 import { DraftPanels } from "./DraftPanels";
 import { deckScenes } from "./sceneStatus";
 import { useLibraryActions } from "./useLibraryActions";
@@ -355,15 +355,17 @@ const useStageQueue = (
 
 const CommandStatus = ({ pending, error, onDismiss }: { pending: number; error: string | null; onDismiss: () => void }): ReactElement | null => {
   if (error) {
-    return (
-      <div className="scenes-live-status error" role="alert">
-        <span>{error}</span>
-        <button type="button" className="lab-btn" onClick={onDismiss}>OK</button>
-      </div>
-    );
+    return <DismissibleStatus text={error} onDismiss={onDismiss} />;
   }
   return pending > 0 ? <div className="scenes-live-status">Sending to TTS…</div> : null;
 };
+
+/** Bottom-right errors stay until clicked. A separate OK was easy to miss, and some errors had no control at all. */
+const DismissibleStatus = ({ text, onDismiss }: { text: string; onDismiss: () => void }): ReactElement => (
+  <button type="button" className="scenes-live-status error" title="Click to dismiss" onClick={onDismiss}>
+    {text}
+  </button>
+);
 
 export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const world = useWorldState();
@@ -858,14 +860,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             <div className="scenes-live-statuses">
               <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
               <CommandStatus pending={rollCommands.pending} error={rollCommands.error} onDismiss={rollCommands.clearError} />
-              {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}
-              {libraryError && <div className="scenes-live-status error" role="alert">{libraryError}</div>}
-              {library.notice && (
-                <div className="scenes-live-status error" role="alert">
-                  <span>{library.notice}</span>
-                  <button type="button" className="lab-btn" onClick={library.clearNotice}>OK</button>
-                </div>
-              )}
+              {deckError && <DismissibleStatus text={deckError} onDismiss={dismissSceneDeckError} />}
+              {libraryError && <DismissibleStatus text={libraryError} onDismiss={dismissSceneLibraryError} />}
+              {library.notice && <DismissibleStatus text={library.notice} onDismiss={library.clearNotice} />}
             </div>
             <RollsCell
               rolls={rolls}

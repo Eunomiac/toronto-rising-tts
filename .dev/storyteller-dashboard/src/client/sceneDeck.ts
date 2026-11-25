@@ -132,5 +132,12 @@ export const sceneDeckSnapshot = (): SceneDeck => deck;
 export const useSceneDeck = (): SceneDeck => useSyncExternalStore(subscribe, () => deck);
 export const useSceneDeckStatus = (): SceneDeckStatus => useSyncExternalStore(subscribe, () => status);
 
+/** Hide the deck error until the next failed save. The message otherwise stays for the whole visit. */
+export const dismissSceneDeckError = (): void => {
+  if (status.error !== null) {
+    setStatus({ ...status, error: null });
+  }
+};
+
 export const setSceneNotes = (scene: string, docs: SceneDocs): void =>
   setSceneDeckSection("notes", { ...deck.notes, [scene]: docs });

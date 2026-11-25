@@ -206,3 +206,10 @@ export const sceneLibrarySnapshot = (): SceneLibrary => library;
 
 export const useSceneLibrary = (): SceneLibrary => useSyncExternalStore(subscribe, () => library);
 export const useSceneLibraryStatus = (): SceneLibraryStatus => useSyncExternalStore(subscribe, () => status);
+
+/** Hide the library error until the next failed save. The message otherwise stays for the whole visit. */
+export const dismissSceneLibraryError = (): void => {
+  if (status.error !== null) {
+    setStatus({ ...status, error: null });
+  }
+};
