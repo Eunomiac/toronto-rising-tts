@@ -484,6 +484,13 @@ function Phases.beginIntermissionThemeHandoff(_ctx, opts)
         -- The just-finished session hands off gently. A fresh load in Intermission uses the normal volume.
         volumeScale = 0.5,
     })
+    print(string.format(
+        "[End→Intermission] playFeaturedMusic key=%s ok=%s fadeSeconds=%s volumeScale=0.5 message=%s",
+        tostring(key),
+        tostring(ok),
+        tostring(fadeSec),
+        tostring(msg)
+    ))
     if ok ~= true then
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
     end
@@ -937,7 +944,15 @@ Phases.onEnterSub[C.PlaySubPhases.DOWNTIME] = function(_ctx)
 end
 
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
+    local themeRestarted = false
     return {
+        function()
+            print(
+                "[End→Intermission] 1/4 Fading session music out. Theme has not started. Key="
+                    .. tostring(C.IntermissionThemeFeaturedKey or "TR_Loop")
+            )
+            return 0
+        end,
         function()
             -- Blackout FadeIn + fade session ambient out over the same 5s (no TR_Loop under black).
             callGlobalBlindfoldHelper("beginEndIntermissionCoverHoldForPhases")
@@ -948,6 +963,10 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
                 fadeSeconds = END_INTERMISSION_BLACKOUT_FADE_SEC,
             })
             return END_INTERMISSION_BLACKOUT_HOLD_SEC
+        end,
+        function()
+            print("[End→Intermission] 2/4 Starting the theme as the blackout lifts.")
+            return 0
         end,
         function()
             -- Splash under opaque blackout; start TR_Loop as blackout FadeOut begins (same duration).
@@ -985,16 +1004,29 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
             return Phases.applyAllLightsDark(ctx)
         end,
         function()
+            local Soundscape = require("core.soundscape")
+            local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
+            local active = type(Soundscape.isFeaturedMusic) == "function" and Soundscape.isFeaturedMusic(key) == true
+            print("[End→Intermission] 3/4 After the table settle, featured " .. tostring(key) .. " active=" .. tostring(active) .. ".")
+            return 0
+        end,
+        function()
             -- Re-assert TR_Loop after no-scene / Sync work so End→Intermission cannot leave the theme silent.
             local Soundscape = require("core.soundscape")
             local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
             if type(Soundscape.isFeaturedMusic) == "function" and Soundscape.isFeaturedMusic(key) then
+                themeRestarted = false
                 return true
             end
+            themeRestarted = true
             return Phases.beginIntermissionThemeHandoff(ctx, {
                 fadeSeconds = END_INTERMISSION_THEME_FADE_SEC,
                 fadeOutgoing = false,
             })
+        end,
+        function()
+            print("[End→Intermission] 4/4 Second theme start=" .. tostring(themeRestarted) .. ".")
+            return 0
         end,
     }
 end
