@@ -442,6 +442,10 @@ local function buildSeats(opts)
 
   t = os.clock()
   local personalDue = require("core.personal_conditions").dueRows()
+  local compulsionDue = require("core.compulsions").dueRows()
+  for i = 1, #compulsionDue do
+    personalDue[#personalDue + 1] = compulsionDue[i]
+  end
   mark("personal_due", t, #personalDue)
 
   return {

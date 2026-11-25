@@ -1,16 +1,6 @@
 {
   "notes": [
     {
-      "id": 7,
-      "sketch": "scenes",
-      "x": 1585,
-      "y": 250,
-      "text": "Add removal reminders for Compulsions alongside the existing removal reminders for Conditions. Compulsions should be scheduled for removal at the end of the session _after_ they were applied (i.e. at the end of the next _full_ session).",
-      "status": "open",
-      "createdAt": "2026-11-24T21:19:40.563Z",
-      "updatedAt": "2026-11-24T21:19:40.563Z"
-    },
-    {
       "id": 9,
       "sketch": "scenes",
       "x": 1292,

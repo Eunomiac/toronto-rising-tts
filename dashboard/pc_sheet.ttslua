@@ -700,9 +700,15 @@ local function applyCommand(cmd)
     return require("core.personal_conditions").removeCard(color, cmd.id)
   end
   if op == "personalDueConfirm" then
+    if cmd.id == "compulsion" then
+      return require("core.compulsions").confirmDue(color)
+    end
     return require("core.personal_conditions").confirmDue(color, cmd.id)
   end
   if op == "personalDueSkip" then
+    if cmd.id == "compulsion" then
+      return require("core.compulsions").skipDue(color)
+    end
     return require("core.personal_conditions").skipDue(color, cmd.id)
   end
   if op == "personalDueEdit" then
