@@ -1,3 +1,64 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "sketch": "scenes",
+      "x": 792,
+      "y": 624,
+      "text": "Starting players light was not turned on at the beginning of the Spotlight phase.",
+      "status": "open",
+      "createdAt": "2026-11-25T19:49:37.714Z",
+      "updatedAt": "2026-11-25T19:49:37.714Z"
+    },
+    {
+      "id": 2,
+      "sketch": "scenes",
+      "x": 1100,
+      "y": 906,
+      "text": "After toggling a seated NPC from absent to present within the preview panel and saving, reopening the preview panel showed them still absent (i.e. the change didn't stick)",
+      "status": "open",
+      "createdAt": "2026-11-25T19:50:05.481Z",
+      "updatedAt": "2026-11-25T19:50:05.481Z"
+    },
+    {
+      "id": 4,
+      "sketch": "scenes",
+      "x": 1694,
+      "y": 997,
+      "text": "Error messages displayed at the bottom right remain indefinitely; they should be clearable on a click.",
+      "status": "open",
+      "createdAt": "2026-11-25T19:50:59.813Z",
+      "updatedAt": "2026-11-25T19:50:59.813Z"
+    },
+    {
+      "id": 5,
+      "sketch": "scenes",
+      "x": 1259,
+      "y": 533,
+      "text": "Button rows for awarding XP to players for feedback, promoting team play, compulsion roleplay, and compulsion resolution should be sized smaller so they can fit on a single row without wrapping.",
+      "status": "open",
+      "createdAt": "2026-11-25T19:52:42.601Z",
+      "updatedAt": "2026-11-25T19:52:42.601Z"
+    },
+    {
+      "id": 6,
+      "sketch": "scenes",
+      "x": 1738,
+      "y": 488,
+      "text": "Project display in the right panel should display all projects with an end date within seven days of the current in-game present day clock. Then, if fewer than five projects are displayed, the next projects to finish after those should be displayed until at least five projects are displayed (unless there are fewer than five projects active, of course.)",
+      "status": "open",
+      "createdAt": "2026-11-25T19:55:46.352Z",
+      "updatedAt": "2026-11-25T19:55:46.352Z"
+    },
+    {
+      "id": 7,
+      "sketch": "scenes",
+      "x": 1301,
+      "y": 782,
+      "text": "Seated NPCs marked present for the scene are not having their lights turned on.",
+      "status": "open",
+      "createdAt": "2026-11-25T19:56:41.376Z",
+      "updatedAt": "2026-11-25T19:56:41.376Z"
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ScatterGroup } from "../worldState";
-import { fillOrder, freeSlotNear, movePack, moveInScatter, offStage, slotNear, spreadOnPack, withChanges, type StageSpot } from "./stage";
+import { fillOrder, freeSlotNear, movePack, moveInScatter, offStage, slotNear, spotLabel, spreadOnPack, withChanges, type StageSpot } from "./stage";
 import { boardToStage, stageToBoard, type StagePack, type StageSlot } from "./stageFrame";
 
 /** A five-slot arc pack in stage fractions, anchor in the middle. */
@@ -32,6 +32,16 @@ describe("freeSlotNear", () => {
     const corner = { u: 0, v: 0.5 };
     expect(freeSlotNear(corner, packs, [])).toBe(left.slots[0]);
     expect(freeSlotNear(corner, packs, [spot("a", left.slots[0] as StageSlot)])).toBe(left.slots[1]);
+  });
+});
+
+describe("spotLabel", () => {
+  it("names two spots in one family differently, so a move inside the family is a real change", () => {
+    const anchor = left.slots.find((slot) => slot.isAnchor) ?? left.slots[2]!;
+    const side = left.slots.find((slot) => !slot.isAnchor) ?? left.slots[0]!;
+    expect(spotLabel(anchor, packs)).toBe("Left, center");
+    expect(spotLabel(side, packs)).not.toBe(spotLabel(anchor, packs));
+    expect(spotLabel(side, packs)).toContain("Left");
   });
 });
 

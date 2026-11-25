@@ -120,8 +120,23 @@ export const freeSlotNear = (point: StagePoint, packs: readonly StagePack[], spo
   return best?.slot ?? null;
 };
 
-/** Where a token stands, in words: its pack, or a free spot. */
-export const spotLabel = (spot: StagePoint, packs: readonly StagePack[]): string => slotOf(spot, packs)?.pack.label ?? "a free spot";
+/**
+ * Where a token stands, in words. Spots in one snap family are named apart (`Center, spot 2`), so a move
+ * inside that family is not described as staying put.
+ */
+export const spotLabel = (spot: StagePoint, packs: readonly StagePack[]): string => {
+  const found = slotOf(spot, packs);
+  if (!found) {
+    return "a free spot";
+  }
+  const { pack, slot } = found;
+  if (pack.slots.length <= 1) {
+    return pack.label;
+  }
+  const index = pack.slots.findIndex((entry) => entry.snapIndex === slot.snapIndex);
+  const place = slot.isAnchor ? "center" : `spot ${index + 1}`;
+  return `${pack.label}, ${place}`;
+};
 
 const toBoard = (slot: StagePoint, lightMode?: StageLight): StageChange => {
   const board = stageToBoard(slot.u, slot.v);
