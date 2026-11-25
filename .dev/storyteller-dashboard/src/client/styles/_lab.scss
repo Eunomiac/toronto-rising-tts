@@ -670,8 +670,9 @@ $signal-fire: #ff9a1f;
 
   &-presence {
     position: absolute;
-    top: 3px;
-    right: 3px;
+    // Under the chair number. The top-right corner belongs to the Compulsion badge.
+    top: 24px;
+    left: 3px;
     z-index: 3;
     height: 18px;
     padding: 0 5px;

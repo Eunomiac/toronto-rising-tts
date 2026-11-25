@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Pin 5. The In/Out button sits under the chair number, clear of the Compulsion badge.
+
 - ✔️ Pin 3. A click on a deck scene preloads it first. The transition opens on a later click, once preload has finished. The "ensure scenes are preloaded" reminder is gone.
 
 - ✔️ Pin 2. Both Session XP panels are about half again as wide.
