@@ -265,6 +265,12 @@ describe("draft seating", () => {
       { seat: "NPC1", kind: "npc" as const, isPresent: true, tableSlot: 6, characterKey: "mara" },
     ];
     expect(previewSeatRows(bare, live).map((row) => row.seat)).toEqual(["Pink"]);
+    const disconnected = previewSeatRows(seated, [
+      { seat: "Red", kind: "pc", isPresent: true, tableSlot: 1, charKey: "lordLucien", absentFromSession: true },
+      { seat: "Pink", kind: "pc", isPresent: true, tableSlot: 3, charKey: "aishe", absentFromSession: true }
+    ]);
+    expect(disconnected.find((row) => row.seat === "Pink")).toMatchObject({ charKey: "aishe", tableSlot: 3, playingNpcKey: "drake" });
+    expect(disconnected.every((row) => row.kind !== "pc" || row.absentFromSession !== true)).toBe(true);
     const stored = previewSeatRows(seated, live);
     expect(stored.find((row) => row.seat === "Pink")).toMatchObject({ playingNpcKey: "drake", charKey: "aishe" });
   });

@@ -529,14 +529,24 @@ export const draftSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): re
   });
 };
 
+/** A preview is authored for a later session, so the live table's connection flag must not hide the seat. */
+const previewSeat = (row: SeatRow): SeatRow => {
+  if (row.kind !== "pc" || row.absentFromSession !== true) {
+    return row;
+  }
+  const { absentFromSession: _connectedLater, ...rest } = row;
+  return rest;
+};
+
 /**
  * Preview seating: the scene's own rows, plus any PC at the table the scene has not stored yet.
  * A new scene can then take a Play-as-NPC drop before it has ever been on the table.
+ * Connection is ignored: a PC who is disconnected right now still appears, because the scene may be for a later session.
  */
 export const previewSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): readonly SeatRow[] => {
-  const stored = draftSeatRows(scene, live);
+  const stored = draftSeatRows(scene, live).map(previewSeat);
   const seen = new Set(stored.map((row) => row.seat));
-  return [...stored, ...live.filter((row) => row.kind === "pc" && !seen.has(row.seat))];
+  return [...stored, ...live.filter((row) => row.kind === "pc" && !seen.has(row.seat)).map(previewSeat)];
 };
 
 /** Give a draft the PC's own seat row when Play-as-NPC is stored before the scene has seating of its own. */
