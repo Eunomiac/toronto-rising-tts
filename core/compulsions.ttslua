@@ -583,6 +583,32 @@ local function incrementCompulsionsTallyForCard(color, chosenCard)
     S.setStateVal(tally, "playerData", pid, "compulsionsTally")
 end
 
+--- The session number active when this Compulsion was chosen. Removal is offered at the
+--- end of the following session (`sessionNum >= applied + 1`).
+--- @param color string
+local function rememberCompulsionSession(color)
+    local pid = S.getPlayerID(color)
+    if type(pid) ~= "string" or pid == "" then
+        return
+    end
+    local n = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+    S.setStateVal(n, "playerData", pid, "compulsionAppliedSession")
+end
+
+--- @param color string
+local function clearCompulsionSession(color)
+    local pid = S.getPlayerID(color)
+    if type(pid) ~= "string" or pid == "" then
+        return
+    end
+    S.setStateVal(nil, "playerData", pid, "compulsionAppliedSession")
+end
+
+--- @param color string
+local function refreshCompulsionDueList()
+    require("dashboard.push").markWorldDirty({ seats = true })
+end
+
 --- @param color string
 --- @param chosenCard Object
 local function finishSelection(color, chosenCard)
@@ -591,6 +617,7 @@ local function finishSelection(color, chosenCard)
         return
     end
     incrementCompulsionsTallyForCard(color, chosenCard)
+    rememberCompulsionSession(color)
     clearPlayerSelection(color)
     local token = bumpOpToken(color)
     presentByColor[color] = nil
@@ -653,7 +680,9 @@ local function finishRemoval(color, card)
             rescaleUnit(card)
             untagSeatObject(card, color)
             returnCardToMaster(card)
+            clearCompulsionSession(color)
             announceActive(color, nil)
+            refreshCompulsionDueList()
             setPlayerDeckInteractable(color, true)
             print(string.format("[Compulsions] Removed Compulsion for %s — deck interactable", color))
             return 0.25
@@ -714,7 +743,75 @@ function Compulsions.moveSelectedFromLiveRoll(color)
     applyPoseFromKey(card, positionKey("SELECTED", color), color, token, true)
 end
 
---- After seat layout moves compulsion anchors, snap active selected cards to SELECTED or LIVEROLL poses.
+--- True while the drawn card and the four master-deck choices are still on the table.
+--- @param color string
+--- @return boolean
+function Compulsions.hasOpenPresent(color)
+    return type(color) == "string" and presentByColor[color] ~= nil
+end
+
+--- Compulsion rows for the same End-phase list as condition removals.
+--- A Compulsion chosen in session N is offered at the end of session N + 1, and stays
+--- offered at later End phases until it is removed or postponed.
+--- @return table[]
+function Compulsions.dueRows()
+    if S.getStateVal("currentPhase") ~= C.Phases.END then
+        return {}
+    end
+    local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+    local rows = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local active = Compulsions.activeForColor(color)
+        local pid = S.getPlayerID(color)
+        local applied = type(pid) == "string" and tonumber(S.getStateVal("playerData", pid, "compulsionAppliedSession")) or nil
+        if active ~= nil and applied ~= nil and sessionNum >= math.floor(applied) + 1 then
+            local catalog = type(pid) == "string" and C.PlayerData[pid] or nil
+            local name = type(catalog) == "table" and (catalog.playerName or catalog.charKey) or color
+            local appliedSession = math.floor(applied)
+            rows[#rows + 1] = {
+                color = color,
+                name = name,
+                id = "compulsion",
+                title = tostring(active.type) .. " Compulsion",
+                trigger = "Chosen in session " .. tostring(appliedSession),
+                pending = "EndOfSession",
+                fixedEnding = true,
+            }
+        end
+    end
+    return rows
+end
+
+--- Remove the seat's Compulsion from the End-phase list (same action as drawing it back).
+--- @param color string
+--- @return string|nil error
+function Compulsions.confirmDue(color)
+    local card = findSelectedCompulsionForColor(color)
+    if card == nil then
+        clearCompulsionSession(color)
+        refreshCompulsionDueList()
+        return "No Compulsion card is on that seat."
+    end
+    finishRemoval(color, card)
+    return nil
+end
+
+--- Leave the Compulsion in place. It is offered again at the end of the following session.
+--- @param color string
+--- @return string|nil error
+function Compulsions.skipDue(color)
+    local pid = S.getPlayerID(color)
+    if type(pid) ~= "string" or pid == "" then
+        return "Unknown seat."
+    end
+    local n = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+    S.setStateVal(n, "playerData", pid, "compulsionAppliedSession")
+    refreshCompulsionDueList()
+    return nil
+end
+
+--- After seat layout moves compulsion anchors, snap the open choice (drawn card plus
+--- the four master-deck cards) and any selected card onto those anchors.
 --- @param opts table|nil `{ onlyColor?: string }` limits the snap to one seat
 function Compulsions.reconcileSelectedCardsToAnchors(opts)
     local onlyColor = type(opts) == "table" and opts.onlyColor or nil
@@ -722,12 +819,26 @@ function Compulsions.reconcileSelectedCardsToAnchors(opts)
     local PC = require("core.player_connection")
     for _, color in ipairs(C.PlayerColors) do
         if onlyColor == nil or color == onlyColor then
-        local card = not PC.isSeatUnoccupied(color) and findSelectedCompulsionForColor(color) or nil
-        if card ~= nil then
-            local kind = (DiceDrawer.isOpen ~= nil and DiceDrawer.isOpen(color) == true)
-                and "SELECTED_LIVEROLL"
-                or "SELECTED"
-            snapPoseFromKey(card, positionKey(kind, color))
+        if not PC.isSeatUnoccupied(color) then
+            local drawnGuid = drawnGenericByColor[color]
+            if type(drawnGuid) == "string" then
+                snapPoseFromKey(getObjectFromGUID(drawnGuid), positionKey("DRAWN", color))
+            end
+            local session = presentByColor[color]
+            if type(session) == "table" then
+                for guid, slot in pairs(session.guidToSlot or {}) do
+                    if type(guid) == "string" then
+                        snapPoseFromKey(getObjectFromGUID(guid), positionKey(slot, color))
+                    end
+                end
+            end
+            local card = findSelectedCompulsionForColor(color)
+            if card ~= nil then
+                local kind = (DiceDrawer.isOpen ~= nil and DiceDrawer.isOpen(color) == true)
+                    and "SELECTED_LIVEROLL"
+                    or "SELECTED"
+                snapPoseFromKey(card, positionKey(kind, color))
+            end
         end
         end
     end

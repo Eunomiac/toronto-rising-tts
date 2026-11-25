@@ -510,11 +510,21 @@ function M.snapDefaultCamerasAfterLayout(colorOrPlayer)
   if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
     CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat()
   end
+  local Compulsions = require("core.compulsions")
+  local function modeFor(color)
+    if type(Compulsions.hasOpenPresent) == "function" and Compulsions.hasOpenPresent(color) then
+      return "compulsions"
+    end
+    return "default"
+  end
   if colorOrPlayer == nil or colorOrPlayer == "ALL" then
-    M.setCamera("ALL", "default")
+    M.forPlayers(function(player, color)
+      M.setCamera(player, modeFor(color))
+    end)
     return
   end
-  M.setCamera(colorOrPlayer, "default")
+  local color = type(colorOrPlayer) == "string" and colorOrPlayer or colorOrPlayer.color
+  M.setCamera(colorOrPlayer, modeFor(color))
 end
 
 --[[
