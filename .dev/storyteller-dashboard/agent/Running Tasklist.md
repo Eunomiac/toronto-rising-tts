@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Pin 6. A fresh session-start Intermission asks for a title and onboarding. The Intermission after End asks you to save the game. Pending Save & Play. _(TOR-818)_
+
 - ✔️ Pin 5. The In/Out button sits under the chair number, clear of the Compulsion badge.
 
 - ✔️ Pin 3. A click on a deck scene preloads it first. The transition opens on a later click, once preload has finished. The "ensure scenes are preloaded" reminder is gone.

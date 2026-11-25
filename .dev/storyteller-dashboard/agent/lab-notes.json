@@ -11,16 +11,6 @@
       "updatedAt": "2026-11-25T18:59:36.586Z"
     },
     {
-      "id": 6,
-      "sketch": "scenes",
-      "x": 884,
-      "y": 434,
-      "text": "We need to distinguish between the Intermission phase that a fresh 9001 save is in at the start of a session, and the Intermission phase at the end of the sessoion (when we advance from End).\n\nThe start Intermission phase should show the \"Enter a title\" and \"Run the onboarding process\" reminders.\n\nThe end Intermission phase should show the \"Save the game\" reminder (which should be moved from the End phase, where it currently is displayed.)",
-      "status": "open",
-      "createdAt": "2026-11-25T19:08:38.889Z",
-      "updatedAt": "2026-11-25T19:08:38.889Z"
-    },
-    {
       "id": 7,
       "sketch": "scenes",
       "x": 1759,

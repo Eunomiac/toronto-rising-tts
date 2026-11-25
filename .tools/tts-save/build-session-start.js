@@ -57,6 +57,7 @@ function createSessionStart(save, plan, lua, xml) {
     },
   };
   state.debug = { ...state.debug, assumeConnected: false };
+  state.closingIntermission = false;
   // A new session has no scene yet, so nobody is carried over as out of the scene.
   // Connection (absentFromSession) and an empty NPC chair stay as they were.
   const slots = state.sessionScene?.seatSlots;

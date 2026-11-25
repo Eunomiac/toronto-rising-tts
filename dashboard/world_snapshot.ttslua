@@ -78,6 +78,7 @@ local function buildPhase()
     sessionNum = tonumber(S.getStateVal("sessionNum")),
     sessionName = S.getStateVal("sessionName") or "",
     sessionStartDowntime = S.getStateVal("sessionStartDowntime") == true,
+    closingIntermission = S.getStateVal("closingIntermission") == true,
     onboardingComplete = S.getStateVal("connectionControls", "onboardingComplete") == true,
     memoriamActive = S.getStateVal("memoriam", "active") == true,
     memoriamSkyboxKey = memoriamSkyboxKey,

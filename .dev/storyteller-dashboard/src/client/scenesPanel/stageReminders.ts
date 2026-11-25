@@ -26,6 +26,8 @@ export type StageReminderContext = {
   readonly sessionName?: string;
   /** Opening Play downtime after Intermission, before any scene is on the table. */
   readonly sessionStartDowntime?: boolean;
+  /** Intermission reached by leaving End, rather than a fresh session-start save. */
+  readonly closingIntermission?: boolean;
   /** Narrative clock used for dusk→dawn checks (present day / downtime now). */
   readonly now?: Date;
   readonly dusk?: Date;
@@ -290,6 +292,15 @@ export const visibleStageReminders = (
   };
 
   if (ctx.phase === "Intermission") {
+    if (ctx.closingIntermission === true) {
+      if (ctx.sessionNum !== undefined) {
+        const flags = store.endBySession[String(ctx.sessionNum)] ?? END_DEFAULT;
+        if (flags.saveGame) {
+          push("saveGame");
+        }
+      }
+      return out;
+    }
     if (store.intermission.recorder) {
       push("recorder");
     }
@@ -324,9 +335,6 @@ export const visibleStageReminders = (
     }
     if (flags.blackCaesar) {
       push("blackCaesar");
-    }
-    if (flags.saveGame) {
-      push("saveGame");
     }
     const dismissed = store.remorseDismissedBySession?.[String(ctx.sessionNum)] ?? {};
     for (const person of ctx.stained ?? []) {

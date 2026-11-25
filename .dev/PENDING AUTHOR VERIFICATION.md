@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-818 — Opening Intermission and the Intermission after End
+
+> **Agent-assessment note:** The table now remembers whether this Intermission came from leaving End. The dashboard reminders follow that.
+
+**How to verify:** Save & Play. Load a session-start save. The empty stage should ask for a session title and for onboarding, and should not ask you to save. Advance through the night to End, then into Intermission. The empty stage should ask you to save the game, and should not ask for a title or for onboarding.
+
 #### 🟡 TOR-817 — Connected players stay present when no scene is playing
 
 > **Agent-assessment note:** The empty-stage seat bar now paints them present and asks the table to record it. You still need to see the portrait and the seat light with no scene on the table.

@@ -685,6 +685,7 @@ export const IdleBoard = ({
   sessionNum,
   sessionName,
   sessionStartDowntime,
+  closingIntermission,
   clockNow: narrativeNow,
   dusk,
   dawn
@@ -698,6 +699,7 @@ export const IdleBoard = ({
   sessionNum?: number;
   sessionName?: string;
   sessionStartDowntime?: boolean;
+  closingIntermission?: boolean;
   clockNow?: Date;
   dusk?: Date;
   dawn?: Date;
@@ -713,6 +715,7 @@ export const IdleBoard = ({
     ...(sessionNum !== undefined ? { sessionNum } : {}),
     ...(sessionName !== undefined ? { sessionName } : {}),
     ...(sessionStartDowntime ? { sessionStartDowntime: true } : {}),
+    ...(closingIntermission ? { closingIntermission: true } : {}),
     ...(narrativeNow ? { now: narrativeNow } : {}),
     ...(dusk ? { dusk } : {}),
     ...(dawn ? { dawn } : {}),

@@ -211,6 +211,7 @@ test("preserves chronicle state and UI assets while staging only restore metadat
     currentPhase: "Intermission",
     sessionNum: 42,
     debug: { assumeConnected: true },
+    closingIntermission: true,
     sessionScene: {
       seatSlots: {
         Brown: { tableSlot: 2, isPresent: false, characterKey: "fomorach" },
@@ -229,6 +230,7 @@ test("preserves chronicle state and UI assets while staging only restore metadat
   assert.deepEqual(output.CustomUIAssets, source.CustomUIAssets);
   assert.equal(state.sessionNum, 42);
   assert.equal(state.debug.assumeConnected, false);
+  assert.equal(state.closingIntermission, false);
   assert.equal(state.sessionScene.seatSlots.Brown.isPresent, true);
   assert.equal(state.sessionScene.seatSlots.Red.absentFromSession, true);
   assert.equal(state.sessionScene.seatSlots.Red.isPresent, false);

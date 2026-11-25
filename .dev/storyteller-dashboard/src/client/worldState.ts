@@ -19,6 +19,8 @@ export type PhaseSlice = {
   readonly sessionNum?: number;
   readonly sessionName: string;
   readonly sessionStartDowntime: boolean;
+  /** This Intermission was reached by leaving End. A fresh session-start save is not. */
+  readonly closingIntermission?: boolean;
   /** False until the host finishes the three onboarding steps. Missing means not finished. */
   readonly onboardingComplete?: boolean;
   readonly memoriamActive: boolean;

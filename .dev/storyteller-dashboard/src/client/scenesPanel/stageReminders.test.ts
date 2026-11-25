@@ -112,15 +112,25 @@ describe("visibleStageReminders", () => {
     const store = emptyStore();
     expect(visibleStageReminders(ctx, store).map((r) => r.id)).toEqual([
       "darkBetween",
-      "blackCaesar",
-      "saveGame"
+      "blackCaesar"
     ]);
     const afterOne = dismissStageReminder(store, "darkBetween", ctx);
-    expect(visibleStageReminders(ctx, afterOne).map((r) => r.id)).toEqual(["blackCaesar", "saveGame"]);
+    expect(visibleStageReminders(ctx, afterOne).map((r) => r.id)).toEqual(["blackCaesar"]);
     expect(visibleStageReminders({ phase: "End", sessionNum: 13 }, afterOne).map((r) => r.id)).toEqual([
       "darkBetween",
-      "blackCaesar",
-      "saveGame"
+      "blackCaesar"
+    ]);
+  });
+
+  it("shows Save the game on the Intermission after End, not the opening reminders", () => {
+    const closing = { phase: "Intermission" as const, sessionName: "The Wake", sessionNum: 5, closingIntermission: true };
+    expect(visibleStageReminders(closing, emptyStore()).map((row) => row.id)).toEqual(["saveGame"]);
+    const dismissed = dismissStageReminder(emptyStore(), "saveGame", closing);
+    expect(visibleStageReminders(closing, dismissed)).toEqual([]);
+    expect(visibleStageReminders({ phase: "Intermission", sessionName: "", sessionNum: 5 }, dismissed).map((row) => row.id)).toEqual([
+      "recorder",
+      "sessionTitle",
+      "onboarding"
     ]);
   });
 
@@ -140,7 +150,6 @@ describe("visibleStageReminders", () => {
     expect(visibleStageReminders(ctx, emptyStore()).map((row) => row.text)).toEqual([
       "Ask Aishe for her 'Dark Between the Stars' question.",
       "Confirm Black Caesar has performed his nightly scourging.",
-      "Save the game.",
       "Click to initiate Aishe Tache's Remorse Roll",
       "Click to initiate Lord Lucien's Remorse Roll"
     ]);
@@ -148,7 +157,6 @@ describe("visibleStageReminders", () => {
     expect(visibleStageReminders(ctx, after).map((row) => row.id)).toEqual([
       "darkBetween",
       "blackCaesar",
-      "saveGame",
       "remorse:Red"
     ]);
     expect(visibleStageReminders({ ...ctx, sessionNum: 5 }, after).map((row) => row.id)).toContain("remorse:Pink");

@@ -93,11 +93,17 @@ describe("IdleBoard stage reminders", () => {
     mount({ phase: "End", sessionNum: 7 });
     expect(screen.getByRole("button", { name: /Dark Between the Stars/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Black Caesar/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Save the game/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Save the game/i })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Dark Between the Stars/i }));
     expect(screen.queryByRole("button", { name: /Dark Between the Stars/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Black Caesar/i })).toBeInTheDocument();
+  });
+
+  it("shows Save the game on the Intermission after End", () => {
+    mount({ phase: "Intermission", sessionNum: 8, sessionName: "The Wake", closingIntermission: true });
     expect(screen.getByRole("button", { name: /Save the game/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /title for this session/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /onboarding/i })).not.toBeInTheDocument();
   });
 });
 

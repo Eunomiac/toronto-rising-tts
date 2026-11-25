@@ -1193,6 +1193,7 @@ Phases.onExit[C.Phases.END] = function(ctx)
             -- Stash before increment so End→Intermission splash uses the session that just ended (TOR-566).
             Phases.stashEndedSessionNumForSplash(nil)
             Phases.incrementSessionNum()
+            S.setStateVal(true, "closingIntermission")
             return true
         end,
         -- Global blindfold is restored on Intermission enter (not per-player transition blinds).
@@ -1222,6 +1223,7 @@ function Phases.debugSnapToIntermission()
         SE.cancel()
     end
     S.setCurrentPhase(C.Phases.INTERMISSION)
+    S.setStateVal(false, "closingIntermission")
     writeSessionStartDowntime(false)
     Phases.applySessionBlindfoldImages(nil)
     Phases.showGlobalBlindfold(nil)
@@ -1316,6 +1318,7 @@ function Phases.advanceTo(newPhase, opts)
     steps[#steps + 1] = function()
         if oldPhase == C.Phases.INTERMISSION and newPhase == C.Phases.PLAY then
             require("lib.figurine_seat_layout").drawSessionChairs()
+            S.setStateVal(false, "closingIntermission")
         end
         S.setCurrentPhase(newPhase)
         if oldPhase == C.Phases.PLAY and newPhase == C.Phases.SPOTLIGHT then
