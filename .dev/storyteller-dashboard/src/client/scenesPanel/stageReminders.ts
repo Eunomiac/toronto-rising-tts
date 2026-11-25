@@ -8,6 +8,7 @@ export type ReminderId =
   | "recorder"
   | "scenesPreloaded"
   | "sessionTitle"
+  | "onboarding"
   | "setDesires"
   | "awakening"
   | "darkBetween"
@@ -40,6 +41,8 @@ export type StageReminderStore = {
   readonly awakeningDismissedNights: Readonly<Record<string, true>>;
   /** Per sessionNum: the opening Downtime Desire reminder was dismissed. */
   readonly desiresDismissedSessions: Readonly<Record<string, true>>;
+  /** Per sessionNum: the Intermission onboarding reminder was dismissed. */
+  readonly onboardingDismissedSessions: Readonly<Record<string, true>>;
   /** Per sessionNum: true means still visible (not dismissed). */
   readonly endBySession: Readonly<Record<string, EndFlags>>;
 };
@@ -54,6 +57,7 @@ export const REMINDER_TEXT: Readonly<Record<ReminderId, string>> = {
   recorder: "Ensure session recorder is connected",
   scenesPreloaded: "Ensure scenes are preloaded.",
   sessionTitle: "Enter a title for this session before advancing to Play.",
+  onboarding: "Run the full onboarding process before advancing to Play.",
   setDesires: "Tell the players to set their Desires.",
   awakening: "Confirm players have made their rouse checks for awakening from daysleep.",
   darkBetween: "Ask Aishe for her 'Dark Between the Stars' question.",
@@ -104,6 +108,7 @@ const emptyStore = (): StageReminderStore => ({
   intermission: INTERMISSION_DEFAULT,
   awakeningDismissedNights: {},
   desiresDismissedSessions: {},
+  onboardingDismissedSessions: {},
   endBySession: {}
 });
 
@@ -131,6 +136,13 @@ const parseStore = (raw: string | null): StageReminderStore => {
         desiresDismissedSessions[key] = true;
       }
     }
+    const onboardingRaw = asObject(root.onboardingDismissedSessions) ?? {};
+    const onboardingDismissedSessions: Record<string, true> = {};
+    for (const key of Object.keys(onboardingRaw)) {
+      if (onboardingRaw[key] === true) {
+        onboardingDismissedSessions[key] = true;
+      }
+    }
     const endRaw = asObject(root.endBySession) ?? {};
     const endBySession: Record<string, EndFlags> = {};
     for (const key of Object.keys(endRaw)) {
@@ -140,6 +152,7 @@ const parseStore = (raw: string | null): StageReminderStore => {
       intermission: readIntermission(asObject(root.intermission)),
       awakeningDismissedNights: nights,
       desiresDismissedSessions,
+      onboardingDismissedSessions,
       endBySession
     };
   } catch {
@@ -207,6 +220,16 @@ export const dismissStageReminder = (
       desiresDismissedSessions: { ...store.desiresDismissedSessions, [key]: true }
     };
   }
+  if (id === "onboarding") {
+    if (ctx.sessionNum === undefined) {
+      return store;
+    }
+    const key = String(ctx.sessionNum);
+    return {
+      ...store,
+      onboardingDismissedSessions: { ...store.onboardingDismissedSessions, [key]: true }
+    };
+  }
   if (ctx.sessionNum === undefined) {
     return store;
   }
@@ -238,6 +261,9 @@ export const visibleStageReminders = (
     const titleBlank = (ctx.sessionName ?? "").trim() === "";
     if (titleBlank && store.intermission.sessionTitle) {
       push("sessionTitle");
+    }
+    if (ctx.sessionNum !== undefined && store.onboardingDismissedSessions[String(ctx.sessionNum)] !== true) {
+      push("onboarding");
     }
     return out;
   }

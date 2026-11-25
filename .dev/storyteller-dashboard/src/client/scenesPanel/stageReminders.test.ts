@@ -15,6 +15,7 @@ const emptyStore = (): StageReminderStore => ({
   intermission: { recorder: true, scenesPreloaded: true, sessionTitle: true },
   awakeningDismissedNights: {},
   desiresDismissedSessions: {},
+  onboardingDismissedSessions: {},
   endBySession: {}
 });
 
@@ -49,6 +50,11 @@ describe("visibleStageReminders", () => {
       "sessionTitle"
     ]);
     expect(visibleStageReminders({ phase: "Intermission", sessionName: "The Wake" }, after).map((r) => r.id)).toEqual([]);
+    const opening = { phase: "Intermission" as const, sessionName: "The Wake", sessionNum: 4 };
+    expect(visibleStageReminders(opening, after).map((r) => r.id)).toEqual(["onboarding"]);
+    const done = dismissStageReminder(after, "onboarding", opening);
+    expect(visibleStageReminders(opening, done).map((r) => r.id)).toEqual([]);
+    expect(visibleStageReminders({ ...opening, sessionNum: 5 }, done).map((r) => r.id)).toEqual(["onboarding"]);
   });
 
   it("shows the preload reminder only on the opening Play downtime", () => {
