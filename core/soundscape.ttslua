@@ -845,7 +845,29 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     return true, table.concat({ "Playing", tostring(track.effect), "on", tostring(channelKey) }, " ")
 end
 
+--- Site-music emitters are the same objects as the featured theme.
+--- Silencing background music must not swap the live theme clip for the silent loop.
+--- Direct featured-channel silence (stop, stopAll) is unchanged.
+local function featuredOwnsEmitter(channelKey)
+    if channelKey == "featuredA" or channelKey == "featuredB" then
+        return false
+    end
+    local state = ensureState()
+    if state.featuredActive ~= true then
+        return false
+    end
+    local featuredObj = resolveEmitter(resolveActiveFeaturedChannel(state))
+    local obj = resolveEmitter(channelKey)
+    if featuredObj == nil or obj == nil or featuredObj.getGUID == nil or obj.getGUID == nil then
+        return false
+    end
+    return featuredObj.getGUID() == obj.getGUID()
+end
+
 local function silenceLoopChannel(channelKey)
+    if featuredOwnsEmitter(channelKey) then
+        return true, "Featured theme owns " .. tostring(channelKey)
+    end
     return playCatalogEntry(channelKey, {
         key = "silent",
         effect = Catalog.SILENT_EFFECT,

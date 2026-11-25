@@ -61,11 +61,11 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 **How to verify:** Save & Play. Draw from a compulsion deck and wait until the four choices are locked in place. Advance the phase or change the table while the blindfold is up. When it lifts, the drawn card and the four choices should still sit with that seat, and that player's camera should still be looking at those cards.
 
-#### 🟡 TOR-812 — End to Intermission theme logging
+#### 🟡 TOR-812 — End to Intermission theme
 
-> **Agent-assessment note:** The theme request was already TR Loop. The new console lines are what you can use if it stays silent.
+> **Agent-assessment note:** The log said TR Loop had started, but the speaker had been put back on a silent clip. That silence is what this pass stops.
 
-**How to verify:** Save & Play. Advance from End into Intermission and watch the console. You should see four `[End→Intermission]` lines, and the play line should name `TR_Loop`. If the theme is still silent, copy those lines back.
+**How to verify:** Save & Play. Advance from End into Intermission. TR Loop should fade in as the blackout lifts and still be playing once the table is back. The console line after the table settles should say `loop=TR_Loop`. If it says `loop=silent`, the theme was lost again.
 
 #### 🟡 TOR-811 — Joining players skip stored objects until onboarding asks for them
 

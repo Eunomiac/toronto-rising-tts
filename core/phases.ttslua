@@ -943,6 +943,32 @@ Phases.onEnterSub[C.PlaySubPhases.DOWNTIME] = function(_ctx)
     }
 end
 
+--- Name of the clip actually looping on the featured theme emitter. Nil when the emitter cannot be read.
+local function intermissionThemeLoopName()
+    local ss = S.getStateVal("soundscape") or {}
+    local channel = ss.activeFeaturedChannel == "featuredB" and "featuredB" or "featuredA"
+    local Catalog = require("lib.soundscape_catalog")
+    local G = require("lib.guids")
+    local def = Catalog.CHANNELS and Catalog.CHANNELS[channel] or nil
+    local guid = def and G.GUIDS[def.guidKey] or nil
+    local obj = type(guid) == "string" and G.getObject(guid) or nil
+    local ab = obj ~= nil and obj.AssetBundle or nil
+    if ab == nil or ab.getLoopingEffectIndex == nil or ab.getLoopingEffects == nil then
+        return nil
+    end
+    local index = ab.getLoopingEffectIndex()
+    local effects = ab.getLoopingEffects()
+    if type(effects) ~= "table" then
+        return nil
+    end
+    for _, effect in ipairs(effects) do
+        if type(effect) == "table" and effect.index == index then
+            return effect.name
+        end
+    end
+    return nil
+end
+
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     local themeRestarted = false
     return {
@@ -1007,14 +1033,25 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
             local Soundscape = require("core.soundscape")
             local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
             local active = type(Soundscape.isFeaturedMusic) == "function" and Soundscape.isFeaturedMusic(key) == true
-            print("[End→Intermission] 3/4 After the table settle, featured " .. tostring(key) .. " active=" .. tostring(active) .. ".")
+            local loopName = intermissionThemeLoopName()
+            print(
+                "[End→Intermission] 3/4 After the table settle, featured "
+                    .. tostring(key)
+                    .. " active="
+                    .. tostring(active)
+                    .. " loop="
+                    .. tostring(loopName)
+                    .. "."
+            )
             return 0
         end,
         function()
             -- Re-assert TR_Loop after no-scene / Sync work so End→Intermission cannot leave the theme silent.
             local Soundscape = require("core.soundscape")
             local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
-            if type(Soundscape.isFeaturedMusic) == "function" and Soundscape.isFeaturedMusic(key) then
+            local loopName = intermissionThemeLoopName()
+            local clipIsTheme = loopName == nil or loopName == key
+            if type(Soundscape.isFeaturedMusic) == "function" and Soundscape.isFeaturedMusic(key) and clipIsTheme then
                 themeRestarted = false
                 return true
             end
