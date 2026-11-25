@@ -122,6 +122,41 @@ function visitObjects(save, visit) {
   for (const o of save.ObjectStates || []) walk(o);
 }
 
+function hiddenStorageGuid() {
+  const source = fs.readFileSync(path.join(REPO_ROOT, "lib/guids.ttslua"), "utf8");
+  const match = source.match(/HIDDEN_STORAGE\s*=\s*"([0-9a-fA-F]{6})"/);
+  if (!match) throw new Error("G.GUIDS.HIDDEN_STORAGE is missing.");
+  return match[1].toLowerCase();
+}
+
+function deckHome(save, deck, bagGuid) {
+  if ((save.ObjectStates || []).includes(deck)) return "table";
+  let parentGuid = null;
+  visitObjects(save, (o) => {
+    if ((o.ContainedObjects || []).includes(deck)) parentGuid = String(o.GUID || "").toLowerCase();
+  });
+  return parentGuid === bagGuid ? "storage" : null;
+}
+
+function replaceSavedObject(save, original, replacement) {
+  const top = (save.ObjectStates || []).indexOf(original);
+  if (top >= 0) {
+    save.ObjectStates[top] = replacement;
+    return;
+  }
+  let replaced = false;
+  visitObjects(save, (o) => {
+    const kids = o.ContainedObjects;
+    if (!Array.isArray(kids) || replaced) return;
+    const index = kids.indexOf(original);
+    if (index >= 0) {
+      kids[index] = replacement;
+      replaced = true;
+    }
+  });
+  if (!replaced) throw new Error(`Could not write deck ${replacement.GUID} back into the save.`);
+}
+
 function commonBack(deck) {
   const backs = new Set(Object.values(deck.CustomDeck || {}).map((d) => d.BackURL));
   if (backs.size !== 1 || !/^https:\/\//.test([...backs][0] || "")) throw new Error(`Deck ${deck.GUID} needs one existing shared card-back URL.`);
@@ -141,14 +176,16 @@ function assertIdle(save, decks) {
 }
 
 function planDecks(save, sheets) {
+  const bagGuid = hiddenStorageGuid();
   const targets = DECKS.map((spec) => {
     const matches = [];
     visitObjects(save, (o) => { if (o.GUID === spec.guid) matches.push(o); });
     const deck = matches[0];
-    if (matches.length !== 1 || !save.ObjectStates.includes(deck) || deck.Name !== "DeckCustom" ||
+    const home = deck && deckHome(save, deck, bagGuid);
+    if (matches.length !== 1 || (home !== "table" && home !== "storage") || deck.Name !== "DeckCustom" ||
         !spec.tags.every((tag) => (deck.Tags || []).includes(tag)) ||
         (deck.Tags || []).includes("enhancedComplication") !== (spec.style === "Enhanced")) {
-      throw new Error(`Expected one top-level ${spec.style} deck ${spec.guid} with its Complications tags.`);
+      throw new Error(`Expected one ${spec.style} deck ${spec.guid} on the table or in hidden storage, with its Complications tags.`);
     }
     const back = commonBack(deck);
     const inputs = sheets.filter((s) => s.style === spec.style);
@@ -229,7 +266,7 @@ function build({ savePath, assetsDir, settingsDir = SETTINGS, manifestPath = MAN
     return { status: "unchanged", changed: 0 };
   }
   for (const { original, replacement, style } of plans) {
-    save.ObjectStates[save.ObjectStates.indexOf(original)] = replacement;
+    replaceSavedObject(save, original, replacement);
     log(`[complications:decks] ${dryRun ? "Would rebuild" : "Rebuild"} ${style}: ${replacement.ContainedObjects.length} cards, ${Object.keys(replacement.CustomDeck).length} sheets.`);
   }
   if (!dryRun) {
@@ -269,4 +306,4 @@ if (require.main === module) {
   try { main(process.argv.slice(2)); }
   catch (err) { console.error(`[complications:decks] FAIL: ${err.message}`); process.exitCode = 1; }
 }
-module.exports = { build, planDecks, parseSettings, readInputs, resolveCloud, DECKS, RARITIES, FOLDER, JOB, SETTINGS };
+module.exports = { build, planDecks, parseSettings, readInputs, resolveCloud, hiddenStorageGuid, DECKS, RARITIES, FOLDER, JOB, SETTINGS };

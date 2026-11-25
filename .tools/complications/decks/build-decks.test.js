@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
-const { build, parseSettings, readInputs, DECKS, RARITIES, SETTINGS, FOLDER, JOB } = require("./build-decks.js");
+const { build, parseSettings, readInputs, hiddenStorageGuid, DECKS, RARITIES, SETTINGS, FOLDER, JOB } = require("./build-decks.js");
 const sync = require("../../cloud-asset-sync.js");
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -142,7 +142,7 @@ test("settings-only and Cloud-URL-only changes invalidate the fingerprint", (t) 
   const f = fixture(t); build(f.options);
   for (const { style } of DECKS) {
     const file = path.join(f.settingsDir, `Common-${style}-settings.txt`);
-    fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace("1: 2 A Moment of Despair.webp\n2: 4 A Moment of Inspiration.webp", "1: 4 A Moment of Inspiration.webp\n2: 2 A Moment of Despair.webp"));
+    fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace(/1: 2 A Moment of Despair\.webp\r?\n2: 4 A Moment of Inspiration\.webp/, "1: 4 A Moment of Inspiration.webp\n2: 2 A Moment of Despair.webp"));
   }
   assert.equal(build(f.options).changed, 2);
   const m = JSON.parse(fs.readFileSync(f.manifestPath));
@@ -188,7 +188,7 @@ test("rebuild refuses active games, loose cards, missing targets and ambiguous b
   const cases = [
     [(s) => { s.LuaScriptState = JSON.stringify({ complications: { id: "active" } }); }, /saved as active/],
     [(s) => { s.ObjectStates.push({ GUID: "123456", Name: "Card", Tags: ["deckOfComplications"] }); }, /outside the two source decks/],
-    [(s) => { s.ObjectStates.shift(); }, /Expected one top-level Standard/],
+    [(s) => { s.ObjectStates.shift(); }, /Expected one Standard deck/],
     [(s) => { s.ObjectStates[0].CustomDeck[2] = { BackURL: "https://example.test/different" }; }, /shared card-back/],
   ];
   for (const [mutate, expected] of cases) {
@@ -214,6 +214,26 @@ test("malformed sidecars and mismatched PNGs fail without touching the save", (t
   assert.equal(fs.readFileSync(f.savePath, "utf8"), before);
 });
 
+test("rebuilds source decks packed in hidden storage without lifting them out", (t) => {
+  const f = fixture(t);
+  const save = clone(f.save);
+  const bag = {
+    GUID: hiddenStorageGuid(),
+    Name: "Custom_Model_Bag",
+    Tags: [],
+    ContainedObjects: save.ObjectStates.splice(0, 2),
+  };
+  save.ObjectStates.unshift(bag);
+  fs.writeFileSync(f.savePath, JSON.stringify(save));
+  assert.equal(build(f.options).changed, 2);
+  const stored = f.read().ObjectStates.find((o) => o.GUID === bag.GUID);
+  assert.ok(stored);
+  assert.deepEqual(stored.ContainedObjects.map((d) => d.GUID), DECKS.map((d) => d.guid));
+  assert.equal(stored.ContainedObjects[0].ContainedObjects.length, 254);
+  assert.equal(stored.ContainedObjects[1].ContainedObjects.length, 66);
+  assert.equal(f.read().ObjectStates.filter((o) => DECKS.some((d) => d.guid === o.GUID)).length, 0);
+});
+
 test("CLI can inspect a copied save using explicit paths without a live TTS config", (t) => {
   const f = fixture(t);
   const output = execFileSync(process.execPath, [path.join(__dirname, "build-decks.js"), "--save", f.savePath,
@@ -231,7 +251,7 @@ test("Cloud job claims exactly the eight sheets and Full build assembles after s
   const re = new RegExp(job.searchPattern);
   for (const [rarity] of RARITIES) for (const { style } of DECKS) assert.ok(re.test(`complicationsDeck_${rarity}-${style}.png`));
   for (const stray of ["Other-Standard.png", "Common-Standard-settings.txt", "Common-Standard.jpg", "back.png"]) assert.ok(!re.test(stray));
-  const pipeline = JSON.parse(fs.readFileSync(path.join(root, "package.json"))).scripts["build:all-tooling"];
+  const pipeline = JSON.parse(fs.readFileSync(path.join(root, "package.json"))).scripts["build:tooling-after-exports"];
   assert.ok(pipeline.indexOf("npm run cloud-asset-sync &&") < pipeline.indexOf("npm run complications:decks &&"));
   assert.ok(pipeline.indexOf("npm run cloud:consolidate -- --apply &&") < pipeline.indexOf("npm run complications:decks &&"));
 });
