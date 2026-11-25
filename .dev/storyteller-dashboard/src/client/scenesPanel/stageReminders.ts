@@ -1,6 +1,6 @@
 /**
  * Click-to-hide stage reminders for the empty IdleBoard (Intermission, Downtime, End).
- * Preload is the opening Play downtime of a session, not Intermission.
+ * A deck click preloads a scene that is not ready yet, so the stage no longer reminds you to preload.
  * Awakening is once per dusk→dawn night; End NPC prompts are once per TTS sessionNum.
  */
 
@@ -304,9 +304,6 @@ export const visibleStageReminders = (
   }
 
   if (ctx.phase === "Play" && (ctx.subPhase ?? "Main") === "Downtime") {
-    if (ctx.sessionStartDowntime === true && store.intermission.scenesPreloaded) {
-      push("scenesPreloaded");
-    }
     if (ctx.sessionStartDowntime === true && ctx.sessionNum !== undefined && store.desiresDismissedSessions[String(ctx.sessionNum)] !== true) {
       push("setDesires");
     }

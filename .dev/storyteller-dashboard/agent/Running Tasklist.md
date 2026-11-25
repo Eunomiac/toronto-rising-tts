@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Pin 3. A click on a deck scene preloads it first. The transition opens on a later click, once preload has finished. The "ensure scenes are preloaded" reminder is gone.
+
 - ✔️ Pin 2. Both Session XP panels are about half again as wide.
 
 - ✔️ Pin 1. During End, each player with Stains gets a reminder. Clicking it starts that player's Remorse roll and clears the reminder.

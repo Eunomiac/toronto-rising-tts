@@ -241,6 +241,7 @@ export const useSceneEntry = (): { enter: (key: string, at: Point, go: SceneGo) 
     });
   };
   return {
+    preload: preloadScene,
     enter: (key, at, go) => {
       const destination = sceneRowFor(key);
       if (destination && seats && scene?.liveKey !== key) {
@@ -3540,8 +3541,9 @@ const useHoldToConfirm = (onHold: () => void): {
 };
 
 /**
- * A live scene on the deck: ongoing (green) or a new scene or template (gold). Click plays it, right-click opens
- * its preview, and holding the left button fills it red, then ends it (ongoing) or takes it off the deck.
+ * A live scene on the deck: ongoing (green) or a new scene or template (gold). The first click preloads it.
+ * Later clicks open the transition. Right-click opens its preview, and holding the left button fills it red,
+ * then ends it (ongoing) or takes it off the deck.
  */
 const DeckChip = ({ scene, onPlay, onEdit, onHold, preloaded }: {
   scene: DeckScene;
@@ -3557,9 +3559,11 @@ const DeckChip = ({ scene, onPlay, onEdit, onHold, preloaded }: {
       type="button"
       className={`lab-phase-deck ${ongoing ? "ongoing" : "fresh"}${hold.holding ? " holding" : ""}${preloaded ? "" : " not-preloaded"}`}
       style={{ "--hold-ms": `${HOLD_FILL_MS}ms` } as CSSProperties}
-      title={ongoing
-        ? `Go back to ${scene.title} at its own time. Hold to end it; right-click to edit it. Drag onto the stage or Active scene to play.${preloaded ? "" : " Not preloaded."}`
-        : `Start ${scene.title}. Hold to take it off the deck; right-click to edit it. Drag onto the stage or Active scene to play.${preloaded ? "" : " Not preloaded."}`}
+      title={preloaded
+        ? (ongoing
+          ? `Go back to ${scene.title} at its own time. Hold to end it; right-click to edit it. Drag onto the stage or Active scene to play.`
+          : `Start ${scene.title}. Hold to take it off the deck; right-click to edit it. Drag onto the stage or Active scene to play.`)
+        : `Preload ${scene.title}. Click again after it finishes to open the transition. Hold to ${ongoing ? "end it" : "take it off the deck"}; right-click to edit it.`}
       data-tr-dnd-deck={scene.key}
       data-tr-dnd-deck-status={ongoing ? "ongoing" : "new"}
       draggable
@@ -3734,7 +3738,13 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
             key={scene.key}
             scene={scene}
             preloaded={preloadedKeys.has(scene.key)}
-            onPlay={(at) => entry.enter(scene.key, at, (clock, edit) => onSwitch(scene.key, clock, edit))}
+            onPlay={(at) => {
+              if (!preloadedKeys.has(scene.key)) {
+                entry.preload(scene.key);
+                return;
+              }
+              entry.enter(scene.key, at, (clock, edit) => onSwitch(scene.key, clock, edit));
+            }}
             onEdit={() => onEdit(scene.key)}
             onHold={() => (scene.status === "ongoing" ? onEndDeckScene(scene.key) : onRemoveFromDeck(scene.key))}
           />

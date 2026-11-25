@@ -32,9 +32,10 @@ describe("IdleBoard stage reminders", () => {
     expect(screen.getByRole("button", { name: /title for this session/i })).toBeInTheDocument();
   });
 
-  it("shows the preload reminder on the opening Play downtime, not a later one", () => {
-    mount({ phase: "Play", subPhase: "Downtime", sessionStartDowntime: true });
-    expect(screen.getByRole("button", { name: /scenes are preloaded/i })).toBeInTheDocument();
+  it("does not ask to preload scenes on the opening Play downtime", () => {
+    mount({ phase: "Play", subPhase: "Downtime", sessionStartDowntime: true, sessionNum: 4 });
+    expect(screen.queryByRole("button", { name: /scenes are preloaded/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /set their desires/i })).toBeInTheDocument();
   });
 
   it("shows a connected PC as in the scene during Downtime and tells the table", () => {

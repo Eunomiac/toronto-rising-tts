@@ -57,14 +57,12 @@ describe("visibleStageReminders", () => {
     expect(visibleStageReminders({ ...opening, sessionNum: 5 }, done).map((r) => r.id)).toEqual(["onboarding"]);
   });
 
-  it("shows the preload reminder only on the opening Play downtime", () => {
+  it("shows the Desire reminder only on the opening Play downtime", () => {
     const store = emptyStore();
     const opening = { phase: "Play" as const, subPhase: "Downtime", sessionStartDowntime: true, sessionNum: 4 };
-    expect(visibleStageReminders(opening, store).map((r) => r.id)).toEqual(["scenesPreloaded", "setDesires"]);
+    expect(visibleStageReminders(opening, store).map((r) => r.id)).toEqual(["setDesires"]);
     expect(visibleStageReminders({ phase: "Play", subPhase: "Downtime", sessionNum: 4 }, store).map((r) => r.id)).toEqual([]);
-    const dismissed = dismissStageReminder(store, "scenesPreloaded", opening);
-    expect(visibleStageReminders(opening, dismissed).map((r) => r.id)).toEqual(["setDesires"]);
-    const both = dismissStageReminder(dismissed, "setDesires", opening);
+    const both = dismissStageReminder(store, "setDesires", opening);
     expect(visibleStageReminders(opening, both).map((r) => r.id)).toEqual([]);
     expect(visibleStageReminders({ ...opening, sessionNum: 5 }, both).map((r) => r.id)).toEqual(["setDesires"]);
   });
