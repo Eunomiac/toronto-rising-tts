@@ -145,7 +145,7 @@ export const XpAwardPanel = ({
   const canCustom = Number.isFinite(customAmount) && customAmount !== 0 && description.trim() !== "";
 
   return (
-    <div className="lab-xp-panel">
+    <div className="lab-xp-panel is-end">
       <h3 className="lab-xp-title">Session XP</h3>
       <div className="lab-xp-bulk">
         <button type="button" className="lab-btn" onClick={() => awardConnected("Session Attendance")}>

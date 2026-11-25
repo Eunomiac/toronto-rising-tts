@@ -2208,7 +2208,8 @@ input.lab-cat-rename {
   border: 1px solid #4a463c;
   background: rgb(22 20 18 / 92%);
 
-  &.is-feedback {
+  &.is-feedback,
+  &.is-end {
     left: auto;
     right: 16px;
     width: min(480px, 42%);
