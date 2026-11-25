@@ -46,7 +46,7 @@ import { DndChrome } from "./dnd/DndChrome";
 import { RosterDragGhost } from "./rosterDrag";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import type { SceneCatalogs } from "./catalogs";
-import { Box, IdleBoard, Overlay, WideBoard, type LiveBoard } from "./sketch";
+import { Box, CANVAS_H, IdleBoard, Overlay, WideBoard, type LiveBoard } from "./sketch";
 import { useLiveSheet } from "../pcSheet/useLiveSheet";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
 import { sceneLibrarySnapshot, useSceneLibrary, useSceneLibraryStatus } from "../sceneLibrary";
@@ -122,8 +122,8 @@ const PHASE_H = 60;
 const MAIN_Y = BODY_Y + PHASE_H + G;
 const ASPECT_H = 114;
 const STAGE_Y = MAIN_Y + ASPECT_H + G;
-const STAGE_H = 1042 - G - STAGE_Y;
-const RIGHT_H = 1042 - G - MAIN_Y;
+const STAGE_H = CANVAS_H - G - STAGE_Y;
+const RIGHT_H = CANVAS_H - G - MAIN_Y;
 const ROLLS_Y = MAIN_Y + ASPECT_H + G;
 const ROLLS_H = RIGHT_H - ASPECT_H - G;
 const HUNT_H = 68;
@@ -720,7 +720,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
               onConfirm={(hunt) => rollCommands.send({ op: "hunt", ...hunt })}
             />
           </Box>
-          <Box x={G} y={ROSTER_Y} w={LEFT_W} h={1042 - G - ROSTER_Y} className="lab-borderless lab-dock-box">
+          <Box x={G} y={ROSTER_Y} w={LEFT_W} h={CANVAS_H - G - ROSTER_Y} className="lab-borderless lab-dock-box">
             <RosterDock scene={title ?? NO_SCENE} />
           </Box>
 
@@ -880,7 +880,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 x={G}
                 y={BODY_Y}
                 w={1920 - 2 * G}
-                h={1042 - G - BODY_Y}
+                h={CANVAS_H - G - BODY_Y}
                 prepared={library.previews}
                 initialKey={library.previewKey}
                 scenes={liveScenes}

@@ -40,12 +40,12 @@ import {
 import { XpAwardPanel } from "./xpAwardPanel";
 
 /**
- * Building blocks for the Scenes tab. Every panel is laid out in absolute pixels on the fixed 1920×1042 canvas
- * (1080 minus the app tab bar), so sizes on screen are the real sizes.
+ * Building blocks for the Scenes tab. Every panel is laid out in absolute pixels on the fixed 1920×1027 canvas
+ * (1065 minus the app tab bar), so sizes on screen are the real sizes.
  */
 
 export const CANVAS_W = 1920;
-export const CANVAS_H = 1042;
+export const CANVAS_H = 1027;
 
 type BoxProps = {
   readonly x: number;

@@ -36,7 +36,7 @@ import {
   type Intensity
 } from "./huntOdds";
 import { MemoriamModal } from "./memoriamModal";
-import { Overlay, activeCanvas, canvasPoint } from "./sketch";
+import { CANVAS_H, Overlay, activeCanvas, canvasPoint } from "./sketch";
 import { createPortal } from "react-dom";
 import { figurineUrl } from "../headshots/headshots";
 import { GenericTiersContext, PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClock, type SoundLane } from "./commands";
@@ -299,7 +299,7 @@ const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onClose: ()
     <Overlay onClose={onClose}>
       <div
         className="lab-timing"
-        style={{ left: Math.min(Math.max(timing.at.x - TIMING_W / 2, 8), 1920 - TIMING_W - 8), top: Math.min(Math.max(timing.at.y - TIMING_H / 2, 8), 1042 - TIMING_H - 8), width: TIMING_W }}
+        style={{ left: Math.min(Math.max(timing.at.x - TIMING_W / 2, 8), 1920 - TIMING_W - 8), top: Math.min(Math.max(timing.at.y - TIMING_H / 2, 8), CANVAS_H - TIMING_H - 8), width: TIMING_W }}
       >
         {sceneAt && (
           <div className={`lab-timing-block${target.from === "scene" ? " active" : ""}`}>

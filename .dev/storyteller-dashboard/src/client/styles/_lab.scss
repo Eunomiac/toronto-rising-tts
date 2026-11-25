@@ -1,4 +1,4 @@
-// The Scenes tab's fixed 1920×1042 canvas and its building blocks, plus the dev-only note pins on every tab.
+// The Scenes tab's fixed 1920×1027 canvas and its building blocks, plus the dev-only note pins on every tab.
 
 $lab-live: #4caf6a;
 $lab-preview: #4a8dff;
@@ -35,7 +35,7 @@ $lab-pin: #f5b13d;
 .lab-canvas {
   position: relative;
   width: 1920px;
-  height: calc(1080px - var(--tab-bar-height));
+  height: calc(1065px - var(--tab-bar-height));
   font-size: 13px;
   color: #d8d8de;
 
