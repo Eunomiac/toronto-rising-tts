@@ -107,6 +107,8 @@ export const XpAwardPanel = ({
   const seed = seedColor(pcs);
   const [amountText, setAmountText] = useState("1");
   const [description, setDescription] = useState("");
+  const [personal, setPersonal] = useState<Readonly<Record<string, { amount: string; description: string }>>>({});
+  const [personalSent, setPersonalSent] = useState<ReadonlySet<SeatColor>>(() => new Set());
   const [clicked, setClicked] = useState<ReadonlySet<string>>(() => new Set());
   const mark = (desc: string, color: SeatColor): void => {
     setClicked((prev) => new Set(prev).add(clickKey(desc, color)));
@@ -158,6 +160,43 @@ export const XpAwardPanel = ({
       <SeatRow label="Promoted Team Play" pcs={pcs} requireConnected awarded={awarded("Promoted Team Play")} onAward={(color) => { mark("Promoted Team Play", color); awardOne(color, "Promoted Team Play"); }} />
       <SeatRow label="Compulsion Roleplay" pcs={pcs} requireConnected awarded={awarded("Compulsion Roleplay")} onAward={(color) => { mark("Compulsion Roleplay", color); awardOne(color, "Compulsion Roleplay"); }} />
       <SeatRow label="Compulsion Resolution" pcs={pcs} requireConnected awarded={awarded("Compulsion Resolution")} onAward={(color) => { mark("Compulsion Resolution", color); awardOne(color, "Compulsion Resolution"); }} />
+      {pcs.map((pc) => {
+        const row = personal[pc.color] ?? { amount: "1", description: "" };
+        const amount = Math.floor(Number(row.amount));
+        const text = row.description.trim();
+        const ready = Number.isFinite(amount) && amount !== 0 && text !== "";
+        return (
+          <div className="lab-xp-custom is-one" key={pc.color}>
+            <span className="lab-xp-row-label">{pc.name}</span>
+            <input
+              type="number"
+              className="lab-xp-amount"
+              value={row.amount}
+              aria-label={`${pc.name} XP amount`}
+              onChange={(event) => setPersonal((prev) => ({ ...prev, [pc.color]: { ...row, amount: event.target.value } }))}
+            />
+            <input
+              type="text"
+              className="lab-xp-desc"
+              value={row.description}
+              placeholder="Description"
+              aria-label={`${pc.name} XP description`}
+              onChange={(event) => setPersonal((prev) => ({ ...prev, [pc.color]: { ...row, description: event.target.value } }))}
+            />
+            <button
+              type="button"
+              className={`lab-btn lab-xp-seat lab-xp-seat--${pc.color.toLowerCase()}${personalSent.has(pc.color) ? " is-awarded" : ""}`}
+              disabled={!ready}
+              onClick={() => {
+                apply({ op: "xpAppend", color: pc.color, amount, description: text });
+                setPersonalSent((prev) => new Set(prev).add(pc.color));
+              }}
+            >
+              Award
+            </button>
+          </div>
+        );
+      })}
       <div className="lab-xp-custom">
         <input
           type="number"

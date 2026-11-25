@@ -2263,6 +2263,12 @@ input.lab-cat-rename {
     cursor: not-allowed;
   }
 
+  &--brown { background: #6b4a2a; }
+  &--red { background: #8d2a2a; }
+  &--orange { background: #b86a1a; }
+  &--pink { background: #a24d78; }
+  &--purple { background: #5c3d8a; }
+
   &.is-awarded {
     border-color: #d4b46a;
     background: #3a3428;
@@ -2279,6 +2285,10 @@ input.lab-cat-rename {
   grid-template-columns: 72px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
+
+  &.is-one {
+    grid-template-columns: minmax(96px, auto) 72px minmax(0, 1fr) auto;
+  }
 }
 
 .lab-xp-amount,
