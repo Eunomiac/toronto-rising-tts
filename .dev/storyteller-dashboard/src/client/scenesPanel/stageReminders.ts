@@ -12,7 +12,6 @@ export type ReminderId =
   | "setDesires"
   | "awakening"
   | "darkBetween"
-  | "ratsInWalls"
   | "blackCaesar"
   | "saveGame";
 
@@ -33,7 +32,7 @@ export type StageReminderContext = {
 };
 
 type IntermissionFlags = { readonly recorder: boolean; readonly scenesPreloaded: boolean; readonly sessionTitle: boolean };
-type EndFlags = { readonly darkBetween: boolean; readonly ratsInWalls: boolean; readonly blackCaesar: boolean; readonly saveGame: boolean };
+type EndFlags = { readonly darkBetween: boolean; readonly blackCaesar: boolean; readonly saveGame: boolean };
 
 export type StageReminderStore = {
   readonly intermission: IntermissionFlags;
@@ -51,7 +50,7 @@ const STORAGE_KEY = "tr.dashboard.stageReminders";
 const LEGACY_INTERMISSION_KEY = "tr.dashboard.intermissionRemindersDismissed";
 
 const INTERMISSION_DEFAULT: IntermissionFlags = { recorder: true, scenesPreloaded: true, sessionTitle: true };
-const END_DEFAULT: EndFlags = { darkBetween: true, ratsInWalls: true, blackCaesar: true, saveGame: true };
+const END_DEFAULT: EndFlags = { darkBetween: true, blackCaesar: true, saveGame: true };
 
 export const REMINDER_TEXT: Readonly<Record<ReminderId, string>> = {
   recorder: "Ensure session recorder is connected",
@@ -61,7 +60,6 @@ export const REMINDER_TEXT: Readonly<Record<ReminderId, string>> = {
   setDesires: "Tell the players to set their Desires.",
   awakening: "Confirm players have made their rouse checks for awakening from daysleep.",
   darkBetween: "Ask Aishe for her 'Dark Between the Stars' question.",
-  ratsInWalls: "Ask Fomórach for his Rats in the Walls activation roll.",
   blackCaesar: "Confirm Black Caesar has performed his nightly scourging.",
   saveGame: "Save the game."
 };
@@ -98,7 +96,6 @@ const readEndFlags = (row: Record<string, unknown> | null): EndFlags => {
   }
   return {
     darkBetween: row.darkBetween !== false,
-    ratsInWalls: row.ratsInWalls !== false,
     blackCaesar: row.blackCaesar !== false,
     saveGame: row.saveGame !== false
   };
@@ -289,9 +286,6 @@ export const visibleStageReminders = (
     const flags = store.endBySession[String(ctx.sessionNum)] ?? END_DEFAULT;
     if (flags.darkBetween) {
       push("darkBetween");
-    }
-    if (flags.ratsInWalls) {
-      push("ratsInWalls");
     }
     if (flags.blackCaesar) {
       push("blackCaesar");

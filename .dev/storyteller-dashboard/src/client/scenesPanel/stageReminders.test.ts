@@ -114,15 +114,13 @@ describe("visibleStageReminders", () => {
     const store = emptyStore();
     expect(visibleStageReminders(ctx, store).map((r) => r.id)).toEqual([
       "darkBetween",
-      "ratsInWalls",
       "blackCaesar",
       "saveGame"
     ]);
-    const afterOne = dismissStageReminder(store, "ratsInWalls", ctx);
-    expect(visibleStageReminders(ctx, afterOne).map((r) => r.id)).toEqual(["darkBetween", "blackCaesar", "saveGame"]);
+    const afterOne = dismissStageReminder(store, "darkBetween", ctx);
+    expect(visibleStageReminders(ctx, afterOne).map((r) => r.id)).toEqual(["blackCaesar", "saveGame"]);
     expect(visibleStageReminders({ phase: "End", sessionNum: 13 }, afterOne).map((r) => r.id)).toEqual([
       "darkBetween",
-      "ratsInWalls",
       "blackCaesar",
       "saveGame"
     ]);

@@ -83,12 +83,12 @@ describe("IdleBoard stage reminders", () => {
     const user = userEvent.setup();
     mount({ phase: "End", sessionNum: 7 });
     expect(screen.getByRole("button", { name: /Dark Between the Stars/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Rats in the Walls/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Black Caesar/i })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /Rats in the Walls/i }));
-    expect(screen.queryByRole("button", { name: /Rats in the Walls/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Dark Between the Stars/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Save the game/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Dark Between the Stars/i }));
+    expect(screen.queryByRole("button", { name: /Dark Between the Stars/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Black Caesar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Save the game/i })).toBeInTheDocument();
   });
 });
 
