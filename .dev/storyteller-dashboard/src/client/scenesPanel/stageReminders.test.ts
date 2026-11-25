@@ -14,6 +14,7 @@ const at = (y: number, m: number, d: number, h: number, min = 0): Date => new Da
 const emptyStore = (): StageReminderStore => ({
   intermission: { recorder: true, scenesPreloaded: true, sessionTitle: true },
   awakeningDismissedNights: {},
+  desiresDismissedSessions: {},
   endBySession: {}
 });
 
@@ -52,11 +53,14 @@ describe("visibleStageReminders", () => {
 
   it("shows the preload reminder only on the opening Play downtime", () => {
     const store = emptyStore();
-    const opening = { phase: "Play" as const, subPhase: "Downtime", sessionStartDowntime: true };
-    expect(visibleStageReminders(opening, store).map((r) => r.id)).toEqual(["scenesPreloaded"]);
-    expect(visibleStageReminders({ phase: "Play", subPhase: "Downtime" }, store).map((r) => r.id)).toEqual([]);
+    const opening = { phase: "Play" as const, subPhase: "Downtime", sessionStartDowntime: true, sessionNum: 4 };
+    expect(visibleStageReminders(opening, store).map((r) => r.id)).toEqual(["scenesPreloaded", "setDesires"]);
+    expect(visibleStageReminders({ phase: "Play", subPhase: "Downtime", sessionNum: 4 }, store).map((r) => r.id)).toEqual([]);
     const dismissed = dismissStageReminder(store, "scenesPreloaded", opening);
-    expect(visibleStageReminders(opening, dismissed).map((r) => r.id)).toEqual([]);
+    expect(visibleStageReminders(opening, dismissed).map((r) => r.id)).toEqual(["setDesires"]);
+    const both = dismissStageReminder(dismissed, "setDesires", opening);
+    expect(visibleStageReminders(opening, both).map((r) => r.id)).toEqual([]);
+    expect(visibleStageReminders({ ...opening, sessionNum: 5 }, both).map((r) => r.id)).toEqual(["setDesires"]);
   });
 
   it("shows awakening on Downtime inside the night", () => {
