@@ -483,6 +483,32 @@ $phase-held: #ff8a5c;
   margin-top: 6px;
 }
 
+.roll-due {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  li {
+    padding: 3px 6px;
+    border-left: 3px solid var(--due-color, #8a8a94);
+    font-size: 11px;
+    line-height: 1.25;
+    color: #e6e0d4;
+  }
+
+  .goal,
+  .when {
+    display: block;
+  }
+
+  .when {
+    color: #b7b0a2;
+  }
+}
+
 .roll-chronicle {
   margin-top: 8px;
   font-size: 12px;

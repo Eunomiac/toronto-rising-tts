@@ -9,16 +9,6 @@
       "status": "open",
       "createdAt": "2026-11-25T18:59:36.586Z",
       "updatedAt": "2026-11-25T18:59:36.586Z"
-    },
-    {
-      "id": 7,
-      "sketch": "scenes",
-      "x": 1759,
-      "y": 909,
-      "text": "Directly beneath \"Recent Rolls\" in the roll panel, display a list of all Projects whose end date is within seven days of the present day clock, sorted by date (soonest first).  Each project should be colored with the player who originated it, and should display the full goal text as well as the full end date.  Keep the display compact, but allow the roll panel to scroll with a very thin scroll bar if necessary to display all live rolls and projects.",
-      "status": "open",
-      "createdAt": "2026-11-25T19:12:48.826Z",
-      "updatedAt": "2026-11-25T19:12:48.826Z"
     }
   ]
 }

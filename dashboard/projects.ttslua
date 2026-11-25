@@ -98,6 +98,7 @@ local function projectRow(p)
       die = die,
       startText = Projects.formatStartDate(p.startDate),
       endText = endDate and Projects.formatStartDate(endDate) or "",
+      endDate = endDate and clockDate(endDate) or nil,
       beginEligible = Projects.isBeginEligible(p),
       beginMessage = beginMessage,
       launchEligible = Projects.computeAutoPhase(p) == Projects.PHASE.PRE_LAUNCH,

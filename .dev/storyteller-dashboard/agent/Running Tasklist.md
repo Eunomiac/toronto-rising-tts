@@ -1,5 +1,7 @@
 # Running Tasklist for Storyteller Dashboard Work
 
+- ✔️ Pin 7. Under Recent rolls, projects ending within seven days of the present-day clock are listed soonest first, in the originating player's color, with the full goal and end date. Pending Save & Play. _(TOR-819)_
+
 - ✔️ Pin 6. A fresh session-start Intermission asks for a title and onboarding. The Intermission after End asks you to save the game. Pending Save & Play. _(TOR-818)_
 
 - ✔️ Pin 5. The In/Out button sits under the chair number, clear of the Compulsion badge.

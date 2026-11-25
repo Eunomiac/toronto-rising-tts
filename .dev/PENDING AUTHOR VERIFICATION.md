@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-819 — Roll panel lists projects ending within seven days
+
+> **Agent-assessment note:** The list reads the end date the table now sends with each project. Until Save & Play, that date is missing and the list stays empty.
+
+**How to verify:** Save & Play. Open the roll panel. Under Recent rolls, any project ending within seven days of the present-day clock should appear, soonest first, in that player's color, with the whole goal and the whole end date.
+
 #### 🟡 TOR-818 — Opening Intermission and the Intermission after End
 
 > **Agent-assessment note:** The table now remembers whether this Intermission came from leaving End. The dashboard reminders follow that.

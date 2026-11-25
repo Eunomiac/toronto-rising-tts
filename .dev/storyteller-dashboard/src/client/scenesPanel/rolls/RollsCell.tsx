@@ -8,6 +8,9 @@ import { startNativeDrag } from "../dnd/native";
 import { ROLL_DRAG_TYPE } from "../dnd/mime";
 import { NPC_DRAG_TYPE, NPC_ROLL_DROP_ATTR, NPC_ROLL_DROP_EVENT } from "../stage";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
+import { projectsDueNearPresent, type ProjectsSnapshot } from "../../pcSheet/projects";
+import { fetchProjectsSnapshot } from "../../pcSheet/projectsBridge";
+import { subscribeTtsEvents } from "../../ttsEvents";
 import { bloodPotencyRow, ROLL_TYPE_RULES, STRUCTURAL_OPTIONS } from "../../catalogVocab";
 import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";
@@ -922,6 +925,34 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options, transitio
   const { shown: rolls, paint } = useLocalPools(pushed, pending);
   useRollChronicleSync(pushed);
   const chronicle = useRollChronicle();
+  const [projects, setProjects] = useState<ProjectsSnapshot | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const load = (): void => {
+      void fetchProjectsSnapshot()
+        .then((next) => {
+          if (!cancelled) {
+            setProjects(next);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setProjects(null);
+          }
+        });
+    };
+    load();
+    const stop = subscribeTtsEvents((event) => {
+      if (event.topic === "projects" || event.topic === "reload") {
+        load();
+      }
+    });
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, []);
+  const due = projects?.ok ? projectsDueNearPresent(projects) : [];
   const [popup, setPopup] = useState<OptionsPopup | null>(null);
   const [poolRing, setPoolRing] = useState<PoolRing | null>(null);
   const [configureAt, setConfigureAt] = useState<ConfigureAt | null>(null);
@@ -1106,6 +1137,20 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options, transitio
             ))}
           </ul>
         </details>
+      )}
+      {due.length > 0 && (
+        <ul className="roll-due">
+          {due.map((project) => {
+            const source = projects?.sources.find((row) => row.key === project.owner);
+            const accent = source?.color ? SEAT_ACCENT[source.color] : undefined;
+            return (
+              <li key={project.id} style={accent ? { "--due-color": accent } as CSSProperties : undefined}>
+                <span className="goal">{project.goal}</span>
+                <span className="when">{project.derived.endText}</span>
+              </li>
+            );
+          })}
+        </ul>
       )}
       {popup && <RollOptions popup={popup} access={options} send={send} onClose={() => setPopup(null)} />}
       {poolRing && ringRoll && (

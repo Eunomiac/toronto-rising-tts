@@ -46,6 +46,7 @@ export type ProjectDerived = {
   readonly die: number | null;
   readonly startText: string;
   readonly endText: string;
+  readonly endDate: ProjectDate | null;
   readonly beginEligible: boolean;
   readonly beginMessage: string;
   readonly launchEligible: boolean;
@@ -157,6 +158,7 @@ const parseProject = (value: unknown): Project | null => {
       die: asOptNumber(d.die),
       startText: asString(d.startText),
       endText: asString(d.endText),
+      endDate: parseDate(d.endDate),
       beginEligible: d.beginEligible === true,
       beginMessage: asString(d.beginMessage),
       launchEligible: d.launchEligible === true,
@@ -222,6 +224,27 @@ export const parseProjectsSnapshot = (value: unknown): ProjectsSnapshot => {
 };
 
 /** Projects shown on a source's Page 5, in Lua's listForDisplaySource order. */
+const utcDay = (date: ProjectDate): number => Date.UTC(date.year, date.month - 1, date.day);
+
+/** Projects whose end date is within `withinDays` of present day, earliest end first. */
+export const projectsDueNearPresent = (snapshot: ProjectsSnapshot, withinDays = 7): readonly Project[] => {
+  const today = snapshot.presentDay;
+  if (!today) {
+    return [];
+  }
+  const origin = utcDay(today);
+  return snapshot.projects
+    .filter((project) => {
+      const end = project.derived.endDate;
+      if (!end) {
+        return false;
+      }
+      const delta = Math.round((utcDay(end) - origin) / 86_400_000);
+      return Math.abs(delta) <= withinDays;
+    })
+    .sort((a, b) => utcDay(a.derived.endDate!) - utcDay(b.derived.endDate!));
+};
+
 export const projectsForSource = (snapshot: ProjectsSnapshot, sourceKey: string): Project[] => {
   const byId = new Map(snapshot.projects.map((p) => [p.id, p]));
   return (snapshot.order[sourceKey] ?? []).flatMap((id) => {

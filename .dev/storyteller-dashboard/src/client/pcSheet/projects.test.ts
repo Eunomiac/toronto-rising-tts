@@ -8,6 +8,7 @@ import {
   launchResultMissing,
   parseDateInput,
   parseProjectsSnapshot,
+  projectsDueNearPresent,
   projectsForSource,
   rebaseDraft,
   stakeCapacity,
@@ -67,6 +68,22 @@ describe("parseProjectsSnapshot", () => {
 
   it("returns the host error when ok is false", () => {
     expect(parseProjectsSnapshot({ ok: false, error: "nope" }).error).toBe("nope");
+  });
+});
+
+describe("projectsDueNearPresent", () => {
+  it("keeps projects ending within seven days of present day, soonest first", () => {
+    const snapshot = parseProjectsSnapshot({
+      ok: true,
+      presentDay: { year: 2026, month: 11, day: 25 },
+      projects: [
+        { id: "later", owner: "aishe", goal: "Far", derived: { endDate: { year: 2026, month: 12, day: 20 }, endText: "December 20, 2026" } },
+        { id: "soon", owner: "rashid", goal: "Near", derived: { endDate: { year: 2026, month: 11, day: 28 }, endText: "November 28, 2026" } },
+        { id: "past", owner: "fomorach", goal: "Recent", derived: { endDate: { year: 2026, month: 11, day: 18 }, endText: "November 18, 2026" } },
+        { id: "old", owner: "lordLucien", goal: "Old", derived: { endDate: { year: 2026, month: 11, day: 10 }, endText: "November 10, 2026" } }
+      ]
+    });
+    expect(projectsDueNearPresent(snapshot).map((project) => project.id)).toEqual(["past", "soon"]);
   });
 });
 
