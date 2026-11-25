@@ -276,6 +276,25 @@ describe("draft seating", () => {
     expect(stored.find((row) => row.seat === "Pink")).toMatchObject({ playingNpcKey: "drake", charKey: "aishe" });
   });
 
+  it("keeps a scene's chair when the live table has given that chair to someone else", () => {
+    const elysium = scene("elysium", {
+      sessionScene: {
+        seatSlots: {
+          Pink: { characterKey: "aishe", isPresent: true, tableSlot: 2 },
+          Brown: { characterKey: "fomorach", isPresent: true, absentFromSession: true },
+          Red: { characterKey: "lordLucien", isPresent: true, tableSlot: 1 }
+        }
+      }
+    });
+    const live = [
+      { seat: "Brown", kind: "pc" as const, isPresent: true, tableSlot: 2, charKey: "fomorach" },
+      { seat: "Pink", kind: "pc" as const, isPresent: true, tableSlot: 5, charKey: "aishe" }
+    ];
+    const rows = withPreviewChairs(previewSeatRows(elysium, live));
+    expect(rows.find((row) => row.seat === "Pink")).toMatchObject({ charKey: "aishe", tableSlot: 2 });
+    expect(rows.find((row) => row.seat === "Brown")?.tableSlot).toBe(3);
+  });
+
   it("gives a PC with no chair a free cell on the preview bar without touching taken chairs", () => {
     const rows = withPreviewChairs(previewSeatRows(scene("bare", { sessionScene: {} }), [
       { seat: "Pink", kind: "pc", isPresent: true, charKey: "aishe", absentFromSession: true },

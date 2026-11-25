@@ -534,12 +534,28 @@ const syncScatterPcPresence = (scene: LibraryScene, charKey: string | undefined,
 export const draftSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): readonly SeatRow[] => {
   const slots = isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {};
   const mirror = isRecord(scene.sessionScene.seatPresent) ? scene.sessionScene.seatPresent : {};
+  // Chairs the scene itself assigned. A live chair must not cover one of these.
+  const taken = new Set<number>();
+  for (const [seat, value] of Object.entries(slots)) {
+    if (!isRecord(value) || typeof value.tableSlot !== "number" || value.slotEmpty === true) {
+      continue;
+    }
+    if (isSeatColor(seat) || npcOf(value) !== undefined) {
+      taken.add(value.tableSlot);
+    }
+  }
   return Object.entries(slots).flatMap(([seat, value]): SeatRow[] => {
     if (!isRecord(value)) {
       return [];
     }
     const table = live.find((row) => row.seat === seat);
-    const tableSlot = typeof value.tableSlot === "number" ? value.tableSlot : table?.tableSlot;
+    const authored = typeof value.tableSlot === "number" ? value.tableSlot : undefined;
+    const liveSlot = table?.tableSlot;
+    const borrowed = authored === undefined && liveSlot !== undefined && !taken.has(liveSlot) ? liveSlot : undefined;
+    if (borrowed !== undefined) {
+      taken.add(borrowed);
+    }
+    const tableSlot = authored ?? borrowed;
     const isPresent = typeof value.isPresent === "boolean" ? value.isPresent : mirror[seat] !== false;
     const base = { seat, isPresent, ...(tableSlot !== undefined ? { tableSlot } : {}) };
     if (isSeatColor(seat)) {
