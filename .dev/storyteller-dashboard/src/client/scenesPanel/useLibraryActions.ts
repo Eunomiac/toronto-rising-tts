@@ -16,7 +16,7 @@ import type { SceneSlice } from "../worldState";
 import type { SceneClock, ScenesCommand } from "./commands";
 import { newLibraryScene, newSceneKey, newSceneTitle } from "./library";
 import { buildRelocatedScene, nextForkKey, relocateTitle } from "./liveRelocate";
-import { entryPlan, forkPreviewScene, nightLabel, templateCopy } from "./sceneStatus";
+import { entryPlan, forkPreviewScene, nightLabel, templateCopy, uniqueSceneTitle } from "./sceneStatus";
 import type { SeatingEdit } from "./transitionSeating";
 
 /** How long the table's scene must be quiet before its library row is read back from TTS. */
@@ -292,17 +292,22 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     if (!row) {
       return;
     }
-    const renamed = { ...row, title };
+    const rows = [...sceneLibrarySnapshot().scenes, ...sceneDeckSnapshot().previews];
+    const next = uniqueSceneTitle(title, row, rows);
+    if (!next || next === row.title) {
+      return;
+    }
+    const renamed = { ...row, title: next };
     putLibraryScene(renamed);
     if (scene?.liveKey === key) {
       sendBatch([upsertCommand(renamed)]);
     }
     const { deck, notes } = sceneDeckSnapshot();
-    setSceneDeckSection("deck", deck.map((entry) => (entry.key === key ? { key, title } : entry)));
+    setSceneDeckSection("deck", deck.map((entry) => (entry.key === key ? { key, title: next } : entry)));
     const docs = notes[row.title];
-    if (docs && !notes[title]) {
+    if (docs && !notes[next]) {
       const { [row.title]: _moved, ...rest } = notes;
-      setSceneDeckSection("notes", { ...rest, [title]: docs });
+      setSceneDeckSection("notes", { ...rest, [next]: docs });
     }
   };
 

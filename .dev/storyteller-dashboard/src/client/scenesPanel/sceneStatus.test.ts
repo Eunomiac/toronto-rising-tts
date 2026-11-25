@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { deckScenes, displayTitle, entryPlan, forkPreviewScene, libraryRank, nightLabel, templateCopy, templateCopyTitle } from "./sceneStatus";
+import { deckScenes, displayTitle, entryPlan, forkPreviewScene, libraryRank, nightLabel, templateCopy, templateCopyTitle, uniqueSceneTitle } from "./sceneStatus";
 
 const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => ({
   key,
@@ -38,6 +38,16 @@ describe("entryPlan", () => {
 });
 
 describe("templates", () => {
+  it("lets a template share a name with an ordinary scene, and numbers a real duplicate", () => {
+    const rows = [
+      scene("live", { title: "Elysium", status: "ongoing" }),
+      scene("tpl", { title: "Elysium", status: "template" }),
+      scene("other", { title: "Elysium (2)", status: "new" })
+    ];
+    expect(uniqueSceneTitle("Elysium", { key: "tpl", status: "template" }, rows)).toBe("Elysium");
+    expect(uniqueSceneTitle("Elysium", { key: "fresh", status: "new" }, rows)).toBe("Elysium (3)");
+    expect(uniqueSceneTitle("  Vestibule  ", { key: "fresh", status: "new" }, rows)).toBe("Vestibule");
+  });
   it("show in brackets", () => {
     expect(displayTitle({ title: "Elysium", status: "template" })).toBe("[Elysium]");
     expect(displayTitle({ title: "Elysium", status: "new" })).toBe("Elysium");

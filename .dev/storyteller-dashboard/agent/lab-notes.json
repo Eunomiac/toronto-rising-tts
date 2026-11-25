@@ -51,16 +51,6 @@
       "updatedAt": "2026-11-24T21:22:46.343Z"
     },
     {
-      "id": 12,
-      "sketch": "scenes",
-      "x": 473,
-      "y": 160,
-      "text": "Clicking on the scene name in the preview panel should allow editing the name of the scene. If the scene name chosen duplicates the name of another scene, a number should be appended to the end.\n\nNote: It should be possible for a non-template scene and a template scene to share the same name, since template scenes are distinguishable by the square brackets surrounding their names.",
-      "status": "open",
-      "createdAt": "2026-11-24T21:30:10.771Z",
-      "updatedAt": "2026-11-24T21:30:10.771Z"
-    },
-    {
       "id": 13,
       "sketch": "scenes",
       "x": 983,

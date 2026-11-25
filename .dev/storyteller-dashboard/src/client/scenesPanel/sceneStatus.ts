@@ -28,6 +28,33 @@ export const entryPlan = (row: LibraryScene | undefined, present: Date | undefin
 export const displayTitle = (row: Pick<LibraryScene, "title" | "status">): string =>
   row.status === "template" ? `[${row.title}]` : row.title;
 
+/**
+ * A title that does not collide with another scene of the same kind. A template and an ordinary scene may share a
+ * name, because the template is shown in square brackets. A taken name gets " (2)", " (3)", and so on.
+ */
+export const uniqueSceneTitle = (
+  title: string,
+  self: { readonly key: string; readonly status?: SceneStatus },
+  rows: readonly { readonly key: string; readonly title: string; readonly status?: SceneStatus }[]
+): string => {
+  const trimmed = title.trim();
+  if (!trimmed) {
+    return "";
+  }
+  const template = self.status === "template";
+  const taken = (name: string): boolean =>
+    rows.some((row) => row.key !== self.key && (row.status === "template") === template && row.title === name);
+  if (!taken(trimmed)) {
+    return trimmed;
+  }
+  const base = trimmed.replace(/ \(\d+\)$/, "");
+  let n = 2;
+  while (taken(`${base} (${n})`)) {
+    n += 1;
+  }
+  return `${base} (${n})`;
+};
+
 /** "Oct 12": the in-game night a time belongs to (hours before noon count as the evening before). */
 export const nightLabel = (at: Date): string => nightOf(at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 

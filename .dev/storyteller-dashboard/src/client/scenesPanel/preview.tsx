@@ -44,7 +44,7 @@ export const previewLayout = (w: number, h: number): Readonly<Record<"location" 
  * open scene into a new one that can be edited on its own; Discard (second click) drops the edits. `panels` draws
  * the open scene's panels.
  */
-export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, statusOf, onStatus, onSave, onDeck, onPlay, onFork, onActivate, onDiscard, panels }: {
+export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, statusOf, onStatus, onSave, onDeck, onPlay, onFork, onActivate, onDiscard, onRename, panels }: {
   x: number;
   y: number;
   w: number;
@@ -63,14 +63,20 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
   /** The tab being viewed, so a drop is stored on that scene. */
   onActivate?: (key: string) => void;
   onDiscard: (key: string) => void;
+  /** Commit a new name for the open scene. A duplicate among the same kind is numbered. */
+  onRename?: (key: string, title: string) => void;
   panels: (key: string, w: number, h: number) => ReactElement;
 }): ReactElement => {
   const [activeKey, setActiveKey] = useState(initialKey ?? prepared[0]?.key ?? "");
+  const [renaming, setRenaming] = useState(false);
   useEffect(() => {
     if (initialKey) {
       setActiveKey(initialKey);
     }
   }, [initialKey]);
+  useEffect(() => {
+    setRenaming(false);
+  }, [activeKey]);
   const entry = useSceneEntry();
   const active = prepared.find((scene) => scene.key === activeKey) ?? prepared[0];
   const onTable = active !== undefined && active.key === scenes.current?.key;
@@ -83,17 +89,48 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
         <span className="lab-gpreview-tag">Preview</span>
         <span className="lab-gpreview-tabs">
           {prepared.map((scene) => (
+            renaming && scene.key === active?.key ? (
+              <input
+                key={scene.key}
+                className="lab-gpreview-tab on"
+                defaultValue={scene.title}
+                aria-label="Scene name"
+                autoFocus
+                onBlur={(event) => {
+                  const next = event.target.value.trim();
+                  if (next && next !== scene.title) {
+                    onRename?.(scene.key, next);
+                  }
+                  setRenaming(false);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.currentTarget.blur();
+                  }
+                  if (event.key === "Escape") {
+                    event.currentTarget.value = scene.title;
+                    event.currentTarget.blur();
+                  }
+                }}
+              />
+            ) : (
             <button
               key={scene.key}
               type="button"
               className={`lab-gpreview-tab${scene.key === active?.key ? " on" : ""}${scenes.live.some((live) => live.key === scene.key) ? " live" : ""}`}
+              title={scene.key === active?.key ? "Click to rename this scene" : undefined}
                 onClick={() => {
+                  if (scene.key === active?.key) {
+                    setRenaming(true);
+                    return;
+                  }
                   setActiveKey(scene.key);
                   onActivate?.(scene.key);
                 }}
             >
               {statusOf(scene.key) === "template" ? `[${scene.title}]` : scene.title}
             </button>
+            )
           ))}
         </span>
         {activeNote && <span className="lab-gpreview-note">{activeNote}</span>}

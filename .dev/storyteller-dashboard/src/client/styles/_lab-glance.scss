@@ -3567,6 +3567,11 @@ input.lab-cat-rename {
       color: #fff;
     }
 
+    &:is(input) {
+      width: 14em;
+      outline: none;
+    }
+
     // Already live (on deck or on the table): a small green light.
     &.live::after {
       content: "";

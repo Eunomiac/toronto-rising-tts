@@ -896,6 +896,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 onFork={library.forkPreview}
                 onActivate={library.activatePreview}
                 onDiscard={library.discardDraft}
+                onRename={library.actions.rename}
                 panels={(key, w, h) => {
                   const draft = library.previews.find((row) => row.key === key);
                   return draft ? (
