@@ -78,7 +78,7 @@ const SeatRow = ({
             title={disabled ? `${pc.name} is not connected` : awarded.has(pc.color) ? `${pc.name} has this XP` : `Award 1 XP to ${pc.name}`}
             onClick={() => onAward(pc.color)}
           >
-            {pc.color}
+            {pc.name}
           </button>
         );
       })}

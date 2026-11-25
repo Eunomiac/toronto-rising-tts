@@ -12,7 +12,19 @@ const pc = (slot: number, color: SeatSketch["color"], name: string): SeatSketch 
   seatKey: color
 });
 
-describe("End XP personal rows", () => {
+describe("XP award buttons", () => {
+  it("uses the character name and a green awarded mark without dropping the player color", async () => {
+    const user = userEvent.setup();
+    render(
+      <XpAwardPanel phase="Feedback" seats={[pc(1, "Red", "Lord Lucien")]} apply={vi.fn()} />
+    );
+    const button = screen.getByRole("button", { name: "Lord Lucien" });
+    expect(button.className).toContain("lab-xp-seat--red");
+    await user.click(button);
+    expect(button.className).toContain("is-awarded");
+    expect(button.className).toContain("lab-xp-seat--red");
+  });
+
   it("awards the typed amount and description to that character only", async () => {
     const user = userEvent.setup();
     const apply = vi.fn();

@@ -51,16 +51,6 @@
       "updatedAt": "2026-11-24T21:22:46.343Z"
     },
     {
-      "id": 19,
-      "sketch": "scenes",
-      "x": 1319,
-      "y": 495,
-      "text": "In both XP award panels (the feedback one at session start, and the main one during end phase), replace the button names with the character names (instead of the colors): \"Lord Lucien\", \"Rashid\", \"Aishe Tache\", \"Fomórach\" and \"Black Caesar\", but color each button with the color of the character.\n\nWhen ANY of the XP award buttons have been clicked, its border should change to green, and it should be given a bright green glow.  Its main color (i.e. the player color) should remain unchanged.",
-      "status": "open",
-      "createdAt": "2026-11-24T21:59:51.771Z",
-      "updatedAt": "2026-11-24T21:59:51.771Z"
-    },
-    {
       "id": 20,
       "sketch": "scenes",
       "x": 225,
