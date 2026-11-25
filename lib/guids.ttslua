@@ -286,7 +286,7 @@ end
 G.GUIDS = {
     -- Locked bag under the table. Paste the GUID after the bag is in the save.
     -- DEBUG.storeHiddenObjects moves chosen hidden objects into it.
-    HIDDEN_STORAGE = "",
+    HIDDEN_STORAGE = "1c0050",
 
     -- Table & Floor objects
     TABLES = {
@@ -507,6 +507,8 @@ G.GUIDS = {
 
     -- The Deck of Complications Minigame
     COMPLICATIONS_BOARD = "8f6e58",
+    COMPLICATIONS_STANDARD_DECK = "11e747",
+    COMPLICATIONS_ENHANCED_DECK = "2d57f2",
 
     -- Dice bags (one per seat color).
     -- Each bag is a TTS object that spawns d10s when rolled by the player.

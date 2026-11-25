@@ -101,6 +101,12 @@ SkyboxesCatalog.Skyboxes = {
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/12534056130128773279/B3DFB3CF2C6D12B8BC415F3851E0986E2E41869B/"
   },
+  CLControlRoom = {
+    key = "CLControlRoom",
+    display = "Casa Loma: Control Room",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16420964450677775978/980230515B1C50A3BC46EED3BB7DC69361AB09BA/"
+  },
   CLDrawingRoom = {
     key = "CLDrawingRoom",
     display = "Casa Loma: Maximillian Steele Drawing Room",
@@ -585,7 +591,43 @@ SkyboxesCatalog.Skyboxes = {
     key = "CLGreatHallLockdown",
     display = "CLGreatHall Lockdown",
     isShown = true,
-    url = "https://steamusercontent-a.akamaihd.net/ugc/10457995416643947358/4869FE09D68D00BFE8B5C80BFF7C0C52D7F907AA/"
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15500042076198138118/F2BB770275CD0A647DDF675647F15761005B07A0/"
+  },
+  CLControlRoomLockdown = {
+    key = "CLControlRoomLockdown",
+    display = "CLControlRoom Lockdown",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16507656733616418096/41F49E3810066CC16226741BD8656FAF28036412/"
+  },
+  CLDrawingRoomLockdown = {
+    key = "CLDrawingRoomLockdown",
+    display = "CLDrawingRoom Lockdown",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11990506597244062464/0B1C5567AA95534123F4CFC51B8C076D0FA2DB4B/"
+  },
+  CLGalleryLockdown = {
+    key = "CLGalleryLockdown",
+    display = "CLGallery Lockdown",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15036097272910600497/55D1D42AD563DDBCD827E9EE9BC14D977729F5E2/"
+  },
+  CLGroundsLockdown = {
+    key = "CLGroundsLockdown",
+    display = "CLGrounds Lockdown",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9431344786628990076/3573B7259B8FA0E9F46242E0977C09E969CB3316/"
+  },
+  CLOverlookLockdown = {
+    key = "CLOverlookLockdown",
+    display = "CLOverlook Lockdown",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17844807504476789139/3A4A4719ADAA564742C12FE66D5D5782AD979606/"
+  },
+  CLVestibuleLockdown = {
+    key = "CLVestibuleLockdown",
+    display = "CLVestibule Lockdown",
+    isShown = true,
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16228782018919906802/D1DF232ED1FC8CEA95C27E5CE718707F0B9221B5/"
   },
 }
 

@@ -304,6 +304,7 @@ LocationsCatalog.Sites = {
   },
   CLControlRoom = {
     name = "Casa Loma: Control Room",
+    skybox = "CLControlRoom",
     district = Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = { playlist = "casaLoma" },

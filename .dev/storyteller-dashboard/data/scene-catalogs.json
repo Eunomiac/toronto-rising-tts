@@ -1733,7 +1733,7 @@
       "districtKey": "DupontByTheCastle",
       "isTopFogActive": false,
       "isIndoors": true,
-      "skybox": null,
+      "skybox": "CLControlRoom",
       "locationTrack": "computer",
       "backgroundMusic": "casaLoma",
       "conditions": [],
@@ -3932,6 +3932,10 @@
       "display": "City Park"
     },
     {
+      "key": "CLControlRoom",
+      "display": "Casa Loma: Control Room"
+    },
+    {
       "key": "CLDrawingRoom",
       "display": "Casa Loma: Maximillian Steele Drawing Room"
     },
@@ -4250,6 +4254,30 @@
     {
       "key": "CLGreatHallLockdown",
       "display": "CLGreatHall Lockdown"
+    },
+    {
+      "key": "CLControlRoomLockdown",
+      "display": "CLControlRoom Lockdown"
+    },
+    {
+      "key": "CLDrawingRoomLockdown",
+      "display": "CLDrawingRoom Lockdown"
+    },
+    {
+      "key": "CLGalleryLockdown",
+      "display": "CLGallery Lockdown"
+    },
+    {
+      "key": "CLGroundsLockdown",
+      "display": "CLGrounds Lockdown"
+    },
+    {
+      "key": "CLOverlookLockdown",
+      "display": "CLOverlook Lockdown"
+    },
+    {
+      "key": "CLVestibuleLockdown",
+      "display": "CLVestibule Lockdown"
     }
   ],
   "memoriamPeriods": [
