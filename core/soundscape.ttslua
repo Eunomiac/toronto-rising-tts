@@ -286,6 +286,7 @@ local function defaultState()
         thunderVolume = 1,
         --- Storyteller lane-slider levels (0..1, natural volume before weather ducking) keyed by catalog effect
         --- name. Global, never per scene: the track plays at this level wherever it plays next.
+        --- The music slider writes the same level onto every clip in the playlist that was playing.
         trackVolumes = {},
         location = Catalog.DEFAULTS.location,
         isIndoors = Catalog.DEFAULTS.isIndoors,
@@ -2281,8 +2282,9 @@ function Soundscape.getPlayingLanesForUi()
 end
 
 --- Sets volume for a Storyteller panel lane id (`music`, `location`, `featured`, `rain`, `wind`, `thunder`).
---- The level is saved against the clip now playing on that lane (`trackVolumes`), so the clip plays at it
---- wherever it plays next. Thunder is a scale on each hit's catalog volume, applied from the next hit.
+--- The level is saved against the clip now playing (`trackVolumes`), so that clip plays at it wherever it
+--- plays next. Music also saves the same level on every clip in the playlist, because the slider is one
+--- level for that playlist. Thunder is a scale on each hit's catalog volume, applied from the next hit.
 -- @param laneId string
 -- @param volume01 number|string
 -- @return boolean
@@ -2305,6 +2307,18 @@ function Soundscape.setStorytellerLaneVolume(laneId, volume01)
         return false, "Unknown sound lane: " .. tostring(laneId)
     end
     local ok, message = setChannelImmediateVolume(channelKey, v)
+    if ok and laneId == "music" then
+        local playlistKey = state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and state.locationMusic or state.musicMood
+        local playlist = Catalog.getBackgroundPlaylist(playlistKey)
+        if type(playlist) == "table" and type(playlist.tracks) == "table" then
+            for _, track in ipairs(playlist.tracks) do
+                local effect = type(track) == "table" and (type(track.effect) == "string" and track.effect or track.key) or nil
+                if type(effect) == "string" and effect ~= "" and effect ~= Catalog.SILENT_EFFECT then
+                    state.trackVolumes[effect] = v
+                end
+            end
+        end
+    end
     local effect = state.channels[channelKey] and state.channels[channelKey].effect
     if ok and type(effect) == "string" and effect ~= Catalog.SILENT_EFFECT then
         state.trackVolumes[effect] = v
@@ -2707,7 +2721,7 @@ function Soundscape.playSessionIntro(trackKey, opts)
     if fadeSec == nil then
         fadeSec = 0
     end
-    local volume = tonumber(track.volume)
+    local volume = savedTrackVolume(track) or tonumber(track.volume)
     if volume == nil then
         volume = 1
     end

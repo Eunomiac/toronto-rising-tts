@@ -3,8 +3,8 @@ import { parseSceneStatus, type LibraryScene } from "../../shared/sceneLibrary";
 import type { ClockDatetime, GenericNpc, ScatterGroup, ScatterMember, SceneSlice, SeatRow, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
 import { FEATURED_TRACKS, isSeatColor, NPC_SEATS, playlistLabel } from "../catalogVocab";
-import trackVolumes from "../../../data/track-volumes.json";
 import type { SoundView } from "./liveScene";
+import { clipVolume, playlistVolume, sliderPercent } from "./trackVolume";
 import { fillOrder } from "./stage";
 import { boardToStage, stageToBoard, type StagePack, type StageSlot } from "./stageFrame";
 
@@ -605,17 +605,9 @@ export const draftSceneSlice = (scene: LibraryScene, indoors: boolean): SceneSli
 
 const LANES: readonly SoundLane[] = ["music", "location", "featured", "rain", "wind", "thunder"];
 
-/** Catalog clip levels (0–100). A silent live channel still has a volume the clip will play at. */
-const playlistLevel = (key: string): number | undefined => {
-  const level = (trackVolumes.playlists as Record<string, number>)[key];
-  return typeof level === "number" ? level : undefined;
-};
-const clipLevel = (key: string | undefined): number | undefined => {
-  if (!key) {
-    return undefined;
-  }
-  const level = (trackVolumes.clips as Record<string, number>)[key];
-  return typeof level === "number" ? level : undefined;
+export type SavedTrackVolumes = {
+  readonly tracks?: Readonly<Record<string, number>>;
+  readonly thunder?: number;
 };
 
 export type DraftSoundSite = {
@@ -623,52 +615,39 @@ export type DraftSoundSite = {
   readonly locationTrack?: string | null;
 };
 
-const fillSilentLane = (levels: Record<SoundLane, number>, lane: SoundLane, level: number | undefined): void => {
-  if (levels[lane] <= 0 && typeof level === "number" && level > 0) {
-    levels[lane] = level;
-  }
-};
-
 /**
  * The draft's music and ambience as the mixer's view. An explicit narrative choice wins, including Main.
  * Only a scene that has not chosen music yet follows the site playlist (Casa Loma, and so on).
- * Volumes use the live table when that channel is actually up. A channel sitting at zero shows the catalog
- * volume the clip will play at, because the live emitter stays at zero until the clip starts.
+ * Each bar is the volume that clip plays at: a saved override, otherwise the catalog level.
  */
 export const draftSoundView = (
   scene: LibraryScene,
   site?: DraftSoundSite,
-  liveLevels?: Readonly<Record<SoundLane, number>>
+  saved?: SavedTrackVolumes
 ): SoundView => {
   const narrative = narrativeOf(scene);
   const authoredMusic = str(narrative.backgroundMusic);
   const siteMusic = str(site?.backgroundMusic ?? undefined);
   const music = authoredMusic ?? siteMusic ?? "main";
   const ambient = str(narrative.location) ?? str(site?.locationTrack ?? undefined);
-  const levels = {
-    ...(liveLevels ?? (Object.fromEntries(LANES.map((lane) => [lane, 100])) as Record<SoundLane, number>))
-  };
-  fillSilentLane(levels, "music", playlistLevel(music));
-  fillSilentLane(levels, "location", clipLevel(ambient));
   const rain = str(narrative.rain);
   const wind = str(narrative.wind);
-  if (rain && rain !== "none") {
-    fillSilentLane(levels, "rain", clipLevel(rain));
-  }
-  if (wind && wind !== "none") {
-    fillSilentLane(levels, "wind", clipLevel(wind));
-  }
-  if (narrative.thunderstorm === true) {
-    fillSilentLane(levels, "thunder", 100);
-  }
-  fillSilentLane(levels, "featured", clipLevel(FEATURED_TRACKS[0]?.key));
+  const tracks = saved?.tracks;
+  const featuredKey = FEATURED_TRACKS[0]?.key;
   return {
     playlist: playlistLabel(music),
     musicPlaying: true,
     featuredKey: undefined,
     featuredPlaying: false,
     ambient,
-    levels,
+    levels: {
+      music: playlistVolume(music, tracks) ?? 0,
+      location: ambient ? clipVolume(ambient, tracks) ?? 0 : 0,
+      featured: clipVolume(featuredKey, tracks) ?? 0,
+      rain: rain && rain !== "none" ? clipVolume(rain, tracks) ?? 0 : 0,
+      wind: wind && wind !== "none" ? clipVolume(wind, tracks) ?? 0 : 0,
+      thunder: narrative.thunderstorm === true ? sliderPercent(saved?.thunder ?? 1) : 0
+    },
     playing: Object.fromEntries(LANES.map((lane) => [lane, lane === "music" || (lane === "location" && ambient !== undefined)])) as Record<SoundLane, boolean>
   };
 };

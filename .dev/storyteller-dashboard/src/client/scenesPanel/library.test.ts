@@ -434,11 +434,15 @@ describe("draft Scatter layout", () => {
     expect(draftSoundView(unset, site).playlist).toBe("Casa Loma");
     const chosen = applyToDraft(unset, { op: "musicMood", mood: "main" });
     expect(draftSoundView(chosen, site).playlist).toBe("Main");
-    const silent = { music: 0, location: 0, featured: 0, rain: 0, wind: 0, thunder: 0 };
-    const playing = draftSoundView(unset, site, silent);
+    const playing = draftSoundView(unset, site);
     expect(playing.levels.music).toBe(30);
     expect(playing.levels.location).toBe(5);
-    expect(draftSoundView(unset, site, { ...silent, music: 8 }).levels.music).toBe(8);
+    expect(playing.levels.rain).toBe(0);
+    expect(draftSoundView(unset, site, { tracks: { casaLomaA: 0.5, softIndoor: 0.4 } }).levels).toMatchObject({ music: 50, location: 40 });
+    const storm = scene("elysium", {
+      sessionScene: { siteKey: "CLGreatHall", soundscapeNarrative: { thunderstorm: true }, clock: { isPresentDay: true } }
+    });
+    expect(draftSoundView(storm, site, { thunder: 0.6 }).levels.thunder).toBe(60);
   });
 
   it("puts NPCs who only stood in groups onto free stage packs when the table leaves Scatter", () => {

@@ -115,7 +115,15 @@ export type SoundscapeSlice = {
   readonly musicEnabled: boolean;
   readonly musicSuppressed: boolean;
   readonly locationMusic?: string;
+  /** Catalog key of the background clip now selected. */
+  readonly backgroundTrackKey?: string;
   readonly location?: string;
+  readonly rain?: string;
+  readonly wind?: string;
+  /** Storyteller scale (0–1) on each thunder hit. */
+  readonly thunderVolume?: number;
+  /** Saved clip levels (0–1), keyed by catalog effect name. Absent means the catalog level. */
+  readonly trackVolumes?: Readonly<Record<string, number>>;
   readonly siteSilent: boolean;
   readonly featuredKey?: string;
   readonly featuredActive: boolean;
@@ -414,8 +422,23 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
         temperatureC: typeof data.temperatureC === "number" ? data.temperatureC : undefined,
         at
       };
-    case "soundscape":
-      return { ...(data as Omit<SoundscapeSlice, "lanes">), lanes: asList<SoundLane>(data.lanes) };
+    case "soundscape": {
+      const trackVolumes: Record<string, number> = {};
+      if (isRecord(data.trackVolumes)) {
+        for (const [key, volume] of Object.entries(data.trackVolumes)) {
+          if (typeof volume === "number" && Number.isFinite(volume)) {
+            trackVolumes[key] = volume;
+          }
+        }
+      }
+      const thunderVolume = typeof data.thunderVolume === "number" && Number.isFinite(data.thunderVolume) ? data.thunderVolume : undefined;
+      return {
+        ...(data as Omit<SoundscapeSlice, "lanes" | "trackVolumes" | "thunderVolume">),
+        lanes: asList<SoundLane>(data.lanes),
+        trackVolumes,
+        ...(thunderVolume === undefined ? {} : { thunderVolume })
+      };
+    }
     case "seats":
       return {
         ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "preloaded" | "trackers" | "scatter" | "spotlightOrder" | "personalDue">),

@@ -251,13 +251,27 @@ local function buildSoundscape()
       active = row.active == true,
     }
   end
+  local trackVolumes = {}
+  if type(snd.trackVolumes) == "table" then
+    for key, value in pairs(snd.trackVolumes) do
+      local level = type(key) == "string" and round2(value) or nil
+      if level ~= nil then
+        trackVolumes[key] = level
+      end
+    end
+  end
   return {
     musicMode = snd.backgroundMusicMode,
     musicMood = snd.musicMood,
     musicEnabled = snd.backgroundMusicEnabled == true,
     musicSuppressed = snd.backgroundMusicSuppressed == true,
     locationMusic = snd.locationMusic,
+    backgroundTrackKey = snd.backgroundTrackKey,
     location = snd.location,
+    rain = snd.rain,
+    wind = snd.wind,
+    thunderVolume = round2(snd.thunderVolume) or 1,
+    trackVolumes = trackVolumes,
     siteSilent = snd.siteSilent == true,
     featuredKey = snd.featuredMusic,
     featuredActive = snd.featuredActive == true,

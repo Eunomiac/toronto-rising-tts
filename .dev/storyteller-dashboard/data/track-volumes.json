@@ -6,6 +6,60 @@
     "gioCatacombs": 30,
     "gioEstate": 30
   },
+  "playlistClips": {
+    "main": [
+      "aNightAtHomeA",
+      "aNightAtHomeB",
+      "aPlagueTale",
+      "ascalonClub",
+      "beBornAgain",
+      "bodyAndBlood",
+      "dorisFletcherJones",
+      "exodus",
+      "finsburyTheatre",
+      "fragile",
+      "heavyHeart",
+      "hideAndSeek",
+      "imSorry",
+      "impromptu",
+      "makingAVampyr",
+      "noTurningBack",
+      "ourSisterDeparted",
+      "pillarOfTheCommunity",
+      "questions",
+      "richNeighborhoodsAlbumA",
+      "richNeighborhoodsAlbumB",
+      "richNeighborhoodsInGame",
+      "sacrifice",
+      "secrets",
+      "situationCritical",
+      "theBookOfAllegiance",
+      "theFuneralsA",
+      "theFuneralsB",
+      "theNightBeforeLeaving",
+      "thePrimateOfTheBrotherhood",
+      "theWall",
+      "turquoiseTurtlePub",
+      "whatWeCouldHaveBecomeA",
+      "whatWeCouldHaveBecomeB",
+      "whitechapelDistrict"
+    ],
+    "casaLoma": [
+      "casaLomaA",
+      "casaLomaB",
+      "casaLomaC",
+      "casaLomaD",
+      "casaLomaE"
+    ],
+    "gioCatacombs": [
+      "gioCatacombs"
+    ],
+    "gioEstate": [
+      "gioEstateA",
+      "gioEstateB",
+      "gioEstateC"
+    ]
+  },
   "clips": {
     "silent": 0,
     "airport": 5,

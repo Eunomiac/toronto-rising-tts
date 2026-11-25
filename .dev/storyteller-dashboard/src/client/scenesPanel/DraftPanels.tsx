@@ -22,7 +22,7 @@ import {
   withPlacements,
   withScatterPack
 } from "./library";
-import { isScatter, lightingPreset, liveSeats, liveTokens, sceneConditions, soundView, toDate, weatherAxes } from "./liveScene";
+import { isScatter, lightingPreset, liveSeats, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
 import { useControlBoardSnaps } from "./roster";
 import { ADD_CORNER, freeSlotNear, stageSpots } from "./stage";
 import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
@@ -71,7 +71,6 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange, o
   const box = previewLayout(w, h);
   const world = useWorldState();
   const tableSeats = world.seats?.seats ?? [];
-  const liveLevels = world.soundscape ? soundView(world.soundscape).levels : undefined;
   const { snaps } = useControlBoardSnaps();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
   const scatterGroups = useMemo(() => draftScatterGroups(withScatterPack(draft, tableSeats, packs)), [draft, tableSeats, packs]);
@@ -169,7 +168,10 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange, o
         <SoundMixer
           indoors={indoors}
           sceneAmbience={site?.locationTrack ? ambientLabel(site.locationTrack) : "Silent"}
-          live={draftSoundView(draft, site, liveLevels)}
+          live={draftSoundView(draft, site, {
+            ...(world.soundscape?.trackVolumes ? { tracks: world.soundscape.trackVolumes } : {}),
+            ...(world.soundscape?.thunderVolume === undefined ? {} : { thunder: world.soundscape.thunderVolume })
+          })}
         />
       </Box>
       <Box {...box.aspects} className="lab-aspects-box lab-borderless">

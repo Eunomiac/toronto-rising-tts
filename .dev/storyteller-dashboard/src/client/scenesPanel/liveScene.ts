@@ -2,6 +2,7 @@ import { isSeatColor, LIGHTING_PRESETS, playlistLabel, type LightingPreset, type
 import type { SceneCatalogs } from "./catalogs";
 import type { RainKey, SoundLane } from "./commands";
 import type { ClockDatetime, GenericNpc, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
+import { clipVolume, playlistVolume, sliderPercent } from "./trackVolume";
 
 /**
  * Pure adapters from the live world slices (`worldState.ts`) to what the Scenes tab panels draw.
@@ -69,15 +70,31 @@ const musicLabel = (sound: SoundscapeSlice): string => {
 
 export const soundView = (sound: SoundscapeSlice): SoundView => {
   const lane = (id: string) => sound.lanes.find((entry) => entry.id === id);
-  const level = (id: string): number => Math.round((lane(id)?.volume ?? 0) * 100);
+  const laneLevel = (id: string): number => Math.round((lane(id)?.volume ?? 0) * 100);
   const playing = (id: string): boolean => lane(id)?.active === true;
+  const saved = sound.trackVolumes;
+  const musicKey = !sound.musicEnabled
+    ? undefined
+    : sound.musicMode === "locationMusic" && sound.locationMusic
+      ? sound.locationMusic
+      : sound.musicMood ?? "main";
+  const ambientKey = sound.location && sound.location !== "none" && sound.location !== "silent" ? sound.location : undefined;
+  const rainKey = sound.rain && sound.rain !== "none" ? sound.rain : undefined;
+  const windKey = sound.wind && sound.wind !== "none" ? sound.wind : undefined;
   return {
     playlist: musicLabel(sound),
     musicPlaying: playing("music"),
     featuredKey: sound.featuredKey,
     featuredPlaying: sound.featuredActive,
     ambient: sound.location === "none" ? undefined : sound.location,
-    levels: { music: level("music"), location: level("location"), featured: level("featured"), rain: level("rain"), wind: level("wind"), thunder: level("thunder") },
+    levels: {
+      music: musicKey ? playlistVolume(musicKey, saved, sound.backgroundTrackKey) ?? laneLevel("music") : 0,
+      location: ambientKey ? clipVolume(ambientKey, saved) ?? laneLevel("location") : 0,
+      featured: sound.featuredKey ? clipVolume(sound.featuredKey, saved) ?? laneLevel("featured") : laneLevel("featured"),
+      rain: rainKey ? clipVolume(rainKey, saved) ?? laneLevel("rain") : laneLevel("rain"),
+      wind: windKey ? clipVolume(windKey, saved) ?? laneLevel("wind") : laneLevel("wind"),
+      thunder: typeof sound.thunderVolume === "number" ? sliderPercent(sound.thunderVolume) : laneLevel("thunder")
+    },
     playing: { music: playing("music"), location: playing("location"), featured: playing("featured"), rain: playing("rain"), wind: playing("wind"), thunder: playing("thunder") }
   };
 };

@@ -31,6 +31,12 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+#### 🟡 TOR-816 — Volume bars show the saved track level
+
+> **Agent-assessment note:** The saved level was already used the next time a clip started. The bars were still showing the catalog number while the channel was silent. You still need to hear a clip come back at the level you set.
+
+**How to verify:** Save & Play, and open the Storyteller Dashboard. On the Scenes tab, set the ambience slider to a level you will recognize, then pick a scene whose ambience is silent right now. The preview's ambience bar should show the level you set, not the original catalog level. Play that scene. The ambience should come in at that same level. Do the same with the music slider: every song in that playlist should come back at the level on the bar, including a song that was not the one playing when you moved the slider.
+
 #### 🟡 TOR-815 — NPC spotlight tokens removed
 
 > **Agent-assessment note:** The token cleanup is in the NPC sync. You still need to look at the Stage Control board and confirm the figurine lights are unchanged.
