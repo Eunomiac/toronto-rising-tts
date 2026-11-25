@@ -32,9 +32,8 @@ function runFullPipeline(env, actions = { run, runNpm }) {
   // fetch a newer one independently.
   actions.runNpm("player-map:data:build", env);
   actions.runNpm("build:tooling-after-exports", env);
-  // This includes data freshness, type, unit, production-boundary, and real
-  // desktop/mobile browser checks, and leaves the verified dist ready to ship.
-  actions.runNpm("player-map:check", env);
+  // Build the map for publication. The long map and app tests live in `npm run build:test`.
+  actions.runNpm("player-map:build", env);
   // Inject scripts into the main save first so session-start copies those object scripts into 9001.
   actions.run(".tools/tts-save/bundle-into-save.js", env);
   actions.run(".tools/tts-save/build-session-start.js", env, ["--full"]);

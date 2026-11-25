@@ -49,16 +49,6 @@
       "status": "open",
       "createdAt": "2026-11-24T21:22:46.343Z",
       "updatedAt": "2026-11-24T21:22:46.343Z"
-    },
-    {
-      "id": 21,
-      "sketch": "scenes",
-      "x": 597,
-      "y": 284,
-      "text": "Remove the lengthy tests (including playwright tests) of the map and other apps from the FULL build process. Create a separate \"TEST\" build process to run those tests.",
-      "status": "open",
-      "createdAt": "2026-11-24T22:03:16.790Z",
-      "updatedAt": "2026-11-24T22:03:16.790Z"
     }
   ]
 }
